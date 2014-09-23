@@ -1,10 +1,8 @@
 
-NAME=xxx
+#default: $(NAME).o
 
-default: $(NAME).o
-
-.DEFAULT spec clean:
-	$(MAKE) -C tmp/ $@ NAME=$(NAME)
+.DEFAULT spec clean dispatcher executor listener:
+	$(MAKE) -C tmp/ $@
 
 # copy updated version of dep libs into src/
 #
