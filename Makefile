@@ -4,10 +4,11 @@
 .DEFAULT spec clean dispatcher executor listener:
 	$(MAKE) -C tmp/ $@
 
-# copy updated version of dep libs into src/
+# copy up-to-date versions of dep libs into src/
 #
 upgrade:
-	cp -v ../shervin/src/*.{ch} src/
+	cp -v ../djan/src/*.[ch] src/
+	#cp -v ../shervin/src/*.[ch] src/
 
 cs: clean spec
 
