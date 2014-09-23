@@ -32,7 +32,14 @@ clean:
 	rm -f *.o
 	rm -f *.so
 	rm -f *.c
-	rm -f s
+	#rm -f s
 
 .PHONY: spec vspec dspec clean
+
+##
+
+flon-executor: flutil.o aabro.o djan.o
+
+executor: flon-executor
+	mv flon-executor ../bin
 

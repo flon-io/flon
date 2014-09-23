@@ -5,4 +5,5 @@ tmp/*.o
 tmp/*.so
 tmp/s
 tmp/spec_*.txt
+bin/*
 
