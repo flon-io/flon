@@ -5,11 +5,14 @@
 // Wed Sep 24 06:20:10 JST 2014
 //
 
-//#include "aabro.h"
+#include "flon-executor.h"
 
 
 context "flon-executor"
 {
-  it "carries on an execution"
+  describe "flox_execute_s"
+  {
+    it "executes from a raw string"
+  }
 }
 
