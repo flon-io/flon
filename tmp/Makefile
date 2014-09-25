@@ -35,8 +35,7 @@ clean:
 
 XDEPS=flutil.o aabro.o djan.o
 
-#xs.c: ../spec/x_*_spec.c
-xs.c: ../spec/*_spec.c
+xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 
 xs: $(XDEPS)
