@@ -181,6 +181,10 @@ void flu_list_free(flu_list *l);
  */
 void flu_list_and_items_free(flu_list *l, void (*free_item)(void *));
 
+/* A shortcut for `flu_list_and_items_free(l, free)`.
+ */
+void flu_list_free_all(flu_list *l);
+
 /* Returns the nth element in a flu_list. Warning, takes n steps.
  * Returns NULL if n > size of flu_list.
  */
@@ -229,6 +233,10 @@ void *flu_list_shift(flu_list *l);
 //void *flu_list_pop(flu_list *l);
 //void flu_list_insert(flu_list *l, size_t index, const void *item);
 
+/* Performs an insertion sort (in place) of the flu_list.
+ */
+void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *));
+
 //
 // flu_list dictionary functions
 //
@@ -239,6 +247,11 @@ void *flu_list_shift(flu_list *l);
  * Unshifts the new binding (O(1)).
  */
 void flu_list_set(flu_list *l, const char *key, void *item);
+
+/* Sets an item under a given key, but at then end of the list.
+ * Useful for "defaults".
+ */
+void flu_list_set_last(flu_list *l, const char *key, void *item);
 
 /* Given a key, returns the item bound for it, NULL instead.
  * (O(n)).
