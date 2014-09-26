@@ -33,7 +33,7 @@ clean:
 	rm -f *.c
 	#rm -f s
 
-XDEPS=flutil.o aabro.o djan.o
+XDEPS=flutil.o aabro.o djan.o fl_executor.o
 
 xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c

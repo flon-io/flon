@@ -25,10 +25,10 @@
 
 // for specs
 
-#ifndef FLON_EXECUTOR_H
-#define FLON_EXECUTOR_H
+#ifndef FL_EXECUTOR_H
+#define FL_EXECUTOR_H
 
-char *flox_execute_s(char *s);
+char *flon_execute_s(char *s);
 
-#endif // FLON_EXECUTOR_H
+#endif // FL_EXECUTOR_H
 
