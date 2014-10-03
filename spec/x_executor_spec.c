@@ -15,11 +15,15 @@ context "flon-executor"
     it "executes from a raw string"
 
     it "returns a new exid"
-    {
-      char *exid = flon_execute_s("noop");
-
-      ensure(exid != NULL);
-    }
+    //{
+    //  char *exid = flon_execute_s(""
+    //    "{ "
+    //      "action: launch, "
+    //      "tree: [ noop, {}, [] ]"
+    //    " }"
+    //  );
+    //  expect(exid != NULL);
+    //}
   }
 }
 
