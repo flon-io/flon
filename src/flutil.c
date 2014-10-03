@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/flutil
+
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
@@ -231,13 +233,15 @@ char *flu_freadall(FILE *in)
   if (in == NULL) return NULL;
 
   flu_sbuffer *b = flu_sbuffer_malloc();
-  char rb[1024];
+  char rb[4096];
 
   while (1)
   {
-    size_t s = fread(rb, 1024, 1, in);
+    size_t s = fread(rb, sizeof(char), 4096, in);
 
-    if (s == 0)
+    if (s > 0) flu_sbputs_n(b, rb, s);
+
+    if (s < 4096)
     {
       if (feof(in) == 1) break;
 
@@ -245,8 +249,6 @@ char *flu_freadall(FILE *in)
       flu_sbuffer_free(b);
       return NULL;
     }
-
-    flu_sbputs(b, rb);
   }
 
   return flu_sbuffer_to_string(b);

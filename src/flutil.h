@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/flutil
+
 // flutil.h
 
 #ifndef FLON_FLUTIL_H

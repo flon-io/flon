@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/djan
+
 #ifndef DJAN_H
 #define DJAN_H
 
@@ -36,59 +38,67 @@
 // 'f' false
 // '0' null or '\0'
 
-typedef struct dja_value {
+typedef struct fdja_value {
   char *key; // when set, the value is an entry...
   char type; // or short type; ?
   char *source;
   size_t soff;
   size_t slen; // if slen == 0, the source string is "owned" bv the value
-  struct dja_value *sibling;
-  struct dja_value *child;
-} dja_value;
+  struct fdja_value *sibling;
+  struct fdja_value *child;
+} fdja_value;
 
-dja_value *dja_parse(char *input);
-dja_value *dja_parse_fragment(char *input, size_t offset, size_t length);
+fdja_value *fdja_parse(char *input);
+//fdja_value *fdja_parse_fragment(char *input, size_t offset, size_t length);
 
-dja_value *dja_parse_radial(char *input);
+#define fdja_v(input) fdja_parse(input)
 
-char *dja_dump(dja_value *v);
-char *dja_to_json(dja_value *v);
-char *dja_to_djan(dja_value *v);
-char *dja_to_radial(dja_value *v);
+fdja_value *fdja_parse_radial(char *input);
+
+fdja_value *fdja_parse_obj(char *input);
+fdja_value *fdja_parse_obj_f(const char *path);
+
+char *fdja_to_json(fdja_value *v);
+char *fdja_to_djan(fdja_value *v);
+//char *fdja_to_radial(fdja_value *v);
+
+//int fdja_to_json_f(fdja_value *v, const char *path);
 
 /*
- * Frees the dja_value resources. If the dja_value has children, they
+ * Frees the fdja_value resources. If the fdja_value has children, they
  * will be freed as well.
  */
-void dja_value_free(dja_value *v);
+void fdja_value_free(fdja_value *v);
 
 /*
- * Returns a copy of the string representation of the dja_value.
+ * Returns a copy of the string representation of the fdja_value.
  */
-char *dja_string(dja_value *v);
+char *fdja_string(fdja_value *v);
 
 /*
- * Returns the string value behind the dja_value. For a string dja_value,
+ * Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.
  */
-char *dja_to_string(dja_value *v);
+char *fdja_to_string(fdja_value *v);
 
-/*
- * Returns a string representation of the value v.
- */
-char *dja_value_to_string(dja_value *v);
+long long fdja_to_int(fdja_value *v);
+long double fdja_to_double(fdja_value *v);
 
-int dja_to_int(dja_value *v);
-double dja_to_double(dja_value *v);
+size_t fdja_size(fdja_value *v);
 
-size_t dja_size(dja_value *v);
-dja_value *dja_value_at(dja_value *v, long n);
-dja_value *dja_lookup(dja_value *v, const char *path);
-char *dja_lookup_string(dja_value *v, const char *path);
+fdja_value *fdja_value_at(fdja_value *v, long n);
 
-int dja_push(dja_value *array, dja_value *v);
-int dja_set(dja_value *object, const char *key, dja_value *v);
+fdja_value *fdja_lookup(fdja_value *v, const char *path);
+char *fdja_lookup_string(fdja_value *v, const char *path);
+
+int fdja_push(fdja_value *array, fdja_value *v);
+int fdja_set(fdja_value *object, const char *key, fdja_value *v);
+
+int fdja_splice(fdja_value *array, size_t start, size_t count, ...);
+
+//int fdja_pset(fdja_value *start, const char *path, fdja_value *v);
+  // pset(v, "cars.-1", v1) to push in cars array
 
 #endif // DJAN_H
 
