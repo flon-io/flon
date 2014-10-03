@@ -12,7 +12,7 @@ context "common"
 {
   before each
   {
-    flon_configure_j(fdja_parse_obj(""
+    flon_configure_j(fdja_o(""
       "invoker: {\n"
       "  max_processes: 2\n"
       "  xyz: nada\n"
