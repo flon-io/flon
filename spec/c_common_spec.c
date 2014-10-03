@@ -12,12 +12,12 @@ context "common"
 {
   before each
   {
-    flon_configure_j(fdja_parse_obj(rdz_strdup(""
+    flon_configure_j(fdja_parse_obj(""
       "invoker: {\n"
       "  max_processes: 2\n"
       "  xyz: nada\n"
       "}\n"
-    )));
+    ));
   }
 
   describe "flon_conf()"

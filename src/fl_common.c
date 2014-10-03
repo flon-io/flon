@@ -37,10 +37,6 @@ void flon_configure_j(fdja_value *obj)
   if (flon_configuration) fdja_value_free(flon_configuration);
 
   flon_configuration = obj;
-
-  flon_configuration->slen = 0;
-    // to make sure the string behind the conf is freed as well
-    // if this conf gets freed
 }
 
 fdja_value *flon_conf(const char *key)
