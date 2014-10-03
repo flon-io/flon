@@ -90,7 +90,11 @@ size_t fdja_size(fdja_value *v);
 fdja_value *fdja_value_at(fdja_value *v, long n);
 
 fdja_value *fdja_lookup(fdja_value *v, const char *path);
-char *fdja_lookup_string(fdja_value *v, const char *path);
+
+char *fdja_lookup_string(fdja_value *v, const char *path, char *def);
+long long fdja_lookup_int(fdja_value *v, const char *path, long long def);
+int fdja_lookup_boolean(fdja_value *v, const char *path, int def);
+int fdja_lookup_bool(fdja_value *v, const char *path, int def);
 
 int fdja_push(fdja_value *array, fdja_value *v);
 int fdja_set(fdja_value *object, const char *key, fdja_value *v);

@@ -33,6 +33,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <strings.h>
 
 #include "aabro.h"
 #include "flutil.h"
@@ -665,7 +666,7 @@ long long fdja_to_int(fdja_value *v)
   if (v->type == 't') return 1;
   if (v->type == 'f') return 0;
   if (v->type != 'n') return -1;
-  return atoi(v->source + v->soff);
+  return atoll(v->source + v->soff);
 }
 
 long double fdja_to_double(fdja_value *v)
@@ -749,11 +750,42 @@ fdja_value *fdja_lookup(fdja_value *v, const char *path)
   return vv;
 }
 
-char *fdja_lookup_string(fdja_value *v, const char *path)
+char *fdja_lookup_string(fdja_value *v, const char *path, char *def)
 {
   fdja_value *vv = fdja_lookup(v, path);
 
-  return vv ? fdja_to_string(vv) : NULL;
+  return vv ? fdja_to_string(vv) : def;
+}
+
+long long fdja_lookup_int(fdja_value *v, const char *path, long long def)
+{
+  fdja_value *vv = fdja_lookup(v, path);
+
+  return vv ? fdja_to_int(vv) : def;
+}
+
+int fdja_lookup_boolean(fdja_value *v, const char *path, int def)
+{
+  fdja_value *vv = fdja_lookup(v, path);
+
+  if (vv == NULL) return def;
+  if (vv->type == 't') return 1;
+  if (vv->type == 'f') return 0;
+  return def;
+}
+
+int fdja_lookup_bool(fdja_value *v, const char *path, int def)
+{
+  fdja_value *vv = fdja_lookup(v, path);
+
+  if (vv == NULL) return def;
+
+  char *s = vv->source + vv->soff;
+  if (strncasecmp(s, "true", vv->slen) == 0) return 1;
+  if (strncasecmp(s, "yes", vv->slen) == 0) return 1;
+  if (strncasecmp(s, "false", vv->slen) == 0) return 0;
+  if (strncasecmp(s, "no", vv->slen) == 0) return 0;
+  return def;
 }
 
 int fdja_push(fdja_value *array, fdja_value *v)
