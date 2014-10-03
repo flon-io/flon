@@ -23,23 +23,13 @@
 // Made in Japan.
 //
 
-#define _POSIX_C_SOURCE 200809L
+// for specs
 
-//#include <stdio.h>
+#ifndef FL_COMMON_H
+#define FL_COMMON_H
 
-#include "djan.h"
-#include "fl_invoker.h"
+//char *flon_configure(char *path);
+//char *flon_configure_s(char *s);
 
-
-//char *flon_execute(fdja_value *v)
-//{
-//  // load execution
-//  // apply message
-//}
-//char *flon_execute_s(char *s)
-//{
-//  fdja_value *v = fdja_parse(s);
-//
-//  return v ? flon_execute(v) : NULL;
-//}
+#endif // FL_COMMON_H
 

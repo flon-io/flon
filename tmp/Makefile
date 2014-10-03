@@ -33,17 +33,23 @@ clean:
 	rm -f *.c
 	#rm -f s
 
-IDEPS=flutil.o aabro.o djan.o fl_invoker.o
-XDEPS=flutil.o aabro.o djan.o fl_executor.o
+DEPS=flutil.o aabro.o djan.o fl_common.o
+IDEPS=$(DEPS) fl_invoker.o
+XDEPS=$(DEPS) fl_executor.o
 
+cs.c: ../spec/c_*_spec.c
+	$(RODZO) ../spec/c_*_spec.c -o cs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
 xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 
+cs: $(DEPS)
 is: $(IDEPS)
 xs: $(XDEPS)
 
+specc: cs
+	time ./cs
 speci: is
 	time ./is
 specx: xs
@@ -55,6 +61,7 @@ specx: xs
 #	mv flon-executor ../bin
 
 spec:
+	$(MAKE) specc
 	$(MAKE) speci
 	$(MAKE) specx
 	#$(MAKE) specd
