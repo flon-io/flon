@@ -101,7 +101,7 @@ static void fdja_parser_init()
     fabr_n_rex("sqstring", "'(\\\\'|[^'])*'");
 
   fabr_parser *symbol =
-    fabr_n_rex("symbol", "[a-zA-Z_][a-zA-Z_0-9]*");
+    fabr_n_rex("symbol", "[^ \t\n\r:,\\[\\]\\{\\}#]+");
 
   fabr_parser *entry =
     fabr_n_seq(
@@ -161,32 +161,29 @@ static void fdja_parser_init()
 
   // radial
 
+  fabr_parser *word = fabr_n_rex("symbol", "[^ \t\n\r,\\[\\]\\{\\}#]+");
   fabr_parser *spaces = fabr_rex("[ \t]*");
 
   fabr_parser *rad_i = fabr_name("rad_i", spaces);
-  fabr_parser *rad_n = fabr_name("rad_n", symbol);
-
-  fabr_parser *rad_a =
-    fabr_n_seq("rad_a", spaces, pure_value, fabr_n_r("", "?"));
+  fabr_parser *rad_n = fabr_name("rad_n", word);
 
   fabr_parser *rad_e =
     fabr_n_seq(
       "rad_e",
-      fabr_seq(spaces, fabr_rex(",?"), blanks, NULL),
-      fabr_n_alt("key", string, sqstring, symbol, NULL),
-      spaces,
-      fabr_string(":"),
-      fabr_n_seq("val", blanks, pure_value, NULL),
+      fabr_seq(
+        spaces, fabr_seq(fabr_rex(","), blanks, fabr_r("?")), NULL),
+      fabr_seq(
+        fabr_n_alt("key", string, sqstring, symbol, NULL),
+        spaces, fabr_str(":"), blanks,
+        NULL), fabr_q("?"),
+      fabr_name("val", pure_value),
       NULL);
-
-  fabr_parser *rad_as =
-    fabr_n_rep("rad_as", rad_e, 0, -1);
 
   fabr_parser *rad_eol =
     fabr_rex("[ \t]*(#[^\n\r]*)?");
 
   fabr_parser *rad_l =
-    fabr_n_seq("rad_l", rad_i, rad_n, rad_a, rad_as, NULL);
+    fabr_n_seq("rad_l", rad_i, rad_n, rad_e, fabr_q("*"), NULL);
 
   fabr_parser *rad_line =
     fabr_seq(rad_l, fabr_q("?"), rad_eol, NULL);
@@ -284,7 +281,7 @@ static fdja_value *fdja_extract_entries(char *input, fabr_tree *t)
 
 static fdja_value *fdja_extract_values(char *input, fabr_tree *t)
 {
-  //printf("%s\n", fabr_tree_to_string(t));
+  //printf("%s\n", fabr_tree_to_string(t, input));
 
   flu_list *ts = fabr_tree_list_named(t, "value");
 
@@ -339,11 +336,12 @@ static fdja_value *fdja_extract_value(char *input, fabr_tree *t)
 
   if (t->result != 1) return NULL;
 
-  t = fabr_t_child(t, 1);
+  fabr_tree *tt = fabr_t_child(t, 1);
+  if (tt == NULL) tt = t->child;
 
-  //printf("fdja_extract_value() child1 %s\n", fabr_tree_to_str(t, input));
+  //printf("fdja_extract_value() child1 %s\n", fabr_tree_to_str(tt, input));
 
-  for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
+  for (fabr_tree *c = tt->child; c != NULL; c = c->sibling)
   {
     if (c->result == 1) return fdja_extract_v(input, c);
   }
@@ -422,8 +420,6 @@ static void fdja_parse_radl(char *input, fabr_tree *radl, flu_list *values)
 
   fabr_tree *radi = fabr_tree_lookup(radl, "rad_i");
   fabr_tree *radn = fabr_tree_lookup(radl, "rad_n");
-  fabr_tree *rada = fabr_tree_lookup(radl, "rad_a");
-  fabr_tree *radas = fabr_tree_lookup(radl, "rad_as");
 
   size_t i = radi->length; // indentation
 
@@ -433,26 +429,20 @@ static void fdja_parse_radl(char *input, fabr_tree *radl, flu_list *values)
   fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0);
   fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0);
 
-  // single "_a" attribute
-  if (rada != NULL)
-  {
-    fdja_value *va = fdja_extract_value(input, rada);
-    if (va != NULL) va->key = strdup("_a");
-    vatts->child = va;
-  }
-
   // attributes
   fdja_value **anext = &vatts->child;
   if (vatts->child != NULL) anext = &vatts->child->sibling;
-  flu_list *as = fabr_tree_list_named(radas, "rad_e");
+  flu_list *as = fabr_tree_list_named(radl, "rad_e");
+  size_t j = 0;
   for (flu_node *n = as->first; n != NULL; n = n->next)
   {
-    fabr_tree *ak = fabr_t_child(n->item, 1);
-    fabr_tree *av = fabr_t_child(n->item, 4);
+    fabr_tree *ak = fabr_tree_lookup(n->item, "key");
+    fabr_tree *av = fabr_tree_lookup(n->item, "val");
     fdja_value *va = fdja_extract_value(input, av);
-    va->key = fabr_tree_string(input, ak);
+    va->key = ak ? fabr_tree_string(input, ak) : flu_sprintf("_%zu", j);
     *anext = va;
     anext = &va->sibling;
+    ++j;
   }
   flu_list_free(as);
 
