@@ -10,9 +10,20 @@
 
 context "flon-invoker"
 {
-  describe "flon_invoke_x()"
+  describe "flon_invoke_j()"
   {
-    it "flips burgers"
+    it "invokes"
+    {
+      flon_invoke_j(fdja_o(""
+        "line:"
+          "[ stamp, {}, [] ]\n"
+        "task: {\n"
+          "hello: world\n"
+        "}\n"
+      ));
+
+      pending("2fork of stamp/invoke.sh");
+    }
   }
 }
 

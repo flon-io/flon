@@ -31,15 +31,8 @@
 #include "fl_invoker.h"
 
 
-//char *flon_execute(fdja_value *v)
-//{
-//  // load execution
-//  // apply message
-//}
-//char *flon_execute_s(char *s)
-//{
-//  fdja_value *v = fdja_parse(s);
-//
-//  return v ? flon_execute(v) : NULL;
-//}
+void flon_invoke_j(fdja_value *j)
+{
+  // TODO
+}
 

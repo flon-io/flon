@@ -28,7 +28,10 @@
 #ifndef FL_INVOKER_H
 #define FL_INVOKER_H
 
-//char *flon_execute_s(char *s);
+#include "djan.h"
+
+
+void flon_invoke_j(fdja_value *j);
 
 #endif // FL_INVOKER_H
 
