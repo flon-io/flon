@@ -28,8 +28,16 @@
 #ifndef FL_COMMON_H
 #define FL_COMMON_H
 
-//char *flon_configure(char *path);
-//char *flon_configure_s(char *s);
+#include "djan.h"
+
+//void flon_configure(char *path);
+//void flon_configure_s(char *s);
+void flon_configure_j(fdja_value *obj);
+
+fdja_value *flon_conf(const char *key);
+int flon_conf_boolean(const char *key, int def);
+long long flon_conf_int(const char *key, long long def);
+char *flon_conf_string(const char *key, char *def);
 
 #endif // FL_COMMON_H
 

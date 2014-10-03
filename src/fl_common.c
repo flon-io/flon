@@ -30,16 +30,36 @@
 #include "djan.h"
 #include "fl_common.h"
 
+static fdja_value *flon_configuration = NULL;
 
-//char *flon_execute(fdja_value *v)
-//{
-//  // load execution
-//  // apply message
-//}
-//char *flon_execute_s(char *s)
-//{
-//  fdja_value *v = fdja_parse(s);
-//
-//  return v ? flon_execute(v) : NULL;
-//}
+void flon_configure_j(fdja_value *obj)
+{
+  if (flon_configuration) fdja_value_free(flon_configuration);
+
+  flon_configuration = obj;
+
+  flon_configuration->slen = 0;
+    // to make sure the string behind the conf is freed as well
+    // if this conf gets freed
+}
+
+fdja_value *flon_conf(const char *key)
+{
+  return fdja_lookup(flon_configuration, key);
+}
+
+int flon_conf_boolean(const char *key, int def)
+{
+  return fdja_lookup_bool(flon_configuration, key, def);
+}
+
+long long flon_conf_int(const char *key, long long def)
+{
+  return fdja_lookup_int(flon_configuration, key, def);
+}
+
+char *flon_conf_string(const char *key, char *def)
+{
+  return fdja_lookup_string(flon_configuration, key, def);
+}
 

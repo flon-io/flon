@@ -10,9 +10,27 @@
 
 context "common"
 {
-  describe "flon_configure()"
+  before each
   {
-    it "flips burgers"
+    flon_configure_j(fdja_parse_obj(rdz_strdup(""
+      "invoker: {\n"
+      "  max_processes: 2\n"
+      "  xyz: nada\n"
+      "}\n"
+    )));
+  }
+
+  describe "flon_conf()"
+  {
+    it "returns a fdja_value"
+    {
+      expect(flon_conf("invoker.max_processes")->type == 'n');
+    }
+
+    it "returns NULL when not found"
+    {
+      expect(flon_conf("nada") == NULL);
+    }
   }
 }
 

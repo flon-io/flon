@@ -48,12 +48,22 @@ cs: $(DEPS)
 is: $(IDEPS)
 xs: $(XDEPS)
 
-specc: cs
+sc: cs
 	time ./cs
-speci: is
+si: is
 	time ./is
-specx: xs
+sx: xs
 	time ./xs
+
+vsc: cs
+	valgrind --leak-check=full -v ./cs
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
+vsi: is
+	valgrind --leak-check=full -v ./is
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
+vsx: xs
+	valgrind --leak-check=full -v ./xs
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 
 #flon-executor: $(XDEPS)
 #
@@ -61,11 +71,11 @@ specx: xs
 #	mv flon-executor ../bin
 
 spec:
-	$(MAKE) specc
-	$(MAKE) speci
-	$(MAKE) specx
+	$(MAKE) sc
+	$(MAKE) si
+	$(MAKE) sx
 	#$(MAKE) specd
 	#$(MAKE) specl
 
-.PHONY: spec specx clean
+.PHONY: clean
 
