@@ -17,6 +17,8 @@ context "common"
       "  max_processes: 2\n"
       "  xyz: nada\n"
       "}\n"
+      "executor: {\n"
+      "}\n"
     ));
   }
 
