@@ -31,7 +31,7 @@
 #include "fl_executor.h"
 
 
-char *flon_execute(dja_value *v)
+char *flon_execute(fdja_value *v)
 {
   // load execution
   // apply message
@@ -39,7 +39,7 @@ char *flon_execute(dja_value *v)
 
 char *flon_execute_s(char *s)
 {
-  dja_value *v = dja_parse(s);
+  fdja_value *v = fdja_parse(s);
 
   return v ? flon_execute(v) : NULL;
 }
