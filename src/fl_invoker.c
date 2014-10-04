@@ -25,14 +25,42 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdio.h>
+#include <stdio.h>
+#include <unistd.h>
 
+#include "flutil.h"
 #include "djan.h"
 #include "fl_invoker.h"
 
 
 void flon_invoke_j(fdja_value *j)
 {
-  // TODO
+  fdja_value *invocation = fdja_lookup(j, "invocation");
+  fdja_value *task = fdja_lookup(j, "task");
+
+  // TODO invocation == NULL case
+
+  char *invoked = fdja_to_string(invocation->child);
+
+  char *path = flu_sprintf(
+    "%s/var/invokers/%s",
+    flon_conf_string("invoker.dir", "."), invoked);
+
+  printf("invoker path: %s\n", path);
+
+  fdja_value *inv_conf = fdja_parse_obj_f(flu_sprintf("%s/flon.json", path));
+
+  // TODO conf == NULL case
+
+  printf("inv_conf: %s\n", fdja_to_json(inv_conf));
+
+  chdir(path);
+  //freopen("../../out.json", "w", stdout);
+
+  FILE *p = popen(fdja_lookup_string(inv_conf, "invoke", "cat"), "w");
+  fputs(fdja_to_json(task), p);
+  fclose(p);
+
+  //exit(0);
 }
 
