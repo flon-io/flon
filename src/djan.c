@@ -518,9 +518,9 @@ fdja_value *fdja_parse_obj_f(const char *path)
 //
 // outputting
 
-static void fdja_to_j(FILE *f, fdja_value *v)
+static void fdja_to_j(FILE *f, fdja_value *v, size_t depth)
 {
-  if (v->key != NULL)
+  if (v->key != NULL && depth > 0)
   {
     fprintf(f, "\"%s\":", v->key);
   }
@@ -542,7 +542,7 @@ static void fdja_to_j(FILE *f, fdja_value *v)
     fputc('[', f);
     for (fdja_value *c = v->child; c != NULL; c = c->sibling)
     {
-      fdja_to_j(f, c);
+      fdja_to_j(f, c, depth + 1);
       if (c->sibling != NULL) fputc(',', f);
     }
     fputc(']', f);
@@ -552,7 +552,7 @@ static void fdja_to_j(FILE *f, fdja_value *v)
     fputc('{', f);
     for (fdja_value *c = v->child; c != NULL; c = c->sibling)
     {
-      fdja_to_j(f, c);
+      fdja_to_j(f, c, depth + 1);
       if (c->sibling != NULL) fputc(',', f);
     }
     fputc('}', f);
@@ -564,7 +564,7 @@ static void fdja_to_j(FILE *f, fdja_value *v)
 char *fdja_to_json(fdja_value *v)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
-  fdja_to_j(b->stream, v);
+  fdja_to_j(b->stream, v, 0);
 
   return flu_sbuffer_to_string(b);
 }
@@ -582,9 +582,9 @@ static void fdja_s_to_d(FILE *f, char *s, int do_free)
   if (do_free) free(s);
 }
 
-static void fdja_to_d(FILE *f, fdja_value *v)
+static void fdja_to_d(FILE *f, fdja_value *v, size_t depth)
 {
-  if (v->key) { fdja_s_to_d(f, v->key, 0); fputs(": ", f); }
+  if (v->key && depth > 0) { fdja_s_to_d(f, v->key, 0); fputs(": ", f); }
 
   if (v->type == 'q' || v->type == 's')
   {
@@ -599,7 +599,7 @@ static void fdja_to_d(FILE *f, fdja_value *v)
     fputc('[', f);
     for (fdja_value *c = v->child; c != NULL; c = c->sibling)
     {
-      fputc(' ', f); fdja_to_d(f, c);
+      fputc(' ', f); fdja_to_d(f, c, depth + 1);
       if (c->sibling) fputc(',', f);
     }
     if (v->child) fputc(' ', f);
@@ -610,7 +610,7 @@ static void fdja_to_d(FILE *f, fdja_value *v)
     fputc('{', f);
     for (fdja_value *c = v->child; c != NULL; c = c->sibling)
     {
-      fputc(' ', f); fdja_to_d(f, c);
+      fputc(' ', f); fdja_to_d(f, c, depth + 1);
       if (c->sibling != NULL) fputc(',', f);
     }
     if (v->child) fputc(' ', f);
@@ -623,7 +623,7 @@ static void fdja_to_d(FILE *f, fdja_value *v)
 char *fdja_to_djan(fdja_value *v)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
-  fdja_to_d(b->stream, v);
+  fdja_to_d(b->stream, v, 0);
 
   return flu_sbuffer_to_string(b);
 }
