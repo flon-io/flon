@@ -1,5 +1,5 @@
 
-# flon-{listener|dispatcher|executor}
+# flon-{listener|dispatcher|executor|invoker}
 
 The processes that make up a flon execution point.
 
