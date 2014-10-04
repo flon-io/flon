@@ -26,10 +26,13 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #include "flutil.h"
 #include "djan.h"
+#include "fl_common.h"
 #include "fl_invoker.h"
 
 
@@ -54,13 +57,42 @@ void flon_invoke_j(fdja_value *j)
 
   printf("inv_conf: %s\n", fdja_to_json(inv_conf));
 
-  chdir(path);
-  //freopen("../../out.json", "w", stdout);
+  int pds[2];
 
-  FILE *p = popen(fdja_lookup_string(inv_conf, "invoke", "cat"), "w");
-  fputs(fdja_to_json(task), p);
-  fclose(p);
+  int r = pipe(pds);
 
-  //exit(0);
+  // TODO case where r != 0 (errno is set)
+
+  pid_t i = fork();
+
+  // TODO: double fork?
+  // TODO: single fork and setsid?
+
+  if (i < 0) // failure
+  {
+    // TODO
+  }
+  else if (i == 0) // child
+  {
+    close(pds[1]);
+    dup2(pds[0], STDIN_FILENO);
+    //close(pds[0]);
+    freopen("out.json", "w", stdout);
+    chdir(path);
+    execl(
+      "/bin/sh", "",
+      "-c", fdja_lookup_string(inv_conf, "invoke", "cat"),
+      NULL);
+    _exit(127);
+  }
+  else // parent
+  {
+    close(pds[0]);
+    char *s = fdja_to_json(task);
+    write(pds[1], s, strlen(s));
+    close(pds[1]);
+    free(s);
+    // over, no wait
+  }
 }
 
