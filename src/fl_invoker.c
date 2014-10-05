@@ -45,17 +45,20 @@ void flon_invoke_j(fdja_value *j)
 
   char *invoked = fdja_to_string(invocation->child);
 
-  char *path = flu_sprintf(
-    "%s/var/invokers/%s",
-    flon_conf_string("invoker.dir", "."), invoked);
+  char *d = flon_conf_string("invoker.dir", ".");
+  char *dir = realpath(d, NULL);
 
+  char *path = flu_sprintf("%s/usr/local/invokers/%s", dir, invoked);
+
+  printf("invoker dir: %s\n", dir);
   printf("invoker path: %s\n", path);
 
-  fdja_value *inv_conf = fdja_parse_obj_f(flu_sprintf("%s/flon.json", path));
+  char *inv_conf_path = flu_sprintf("%s/flon.json", path);
+  fdja_value *inv_conf = fdja_parse_obj_f(inv_conf_path);
 
   // TODO conf == NULL case
 
-  printf("inv_conf: %s\n", fdja_to_json(inv_conf));
+  //printf("inv_conf: %s\n", fdja_to_json(inv_conf));
 
   int pds[2];
 
@@ -65,8 +68,7 @@ void flon_invoke_j(fdja_value *j)
 
   pid_t i = fork();
 
-  // TODO: double fork?
-  // TODO: single fork and setsid?
+  // TODO:  setsid?
 
   if (i < 0) // failure
   {
@@ -74,25 +76,32 @@ void flon_invoke_j(fdja_value *j)
   }
   else if (i == 0) // child
   {
+    char *out = flu_sprintf("%s/var/spool/in/%s.json", dir, "out");
+    char *err = flu_sprintf("%s/var/log/invocations/%s.txt", dir, "out");
+
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);
     //close(pds[0]);
-    freopen("out.json", "w", stdout);
     chdir(path);
+    freopen(out, "w", stdout);
+    freopen(err, "w", stderr);
     execl(
       "/bin/sh", "",
       "-c", fdja_lookup_string(inv_conf, "invoke", "cat"),
       NULL);
-    _exit(127);
+    _exit(127); // popen's lead
   }
   else // parent
   {
     close(pds[0]);
-    char *s = fdja_to_json(task);
-    write(pds[1], s, strlen(s));
-    close(pds[1]);
-    free(s);
+
+    FILE *f = fdopen(pds[1], "w");
+    fputs(fdja_to_json(task), f);
+    fclose(f);
+
     // over, no wait
   }
+
+  // no resource cleanup, we exit.
 }
 
