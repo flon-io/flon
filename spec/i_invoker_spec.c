@@ -25,9 +25,9 @@ context "flon-invoker"
     it "invokes"
     {
       flon_invoke_j(fdja_o(""
-        "invocation:"
-          "[ stamp, {}, [] ]\n"
-        "task: {\n"
+        "invocation: [ stamp, {}, [] ]\n"
+        "payload: {\n"
+          "_invocation_id: 123456\n"
           "hello: world\n"
         "}\n"
       ));

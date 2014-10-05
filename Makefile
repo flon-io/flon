@@ -12,5 +12,9 @@ upgrade:
 
 cs: clean spec
 
-.PHONY: spec clean upgrade cs
+ctst:
+	rm -f tst/var/log/invocations/*.txt
+	rm -f tst/var/spool/in/*.json
+
+.PHONY: spec clean upgrade cs ctst
 

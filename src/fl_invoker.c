@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
 
@@ -39,9 +40,11 @@
 void flon_invoke_j(fdja_value *j)
 {
   fdja_value *invocation = fdja_lookup(j, "invocation");
-  fdja_value *task = fdja_lookup(j, "task");
+  fdja_value *payload = fdja_lookup(j, "payload");
 
   // TODO invocation == NULL case
+
+  char *invid = fdja_lookup_string(payload, "_invocation_id", NULL);
 
   char *invoked = fdja_to_string(invocation->child);
 
@@ -76,8 +79,8 @@ void flon_invoke_j(fdja_value *j)
   }
   else if (i == 0) // child
   {
-    char *out = flu_sprintf("%s/var/spool/in/%s.json", dir, "out");
-    char *err = flu_sprintf("%s/var/log/invocations/%s.txt", dir, "out");
+    char *out = flu_sprintf("%s/var/spool/in/inv_%s_ret.json", dir, invid);
+    char *err = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
 
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);
@@ -89,14 +92,14 @@ void flon_invoke_j(fdja_value *j)
       "/bin/sh", "",
       "-c", fdja_lookup_string(inv_conf, "invoke", "cat"),
       NULL);
-    _exit(127); // popen's lead
+    //_exit(127); // popen's lead
   }
   else // parent
   {
     close(pds[0]);
 
     FILE *f = fdopen(pds[1], "w");
-    fputs(fdja_to_json(task), f);
+    fputs(fdja_to_json(payload), f);
     fclose(f);
 
     // over, no wait
