@@ -71,8 +71,6 @@ void flon_invoke_j(fdja_value *j)
 
   pid_t i = fork();
 
-  // TODO:  setsid?
-
   if (i < 0) // failure
   {
     // TODO
@@ -85,9 +83,18 @@ void flon_invoke_j(fdja_value *j)
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);
     //close(pds[0]);
+
     chdir(path);
     freopen(out, "w", stdout);
     freopen(err, "w", stderr);
+
+    i = setsid();
+    //
+    if (i == -1)
+    {
+      // TODO case where i == -1
+    }
+
     execl(
       "/bin/sh", "",
       "-c", fdja_lookup_string(inv_conf, "invoke", "cat"),
