@@ -33,7 +33,7 @@ clean:
 	rm -f *.c
 	#rm -f s
 
-DEPS=flutil.o aabro.o djan.o fl_common.o
+DEPS=flutil.o gajeta.o aabro.o djan.o fl_common.o
 IDEPS=$(DEPS) fl_invoker.o
 XDEPS=$(DEPS) fl_executor.o
 

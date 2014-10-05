@@ -7,8 +7,8 @@
 # copy up-to-date versions of dep libs into src/
 #
 upgrade:
+	cp -v ../gajeta/src/*.[ch] src/
 	cp -v ../djan/src/*.[ch] src/
-	#cp -v ../shervin/src/*.[ch] src/
 
 cs: clean spec
 
