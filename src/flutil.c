@@ -216,9 +216,15 @@ char *flu_sprintf(const char *format, ...)
 //
 // readall
 
-char *flu_readall(const char *path)
+char *flu_readall(const char *path, ...)
 {
-  FILE *in = fopen(path, "r");
+  va_list ap; va_start(ap, path);
+  char *spath = flu_svprintf(path, ap);
+  va_end(ap);
+
+  FILE *in = fopen(spath, "r");
+
+  free(spath);
 
   if (in == NULL) return NULL;
 
