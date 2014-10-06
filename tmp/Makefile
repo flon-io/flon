@@ -59,7 +59,8 @@ vsc: cs
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
 vsi: is
-	valgrind --leak-check=full -v ./is
+	valgrind ./is
+	#valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
 vsx: xs
 	valgrind --leak-check=full -v ./xs
