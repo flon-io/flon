@@ -38,7 +38,7 @@ fdja_value *flon_conf(const char *key);
 int flon_conf_boolean(const char *key, int def);
 long long flon_conf_int(const char *key, long long def);
 char *flon_conf_string(const char *key, char *def);
-//char *flon_conf_path(const char *key, char *def);
+char *flon_conf_path(const char *key, char *def);
 
 char *flon_generate_id();
 

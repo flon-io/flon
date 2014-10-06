@@ -62,9 +62,20 @@ char *flon_conf_string(const char *key, char *def)
   return fdja_lookup_string(flon_configuration, key, def);
 }
 
-//char *flon_conf_path(const char *key, char *def)
-//{
-//}
+char *flon_conf_path(const char *key, char *def)
+{
+  char *v = flon_conf_string(key, NULL);
+
+  if (v == NULL) { if (def == NULL) return NULL; v = def; }
+  if (v[0] == '/') return v;
+
+  char *c = get_current_dir_name();
+  char *r = flu_sprintf("%s/%s", c, v);
+  free(c);
+  if (v != def) free(v);
+
+  return r;
+}
 
 char *flon_generate_id()
 {

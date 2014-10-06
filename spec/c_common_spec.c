@@ -23,6 +23,8 @@ context "common"
       "  xyz: nada\n"
       "}\n"
       "executor: {\n"
+      "  p0: ../tst\n"
+      "  p1: /var\n"
       "}\n"
     ));
   }
@@ -43,6 +45,14 @@ context "common"
   describe "flon_conf_path()"
   {
     it "returns an absolute path"
+    {
+      expect(flon_conf_path("executor.p9", "x") $==f "/tmp/x");
+      expect(flon_conf_path("executor.p9", "/x") === "/x");
+      expect(flon_conf_path("executor.p9", NULL) === NULL);
+
+      expect(flon_conf_path("executor.p0", NULL) $==f "/tmp/../tst");
+      expect(flon_conf_path("executor.p1", NULL) ===f "/var");
+    }
   }
 
   describe "flon_generate_id()"
@@ -51,7 +61,7 @@ context "common"
     {
       char *id = flon_generate_id();
 
-      printf("id: >%s<\n", id);
+      //printf("id: >%s<\n", id);
       expect(id != NULL);
       expect(id ^== "u96_g7_");
 

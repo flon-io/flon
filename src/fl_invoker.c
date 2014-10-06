@@ -40,8 +40,7 @@
 
 void flon_invoke_j(fdja_value *j)
 {
-  char *d = flon_conf_string("invoker.dir", ".");
-  char *dir = realpath(d, NULL);
+  char *dir = flon_conf_path("invoker.dir", ".");
 
   //fgaj_d("invokers at %s", dir);
 
