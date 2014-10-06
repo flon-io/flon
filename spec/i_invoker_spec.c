@@ -25,21 +25,26 @@ context "flon-invoker"
   {
     it "invokes"
     {
-      flon_invoke_j(fdja_o(""
+      char *invid = flon_generate_id();
+
+      fdja_value *j = fdja_o(""
         "invocation: [ stamp, {}, [] ]\n"
         "payload: {\n"
-          "_invocation_id: 123456\n"
           "hello: world\n"
         "}\n"
-      ));
+      );
+      fdja_pset(j, "payload._invocation_id", fdja_v(invid));
+
+      //puts(fdja_to_json(j));
+      flon_invoke_j(j);
 
       sleep(1);
 
-      char *s = flu_readall("../tst/var/spool/in/inv_123456_ret.json");
+      char *s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", invid);
       //printf(">>>\n%s<<<\n", s);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/invocations/123456.txt");
+      s = flu_readall("../tst/var/log/invocations/%s.txt", invid);
       //printf(">>>\n%s<<<\n", s);
       expect(strstr(s, " stamp.rb over.") != NULL);
     }

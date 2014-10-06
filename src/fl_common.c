@@ -27,6 +27,7 @@
 
 #include <time.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 
 #include "flutil.h"
@@ -91,8 +92,8 @@ char *flon_generate_id()
   char *g = flon_conf_string("unit.group_id", "g0");
   char *r = flu_sprintf("%s_%s_%s", u, g, i);
 
-  free(u);
-  free(g);
+  if (strcmp(u, "u0")) free(u);
+  if (strcmp(g, "g0")) free(g);
   free(i);
 
   return r;

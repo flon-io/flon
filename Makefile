@@ -9,6 +9,7 @@
 upgrade:
 	cp -v ../gajeta/src/*.[ch] src/
 	cp -v ../djan/src/*.[ch] src/
+	cp -v ../flutil/src/*.[ch] src/
 
 cs: clean spec
 
