@@ -825,9 +825,16 @@ int fdja_set(fdja_value *object, const char *key, fdja_value *v)
   return 1;
 }
 
-int fdja_splice(fdja_value *array, size_t start, size_t count, ...)
+int fdja_splice(fdja_value *array, long long start, size_t count, ...)
 {
   if (array->type != 'a') return 0;
+
+  if (start < 0)
+  {
+    size_t len = fdja_size(array);
+    start = len + start;
+    if (start < 0) return 0;
+  }
 
   // determine start and end of removal
 
@@ -879,5 +886,33 @@ int fdja_splice(fdja_value *array, size_t start, size_t count, ...)
   *lstart = end;
 
   return 1;
+}
+
+int fdja_pset(fdja_value *start, const char *path, fdja_value *v)
+{
+  char *lastdot = strrchr(path, '.');
+
+  if (lastdot == NULL) return fdja_set(start, path, v);
+
+  char *key = lastdot + 1;
+  char *pat = strndup(path, lastdot - path);
+
+  fdja_value *target = fdja_lookup(start, pat);
+  free(pat);
+
+  if (target == NULL) return 0;
+
+  if (target->type == 'o')
+  {
+    return fdja_set(target, key, v);
+  }
+
+  if (target->type == 'a')
+  {
+    if (strcmp(key, "]") == 0) return fdja_push(target, v);
+    return fdja_splice(target, strtol(key, NULL, 10), 1, v, NULL);
+  }
+
+  return 0;
 }
 
