@@ -34,37 +34,37 @@ clean:
 	#rm -f s
 
 DEPS=flutil.o gajeta.o aabro.o djan.o fl_common.o
-IDEPS=$(DEPS) fl_invoker.o
 XDEPS=$(DEPS) fl_executor.o
+IDEPS=$(DEPS) fl_invoker.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
-is.c: ../spec/i_*_spec.c
-	$(RODZO) ../spec/i_*_spec.c -o is.c
 xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
+is.c: ../spec/i_*_spec.c
+	$(RODZO) ../spec/i_*_spec.c -o is.c
 
 cs: $(DEPS)
-is: $(IDEPS)
 xs: $(XDEPS)
+is: $(IDEPS)
 
 sc: cs
 	time ./cs
-si: is
-	time ./is
 sx: xs
 	time ./xs
+si: is
+	time ./is
 
 vsc: cs
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
+vsx: xs
+	valgrind --leak-check=full -v ./xs
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 vsi: is
 	valgrind ./is
 	#valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
-vsx: xs
-	valgrind --leak-check=full -v ./xs
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 
 #flon-executor: $(XDEPS)
 #
@@ -73,10 +73,10 @@ vsx: xs
 
 spec:
 	$(MAKE) sc
-	$(MAKE) si
 	$(MAKE) sx
-	#$(MAKE) specd
-	#$(MAKE) specl
+	$(MAKE) si
+	#$(MAKE) sd
+	#$(MAKE) sl
 
 .PHONY: clean
 
