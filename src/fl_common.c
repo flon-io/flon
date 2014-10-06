@@ -25,8 +25,11 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include <sys/time.h>
 
+#include "flutil.h"
 #include "djan.h"
 #include "fl_common.h"
 
@@ -57,5 +60,30 @@ long long flon_conf_int(const char *key, long long def)
 char *flon_conf_string(const char *key, char *def)
 {
   return fdja_lookup_string(flon_configuration, key, def);
+}
+
+//char *flon_conf_path(const char *key, char *def)
+//{
+//}
+
+char *flon_generate_id()
+{
+  struct timeval tv;
+  struct tm *tm;
+  gettimeofday(&tv, NULL);
+  tm = gmtime(&tv.tv_sec);
+  char *i = calloc(29, sizeof(char));
+  strftime(i, 29, "%Y%m%d.%H%M%S.000000", tm);
+  snprintf(i + 16, 7, "%06ld", tv.tv_usec);
+
+  char *u = flon_conf_string("unit.id", "u0");
+  char *g = flon_conf_string("unit.group_id", "g0");
+  char *r = flu_sprintf("%s_%s_%s", u, g, i);
+
+  free(u);
+  free(g);
+  free(i);
+
+  return r;
 }
 

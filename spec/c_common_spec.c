@@ -13,6 +13,11 @@ context "common"
   before each
   {
     flon_configure_j(fdja_o(""
+      "unit: {\n"
+      "  id: u96\n"
+      "  group_id: g7\n"
+      "}\n"
+      "\n"
       "invoker: {\n"
       "  max_processes: 2\n"
       "  xyz: nada\n"
@@ -32,6 +37,25 @@ context "common"
     it "returns NULL when not found"
     {
       expect(flon_conf("nada") == NULL);
+    }
+  }
+
+  describe "flon_conf_path()"
+  {
+    it "returns an absolute path"
+  }
+
+  describe "flon_generate_id()"
+  {
+    it "returns an id"
+    {
+      char *id = flon_generate_id();
+
+      printf("id: >%s<\n", id);
+      expect(id != NULL);
+      expect(id ^== "u96_g7_");
+
+      free(id);
     }
   }
 }
