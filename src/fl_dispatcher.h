@@ -31,7 +31,7 @@
 #include "djan.h"
 
 
-void flon_dispatch_j(fdja_value *j);
+void flon_dispatch_j(char *path, fdja_value *j);
 
 #endif // FL_DISPATCHER_H
 

@@ -28,12 +28,29 @@
 #include <stdio.h>
 
 #include "djan.h"
+#include "gajeta.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
 
 
-void flon_dispatch_j(fdja_value *j)
+static void invoke(char *path, fdja_value *j, fdja_value *inv)
 {
-  // TODO
+}
+
+static void discard(char *path, fdja_value *j)
+{
+  fgaj_i("'ing %s", path);
+  // TODO move to var/spool/discarded/
+}
+
+void flon_dispatch_j(char *path, fdja_value *j)
+{
+  //printf("incoming: %s\n", fdja_to_json(j));
+
+  fdja_value *inv = fdja_lookup(j, "invocation");
+  //fdja_value *exe = fdja_lookup(j, "execution");
+
+  if (inv) invoke(path, j, inv);
+  else discard(path, j);
 }
 
