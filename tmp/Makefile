@@ -31,31 +31,40 @@ clean:
 	rm -f *.o
 	rm -f *.so
 	rm -f *.c
-	#rm -f s
+	rm -f [cdxi]s
 
 DEPS=flutil.o gajeta.o aabro.o djan.o fl_common.o
+DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o
 IDEPS=$(DEPS) fl_invoker.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
+ds.c: ../spec/d_*_spec.c
+	$(RODZO) ../spec/d_*_spec.c -o ds.c
 xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
 
 cs: $(DEPS)
+ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
 
 sc: cs
 	time ./cs
+sd: ds
+	time ./ds
 sx: xs
 	time ./xs
 si: is
 	time ./is
 
 vsc: cs
+	valgrind --leak-check=full -v ./cs
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
+vsd: ds
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
 vsx: xs
@@ -73,10 +82,10 @@ vsi: is
 
 spec:
 	$(MAKE) sc
+	#$(MAKE) sl
+	$(MAKE) sd
 	$(MAKE) sx
 	$(MAKE) si
-	#$(MAKE) sd
-	#$(MAKE) sl
 
 .PHONY: clean
 
