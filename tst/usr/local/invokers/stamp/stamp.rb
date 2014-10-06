@@ -14,5 +14,6 @@ task['stamp'] = Time.now.to_s
 
 puts(JSON.dump(task))
 
-#STDERR.puts "ruby, over."
+t = Time.now
+STDERR.puts("#{t} .#{t.usec} xxx #{Process.pid} stamp.rb over.")
 
