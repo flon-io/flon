@@ -118,5 +118,7 @@ int fdja_splice(fdja_value *array, long long start, size_t count, ...);
 int fdja_pset(fdja_value *start, const char *path, fdja_value *v);
   // pset(v, "cars.-1", v1) to push in cars array
 
+int fdja_psetf(fdja_value *start, const char *path, ...);
+
 #endif // DJAN_H
 

@@ -1015,3 +1015,20 @@ int fdja_pset(fdja_value *start, const char *path, fdja_value *v)
   return 0;
 }
 
+int fdja_psetf(fdja_value *start, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  char *f = va_arg(ap, char *);
+  char *s = flu_svprintf(f, ap);
+  va_end(ap);
+
+  fdja_value *v = fdja_parse(s);
+  if (v == NULL) return 0;
+
+  int r = fdja_pset(start, p, v);
+  free(p);
+
+  return r;
+}
+
