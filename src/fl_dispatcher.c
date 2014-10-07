@@ -26,6 +26,9 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <libgen.h>
 
 #include "djan.h"
 #include "gajeta.h"
@@ -33,6 +36,7 @@
 #include "fl_dispatcher.h"
 
 
+/*
 static void invoke(fdja_value *j, fdja_value *inv)
 {
   // TODO double fork an invoker
@@ -48,16 +52,44 @@ static void discard(fdja_value *j)
 
   // TODO move to var/spool/discarded/
 }
+*/
 
-void flon_dispatch_j(fdja_value *j)
+static int reject(const char *path)
 {
-  //printf("incoming: %s\n", fdja_to_json(j));
+  char *dp = strdup(path);
+  char *db = strdup(path);
 
+  char *d = dirname(dp);
+  char *b = basename(db);
+  char *np = flu_sprintf("%s/../rejected/%s", d, b);
+
+  int r = rename(path, np);
+  if (r != 0) fgaj_r("couldn't rename to %s", np); else fgaj_i("to %s", np);
+
+  free(dp);
+  free(db);
+  free(np);
+
+  return 0; // indicates error
+}
+
+int flon_dispatch(const char *path)
+{
+  printf("path: %s\n", path);
+  fdja_value *j = fdja_parse_obj_f(path);
+
+  if (j == NULL) return reject(path);
+
+  printf("incoming: %s\n", fdja_to_json(j));
+  return 1;
+
+  /*
   fdja_value *inv = fdja_lookup(j, "invocation");
   //fdja_value *exe = fdja_lookup(j, "execution");
 
   if (inv) invoke(j, inv);
   //else if (exe) execute(j, exe);
   else discard(j);
+  */
 }
 

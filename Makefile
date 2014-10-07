@@ -16,6 +16,7 @@ cs: clean spec
 ctst:
 	rm -f tst/var/log/invocations/*.txt
 	rm -f tst/var/spool/in/*.json
+	rm -f tst/var/spool/rejected/*.json
 
 .PHONY: spec clean upgrade cs ctst
 

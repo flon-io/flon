@@ -19,41 +19,66 @@ context "flon-dispatcher"
       "  bindir: ../bin/\n"
       "}\n"
     ));
+
+    char *id = NULL;
+    char *path = NULL;
+    char *s = NULL;
+  }
+  after each
+  {
+    if (id) free(id);
+    if (path) free(path);
+    if (s) free(s);
   }
 
-  describe "flon_dispatch_j()"
+  describe "flon_dispatch()"
   {
     it "dispatches invocations"
     {
-      char *invid = flon_generate_id();
-      char *path = flu_sprintf("inv_%s.json", invid);
+      id = flon_generate_id();
+      path = flu_sprintf("../tst/var/spool/in/inv_%s.json", id);
 
-      fdja_value *j = fdja_c(
-        "invocation: [ stamp, {}, [] ]\n"
-        "payload: {\n"
-          "_invocation_id: %s\n"
-          "hello: world\n"
-        "}\n"
-        "_path: %s\n",
-        invid, path
+      int r = flu_writeall(
+        path,
+        "{"
+          "invocation: [ stamp, {}, [] ]\n"
+          "payload: {\n"
+            "_invocation_id: %s\n"
+            "hello: world\n"
+          "}\n"
+        "}", id
       );
+      expect(r == 1);
 
-      flon_dispatch_j(j);
+      r = flon_dispatch(path);
+      expect(r == 1);
 
       sleep(2);
 
-      char *s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", invid);
+      s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/invocations/%s.txt", invid);
+      s = flu_readall("../tst/var/log/invocations/%s.txt", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
     }
 
-    it "discards files it doesn't understand"
+    it "rejects files it doesn't understand"
+    {
+      id = flon_generate_id();
+      path = flu_sprintf("../tst/var/spool/in/inv_%s.json", id);
+
+      int r = flu_writeall(path, "NADA");
+      expect(r == 1);
+
+      flon_dispatch(path);
+
+      s = flu_readall("../tst/var/spool/rejected/inv_%s.json", id);
+      expect(s === "NADA");
+    }
   }
 }
 
