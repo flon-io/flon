@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -70,7 +71,7 @@ char *flon_conf_path(const char *key, char *def)
   if (v == NULL) { if (def == NULL) return NULL; v = def; }
   if (v[0] == '/') return v;
 
-  char *c = get_current_dir_name();
+  char *c = getcwd(NULL, 0);
   char *r = flu_sprintf("%s/%s", c, v);
   free(c);
   if (v != def) free(v);
