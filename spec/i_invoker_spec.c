@@ -14,7 +14,7 @@ context "flon-invoker"
 {
   before each
   {
-    flon_configure_j(fdja_o(""
+    flon_configure_j(fdja_c(""
       "invoker: {\n"
       "  dir: ../tst/\n"
       "}\n"
@@ -27,13 +27,14 @@ context "flon-invoker"
     {
       char *invid = flon_generate_id();
 
-      fdja_value *j = fdja_o(""
+      fdja_value *j = fdja_c(
         "invocation: [ stamp, {}, [] ]\n"
         "payload: {\n"
+          "_invocation_id: %s\n"
           "hello: world\n"
-        "}\n"
+        "}\n",
+        invid
       );
-      fdja_pset(j, "payload._invocation_id", fdja_v(invid));
 
       //puts(fdja_to_json(j));
       flon_invoke_j(j);

@@ -12,7 +12,7 @@ context "common"
 {
   before each
   {
-    flon_configure_j(fdja_o(""
+    flon_configure_j(fdja_c(
       "unit: {\n"
       "  id: u96\n"
       "  group_id: g7\n"

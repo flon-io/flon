@@ -43,7 +43,7 @@
 // fdja_value malloc/free
 
 static fdja_value *fdja_value_malloc(
-  char type, char *input, size_t off, size_t len)
+  char type, char *input, size_t off, size_t len, short owner)
 {
   fdja_value *v = calloc(1, sizeof(fdja_value));
   v->key = NULL;
@@ -51,6 +51,7 @@ static fdja_value *fdja_value_malloc(
   v->source = input;
   v->soff = off;
   v->slen = len;
+  v->sowner = owner;
   v->sibling = NULL;
   v->child = NULL;
 
@@ -60,7 +61,7 @@ static fdja_value *fdja_value_malloc(
 void fdja_value_free(fdja_value *v)
 {
   if (v->key != NULL) free(v->key);
-  if (v->slen == 0 && v->source != NULL) free(v->source);
+  if (v->sowner == 1 && v->source != NULL) free(v->source);
 
   for (fdja_value *c = v->child, *next = NULL; c != NULL; )
   {
@@ -321,7 +322,7 @@ static fdja_value *fdja_extract_v(char *input, fabr_tree *t)
 
   if (ty == '-') return NULL;
 
-  fdja_value *v = fdja_value_malloc(ty, input, t->offset, t->length);
+  fdja_value *v = fdja_value_malloc(ty, input, t->offset, t->length, 0);
 
   if (ty == 'o') v->child = fdja_extract_entries(input, fabr_t_child(t, 1));
   else if (ty == 'a') v->child = fdja_extract_values(input, fabr_t_child(t, 1));
@@ -362,7 +363,46 @@ fdja_value *fdja_parse(char *input)
   fdja_value *v = fdja_extract_value(input, t);
   fabr_tree_free(t);
 
+  if (v) v->sowner = 1;
+
   return v;
+}
+
+fdja_value *fdja_dparse(char *input)
+{
+  return fdja_parse(strdup(input));
+}
+
+fdja_value *fdja_parse_f(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_vreadall(path, ap);
+  va_end(ap);
+
+  if (s == NULL) return NULL;
+
+  return fdja_parse(s);
+}
+
+fdja_value *fdja_v(char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *s = flu_svprintf(format, ap);
+  va_end(ap);
+
+  fdja_value *v = fdja_parse(s);
+  if (v) v->sowner = 1;
+
+  return v;
+}
+
+fdja_value *fdja_s(char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *s = flu_svprintf(format, ap);
+  va_end(ap);
+
+  return fdja_value_malloc('y', s, 0, strlen(s), 1);
 }
 
 static void fdja_add_radc(fdja_value *parent, fdja_value *child)
@@ -424,10 +464,10 @@ static void fdja_parse_radl(char *input, fabr_tree *radl, flu_list *values)
   size_t i = radi->length; // indentation
 
   // [ "sequence", {}, [] ]
-  fdja_value *v = fdja_value_malloc('a', NULL, i, 0);
+  fdja_value *v = fdja_value_malloc('a', NULL, i, 0, 0);
   fdja_value *vname = fdja_extract_v(input, radn->child);
-  fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0);
-  fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0);
+  fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0, 0);
+  fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0, 0);
 
   // attributes
   fdja_value **anext = &vatts->child;
@@ -478,7 +518,31 @@ fdja_value *fdja_parse_radial(char *input)
   if (vs->size > 0) root = (fdja_value *)vs->last->item;
   flu_list_free(vs);
 
+  if (root == NULL) return NULL;
+
+  root->source = input;
+  root->sowner = 1;
+
   return root;
+}
+
+fdja_value *fdja_dparse_radial(char *input)
+{
+  return fdja_parse_radial(strdup(input));
+}
+
+fdja_value *fdja_parse_radial_f(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_vreadall(path, ap);
+  va_end(ap);
+
+  if (s == NULL) return NULL;
+
+  fdja_value *v = fdja_parse_radial(s);
+  if (v) v->sowner = 1;
+
+  return v;
 }
 
 fdja_value *fdja_parse_obj(char *input)
@@ -496,20 +560,40 @@ fdja_value *fdja_parse_obj(char *input)
   fabr_tree *tt = fabr_t_child(t, 1);
 
   fdja_value *v = fdja_extract_v(input, tt);
+  if (v) v->sowner = 1;
 
   fabr_tree_free(t);
 
   return v;
 }
 
-fdja_value *fdja_parse_obj_f(const char *path)
+fdja_value *fdja_dparse_obj(char *input)
 {
-  char *s = flu_readall(path);
+  return fdja_parse_obj(strdup(input));
+}
+
+fdja_value *fdja_parse_obj_f(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_vreadall(path, ap);
+  va_end(ap);
 
   if (s == NULL) return NULL;
 
   fdja_value *v = fdja_parse_obj(s);
-  v->slen = 0; // so that the root value "owns" the source
+  if (v) v->sowner = 1;
+
+  return v;
+}
+
+fdja_value *fdja_c(char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *s = flu_svprintf(format, ap);
+  va_end(ap);
+
+  fdja_value *v = fdja_parse_obj(s);
+  if (v) v->sowner = 1;
 
   return v;
 }
@@ -557,7 +641,6 @@ static void fdja_to_j(FILE *f, fdja_value *v, size_t depth)
     }
     fputc('}', f);
   }
-  else if (v->slen == 0) fputs(v->source + v->soff, f);
   else fwrite(v->source + v->soff, sizeof(char), v->slen, f);
 }
 
@@ -567,6 +650,23 @@ char *fdja_to_json(fdja_value *v)
   fdja_to_j(b->stream, v, 0);
 
   return flu_sbuffer_to_string(b);
+}
+
+int fdja_to_json_f(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *spath = flu_svprintf(path, ap);
+  va_end(ap);
+
+  FILE *f = fopen(spath, "w");
+
+  free(spath);
+
+  if (f == NULL) return 0;
+
+  fdja_to_j(f, v, 0);
+
+  return (fclose(f) == 0);
 }
 
 static int fdja_is_symbol(char *s)
@@ -616,7 +716,6 @@ static void fdja_to_d(FILE *f, fdja_value *v, size_t depth)
     if (v->child) fputc(' ', f);
     fputc('}', f);
   }
-  else if (v->slen == 0) fputs(v->source + v->soff, f);
   else fwrite(v->source + v->soff, sizeof(char), v->slen, f);
 }
 
@@ -634,20 +733,20 @@ char *fdja_to_djan(fdja_value *v)
 
 char *fdja_string(fdja_value *v)
 {
-  if (v->slen == 0) return strdup(v->source + v->soff);
   return strndup(v->source + v->soff, v->slen);
 }
 
 char *fdja_to_string(fdja_value *v)
 {
-  if (v->type == 's')
+  if (v->type == 's' || v->type == 'q')
   {
-    return flu_n_unescape(v->source + v->soff + 1, v->slen - 2);
+    char *start = v->source + v->soff + 1;
+    size_t len = v->slen - 2;
+
+    if (v->type == 'q') return fdja_sq_unescape(start, len);
+    return flu_n_unescape(start, len);
   }
-  if (v->type == 'q')
-  {
-    return fdja_sq_unescape(v->source + v->soff + 1, v->slen - 2);
-  }
+
   return fdja_string(v);
 }
 
