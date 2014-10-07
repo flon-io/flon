@@ -40,7 +40,7 @@ context "flon-dispatcher"
       //fdja_pset(j, "_path", fdja_s(path));
       //fdja_pset(j, "payload._invocation_id", fdja_v(invid));
 
-      flon_dispatch_j("./inv_xxx.json", j);
+      flon_dispatch_j(j);
 
       //sleep(2);
     }
