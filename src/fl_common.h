@@ -30,8 +30,8 @@
 
 #include "djan.h"
 
-//void flon_configure(char *path);
-//void flon_configure_s(char *s);
+
+void flon_configure(char *root);
 void flon_configure_j(fdja_value *obj);
 
 fdja_value *flon_conf(const char *key);

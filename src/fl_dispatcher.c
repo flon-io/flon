@@ -35,6 +35,7 @@
 
 static void invoke(fdja_value *j, fdja_value *inv)
 {
+  // TODO double fork an invoker
 }
 
 static void discard(fdja_value *j)

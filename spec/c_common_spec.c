@@ -55,6 +55,16 @@ context "common"
     }
   }
 
+  describe "flon_configure()"
+  {
+    it "parses from {root}/etc/flon.json"
+    {
+      flon_configure("../tst");
+
+      expect(flon_conf_path("_root", NULL) $==f "../tst");
+    }
+  }
+
   describe "flon_generate_id()"
   {
     it "returns an id"

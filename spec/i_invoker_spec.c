@@ -43,10 +43,12 @@ context "flon-invoker"
 
       char *s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", invid);
       //printf(">>>\n%s<<<\n", s);
+      expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
       s = flu_readall("../tst/var/log/invocations/%s.txt", invid);
       //printf(">>>\n%s<<<\n", s);
+      expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
     }
   }

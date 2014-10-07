@@ -1,0 +1,16 @@
+
+#
+# a flon sample /etc/flon.json
+#
+
+listener: {
+}
+dispatcher: {
+}
+executor: {
+  bin: bin/flon-executor
+}
+invoker: {
+  bin: bin/flon-invoker
+}
+

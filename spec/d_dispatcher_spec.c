@@ -37,12 +37,20 @@ context "flon-dispatcher"
         "_path: %s\n",
         invid, path
       );
-      //fdja_pset(j, "_path", fdja_s(path));
-      //fdja_pset(j, "payload._invocation_id", fdja_v(invid));
 
       flon_dispatch_j(j);
 
-      //sleep(2);
+      sleep(2);
+
+      char *s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", invid);
+      //printf(">>>\n%s<<<\n", s);
+      expect(s != NULL);
+      expect(strstr(s, ",\"stamp\":\"") != NULL);
+
+      s = flu_readall("../tst/var/log/invocations/%s.txt", invid);
+      //printf(">>>\n%s<<<\n", s);
+      expect(s != NULL);
+      expect(strstr(s, " stamp.rb over.") != NULL);
     }
 
     it "discards files it doesn't understand"
