@@ -381,7 +381,11 @@ fdja_value *fdja_parse_f(const char *path, ...)
 
   if (s == NULL) return NULL;
 
-  return fdja_parse(s);
+  fdja_value *v = fdja_parse(s);
+
+  if (v == NULL) free(s);
+
+  return v;
 }
 
 fdja_value *fdja_v(char *format, ...)
@@ -390,10 +394,7 @@ fdja_value *fdja_v(char *format, ...)
   char *s = flu_svprintf(format, ap);
   va_end(ap);
 
-  fdja_value *v = fdja_parse(s);
-  if (v) v->sowner = 1;
-
-  return v;
+  return fdja_parse(s);
 }
 
 fdja_value *fdja_s(char *format, ...)
@@ -540,7 +541,8 @@ fdja_value *fdja_parse_radial_f(const char *path, ...)
   if (s == NULL) return NULL;
 
   fdja_value *v = fdja_parse_radial(s);
-  if (v) v->sowner = 1;
+
+  if (v == NULL) free(s);
 
   return v;
 }
@@ -581,7 +583,8 @@ fdja_value *fdja_parse_obj_f(const char *path, ...)
   if (s == NULL) return NULL;
 
   fdja_value *v = fdja_parse_obj(s);
-  if (v) v->sowner = 1;
+
+  if (v == NULL) free(s);
 
   return v;
 }
@@ -593,7 +596,6 @@ fdja_value *fdja_c(char *format, ...)
   va_end(ap);
 
   fdja_value *v = fdja_parse_obj(s);
-  if (v) v->sowner = 1;
 
   return v;
 }
