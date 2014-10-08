@@ -206,9 +206,7 @@ char *flu_svprintf(const char *format, va_list ap)
 char *flu_sprintf(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-
   char *s = flu_svprintf(format, ap);
-
   va_end(ap);
 
   return s;
@@ -643,5 +641,62 @@ long long flu_getMs()
   struct timeval tv;
   int r = gettimeofday(&tv, NULL);
   return r == 0 ? tv.tv_sec * 1000000 + tv.tv_usec : 0;
+}
+
+char *flu_canopath(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *s = flu_svprintf(path, ap);
+  va_end(ap);
+
+  if (s[0] != '/')
+  {
+    char *cwd = getcwd(NULL, 0);
+    char *ss = flu_sprintf("%s/%s", cwd, s);
+    free(cwd);
+    free(s);
+    s = ss;
+  }
+
+  char *r = calloc(strlen(s) + 1, sizeof(char));
+  *r = '/';
+  char *rr = r + 1;
+
+  char *a = s + 1;
+  char *b = NULL;
+
+  while (1)
+  {
+    b = strchr(a, '/');
+
+    size_t l = b ? b + 1 - a : strlen(a);
+
+    size_t dots = 0;
+    if (l == 2 && strncmp(a, "./", 2) == 0) dots = 1;
+    else if (l == 1 && strncmp(a, "/", 1) == 0) dots = 1;
+    else if (l == 1 && strncmp(a, ".\0", 2) == 0) dots = 1;
+    else if (l >= 2 && strncmp(a, "..", 2) == 0) dots = 2;
+
+    if (dots == 2 && rr > r + 1)
+    {
+      *(rr - 1) = 0;
+      rr = strrchr(r, '/');
+      rr = rr ? rr + 1 : r + 1;
+    }
+    else if (dots < 1)
+    {
+      strncpy(rr, a, l);
+      rr = rr + l;
+    }
+    *rr = 0;
+
+    if (b == NULL) break;
+
+    a = b + 1;
+  }
+
+  free(s);
+
+  return r;
 }
 

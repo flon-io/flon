@@ -327,5 +327,10 @@ long long flu_getms();
  */
 long long flu_getMs();
 
+/* It canonicalizes a path, like realpath().
+ * Unlike realpath(), it doesn't care if the path points to nowhere.
+ */
+char *flu_canopath(const char *path, ...);
+
 #endif // FLON_FLUTIL_H
 
