@@ -56,7 +56,8 @@ context "flon-invoker"
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
-      // TODO clean up files
+      flu_unlink("../tst/var/spool/in/inv_%s_ret.json", invid);
+      flu_unlink("../tst/var/log/invocations/%s.txt", invid);
     }
   }
 }

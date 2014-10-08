@@ -70,7 +70,8 @@ context "flon-dispatcher"
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
-      // TODO clean up files
+      flu_unlink("../tst/var/spool/in/inv_%s_ret.json", id);
+      flu_unlink("../tst/var/log/invocations/%s.txt", id);
     }
 
     it "rejects files it doesn't understand"
@@ -86,7 +87,7 @@ context "flon-dispatcher"
       s = flu_readall("../tst/var/spool/rejected/inv_%s.json", id);
       expect(s === "NADA");
 
-      // TODO clean up files
+      flu_unlink("../tst/var/spool/rejected/inv_%s.json", id);
     }
   }
 }
