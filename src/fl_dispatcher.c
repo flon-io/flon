@@ -57,13 +57,16 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
     if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
 
     char *dir = flon_conf_path("_root", ".");
-    printf("dir: %s\n", dir);
+    fgaj_i("dir is >%s<", dir);
+
+    if (chdir(dir) != 0) { fgaj_r("failed to chdir()"); _exit(127); }
 
     //char *fn = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
     //freopen(fn, "a", stderr);
 
-    char *cmd = "./bin/flon-invoker nada";
+    char *cmd = "bin/flon-invoker nada";
       // TODO fetch from conf...
+    fgaj_i("cmd is >%s<", cmd);
 
     // TODO set stdin and stdout...
 
