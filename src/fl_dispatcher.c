@@ -54,7 +54,7 @@ static void discard(fdja_value *j)
 }
 */
 
-static int reject(const char *path)
+static int reject(const char *path, fdja_value *j)
 {
   char *dp = strdup(path);
   char *db = strdup(path);
@@ -64,32 +64,32 @@ static int reject(const char *path)
   char *np = flu_sprintf("%s/../rejected/%s", d, b);
 
   int r = rename(path, np);
-  if (r != 0) fgaj_r("couldn't rename to %s", np); else fgaj_i("to %s", np);
+  if (r != 0) fgaj_r("couldn't rename to %s", np);
+  else fgaj_i("to %s", np);
 
   free(dp);
   free(db);
   free(np);
+
+  if (j) fdja_value_free(j);
 
   return 0; // indicates error
 }
 
 int flon_dispatch(const char *path)
 {
-  printf("path: %s\n", path);
   fdja_value *j = fdja_parse_obj_f(path);
 
-  if (j == NULL) return reject(path);
+  if (j == NULL) return reject(path, j);
 
-  printf("incoming: %s\n", fdja_to_json(j));
-  return 1;
-
-  /*
   fdja_value *inv = fdja_lookup(j, "invocation");
-  //fdja_value *exe = fdja_lookup(j, "execution");
 
-  if (inv) invoke(j, inv);
-  //else if (exe) execute(j, exe);
-  else discard(j);
-  */
+  //if (inv) return invoke(path, j, inv);
+
+  char *db = strdup(path);
+  char *b = basename(db);
+  fgaj_i("don't know how to deal with %s", b);
+  free(db);
+  return reject(path, j);
 }
 
