@@ -28,6 +28,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <libgen.h>
 
 #include "djan.h"
@@ -36,23 +37,41 @@
 #include "fl_dispatcher.h"
 
 
-/*
-static void invoke(fdja_value *j, fdja_value *inv)
+static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 {
-  // TODO double fork an invoker
+  // as quickly as possible discard useless invocations
+  printf(">>>\n%s\n<<<\n", fdja_to_json(j));
+
+  pid_t i = fork();
+
+  if (i < 0) { fgaj_r("fork 1 for invoker failed"); return 0; }
+
+  if (i == 0) // child
+  {
+    pid_t j = fork();
+
+    if (j < 0) { fgaj_r("fork 2 for invoker failed"); _exit(127); }
+    if (j != 0) { _exit(0); }
+
+    if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
+
+    char *cmd = "./bin/flon-invoker nada";
+      // TODO fetch from conf...
+
+    // TODO set stdin and stdout...
+
+    int r = execl("/bin/sh", "", "-c", cmd, NULL);
+
+    fgaj_r("execl failed (%i)", r);
+
+    _exit(127);
+  }
+  else { // parent
+    fgaj_i("invoker forked");
+  }
+
+  return 1;
 }
-
-static void discard(fdja_value *j)
-{
-  char *path = fdja_lookup_string(j, "_path", NULL);
-
-  // TODO case where path is NULL
-
-  fgaj_i("'ing %s", path);
-
-  // TODO move to var/spool/discarded/
-}
-*/
 
 static int reject(const char *path, fdja_value *j)
 {
@@ -84,7 +103,9 @@ int flon_dispatch(const char *path)
 
   fdja_value *inv = fdja_lookup(j, "invocation");
 
-  //if (inv) return invoke(path, j, inv);
+  // TODO reroute?
+
+  if (inv) return invoke(path, j, inv);
 
   char *db = strdup(path);
   char *b = basename(db);

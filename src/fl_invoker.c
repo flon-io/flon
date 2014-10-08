@@ -114,17 +114,11 @@ void flon_invoke_j(fdja_value *j)
     chdir(path);
     freopen(out, "w", stdout);
 
-    i = setsid();
-    //
-    if (i == -1)
-    {
-      fgaj_r("setsid() failed");
-      _exit(127);
-    }
+    if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
 
     r = execl("/bin/sh", "", "-c", cmd, NULL);
 
-    fgaj_r("invocation failed (%i)", r);
+    fgaj_r("execl failed (%i)", r);
 
     _exit(127);
   }
