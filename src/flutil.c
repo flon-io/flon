@@ -286,6 +286,19 @@ int flu_writeall(const char *path, ...)
   return 1;
 }
 
+int flu_unlink(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *spath = flu_svprintf(path, ap);
+  va_end(ap);
+
+  int r = unlink(spath);
+
+  free(spath);
+
+  return r;
+}
+
 
 //
 // flu_list

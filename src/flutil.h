@@ -157,6 +157,11 @@ char *flu_freadall(FILE *in);
  */
 int flu_writeall(const char *path, ...);
 
+/* Like unlink(2), but accepts a path format and arguments.
+ * Returns 0 in case of success, like unlink.
+ */
+int flu_unlink(const char *path, ...);
+
 
 //
 // flu_list
