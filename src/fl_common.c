@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <unistd.h>
+//#include <unistd.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -77,17 +77,11 @@ char *flon_conf_string(const char *key, char *def)
 
 char *flon_conf_path(const char *key, char *def)
 {
-  char *v = flon_conf_string(key, NULL);
+  char *v = flon_conf_string(key, def);
 
-  if (v == NULL) { if (def == NULL) return NULL; v = def; }
-  if (v[0] == '/') return v;
+  if (v == NULL) return NULL;
 
-  char *c = getcwd(NULL, 0);
-  char *r = flu_sprintf("%s/%s", c, v);
-  free(c);
-  if (v != def) free(v);
-
-  return r;
+  return flu_canopath(v);
 }
 
 char *flon_generate_id()

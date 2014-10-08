@@ -50,7 +50,7 @@ context "common"
       expect(flon_conf_path("executor.p9", "/x") === "/x");
       expect(flon_conf_path("executor.p9", NULL) === NULL);
 
-      expect(flon_conf_path("executor.p0", NULL) $==f "/tmp/../tst");
+      expect(flon_conf_path("executor.p0", NULL) $==f "/flon/tst");
       expect(flon_conf_path("executor.p1", NULL) ===f "/var");
     }
   }
@@ -61,7 +61,7 @@ context "common"
     {
       flon_configure("../tst");
 
-      expect(flon_conf_path("_root", NULL) $==f "../tst");
+      expect(flon_conf_path("_root", NULL) $==f "/flon/tst");
     }
   }
 
