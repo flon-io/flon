@@ -39,8 +39,9 @@
 
 static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 {
+  printf("invoke() >>>\n%s\n<<<\n", fdja_to_json(j));
+
   // as quickly as possible discard useless invocations
-  printf(">>>\n%s\n<<<\n", fdja_to_json(j));
 
   pid_t i = fork();
 
@@ -54,6 +55,12 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
     if (j != 0) { _exit(0); }
 
     if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
+
+    char *dir = flon_conf_path("_root", ".");
+    printf("dir: %s\n", dir);
+
+    //char *fn = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
+    //freopen(fn, "a", stderr);
 
     char *cmd = "./bin/flon-invoker nada";
       // TODO fetch from conf...

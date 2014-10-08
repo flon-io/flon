@@ -19,11 +19,7 @@ context "flon-dispatcher"
     fgaj_conf_get()->level = 5;
     fgaj_conf_get()->params = stderr;
 
-    flon_configure_j(fdja_c(
-      "dispatcher: {\n"
-      "  bindir: ../bin/\n"
-      "}\n"
-    ));
+    flon_configure("../tst");
 
     char *id = NULL;
     char *path = NULL;
