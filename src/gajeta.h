@@ -84,6 +84,11 @@ void fgaj_color_file_logger(
 void fgaj_string_logger(
   char level, const char *subject, const char *msg);
 
+/* Logger for specs, logging in grey, towards the right side of the screen.
+ */
+void fgaj_grey_logger(
+  char level, const char *subject, const char *msg);
+
 
 //
 // logging functions (and macros)

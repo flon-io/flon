@@ -6,6 +6,7 @@
 //
 
 #include "flutil.h"
+#include "gajeta.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
 
@@ -14,6 +15,10 @@ context "flon-dispatcher"
 {
   before each
   {
+    fgaj_conf_get()->logger = fgaj_grey_logger;
+    fgaj_conf_get()->level = 5;
+    fgaj_conf_get()->params = stderr;
+
     flon_configure_j(fdja_c(
       "dispatcher: {\n"
       "  bindir: ../bin/\n"
@@ -64,6 +69,8 @@ context "flon-dispatcher"
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
+
+      // TODO clean up files
     }
 
     it "rejects files it doesn't understand"
@@ -78,6 +85,8 @@ context "flon-dispatcher"
 
       s = flu_readall("../tst/var/spool/rejected/inv_%s.json", id);
       expect(s === "NADA");
+
+      // TODO clean up files
     }
   }
 }
