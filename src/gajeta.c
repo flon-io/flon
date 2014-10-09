@@ -267,7 +267,7 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
   //
   if (fgaj__conf->params)
   {
-    indent = flu_list_get(fgaj__conf->params, "indent");
+    indent = (long)flu_list_get(fgaj__conf->params, "indent");
     if (indent < 0) indent = 0;
   }
 
