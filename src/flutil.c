@@ -31,7 +31,10 @@
 #include <string.h>
 #include <time.h>
 #include <sys/time.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <unistd.h>
+#include <libgen.h>
 
 #include "flutil.h"
 
@@ -696,6 +699,56 @@ char *flu_canopath(const char *path, ...)
   }
 
   free(s);
+
+  return r;
+}
+
+char *flu_dirname(const char *path)
+{
+  char *dp = strdup(path);
+  char *dn = dirname(dp);
+  char *ddn = strdup(dn);
+  free(dp);
+
+  return ddn;
+}
+
+char *flu_basename(const char *path, const char *new_suffix)
+{
+  char *dp = strdup(path);
+  char *bn = basename(dp);
+  char *dbn = strdup(bn);
+  free(dp);
+
+  if (new_suffix) strcpy(strrchr(dbn, '.'), new_suffix);
+
+  return dbn;
+}
+
+char flu_fstat(const char *path)
+{
+  struct stat s;
+
+  if (stat(path, &s) == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
+  else return 0;
+}
+
+int flu_move(const char *orig, const char *dest)
+{
+  if (flu_fstat(orig) == 0) return 1;
+
+  char *np = (char *)dest;
+
+  if (flu_fstat(dest) == 'd')
+  {
+    char *ob = strdup(orig);
+    char *obn = basename(ob);
+    np = flu_sprintf("%s/%s", dest, obn);
+    free(ob);
+  }
+
+  int r = rename(orig, np);
+  if (np != dest) free(np);
 
   return r;
 }
