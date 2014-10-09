@@ -140,7 +140,7 @@ int flon_move(const char *orig, const char *dest)
 {
   if (flon_fstat(orig) == 0) return 1;
 
-  char *np = dest;
+  char *np = (char *)dest;
 
   if (flon_fstat(dest) == 'd')
   {
