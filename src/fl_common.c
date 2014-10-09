@@ -124,14 +124,6 @@ char *flon_basename(const char *path, const char *new_suffix)
   return dbn;
 }
 
-int flon_isdir(const char *path)
-{
-  struct stat s;
-
-  if (stat(path, &s) == 0) return S_ISDIR(s.st_mode);
-  else return 0;
-}
-
 char flon_fstat(const char *path)
 {
   struct stat s;

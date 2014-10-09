@@ -84,24 +84,6 @@ context "common"
     }
   }
 
-  describe "flon_isdir()"
-  {
-    it "returns 1 if the path points to a dir"
-    {
-      expect(flon_isdir("../src") == 1);
-    }
-    it "returns 0 if the path points to something that is not a dir"
-    {
-      expect(flon_isdir("../src/flutil.c") == 0);
-      expect(errno == 0);
-    }
-    it "returns 0 if the path points to something that is not present"
-    {
-      expect(flon_isdir("nada") == 0);
-      expect(errno == 2);
-    }
-  }
-
   describe "flon_fstat()"
   {
     it "returns 0 if the path points to nowhere"
