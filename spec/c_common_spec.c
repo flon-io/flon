@@ -78,5 +78,18 @@ context "common"
       free(id);
     }
   }
+
+  describe "flon_basename()"
+  {
+    it "returns the basename given a path"
+    {
+      expect(flon_basename("/x/y/z.txt", NULL) ===f "z.txt");
+    }
+
+    it "accepts a .suffix for the returned basename"
+    {
+      expect(flon_basename("/x/y/z.json", ".txt") ===f "z.txt");
+    }
+  }
 }
 

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-//#include <unistd.h>
+#include <libgen.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -103,5 +103,17 @@ char *flon_generate_id()
   free(i);
 
   return r;
+}
+
+char *flon_basename(const char *path, const char *new_suffix)
+{
+  char *dp = strdup(path);
+  char *bn = basename(dp);
+  char *dbn = strdup(bn);
+  free(dp);
+
+  if (new_suffix) strcpy(strrchr(dbn, '.'), new_suffix);
+
+  return dbn;
 }
 

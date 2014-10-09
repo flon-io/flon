@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <libgen.h>
+//#include <libgen.h>
 
 #include "djan.h"
 #include "gajeta.h"
