@@ -29,10 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <libgen.h>
-#include <unistd.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -108,46 +104,6 @@ char *flon_generate_id()
   if (strcmp(u, "u0")) free(u);
   if (strcmp(g, "g0")) free(g);
   free(i);
-
-  return r;
-}
-
-char *flon_basename(const char *path, const char *new_suffix)
-{
-  char *dp = strdup(path);
-  char *bn = basename(dp);
-  char *dbn = strdup(bn);
-  free(dp);
-
-  if (new_suffix) strcpy(strrchr(dbn, '.'), new_suffix);
-
-  return dbn;
-}
-
-char flon_fstat(const char *path)
-{
-  struct stat s;
-
-  if (stat(path, &s) == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
-  else return 0;
-}
-
-int flon_move(const char *orig, const char *dest)
-{
-  if (flon_fstat(orig) == 0) return 1;
-
-  char *np = (char *)dest;
-
-  if (flon_fstat(dest) == 'd')
-  {
-    char *ob = strdup(orig);
-    char *obn = basename(ob);
-    np = flu_sprintf("%s/%s", dest, obn);
-    free(ob);
-  }
-
-  int r = rename(orig, np);
-  if (np != dest) free(np);
 
   return r;
 }
