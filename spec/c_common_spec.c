@@ -115,11 +115,16 @@ context "common"
 
   describe "flon_move()"
   {
+    before each
+    {
+      flu_writeall("a.txt", "alright");
+    }
+
     it "moves a file to a dir"
     {
-      expect(flu_writeall("a.txt", "alright") == 1);
+      int r = flon_move("./a.txt", "../tst/var/spool/rejected/");
 
-      flon_move("./a.txt", "../tst/var/spool/rejected/");
+      expect(r == 0);
 
       expect(flu_readall("../tst/var/spool/rejected/a.txt") ===f "alright");
       expect(unlink("../tst/var/spool/rejected/a.txt") == 0);
@@ -127,8 +132,16 @@ context "common"
 
     it "renames a file"
     {
-      expect(flu_writeall("a.txt", "alright") == 1);
+      int r = flon_move("a.txt", "b.txt");
+
+      expect(r == 0);
+
+      expect(flu_readall("./b.txt") ===f "alright");
+      expect(unlink("./b.txt") == 0);
     }
+
+    it "moves a dir to another dir"
+    it "moves a dir to another dir with another filename"
   }
 }
 
