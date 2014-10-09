@@ -52,7 +52,7 @@ context "common"
     it "returns an absolute path"
     {
       expect(flon_conf_path("executor.p9", "x") $==f "/tmp/x");
-      expect(flon_conf_path("executor.p9", "/x") === "/x");
+      expect(flon_conf_path("executor.p9", "/x") ===f "/x");
       expect(flon_conf_path("executor.p9", NULL) === NULL);
 
       expect(flon_conf_path("executor.p0", NULL) $==f "/flon/tst");

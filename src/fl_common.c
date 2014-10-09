@@ -84,7 +84,11 @@ char *flon_conf_path(const char *key, char *def)
 
   if (v == NULL) return NULL;
 
-  return flu_canopath(v);
+  char *r = flu_canopath(v);
+
+  if (v != def) free(v);
+
+  return r;
 }
 
 char *flon_generate_id()
