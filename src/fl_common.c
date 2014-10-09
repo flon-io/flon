@@ -128,6 +128,14 @@ int flon_isdir(const char *path)
   else return 0;
 }
 
+char flon_fstat(const char *path)
+{
+  struct stat s;
+
+  if (stat(path, &s) == 0) return S_ISDIR(s.st_mode) ? 'd' : 'f';
+  else return 0;
+}
+
 int flon_move(const char *origin, const char *destination)
 {
   char *od = strdup(origin);

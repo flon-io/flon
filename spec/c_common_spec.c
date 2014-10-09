@@ -100,6 +100,22 @@ context "common"
     }
   }
 
+  describe "flon_fstat()"
+  {
+    it "returns 0 if the path points to nowhere"
+    {
+      expect(flon_fstat("../nada") == 0);
+    }
+    it "returns 'd' if the path points to a directory"
+    {
+      expect(flon_fstat("../src") == 'd');
+    }
+    it "returns 'f' if the path points to a non-directory"
+    {
+      expect(flon_fstat("../src/flutil.c") == 'f');
+    }
+  }
+
   describe "flon_basename()"
   {
     it "returns the basename given a path"
