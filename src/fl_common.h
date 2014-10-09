@@ -42,7 +42,9 @@ char *flon_conf_path(const char *key, char *def);
 
 char *flon_generate_id();
 
+int flon_isdir(const char *path);
 char *flon_basename(const char *path, const char *new_suffix);
+char *flon_move(const char *path, const char *destination);
 
 #endif // FL_COMMON_H
 

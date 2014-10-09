@@ -5,6 +5,9 @@
 // Fri Oct  3 14:21:21 JST 2014
 //
 
+#include <errno.h>
+
+#include "flutil.h"
 #include "fl_common.h"
 
 
@@ -79,6 +82,24 @@ context "common"
     }
   }
 
+  describe "flon_isdir()"
+  {
+    it "returns 1 if the path points to a dir"
+    {
+      expect(flon_isdir("../src") == 1);
+    }
+    it "returns 0 if the path points to something that is not a dir"
+    {
+      expect(flon_isdir("../src/flutil.c") == 0);
+      expect(errno == 0);
+    }
+    it "returns 0 if the path points to something that is not present"
+    {
+      expect(flon_isdir("nada") == 0);
+      expect(errno == 2);
+    }
+  }
+
   describe "flon_basename()"
   {
     it "returns the basename given a path"
@@ -89,6 +110,24 @@ context "common"
     it "accepts a .suffix for the returned basename"
     {
       expect(flon_basename("/x/y/z.json", ".txt") ===f "z.txt");
+    }
+  }
+
+  describe "flon_move()"
+  {
+    it "moves a file to a dir"
+    {
+      expect(flu_writeall("a.txt", "alright") == 1);
+
+      flon_move("./a.txt", "../tst/var/spool/rejected/");
+
+      expect(flu_readall("../tst/var/spool/rejected/a.txt") ===f "alright");
+      expect(unlink("../tst/var/spool/rejected/a.txt") == 0);
+    }
+
+    it "renames a file"
+    {
+      expect(flu_writeall("a.txt", "alright") == 1);
     }
   }
 }

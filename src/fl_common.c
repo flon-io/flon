@@ -29,7 +29,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <libgen.h>
+#include <unistd.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -105,6 +108,14 @@ char *flon_generate_id()
   return r;
 }
 
+int flon_isdir(const char *path)
+{
+  struct stat s;
+
+  if (stat(path, &s) == 0) return S_ISDIR(s.st_mode);
+  else return 0;
+}
+
 char *flon_basename(const char *path, const char *new_suffix)
 {
   char *dp = strdup(path);
@@ -115,5 +126,32 @@ char *flon_basename(const char *path, const char *new_suffix)
   if (new_suffix) strcpy(strrchr(dbn, '.'), new_suffix);
 
   return dbn;
+}
+
+char *flon_move(const char *origin, const char *destination)
+{
+  char *od = strdup(origin);
+  char *ob = strdup(origin);
+  char *odn = dirname(od);
+  char *obn = basename(ob);
+  int oid = flon_isdir(origin);
+
+  printf("origin");
+  printf("%s\n", origin);
+  printf("dn: %s\n", odn);
+  printf("bn: %s\n", obn);
+  printf("dir? %i\n", oid);
+
+  char *dd = strdup(destination);
+  char *db = strdup(destination);
+  char *ddn = dirname(dd);
+  char *dbn = basename(db);
+  int did = flon_isdir(destination);
+
+  printf("destination");
+  printf("%s\n", destination);
+  printf("dn: %s\n", ddn);
+  printf("bn: %s\n", dbn);
+  printf("dir? %i\n", did);
 }
 
