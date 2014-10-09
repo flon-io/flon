@@ -89,24 +89,12 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 
 static int reject(const char *path, fdja_value *j)
 {
-  char *dp = strdup(path);
-  char *db = strdup(path);
+  int r = flu_move(path, "var/spool/rejected/");
 
-  char *d = dirname(dp);
-  char *b = basename(db);
-  char *np = flu_sprintf("%s/../rejected/%s", d, b);
+  if (r == 0) fgaj_i("rejected");
+  else fgaj_r("failed to move %s to var/spool/rejected", path);
 
-  int r = rename(path, np);
-  if (r != 0) fgaj_r("couldn't rename to %s", np);
-  else fgaj_i("to %s", np);
-
-  free(dp);
-  free(db);
-  free(np);
-
-  if (j) fdja_value_free(j);
-
-  return 0; // indicates error
+  return 1;
 }
 
 int flon_dispatch(const char *path)

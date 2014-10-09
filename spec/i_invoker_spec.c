@@ -20,11 +20,7 @@ context "flon-invoker"
     fgaj_conf_get()->out = stderr;
     fgaj_conf_get()->params = NULL;
 
-    flon_configure_j(fdja_c(""
-      "invoker: {\n"
-      "  dir: ../tst/\n"
-      "}\n"
-    ));
+    flon_configure("../tst");
   }
 
   describe "flon_invoke_j()"

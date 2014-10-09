@@ -27,15 +27,17 @@
 
 #include <stdio.h>
 
+#include "djan.h"
 #include "gajeta.h"
+#include "fl_invoker.h"
 
 
 int main(int argc, char *argv[])
 {
   if (argc < 2) { fgaj_e("missing incoming invocation file as arg"); return 1; }
 
-  fgaj_i("invocation in %s", argv[1]);
+  fgaj_i("in: %s", argv[1]);
 
-  return 0;
+  return flon_invoke_j(fdja_parse_f(argv[1]));
 }
 

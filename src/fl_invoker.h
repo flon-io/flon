@@ -31,7 +31,7 @@
 #include "djan.h"
 
 
-void flon_invoke_j(fdja_value *j);
+int flon_invoke_j(fdja_value *j);
 
 #endif // FL_INVOKER_H
 

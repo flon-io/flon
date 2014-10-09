@@ -38,7 +38,7 @@
 #include "fl_invoker.h"
 
 
-void flon_invoke_j(fdja_value *j)
+int flon_invoke_j(fdja_value *j)
 {
   char *dir = flon_conf_path("invoker.dir", ".");
 
@@ -49,7 +49,7 @@ void flon_invoke_j(fdja_value *j)
   if (invocation == NULL)
   {
     fgaj_e("no 'invocation' key in the message");
-    return;
+    return 1;
   }
 
   fdja_value *payload = fdja_lookup(j, "payload");
@@ -76,7 +76,7 @@ void flon_invoke_j(fdja_value *j)
   if (inv_conf == NULL)
   {
     fgaj_r("didn't find invoker conf at %s", inv_conf_path);
-    return;
+    return 1;
   }
 
   char *cmd = fdja_lookup_string(inv_conf, "invoke", NULL);
@@ -84,7 +84,7 @@ void flon_invoke_j(fdja_value *j)
   if (cmd == NULL)
   {
     fgaj_e("no 'invoke' key in invoker conf at %s", inv_conf_path);
-    return;
+    return 1;
   }
   fgaj_i("invoking >%s<", cmd);
 
@@ -95,7 +95,7 @@ void flon_invoke_j(fdja_value *j)
   if (r != 0)
   {
     fgaj_r("failed to setup pipe between invoker and invoked");
-    return;
+    return 1;
   }
 
   pid_t i = fork();
@@ -115,13 +115,13 @@ void flon_invoke_j(fdja_value *j)
     chdir(path);
     freopen(out, "w", stdout);
 
-    if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
+    if (setsid() == -1) { fgaj_r("setsid() failed"); return 127; }
 
     r = execl("/bin/sh", "", "-c", cmd, NULL);
 
     fgaj_r("execl failed (%i)", r);
 
-    _exit(127);
+    return 127;
   }
   else // parent
   {
@@ -137,5 +137,7 @@ void flon_invoke_j(fdja_value *j)
   }
 
   // no resource cleanup, we exit.
+
+  return 0;
 }
 
