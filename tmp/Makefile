@@ -54,7 +54,7 @@ is: $(IDEPS)
 
 sc: cs
 	time ./cs
-sd: ds
+sd: ds invoker
 	time ./ds
 sx: xs
 	time ./xs
@@ -64,7 +64,7 @@ si: is
 vsc: cs
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
-vsd: ds
+vsd: ds invoker
 	valgrind --leak-check=full -v ./ds
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
 vsx: xs
@@ -75,10 +75,13 @@ vsi: is
 	#valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
 
-#flon-executor: $(XDEPS)
-#
-#executor: flon-executor
-#	mv flon-executor ../bin
+flon-executor: $(XDEPS)
+flon-invoker: $(IDEPS)
+
+executor: flon-executor
+	mv flon-executor ../tst/bin/
+invoker: flon-invoker
+	mv flon-invoker ../tst/bin/
 
 spec:
 	$(MAKE) sc
