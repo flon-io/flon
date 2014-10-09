@@ -17,7 +17,8 @@ context "flon-invoker"
   {
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
-    fgaj_conf_get()->params = stderr;
+    fgaj_conf_get()->out = stderr;
+    fgaj_conf_get()->params = NULL;
 
     flon_configure_j(fdja_c(""
       "invoker: {\n"

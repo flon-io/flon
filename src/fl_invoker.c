@@ -63,7 +63,8 @@ void flon_invoke_j(fdja_value *j)
 
   char *err = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
   freopen(err, "a", stderr);
-  fgaj_conf_get()->params = stderr;
+  fgaj_conf_get()->out = stderr;
+  fgaj_conf_get()->params = NULL;
 
   fgaj_i("invid: %s", invid);
   fgaj_i("invocation: %s", fdja_to_json(invocation));
