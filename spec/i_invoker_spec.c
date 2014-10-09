@@ -43,18 +43,18 @@ context "flon-invoker"
 
       sleep(1);
 
-      char *s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", invid);
+      char *s = flu_readall("../tst/var/spool/dis/inv_%s_ret.json", invid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/invocations/%s.txt", invid);
+      s = flu_readall("../tst/var/log/inv/%s.txt", invid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
-      flu_unlink("../tst/var/spool/in/inv_%s_ret.json", invid);
-      flu_unlink("../tst/var/log/invocations/%s.txt", invid);
+      flu_unlink("../tst/var/spool/dis/inv_%s_ret.json", invid);
+      flu_unlink("../tst/var/log/inv/%s.txt", invid);
     }
   }
 }

@@ -106,7 +106,7 @@ int flon_invoke_j(fdja_value *j)
   }
   else if (i == 0) // child
   {
-    char *out = flu_sprintf("%s/var/spool/in/inv_%s_ret.json", dir, invid);
+    char *out = flu_sprintf("%s/var/spool/dis/inv_%s_ret.json", dir, invid);
 
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);

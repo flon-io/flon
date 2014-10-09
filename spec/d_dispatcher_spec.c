@@ -38,7 +38,7 @@ context "flon-dispatcher"
     it "dispatches invocations"
     {
       id = flon_generate_id();
-      path = flu_sprintf("../tst/var/spool/in/inv_%s.json", id);
+      path = flu_sprintf("../tst/var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(
         path,
@@ -57,24 +57,24 @@ context "flon-dispatcher"
 
       sleep(2);
 
-      s = flu_readall("../tst/var/spool/in/inv_%s_ret.json", id);
+      s = flu_readall("../tst/var/spool/dis/inv_%s_ret.json", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/invocations/%s.txt", id);
+      s = flu_readall("../tst/var/log/inv/%s.txt", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
-      flu_unlink("../tst/var/spool/in/inv_%s_ret.json", id);
-      flu_unlink("../tst/var/log/invocations/%s.txt", id);
+      flu_unlink("../tst/var/spool/dis/inv_%s_ret.json", id);
+      flu_unlink("../tst/var/log/inv/%s.txt", id);
     }
 
     it "rejects files it doesn't understand"
     {
       id = flon_generate_id();
-      path = flu_sprintf("../tst/var/spool/in/inv_%s.json", id);
+      path = flu_sprintf("../tst/var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(path, "NADA");
       expect(r == 1);
