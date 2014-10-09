@@ -136,32 +136,23 @@ char flon_fstat(const char *path)
   else return 0;
 }
 
-int flon_move(const char *origin, const char *destination)
+int flon_move(const char *orig, const char *dest)
 {
-  char *od = strdup(origin);
-  char *ob = strdup(origin);
-  char *odn = dirname(od);
-  char *obn = basename(ob);
-  int oid = flon_isdir(origin);
+  if (flon_fstat(orig) == 0) return 1;
 
-  printf("origin");
-  printf("%s\n", origin);
-  printf("dn: %s\n", odn);
-  printf("bn: %s\n", obn);
-  printf("dir? %i\n", oid);
+  char *np = dest;
 
-  char *dd = strdup(destination);
-  char *db = strdup(destination);
-  char *ddn = dirname(dd);
-  char *dbn = basename(db);
-  int did = flon_isdir(destination);
+  if (flon_fstat(dest) == 'd')
+  {
+    char *ob = strdup(orig);
+    char *obn = basename(ob);
+    np = flu_sprintf("%s/%s", dest, obn);
+    free(ob);
+  }
 
-  printf("destination");
-  printf("%s\n", destination);
-  printf("dn: %s\n", ddn);
-  printf("bn: %s\n", dbn);
-  printf("dir? %i\n", did);
+  int r = rename(orig, np);
+  if (np != dest) free(np);
 
-  return 1;
+  return r;
 }
 

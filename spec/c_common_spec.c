@@ -6,6 +6,8 @@
 //
 
 #include <errno.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "flutil.h"
 #include "fl_common.h"
@@ -134,16 +136,34 @@ context "common"
     before each
     {
       flu_writeall("a.txt", "alright");
+      mkdir("_test0", 0755);
+      mkdir("_test0/d0", 0755);
+      flu_writeall("_test0/d0/b.txt", "blighty");
+      mkdir("_test1", 0755);
+    }
+    after each
+    {
+      unlink("a.txt");
+      system("rm -fR _test0");
+      system("rm -fR _test1");
     }
 
     it "moves a file to a dir"
     {
-      int r = flon_move("./a.txt", "../tst/var/spool/rejected/");
+      int r = flon_move("./a.txt", "_test0");
 
       expect(r == 0);
 
-      expect(flu_readall("../tst/var/spool/rejected/a.txt") ===f "alright");
-      expect(unlink("../tst/var/spool/rejected/a.txt") == 0);
+      expect(flu_readall("_test0/a.txt") ===f "alright");
+    }
+
+    it "moves a file to a dir/"
+    {
+      int r = flon_move("./a.txt", "_test0/");
+
+      expect(r == 0);
+
+      expect(flu_readall("_test0/a.txt") ===f "alright");
     }
 
     it "renames a file"
@@ -157,7 +177,29 @@ context "common"
     }
 
     it "moves a dir to another dir"
+    {
+      int r = flon_move("_test0/d0", "_test1");
+
+      expect(r == 0);
+
+      expect(flu_readall("_test1/d0/b.txt") ===f "blighty");
+    }
+
     it "moves a dir to another dir with another filename"
+    {
+      int r = flon_move("_test0/d0", "_test1/d1");
+
+      expect(r == 0);
+
+      expect(flu_readall("_test1/d1/b.txt") ===f "blighty");
+    }
+
+    it "returns 1 if the source file doesn't exist"
+    {
+      int r = flon_move("_test9", "_test8");
+
+      expect(r == 1);
+    }
   }
 }
 
