@@ -27,9 +27,15 @@
 
 #include <stdio.h>
 
+#include "gajeta.h"
 
-int main()
+
+int main(int argc, char *argv[])
 {
-  puts("hello from " __FILE__);
+  if (argc < 2) { fgaj_e("missing incoming invocation file as arg"); return 1; }
+
+  fgaj_i("invocation in %s", argv[1]);
+
+  return 0;
 }
 

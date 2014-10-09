@@ -61,11 +61,15 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 
     if (chdir(dir) != 0) { fgaj_r("failed to chdir()"); _exit(127); }
 
-    //char *fn = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
-    //freopen(fn, "a", stderr);
+    char *dp = strdup(path);
+    char *bn = basename(dp);
+    //printf("bn: %s\n", bn);
 
-    char *cmd = "bin/flon-invoker nada";
-      // TODO fetch from conf...
+    char *fn = flu_sprintf("var/log/invocations/%s.txt", bn);
+    freopen(fn, "a", stderr);
+
+    char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+    char *cmd = flu_sprintf("%s %s", invoker_bin, path);
     fgaj_i("cmd is >%s<", cmd);
 
     // TODO set stdin and stdout...
