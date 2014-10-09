@@ -7,4 +7,5 @@ tmp/s
 tmp/[cixdl]s
 tmp/spec_*.txt
 bin/*
+tst/bin/*
 
