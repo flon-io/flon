@@ -100,8 +100,10 @@ static void fgaj_init()
   // determine logger
 
   fgaj__conf->logger = fgaj_color_file_logger;
-  //
-  //fgaj__conf->params = stdout;
+  fgaj__conf->out = NULL;
+
+  // no need for params with fgaj_color_file_logger (for now)
+
   fgaj__conf->params = NULL;
 }
 
@@ -202,7 +204,7 @@ char *fgaj_now()
 
 static FILE *fgaj_determine_out_file(FILE *def)
 {
-  FILE *f = (FILE *)fgaj__conf->params;
+  FILE *f = (FILE *)fgaj__conf->out;
 
   if (f) return f;
   if (f == NULL && def != NULL) return def;
@@ -248,7 +250,7 @@ void fgaj_string_logger(char level, const char *pref, const char *msg)
   char *l = fgaj_level_to_string(level);
   char *s = flu_sprintf("*** %s %s %s", l, pref, msg);
   fgaj_level_string_free(l);
-  fgaj__conf->params = s;
+  fgaj__conf->out = s;
 }
 
 void fgaj_grey_logger(char level, const char *pref, const char *msg)
@@ -257,7 +259,22 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
 
   char *lstr = fgaj_level_to_string(level);
 
-  fprintf(f, "[1;30m%19s %-38s %s[0;0m\n", lstr, pref, msg);
+  char *cgrey = "[1;30m";
+  char *cclear = "[0;0m";
+  if (isatty(fileno(f)) != 1) { cgrey = ""; cclear = ""; }
+
+  int indent = 10;
+  //
+  if (fgaj__conf->params)
+  {
+    indent = flu_list_get(fgaj__conf->params, "indent");
+    if (indent < 0) indent = 0;
+  }
+
+  fprintf(
+    f,
+    "%s%*s %-*s %s%s\n",
+    cgrey, indent + 6, lstr, 0, pref, msg, cclear);
 
   fgaj_level_string_free(lstr);
 }

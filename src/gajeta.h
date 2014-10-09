@@ -59,6 +59,7 @@ typedef struct fgaj_conf {
   short utc;   // 1 = true, defaults to 0
   char *host;  // defaults to result of gethostname()
   fgaj_logger *logger;  // logger function
+  void *out;            // logging destination
   void *params;         // whatever suits the logger func
 } fgaj_conf;
 
@@ -79,7 +80,8 @@ void fgaj_conf_reset();
 void fgaj_color_file_logger(
   char level, const char *subject, const char *msg);
 
-/* Simple logger function. Used for testing.
+/* Simple logger function. Used for testing. Logs to a char[] placed in
+ * fgaj_conf_get()->out
  */
 void fgaj_string_logger(
   char level, const char *subject, const char *msg);
