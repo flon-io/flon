@@ -102,7 +102,7 @@ static int reject(const char *path, fdja_value *j)
 {
   int r = flu_move(path, "var/spool/rejected/");
 
-  if (r == 0) fgaj_i("rejected");
+  if (r == 0) fgaj_i("rejected %s", path);
   else fgaj_r("failed to move %s to var/spool/rejected", path);
 
   return r;
@@ -120,10 +120,6 @@ int flon_dispatch(const char *path)
 
   if (inv) return invoke(path, j, inv);
 
-  char *db = strdup(path);
-  char *b = basename(db);
-  fgaj_i("don't know how to deal with %s", b);
-  free(db);
   return reject(path, j);
 }
 
