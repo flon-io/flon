@@ -18,43 +18,51 @@ context "flon-invoker"
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
     fgaj_conf_get()->out = stderr;
-    fgaj_conf_get()->params = NULL;
 
-    flon_configure("../tst");
+    fgaj_conf_get()->params =
+      flu_d("indent", (void *)7, "pid", (void *)1, NULL);
+
+    chdir("../tst");
+    flon_configure(".");
   }
 
-  describe "flon_invoke_j()"
+  describe "flon_invoke()"
   {
     it "invokes"
     {
-      char *invid = flon_generate_id();
+      char *id = flon_generate_id();
+      char *path = flu_sprintf("var/spool/inv/inv_%s.json", id);
 
-      fdja_value *j = fdja_c(
+      flu_writeall(
+        path,
         "invocation: [ stamp, {}, [] ]\n"
+        "id: %s\n"
         "payload: {\n"
-          "_invocation_id: %s\n"
           "hello: world\n"
         "}\n",
-        invid
+        id
       );
 
-      //puts(fdja_to_json(j));
-      flon_invoke_j(j);
+      flon_invoke(path);
 
       sleep(1);
 
-      char *s = flu_readall("../tst/var/spool/dis/inv_%s_ret.json", invid);
+      expect(flu_canopath(".") $==f "/tst/");
+
+      char *s = flu_readall("var/spool/dis/ret_%s.json", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/inv/%s.txt", invid);
-      //printf(">>>\n%s<<<\n", s);
-      expect(s != NULL);
-      expect(strstr(s, " stamp.rb over.") != NULL);
+      flu_unlink("var/spool/inv/inv_%s.json", id);
+      flu_unlink("var/spool/dis/ret_%s.json", id);
 
-      flu_unlink("../tst/var/spool/dis/inv_%s_ret.json", invid);
-      flu_unlink("../tst/var/log/inv/%s.txt", invid);
+      //s = flu_readall("var/log/inv/%s.txt", id);
+      ////printf(">>>\n%s<<<\n", s);
+      //expect(s != NULL);
+      //expect(strstr(s, " stamp.rb over.") != NULL);
+      //
+      //flu_unlink("var/log/inv/%s.txt", id);
     }
   }
 }

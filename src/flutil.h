@@ -157,10 +157,46 @@ char *flu_freadall(FILE *in);
  */
 int flu_writeall(const char *path, ...);
 
+
+//
+// "path" functions
+
 /* Like unlink(2), but accepts a path format and arguments.
  * Returns 0 in case of success, like unlink.
  */
 int flu_unlink(const char *path, ...);
+
+/* It canonicalizes a path, like realpath().
+ * Unlike realpath(), it doesn't care if the path points to nowhere.
+ */
+char *flu_canopath(const char *path, ...);
+
+/* Given a path, returns its dir path.
+ */
+char *flu_dirname(const char *path, ...);
+
+/* Given a path, returns the file basename.
+ * If a new suffix is given (as a last char * arg) the file suffix
+ * (from the last dot) is replaced with the new_suffix (an example: ".json").
+ * If the new suffix doesn't begin with a dot, NULL is returned.
+ */
+char *flu_basename(const char *path, ...);
+
+/* If the path points to nowhere, returns 0 ('\0').
+ * If the path points to a directory, returns 'd'.
+ * Else returns 'f'.
+ */
+char flu_fstat(const char *path, ...);
+
+/* Moves a file (or a directory). Behaves much like the "mv" user command.
+ * Returns 0 in case of success.
+ *
+ * Basically, the signature is
+ * ```int flu_move(const char *path, const char *destination);```
+ * but one can do
+ * ```flu_move("src/%i/t.c", x, "arch/src/%i/t.c", y)```
+ */
+int flu_move(const char *path, ...);
 
 
 //
@@ -326,32 +362,6 @@ long long flu_getms();
 /* Returns the count of microseconds (10-6) since the Epoch.
  */
 long long flu_getMs();
-
-/* It canonicalizes a path, like realpath().
- * Unlike realpath(), it doesn't care if the path points to nowhere.
- */
-char *flu_canopath(const char *path, ...);
-
-/* Given a path, returns its dir path.
- */
-char *flu_dirname(const char *path);
-
-/* Given a path, returns the file basename.
- * If new_suffix is given the file suffix (from the last dot) is replaced
- * with the new_suffix (an example: ".json").
- */
-char *flu_basename(const char *path, const char *new_suffix);
-
-/* If the path points to nowhere, returns 0 ('\0').
- * If the path points to a directory, returns 'd'.
- * Else returns 'f'.
- */
-char flu_fstat(const char *path);
-
-/* Moves a file (or a directory). Behaves much like the "mv" user command.
- * Returns 0 in case of success.
- */
-int flu_move(const char *path, const char *destination);
 
 #endif // FLON_FLUTIL_H
 

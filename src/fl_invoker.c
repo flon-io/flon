@@ -38,39 +38,35 @@
 #include "fl_invoker.h"
 
 
-int flon_invoke_j(fdja_value *j)
+// TODO run invoker through Strace (which outputs by default to stderr)
+// TODO run invoker through Valgrind
+
+int flon_invoke(const char *path)
 {
-  char *dir = flon_conf_path("invoker.dir", ".");
+  fdja_value *inv = fdja_parse_obj_f(path);
 
-  //fgaj_d("invokers at %s", dir);
+  //printf(">>>\n%s\n<<<\n", fdja_to_json(inv));
 
-  fdja_value *invocation = fdja_lookup(j, "invocation");
+  fdja_value *invocation = fdja_lookup(inv, "invocation");
 
-  if (invocation == NULL)
-  {
+  if (invocation == NULL) {
     fgaj_e("no 'invocation' key in the message");
     return 1;
   }
 
-  fdja_value *payload = fdja_lookup(j, "payload");
+  fdja_value *payload = fdja_lookup(inv, "payload");
   if (payload == NULL) payload = fdja_v("{}");
 
-  char *invid = fdja_lookup_string(payload, "_invocation_id", NULL);
-
+  char *id = fdja_lookup_string(inv, "id", NULL);
   char *invoked = fdja_to_string(invocation->child);
+  char *invoker_path = flu_sprintf("usr/local/inv/%s", invoked);
 
-  char *path = flu_sprintf("%s/usr/local/invokers/%s", dir, invoked);
-
-  char *err = flu_sprintf("%s/var/log/invocations/%s.txt", dir, invid);
-  freopen(err, "a", stderr);
-  fgaj_conf_get()->out = stderr;
-  fgaj_conf_get()->params = NULL;
-
-  fgaj_i("invid: %s", invid);
+  fgaj_i("cwd: %s", getcwd(NULL, 0));
+  fgaj_i("id: %s", id);
   fgaj_i("invocation: %s", fdja_to_json(invocation));
-  fgaj_i("invoker at %s", path);
+  fgaj_i("invoker at %s", invoker_path);
 
-  char *inv_conf_path = flu_sprintf("%s/flon.json", path);
+  char *inv_conf_path = flu_sprintf("%s/flon.json", invoker_path);
   fdja_value *inv_conf = fdja_parse_obj_f(inv_conf_path);
 
   if (inv_conf == NULL)
@@ -106,16 +102,32 @@ int flon_invoke_j(fdja_value *j)
   }
   else if (i == 0) // child
   {
-    char *out = flu_sprintf("%s/var/spool/dis/inv_%s_ret.json", dir, invid);
+    fgaj_i("child, pid %i", getpid());
+
+    char *out = flu_sprintf("var/spool/dis/ret_%s.json", id);
 
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);
     //close(pds[0]);
 
-    chdir(path);
-    freopen(out, "w", stdout);
+    if (setsid() == -1)
+    {
+      fgaj_r("setsid() failed");
+      return 127;
+    }
 
-    if (setsid() == -1) { fgaj_r("setsid() failed"); return 127; }
+    if (freopen(out, "w", stdout) == NULL)
+    {
+      //fgaj_r("cwd: %s", getcwd(NULL, 0));
+      fgaj_r("failed to reopen child stdout to %s", out);
+      return 127;
+    }
+
+    if (chdir(invoker_path) != 0)
+    {
+      fgaj_r("failed to chdir to %s", invoker_path);
+      return 127;
+    }
 
     r = execl("/bin/sh", "", "-c", cmd, NULL);
 
@@ -133,7 +145,7 @@ int flon_invoke_j(fdja_value *j)
 
     // over, no wait
 
-    fgaj_i("invoked, pid %i", cmd, i); // weird pid, FIXME
+    fgaj_i("invoked >%s< pid %i", cmd, i);
   }
 
   // no resource cleanup, we exit.
