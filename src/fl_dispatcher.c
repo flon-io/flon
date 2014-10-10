@@ -76,11 +76,12 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
       fgaj_r("failed to reopen stderr to %s", fn);
       _exit(127);
     }
-    fgaj_i("pointing invoker stderr to %s", fn);
+    // stderr blackout past this point...
+    //fgaj_i("pointing invoker stderr to %s", fn);
 
     char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
 
-    fgaj_i("cmd is >%s %s<", invoker_bin, path);
+    //fgaj_i("cmd is >%s %s<", invoker_bin, path);
 
     int r = execl(invoker_bin, invoker_bin, path, NULL);
 
