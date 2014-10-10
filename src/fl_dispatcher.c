@@ -79,10 +79,10 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
     fgaj_i("pointing invoker stderr to %s", fn);
 
     char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
-    char *cmd = flu_sprintf("%s %s", invoker_bin, path);
-    fgaj_i("cmd is >%s<", cmd);
 
-    int r = execl("/bin/sh", "", "-c", cmd, NULL);
+    fgaj_i("cmd is >%s %s<", invoker_bin, path);
+
+    int r = execl(invoker_bin, invoker_bin, path, NULL);
 
     // fail zone...
 
