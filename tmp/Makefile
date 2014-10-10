@@ -76,6 +76,9 @@ vsi: is
 	#valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
 
+ssi: is
+	strace -r ./is
+
 flon-executor: $(XDEPS)
 flon-invoker: $(IDEPS)
 
