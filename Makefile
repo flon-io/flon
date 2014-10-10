@@ -11,12 +11,13 @@ upgrade:
 	cp -v ../djan/src/*.[ch] src/
 	cp -v ../flutil/src/*.[ch] src/
 
-cs: clean spec
-
 ctst:
-	rm -f tst/var/log/invocations/*.txt
-	rm -f tst/var/spool/in/*.json
+	rm -f tst/var/log/exe/*.txt
+	rm -f tst/var/log/inv/*.txt
+	rm -f tst/var/spool/dis/*.json
+	rm -f tst/var/spool/exe/*.json
+	rm -f tst/var/spool/inv/*.json
 	rm -f tst/var/spool/rejected/*.json
 
-.PHONY: spec clean upgrade cs ctst
+.PHONY: spec clean upgrade ctst
 
