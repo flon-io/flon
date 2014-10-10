@@ -20,7 +20,8 @@ context "flon-dispatcher"
     fgaj_conf_get()->out = stderr;
     fgaj_conf_get()->params = NULL;
 
-    flon_configure("../tst");
+    chdir("../tst");
+    flon_configure(".");
 
     char *id = NULL;
     char *path = NULL;
@@ -38,53 +39,57 @@ context "flon-dispatcher"
     it "dispatches invocations"
     {
       id = flon_generate_id();
-      path = flu_sprintf("../tst/var/spool/dis/inv_%s.json", id);
+      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(
         path,
         "{"
           "invocation: [ stamp, {}, [] ]\n"
+          "id: %s\n"
           "payload: {\n"
-            "_invocation_id: %s\n"
             "hello: world\n"
           "}\n"
-        "}", id
+        "}",
+        id
       );
       expect(r == 1);
 
       r = flon_dispatch(path);
-      expect(r == 1);
+      expect(r == 0);
 
-      sleep(2);
+      sleep(1);
 
-      s = flu_readall("../tst/var/spool/dis/inv_%s_ret.json", id);
+      s = flu_readall("var/spool/dis/ret_%s.json", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      s = flu_readall("../tst/var/log/inv/%s.txt", id);
+      s = flu_readall("var/log/inv/inv_%s.txt", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
-      flu_unlink("../tst/var/spool/dis/inv_%s_ret.json", id);
-      flu_unlink("../tst/var/log/inv/%s.txt", id);
+      expect(flu_fstat("var/spool/dis_%s.json", id) == 0);
+
+      flu_unlink("var/spool/dis/inv_%s_ret.json", id);
+      flu_unlink("var/log/inv/%s.txt", id);
     }
 
     it "rejects files it doesn't understand"
     {
       id = flon_generate_id();
-      path = flu_sprintf("../tst/var/spool/dis/inv_%s.json", id);
+      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(path, "NADA");
       expect(r == 1);
 
-      flon_dispatch(path);
+      r = flon_dispatch(path);
+      expect(r == 1);
 
-      s = flu_readall("../tst/var/spool/rejected/inv_%s.json", id);
+      s = flu_readall("var/spool/rejected/inv_%s.json", id);
       expect(s === "NADA");
 
-      flu_unlink("../tst/var/spool/rejected/inv_%s.json", id);
+      flu_unlink("var/spool/rejected/inv_%s.json", id);
     }
   }
 }

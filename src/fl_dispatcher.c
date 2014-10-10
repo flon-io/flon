@@ -52,29 +52,39 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
     pid_t j = fork();
 
     if (j < 0) { fgaj_r("fork 2 for invoker failed"); _exit(127); }
-    if (j != 0) { _exit(0); }
+    if (j != 0) { _exit(0); } // intermediate parent exits immediately
 
-    if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
+    if (setsid() == -1)
+    {
+      fgaj_r("setsid() failed");
+      _exit(127);
+    }
 
     char *dir = flon_conf_path("_root", ".");
     fgaj_i("dir is >%s<", dir);
 
-    if (chdir(dir) != 0) { fgaj_r("failed to chdir()"); _exit(127); }
+    if (chdir(dir) != 0)
+    {
+      fgaj_r("failed to chdir()");
+      _exit(127);
+    }
 
-    char *dp = strdup(path);
-    char *bn = basename(dp);
-    //printf("bn: %s\n", bn);
+    char *fn = flu_sprintf("var/log/inv/%s", flu_basename(path, ".txt"));
 
-    char *fn = flu_sprintf("var/log/invocations/%s.txt", bn);
-    freopen(fn, "a", stderr);
+    if (freopen(fn, "a", stderr) == NULL)
+    {
+      fgaj_r("failed to reopen stderr to %s", fn);
+      _exit(127);
+    }
+    fgaj_i("pointing invoker stderr to %s", fn);
 
     char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
     char *cmd = flu_sprintf("%s %s", invoker_bin, path);
     fgaj_i("cmd is >%s<", cmd);
 
-    // TODO set stdin and stdout...
-
     int r = execl("/bin/sh", "", "-c", cmd, NULL);
+
+    // fail zone...
 
     fgaj_r("execl failed (%i)", r);
 
@@ -84,7 +94,7 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
     fgaj_i("invoker forked");
   }
 
-  return 1;
+  return 0; // success
 }
 
 static int reject(const char *path, fdja_value *j)
@@ -94,7 +104,7 @@ static int reject(const char *path, fdja_value *j)
   if (r == 0) fgaj_i("rejected");
   else fgaj_r("failed to move %s to var/spool/rejected", path);
 
-  return 1;
+  return r;
 }
 
 int flon_dispatch(const char *path)
