@@ -129,6 +129,8 @@ int flon_invoke(const char *path)
       return 127;
     }
 
+    fflush(stderr);
+
     r = execl("/bin/sh", "", "-c", cmd, NULL);
 
     fgaj_r("execl failed (%i)", r);

@@ -71,17 +71,20 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 
     char *fn = flu_sprintf("var/log/inv/%s", flu_basename(path, ".txt"));
 
+    fflush(stderr);
+
     if (freopen(fn, "a", stderr) == NULL)
     {
       fgaj_r("failed to reopen stderr to %s", fn);
       _exit(127);
     }
-    // stderr blackout past this point...
-    //fgaj_i("pointing invoker stderr to %s", fn);
+    fgaj_i("pointing invoker stderr to %s", fn);
 
     char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
 
-    //fgaj_i("cmd is >%s %s<", invoker_bin, path);
+    fgaj_i("cmd is >%s %s<", invoker_bin, path);
+
+    fflush(stderr);
 
     int r = execl(invoker_bin, invoker_bin, path, NULL);
 
