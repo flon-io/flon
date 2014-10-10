@@ -268,10 +268,10 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
   //
   if (fgaj__conf->params)
   {
-    indent = (long)flu_list_get(fgaj__conf->params, "indent");
+    indent = strtol(fgaj__conf->params, NULL, 10);
     if (indent < 0) indent = 0;
 
-    if ((long)flu_list_get(fgaj__conf->params, "pid"))
+    if (strchr(fgaj__conf->params, 'p'))
     {
       pid = flu_sprintf(" %i", getpid());
     }
