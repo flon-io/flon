@@ -39,7 +39,7 @@
 
 static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 {
-  printf("invoke() >>>\n%s\n<<<\n", fdja_to_json(j));
+  //printf("invoke() >>>\n%s\n<<<\n", fdja_to_json(j));
 
   // as quickly as possible discard useless invocations
 

@@ -33,6 +33,8 @@
 
 int main(int argc, char *argv[])
 {
+  fgaj_conf_get()->out = stderr;
+
   if (argc < 2)
   {
     fgaj_e("missing incoming invocation file as arg");

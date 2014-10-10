@@ -30,6 +30,8 @@
 
 int main()
 {
+  fgaj_conf_get()->out = stderr;
+
   puts("hello from " __FILE__);
 }
 

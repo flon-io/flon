@@ -67,6 +67,7 @@ context "flon-dispatcher"
       s = flu_readall("var/log/inv/inv_%s.txt", id);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
+      expect(strstr(s, " invoked >ruby stamp.rb<") != NULL);
       expect(strstr(s, " stamp.rb over.") != NULL);
 
       expect(flu_fstat("var/spool/dis_%s.json", id) == 0);
@@ -84,7 +85,7 @@ context "flon-dispatcher"
       expect(r == 1);
 
       r = flon_dispatch(path);
-      expect(r == 1);
+      expect(r == 0);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", id);
       expect(s === "NADA");
