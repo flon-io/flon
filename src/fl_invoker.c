@@ -104,17 +104,17 @@ int flon_invoke(const char *path)
   {
     fgaj_i("child, pid %i", getpid());
 
-    char *out = flu_sprintf("var/spool/dis/ret_%s.json", id);
-
     close(pds[1]);
     dup2(pds[0], STDIN_FILENO);
-    //close(pds[0]);
+    close(pds[0]);
 
     if (setsid() == -1)
     {
       fgaj_r("setsid() failed");
       return 127;
     }
+
+    char *out = flu_sprintf("var/spool/dis/ret_%s.json", id);
 
     if (freopen(out, "w", stdout) == NULL)
     {
