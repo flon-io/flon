@@ -63,6 +63,7 @@ context "flon-dispatcher"
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
+      free(s);
 
       s = flu_readall("var/log/inv/inv_%s.txt", id);
       //printf(">>>\n%s<<<\n", s);
@@ -85,10 +86,37 @@ context "flon-dispatcher"
       expect(r == 1);
 
       r = flon_dispatch(path);
-      expect(r == 0);
+      expect(r == 1);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", id);
       expect(s === "NADA");
+
+      flu_unlink("var/spool/rejected/inv_%s.json", id);
+    }
+
+    it "rejects files it doesn't know how to dispatch"
+    {
+      id = flon_generate_id();
+      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
+
+      int r = flu_writeall(
+        path,
+        "{"
+          "nada: [ stamp, {}, [] ]\n"
+          "id: %s\n"
+          "payload: {\n"
+            "hello: world\n"
+          "}\n"
+        "}",
+        id
+      );
+      expect(r == 1);
+
+      r = flon_dispatch(path);
+      expect(r == 1);
+
+      s = flu_readall("var/spool/rejected/inv_%s.json", id);
+      expect(s ^== "{nada: [ stamp");
 
       flu_unlink("var/spool/rejected/inv_%s.json", id);
     }

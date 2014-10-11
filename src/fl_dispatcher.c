@@ -47,12 +47,14 @@ static int invoke(const char *path, fdja_value *j, fdja_value *inv)
 
   if (i < 0) { fgaj_r("fork 1 for invoker failed"); return 0; }
 
-  if (i == 0) // child
+  if (i == 0) // intermediate parent
   {
     pid_t j = fork();
 
     if (j < 0) { fgaj_r("fork 2 for invoker failed"); _exit(127); }
     if (j != 0) { _exit(0); } // intermediate parent exits immediately
+
+    // double forked child
 
     if (setsid() == -1)
     {
@@ -105,10 +107,10 @@ static int reject(const char *path, fdja_value *j)
 {
   int r = flu_move(path, "var/spool/rejected/");
 
-  if (r == 0) fgaj_i("rejected %s", path);
-  else fgaj_r("failed to move %s to var/spool/rejected", path);
+  if (r == 0) { fgaj_i("rejected %s", path); return 1; }
 
-  return r;
+  fgaj_r("failed to move %s to var/spool/rejected", path);
+  return 1;
 }
 
 int flon_dispatch(const char *path)
@@ -117,12 +119,18 @@ int flon_dispatch(const char *path)
 
   if (j == NULL) return reject(path, j);
 
-  fdja_value *inv = fdja_lookup(j, "invocation");
-
   // TODO reroute?
 
-  if (inv) return invoke(path, j, inv);
+  fdja_value *inv = fdja_lookup(j, "invocation");
 
-  return reject(path, j);
+  int r = -1;
+
+  if (inv) r = invoke(path, j, inv);
+  //else if (exe) r = execute(path, j, exe);
+  if (r == -1) r = reject(path, j);
+
+  fdja_value_free(j);
+
+  return r;
 }
 
