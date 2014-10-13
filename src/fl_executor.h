@@ -28,7 +28,7 @@
 #ifndef FL_EXECUTOR_H
 #define FL_EXECUTOR_H
 
-char *flon_execute_s(char *s);
+int flon_execute(const char *path);
 
 #endif // FL_EXECUTOR_H
 

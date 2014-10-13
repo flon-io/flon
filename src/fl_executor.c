@@ -25,22 +25,14 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <stdio.h>
+//#include <stdio.h>
 
-#include "djan.h"
+#include "gajeta.h"
 #include "fl_executor.h"
 
 
-char *flon_execute(fdja_value *v)
+int flon_execute(const char *path)
 {
-  // load execution
-  // apply message
-}
-
-char *flon_execute_s(char *s)
-{
-  fdja_value *v = fdja_parse(s);
-
-  return v ? flon_execute(v) : NULL;
+  return 0;
 }
 
