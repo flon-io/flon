@@ -32,6 +32,13 @@
 #include "fl_executor.h"
 
 
+// holding the current execution as a global variable
+
+static fdja_value *execution = NULL;
+
+//
+// execute and receive functions
+
 typedef int flon_exe_func(fdja_value *);
 
 // INVOKE
@@ -57,15 +64,17 @@ static name_function *name_functions[] = {
   NULL
 };
 
-static int flon_receive_j(fdja_value *rcv)
+static int flon_receive_j(fdja_value *msg)
 {
   // TODO
+  // TODO: hydrate
+
   return 1; // failure
 }
 
-static int flon_execute_j(fdja_value *exe)
+static int flon_execute_j(fdja_value *msg)
 {
-  fdja_value *x = fdja_lookup(exe, "execute");
+  fdja_value *x = fdja_lookup(msg, "execute");
   char *name = fdja_lookup_string(x, "0", NULL);
   flon_exe_func *func = NULL;
 
@@ -82,26 +91,22 @@ static int flon_execute_j(fdja_value *exe)
     fgaj_e("don't know how to execute \"%s\"", name); return 1;
   }
 
+  // TODO: hydrate
   // TODO: create node...
 
-  return func(exe);
+  return func(msg);
 }
 
 int flon_execute(const char *path)
 {
-  fdja_value *j = fdja_parse_obj_f(path);
+  fdja_value *msg = fdja_parse_obj_f(path);
 
-  // TODO: hydrate ?
-
-  if (j == NULL)
-  {
-    fgaj_r("couldn't read %s", path); return 1;
-  }
+  if (msg == NULL) { fgaj_r("couldn't read %s", path); return 1; }
 
   //printf(">>>\n%s\n<<<\n", fdja_to_json(j));
 
-  if (fdja_lookup(j, "execute")) return flon_execute_j(j);
-  if (fdja_lookup(j, "receive")) return flon_receive_j(j);
+  if (fdja_lookup(msg, "execute")) return flon_execute_j(msg);
+  if (fdja_lookup(msg, "receive")) return flon_receive_j(msg);
 
   fgaj_e("no 'execute' or 'receive' key in %s", path);
   return 1; // failure
