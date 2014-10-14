@@ -32,28 +32,38 @@
 #include "fl_executor.h"
 
 
-//typedef fabr_tree *fabr_p_func(
-//  const char *, size_t, size_t, fabr_parser *, int flags);
 typedef int flon_exe_func(fdja_value *);
 
 // INVOKE
-//
+
 static int exe_invoke(fdja_value *exe)
 {
-  return 1;
+  return 1; // failure
+}
+
+static int rcv_invoke(fdja_value *rcv)
+{
+  return 1; // failure
 }
 
 typedef struct {
   char *name;
-  flon_exe_func *function;
+  flon_exe_func *exe;
+  flon_exe_func *rcv;
 } name_function;
 
 static name_function *name_functions[] = {
-  &(name_function){ "invoke", exe_invoke },
+  &(name_function){ "invoke", exe_invoke, rcv_invoke },
   NULL
 };
 
-static int flon_exec(fdja_value *exe)
+static int flon_receive_j(fdja_value *rcv)
+{
+  // TODO
+  return 1; // failure
+}
+
+static int flon_execute_j(fdja_value *exe)
 {
   fdja_value *x = fdja_lookup(exe, "execute");
   char *name = fdja_lookup_string(x, "0", NULL);
@@ -64,7 +74,7 @@ static int flon_exec(fdja_value *exe)
   for (size_t i = 0; name_functions[i] != NULL; ++i)
   {
     name_function *nf = name_functions[i];
-    if (strcmp(nf->name, name) == 0) { func = nf->function; break; }
+    if (strcmp(nf->name, name) == 0) { func = nf->exe; break; }
   }
 
   if (func == NULL)
@@ -79,24 +89,21 @@ static int flon_exec(fdja_value *exe)
 
 int flon_execute(const char *path)
 {
-  fdja_value *exe = fdja_parse_obj_f(path);
+  fdja_value *j = fdja_parse_obj_f(path);
 
   // TODO: hydrate ?
 
-  if (exe == NULL)
+  if (j == NULL)
   {
-    fgaj_r("couldn't read exe msg at %s", path); return 1;
+    fgaj_r("couldn't read %s", path); return 1;
   }
 
-  //printf(">>>\n%s\n<<<\n", fdja_to_json(inv));
+  //printf(">>>\n%s\n<<<\n", fdja_to_json(j));
 
-  if (fdja_lookup(exe, "execute") == NULL)
-  {
-    fgaj_e("no 'execute' key in the message"); return 1;
-  }
+  if (fdja_lookup(j, "execute")) return flon_execute_j(j);
+  if (fdja_lookup(j, "receive")) return flon_receive_j(j);
 
-  //printf(">>>\n%s\n<<<\n", fdja_to_json(exe));
-
-  return flon_exec(exe);
+  fgaj_e("no 'execute' or 'receive' key in %s", path);
+  return 1; // failure
 }
 
