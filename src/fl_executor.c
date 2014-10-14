@@ -25,14 +25,78 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdio.h>
+#include <string.h>
 
+#include "djan.h"
 #include "gajeta.h"
 #include "fl_executor.h"
 
 
+//typedef fabr_tree *fabr_p_func(
+//  const char *, size_t, size_t, fabr_parser *, int flags);
+typedef int flon_exe_func(fdja_value *);
+
+// INVOKE
+//
+static int exe_invoke(fdja_value *exe)
+{
+  return 1;
+}
+
+typedef struct {
+  char *name;
+  flon_exe_func *function;
+} name_function;
+
+static name_function *name_functions[] = {
+  &(name_function){ "invoke", exe_invoke },
+  NULL
+};
+
+static int flon_exec(fdja_value *exe)
+{
+  fdja_value *x = fdja_lookup(exe, "execute");
+  char *name = fdja_lookup_string(x, "0", NULL);
+  flon_exe_func *func = NULL;
+
+  fgaj_d("name: '%s'", name);
+
+  for (size_t i = 0; name_functions[i] != NULL; ++i)
+  {
+    name_function *nf = name_functions[i];
+    if (strcmp(nf->name, name) == 0) { func = nf->function; break; }
+  }
+
+  if (func == NULL)
+  {
+    fgaj_e("don't know how to execute \"%s\"", name); return 1;
+  }
+
+  // TODO: create node...
+
+  return func(exe);
+}
+
 int flon_execute(const char *path)
 {
-  return 0;
+  fdja_value *exe = fdja_parse_obj_f(path);
+
+  // TODO: hydrate ?
+
+  if (exe == NULL)
+  {
+    fgaj_r("couldn't read exe msg at %s", path); return 1;
+  }
+
+  //printf(">>>\n%s\n<<<\n", fdja_to_json(inv));
+
+  if (fdja_lookup(exe, "execute") == NULL)
+  {
+    fgaj_e("no 'execute' key in the message"); return 1;
+  }
+
+  //printf(">>>\n%s\n<<<\n", fdja_to_json(exe));
+
+  return flon_exec(exe);
 }
 

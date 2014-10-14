@@ -45,13 +45,18 @@ int flon_invoke(const char *path)
 {
   fdja_value *inv = fdja_parse_obj_f(path);
 
+  if (inv == NULL)
+  {
+    fgaj_r("couldn't read inv msg at %s", path); return 1;
+  }
+
   //printf(">>>\n%s\n<<<\n", fdja_to_json(inv));
 
   fdja_value *invocation = fdja_lookup(inv, "invocation");
 
-  if (invocation == NULL) {
-    fgaj_e("no 'invocation' key in the message");
-    return 1;
+  if (invocation == NULL)
+  {
+    fgaj_e("no 'invocation' key in the message"); return 1;
   }
 
   fdja_value *payload = fdja_lookup(inv, "payload");

@@ -29,10 +29,10 @@ context "flon-executor"
     it "executes an invocation"
     {
       char *id = flon_generate_id();
-      char *path = flu_sprintf("var/spool/exe/exe_%s.json", id);
+      char *exe_path = flu_sprintf("var/spool/exe/exe_%s.json", id);
 
       flu_writeall(
-        path,
+        exe_path,
         "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
         "id: %s\n"
         "payload: {\n"
@@ -41,9 +41,19 @@ context "flon-executor"
         id
       );
 
-      int r = flon_execute(path);
+      int r = flon_execute(exe_path);
 
       expect(r == 0);
+
+      char *inv_path = flu_sprintf("var/spool/inv/inv_%s__0_0.json", id);
+
+      expect(flu_fstat(inv_path) == 'f');
+      // TODO: check payload for 'color: blue'
+
+      char *log_path = flu_sprintf("var/log/exe/%s.json", id);
+
+      expect(flu_fstat(inv_path) == 'f');
+      // TODO: check for logged activity
     }
   }
 }
