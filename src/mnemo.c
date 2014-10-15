@@ -34,26 +34,31 @@
 
 
 static char *fmne_syls[] = {
-  "a",  "i",   "u",   "e",   "o",
-  "ka", "ki",  "ku",  "ke",  "ko",  "kya", "kyu", "kyo",
-  "sa", "shi", "su",  "se",  "so",  "sha", "shu", "sho",
-  "ta", "chi", "tsu", "te",  "to",  "cha", "chu", "cho",
-  "na", "ni",  "nu",  "ne",  "no",  "nya", "nyu", "nyo",
-  "ha", "hi",  "fu",  "he",  "ho",//"hya", "hyu", "hyo",
-  "ma", "mi",  "mu",  "me",  "mo",  "mya", "myu", "myo",
-  "ya",        "yu",  "ye",  "yo",
-  "ra", "ri",  "ru",  "re",  "ro",  "rya", "ryu", "ryo",
-  "wa",
-  "ga", "gi",  "gu",  "ge",  "go",  "gya", "gyu", "gyo",
-  "za", "ji",  "zu",  "ze",  "zo",
-  "da",        "dzu", "de",  "do",  "ja",  "ju",  "jo",
-  "ba", "bi",  "bu",  "be",  "bo",  "bya", "byu", "byo",
-  "pa", "pi",  "pu",  "pe",  "po",  "pya", "pyu", "pyo",
-  "n",
+   "ba",  "bi",  "bu",  "be",  "bo",
+  "cha", "chi", "chu", "che", "cho",
+   "da",  "di",  "du",  "de",  "do",
+   "fa",  "fi",  "fu",  "fe",  "fo",
+   "ga",  "gi",  "gu",  "ge",  "go",
+   "ha",  "hi",  "hu",  "he",  "ho",
+   "ja",  "ji",  "ju",  "je",  "jo",
+   "ka",  "ki",  "ku",  "ke",  "ko",
+   "la",  "li",  "lu",  "le",  "lo",
+   "ma",  "mi",  "mu",  "me",  "mo",
+   "na",  "ni",  "nu",  "ne",  "no",
+   "pa",  "pi",  "pu",  "pe",  "po",
+   "ra",  "ri",  "ru",  "re",  "ro",
+   "sa",  "si",  "su",  "se",  "so",
+  "sha", "shi", "shu", "she", "sho",
+   "ta",  "ti",  "tu",  "te",  "to",
+  "tsa", "tsi", "tsu", "tse", "tso",
+   "wa",  "wi",  "wu",  "we",  "wo",
+   "ya",  "yi",  "yu",  "ye",  "yo",
+   "za",  "zi",  "zu",  "ze",  "zo",
 };
 static size_t fmne_syl_count = 100;
 
-static char *fmne_neg = "wi";
+//static char *fmne_neg = "wi";
+static char *fmne_neg = "xa";
 
 
 static void fmne_tos(long long i, FILE *f)
@@ -83,7 +88,7 @@ fmne_toi_result fmne_to_i(char *s)
 {
   fmne_toi_result r = { 0, 0 };
 
-  int sign = 1; if (strncmp(s, "wi", 2) == 0) { sign = -1; s = s + 2; }
+  int sign = 1; if (strncmp(s, fmne_neg, 2) == 0) { sign = -1; s = s + 2; }
 
   while (1)
   {
