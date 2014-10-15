@@ -26,15 +26,32 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <string.h>
+#include <dirent.h>
 
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_executor.h"
 
 
-// holding the current execution as a global variable
+#define ROW_SIZE 7
+  // how many execute message are processed before the executor
+  // scans /var/spool/exe again
 
+
+// global vars:
+//   the current execution and a list of
+//   outgoing executes and invokes
+
+static char *execution_id = NULL;
 static fdja_value *execution = NULL;
+
+static flu_list *executes = NULL;
+//static flu_list *invokes = NULL;
+static flu_list *errors = NULL;
+
+static size_t counter = 0;
+  // how many executions got carried out in this session?
+
 
 //
 // execute and receive functions
@@ -45,6 +62,7 @@ typedef int flon_exe_func(fdja_value *);
 
 static int exe_invoke(fdja_value *exe)
 {
+  puts("=== INVOKE ================================================!");
   return 1; // failure
 }
 
@@ -57,22 +75,21 @@ typedef struct {
   char *name;
   flon_exe_func *exe;
   flon_exe_func *rcv;
-} name_function;
+} flon_name_funcs;
 
-static name_function *name_functions[] = {
-  &(name_function){ "invoke", exe_invoke, rcv_invoke },
+static flon_name_funcs *name_functions[] = {
+  &(flon_name_funcs){ "invoke", exe_invoke, rcv_invoke },
   NULL
 };
 
-static int flon_receive_j(fdja_value *msg)
+static int receive_j(fdja_value *msg)
 {
   // TODO
-  // TODO: hydrate
 
   return 1; // failure
 }
 
-static int flon_execute_j(fdja_value *msg)
+static int execute_j(fdja_value *msg)
 {
   fdja_value *x = fdja_lookup(msg, "execute");
   char *name = fdja_lookup_string(x, "0", NULL);
@@ -82,7 +99,7 @@ static int flon_execute_j(fdja_value *msg)
 
   for (size_t i = 0; name_functions[i] != NULL; ++i)
   {
-    name_function *nf = name_functions[i];
+    flon_name_funcs *nf = name_functions[i];
     if (strcmp(nf->name, name) == 0) { func = nf->exe; break; }
   }
 
@@ -91,24 +108,101 @@ static int flon_execute_j(fdja_value *msg)
     fgaj_e("don't know how to execute \"%s\"", name); return 1;
   }
 
-  // TODO: hydrate
   // TODO: create node...
 
   return func(msg);
 }
 
-int flon_execute(const char *path)
+static void load_execution(const char *exid)
 {
-  fdja_value *msg = fdja_parse_obj_f(path);
+  if (execution_id) return;
 
-  if (msg == NULL) { fgaj_r("couldn't read %s", path); return 1; }
+  execution_id =
+    (char *)exid;
+  execution =
+    fdja_v("{ exid: \"%s\", trees: {}, nodes: {} }", exid);
 
-  //printf(">>>\n%s\n<<<\n", fdja_to_json(j));
+  executes = flu_list_malloc();
+  errors = flu_list_malloc();
+}
 
-  if (fdja_lookup(msg, "execute")) return flon_execute_j(msg);
-  if (fdja_lookup(msg, "receive")) return flon_receive_j(msg);
+static void reject(const char *reason, const char *fname, fdja_value *j)
+{
+  if (fname == NULL)
+  {
+    fname = fdja_lookup_string(j, "fname", NULL);
+  }
+  if (fname == NULL)
+  {
+  }
 
-  fgaj_e("no 'execute' or 'receive' key in %s", path);
-  return 1; // failure
+  flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
+  fgaj_i("%s, rejected %s", reason, fname);
+}
+
+static int name_matches(const char *n)
+{
+  if (strncmp(n, "exe_", 4) != 0 && strncmp(n, "rcv_", 4) != 0) return 0;
+  size_t l = strlen(execution_id);
+  if (n[4 + l] != '.') return 0;
+  return strncmp(n + 4, execution_id, l) == 0;
+}
+
+static void load_executes()
+{
+  fgaj_d("exid: %s", execution_id);
+
+  DIR *dir = opendir("var/spool/exe/");
+  struct dirent *de;
+
+  while ((de = readdir(dir)) != NULL)
+  {
+    fgaj_d("name: %s", de->d_name);
+
+    if ( ! name_matches(de->d_name)) continue;
+
+    fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
+
+    if (j == NULL) { reject("couldn't parse", de->d_name, NULL); continue; }
+
+    fdja_set(j, "fname", fdja_s(de->d_name));
+
+    flu_list_add(executes, j);
+  }
+}
+
+static void execute()
+{
+  while (1)
+  {
+    for (size_t i = 0; i < ROW_SIZE; ++i)
+    {
+      fdja_value *j = flu_list_shift(executes);
+
+      if (j == NULL) break;
+
+      printf("j: %s\n", fdja_to_json(j));
+
+      if (fdja_lookup(j, "execute"))
+        execute_j(j);
+      else if (fdja_lookup(j, "receive"))
+        receive_j(j);
+      else
+        reject("no 'execute' or 'receive' key", NULL, j);
+    }
+
+    load_executes();
+
+    if (executes->size < 1) break;
+  }
+}
+
+int flon_execute(const char *exid)
+{
+  load_execution(exid);
+  load_executes();
+  execute();
+
+  return 0; // success
 }
 

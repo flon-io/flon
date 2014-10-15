@@ -28,7 +28,7 @@
 #ifndef FL_EXECUTOR_H
 #define FL_EXECUTOR_H
 
-int flon_execute(const char *path);
+int flon_execute(const char *exid);
 
 #endif // FL_EXECUTOR_H
 

@@ -34,14 +34,14 @@ context "flon-executor"
       flu_writeall(
         exe_path,
         "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
-        "id: %s\n"
+        "exid: %s\n"
         "payload: {\n"
           "hello: world\n"
         "}\n",
         id
       );
 
-      int r = flon_execute(exe_path);
+      int r = flon_execute(id);
 
       expect(r == 0);
 
