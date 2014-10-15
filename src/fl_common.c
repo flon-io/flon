@@ -32,7 +32,7 @@
 
 #include "flutil.h"
 #include "djan.h"
-//#include "gajeta.h"
+#include "mnemo.h"
 #include "fl_common.h"
 
 
@@ -89,21 +89,21 @@ char *flon_conf_path(const char *key, char *def)
 
 char *flon_generate_id()
 {
+  // TODO: check if conf says "local time". Default to UTC.
+
   struct timeval tv;
   struct tm *tm;
+  char t[20];
+
   gettimeofday(&tv, NULL);
   tm = gmtime(&tv.tv_sec);
-  char *i = calloc(29, sizeof(char));
-  strftime(i, 29, "%Y%m%d.%H%M%S.000000", tm);
-  snprintf(i + 16, 7, "%06ld", tv.tv_usec);
+  strftime(t, 20, "%Y%m%d.%H%M", tm);
 
-  char *u = flon_conf_string("unit.id", "u0");
-  char *g = flon_conf_string("unit.group_id", "g0");
-  char *r = flu_sprintf("%s_%s_%s", u, g, i);
+  char *sus = fmne_to_s((tv.tv_sec % 60) * 1000000 + tv.tv_usec);
 
-  if (strcmp(u, "u0")) free(u);
-  if (strcmp(g, "g0")) free(g);
-  free(i);
+  char *r = flu_sprintf("%s.%s", t, sus);
+
+  free(sus);
 
   return r;
 }

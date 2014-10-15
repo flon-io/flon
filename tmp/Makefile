@@ -34,7 +34,7 @@ clean:
 	rm -f *.c
 	rm -f [cdxi]s
 
-DEPS=flutil.o gajeta.o aabro.o djan.o fl_common.o
+DEPS=flutil.o gajeta.o aabro.o djan.o mnemo.o fl_common.o
 DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o
 IDEPS=$(DEPS) fl_invoker.o

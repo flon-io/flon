@@ -202,7 +202,7 @@ int flu_move(const char *path, ...);
 //
 // flu_list
 //
-// a minimal list/stack/set with no ambition
+// a minimal list/stack/set without ambition
 
 typedef struct flu_node {
   struct flu_node *next;

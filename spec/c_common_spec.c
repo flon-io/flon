@@ -17,11 +17,6 @@ context "common"
   before each
   {
     flon_configure_j(fdja_c(
-      "unit: {\n"
-      "  id: u96\n"
-      "  group_id: g7\n"
-      "}\n"
-      "\n"
       "invoker: {\n"
       "  max_processes: 2\n"
       "  xyz: nada\n"
@@ -76,8 +71,9 @@ context "common"
       char *id = flon_generate_id();
 
       //printf("id: >%s<\n", id);
+
       expect(id != NULL);
-      expect(id ^== "u96_g7_");
+      expect(id ^== "20");
 
       free(id);
     }

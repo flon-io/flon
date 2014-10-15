@@ -10,6 +10,7 @@ upgrade:
 	cp -v ../gajeta/src/*.[ch] src/
 	cp -v ../djan/src/*.[ch] src/
 	cp -v ../flutil/src/*.[ch] src/
+	cp -v ../mnemo/src/*.[ch] src/
 
 ctst:
 	rm -f tst/var/log/exe/*.txt
