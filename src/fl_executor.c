@@ -62,8 +62,17 @@ typedef int flon_exe_func(fdja_value *);
 
 static int exe_invoke(fdja_value *exe)
 {
-  puts("=== INVOKE ================================================!");
-  return 1; // failure
+  char *nid = "0-0";
+
+  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
+  fdja_set(inv, "invoke", fdja_clone(fdja_lookup(exe, "execute")));
+  fdja_set(inv, "payload", fdja_clone(fdja_lookup(exe, "payload")));
+
+  fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
+
+  fdja_value_free(inv);
+
+  return 0; // success
 }
 
 static int rcv_invoke(fdja_value *rcv)

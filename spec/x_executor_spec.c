@@ -47,10 +47,18 @@ context "flon-executor"
 
       expect(flu_fstat("var/spool/processed/exe_%s.json", exid) == 'f');
 
-      char *inv_path = flu_sprintf("var/spool/inv/inv_%s__0_0.json", exid);
+      char *inv_path = flu_sprintf("var/spool/inv/inv_%s-0-0.json", exid);
 
       expect(flu_fstat(inv_path) == 'f');
-      // TODO: check payload for 'color: blue'
+
+      //puts(flu_readall(inv_path));
+
+      fdja_value *v = fdja_parse_f(inv_path);
+      expect(v != NULL);
+      expect(fdja_lookup_string(v, "exid", NULL) ===f exid);
+      expect(fdja_lookup_string(v, "nid", NULL) ===f "0-0");
+      expect(fdja_lookup_string(v, "payload.hello", NULL) ===f "world");
+      expect(fdja_lookup_string(v, "payload.color", NULL) ===f "blue");
 
       char *log_path = flu_sprintf("var/log/exe/%s.json", exid);
 

@@ -594,6 +594,11 @@ fdja_value *fdja_c(char *format, ...)
   return v;
 }
 
+fdja_value *fdja_clone(fdja_value *v)
+{
+  return v ? fdja_parse(fdja_to_json(v)) : NULL;
+}
+
 
 //
 // outputting

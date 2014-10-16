@@ -72,6 +72,8 @@ fdja_value *fdja_c(char *input, ...);
 //fdja_value *fdja_a(fdja_value *v0, ...);
 //fdja_value *fdja_o(char *k0, fdja_value *v0, ...);
 
+fdja_value *fdja_clone(fdja_value *v);
+
 char *fdja_to_json(fdja_value *v);
 char *fdja_to_djan(fdja_value *v);
 //char *fdja_to_radial(fdja_value *v);

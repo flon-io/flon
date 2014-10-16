@@ -19,6 +19,7 @@ ctst:
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
 	rm -f tst/var/spool/rejected/*.json
+	rm -f tst/var/spool/processed/*.json
 
 .PHONY: spec clean upgrade ctst
 
