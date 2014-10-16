@@ -58,7 +58,7 @@ static size_t counter = 0;
 
 typedef int flon_exe_func(fdja_value *);
 
-// INVOKE
+// *** INVOKE
 
 static int exe_invoke(fdja_value *exe)
 {
@@ -70,6 +70,8 @@ static int rcv_invoke(fdja_value *rcv)
 {
   return 1; // failure
 }
+
+// function table
 
 typedef struct {
   char *name;
@@ -110,7 +112,12 @@ static int execute_j(fdja_value *msg)
 
   // TODO: create node...
 
-  return func(msg);
+  int r = func(msg);
+
+  char *fname = fdja_lookup_string(msg, "fname", NULL);
+  if (fname) flu_move("var/spool/exe/%s", fname, "var/spool/processed");
+
+  return r;
 }
 
 static void load_execution(const char *exid)
@@ -157,9 +164,9 @@ static void load_executes()
 
   while ((de = readdir(dir)) != NULL)
   {
-    fgaj_d("name: %s", de->d_name);
-
     if ( ! name_matches(de->d_name)) continue;
+
+    fgaj_d("name: %s", de->d_name);
 
     fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
 
@@ -175,13 +182,13 @@ static void execute()
 {
   while (1)
   {
+    load_executes();
+
     for (size_t i = 0; i < ROW_SIZE; ++i)
     {
       fdja_value *j = flu_list_shift(executes);
 
       if (j == NULL) break;
-
-      printf("j: %s\n", fdja_to_json(j));
 
       if (fdja_lookup(j, "execute"))
         execute_j(j);
@@ -191,8 +198,6 @@ static void execute()
         reject("no 'execute' or 'receive' key", NULL, j);
     }
 
-    load_executes();
-
     if (executes->size < 1) break;
   }
 }
@@ -200,7 +205,6 @@ static void execute()
 int flon_execute(const char *exid)
 {
   load_execution(exid);
-  load_executes();
   execute();
 
   return 0; // success

@@ -28,8 +28,8 @@ context "flon-executor"
   {
     it "executes an invocation"
     {
-      char *id = flon_generate_id();
-      char *exe_path = flu_sprintf("var/spool/exe/exe_%s.json", id);
+      char *exid = flon_generate_id();
+      char *exe_path = flu_sprintf("var/spool/exe/exe_%s.json", exid);
 
       flu_writeall(
         exe_path,
@@ -38,19 +38,21 @@ context "flon-executor"
         "payload: {\n"
           "hello: world\n"
         "}\n",
-        id
+        exid
       );
 
-      int r = flon_execute(id);
+      int r = flon_execute(exid);
 
       expect(r == 0);
 
-      char *inv_path = flu_sprintf("var/spool/inv/inv_%s__0_0.json", id);
+      expect(flu_fstat("var/spool/processed/exe_%s.json", exid) == 'f');
+
+      char *inv_path = flu_sprintf("var/spool/inv/inv_%s__0_0.json", exid);
 
       expect(flu_fstat(inv_path) == 'f');
       // TODO: check payload for 'color: blue'
 
-      char *log_path = flu_sprintf("var/log/exe/%s.json", id);
+      char *log_path = flu_sprintf("var/log/exe/%s.json", exid);
 
       expect(flu_fstat(inv_path) == 'f');
       // TODO: check for logged activity
