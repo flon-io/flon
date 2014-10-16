@@ -92,6 +92,7 @@ typedef enum fabr_p_type
   fabr_pt_string,
   fabr_pt_rep,
   fabr_pt_alt,
+  fabr_pt_altg,
   fabr_pt_seq,
   fabr_pt_not,
   fabr_pt_name,
@@ -107,14 +108,15 @@ typedef enum fabr_p_type
 
 char *fabr_p_names[] = { // const ?
   "string",
-  "rep", "alt", "seq",
+  "rep", "alt", "altg", "seq",
   "not", "name", "presence", "absence", "n",
   "r", "q", "range", "rex",
   "error"
 };
 
 static void fabr_t_to_s(
-  fabr_tree *t, const char *input, flu_sbuffer *b, size_t indent, int children)
+  fabr_tree *t, const char *input,
+  flu_sbuffer *b, size_t indent, short children, short color)
 {
   for (size_t i = 0; i < indent; i++) flu_sbprintf(b, "  ");
 
@@ -124,15 +126,19 @@ static void fabr_t_to_s(
     return;
   }
 
+  char *stringc = color ? "[1;33m" : "";
+  char *clearc = color ? "[0;0m" : "";
+
   char *name = "null";
   char *note = "null";
+  char *resultc = ""; if (color) resultc = t->result ? "[0;32m" : "[0;0m";
   if (t->name) name = flu_sprintf("\"%s\"", t->name);
   if (t->note) note = flu_sprintf("\"%s\"", t->note);
   //
   flu_sbprintf(
     b,
-    "[ %s, %d, %d, %d, %s, \"%s-%s\", ",
-    name, t->result, t->offset, t->length,
+    "%s[ %s, %d, %d, %d, %s, \"%s-%s\", ",
+    resultc, name, t->result, t->offset, t->length,
     note, fabr_p_names[t->parser->type], t->parser->id);
   //
   if (t->name) free(name);
@@ -141,7 +147,7 @@ static void fabr_t_to_s(
   if (children != 1 && (input == NULL || t->result != 1 || t->child))
   {
     size_t cc = 0; for (fabr_tree *c = t->child; c; c = c->sibling) ++cc;
-    flu_sbprintf(b, "%zu ]", cc);
+    flu_sbprintf(b, "%zu ]%s", cc, clearc);
     return;
   }
 
@@ -149,12 +155,12 @@ static void fabr_t_to_s(
   {
     if (input == NULL || t->result != 1)
     {
-      flu_sbprintf(b, "[] ]");
+      flu_sbprintf(b, "[] ]%s", clearc);
     }
     else
     {
       char *s = flu_n_escape(input + t->offset, t->length);
-      flu_sbprintf(b, "\"%s\" ]", s);
+      flu_sbprintf(b, "\"%s%s%s\" ]%s", stringc, s, resultc, clearc);
       free(s);
     }
     return;
@@ -166,25 +172,25 @@ static void fabr_t_to_s(
   {
     if (c != t->child) flu_sbputc(b, ',');
     flu_sbputc(b, '\n');
-    fabr_t_to_s(c, input, b, indent + 1, children);
+    fabr_t_to_s(c, input, b, indent + 1, children, color);
   }
 
   flu_sbputc(b, '\n');
   for (int i = 0; i < indent; i++) flu_sbprintf(b, "  ");
-  flu_sbprintf(b, "] ]");
+  flu_sbprintf(b, "%s] ]%s", resultc, clearc);
 }
 
-char *fabr_tree_to_string(fabr_tree *t, const char *input)
+char *fabr_tree_to_string(fabr_tree *t, const char *input, short color)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
-  fabr_t_to_s(t, input, b, 0, 1);
+  fabr_t_to_s(t, input, b, 0, 1, color);
   return flu_sbuffer_to_string(b);
 }
 
-char *fabr_tree_to_str(fabr_tree *t, const char *input)
+char *fabr_tree_to_str(fabr_tree *t, const char *input, short color)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
-  fabr_t_to_s(t, input, b, 0, 0);
+  fabr_t_to_s(t, input, b, 0, 0, color);
   return flu_sbuffer_to_string(b);
 }
 
@@ -335,7 +341,8 @@ static void fabr_q_wrap(fabr_parser *last, fabr_parser *q)
   last->children = fabr_single_child(q);
 }
 
-static fabr_parser *fabr_wrap_children(fabr_parser *p, fabr_parser *c0, va_list ap)
+static fabr_parser *fabr_wrap_children(
+  fabr_parser *p, fabr_parser *c0, va_list ap)
 {
   if (c0->type == fabr_pt_q)
   {
@@ -440,9 +447,28 @@ fabr_parser *fabr_alt(fabr_parser *p, ...)
   return r;
 }
 
+fabr_parser *fabr_altg(fabr_parser *p, ...)
+{
+  fabr_parser *r = fabr_parser_malloc(fabr_pt_altg, NULL);
+
+  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
+
+  return r;
+}
+
 fabr_parser *fabr_n_alt(const char *name, fabr_parser *p, ...)
 {
   fabr_parser *r = fabr_parser_malloc(fabr_pt_alt, name);
+
+  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
+  fabr_do_name(r, r);
+
+  return r;
+}
+
+fabr_parser *fabr_n_altg(const char *name, fabr_parser *p, ...)
+{
+  fabr_parser *r = fabr_parser_malloc(fabr_pt_altg, name);
 
   va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
   fabr_do_name(r, r);
@@ -575,7 +601,8 @@ static void fabr_p_wchildren_to_s(
 static void fabr_p_alt_to_s(
   flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
 {
-  fabr_p_wchildren_to_s("alt", b, seen, indent, p);
+  fabr_p_wchildren_to_s(
+    p->type == fabr_pt_alt ? "alt" : "altg", b, seen, indent, p);
 }
 
 static void fabr_p_seq_to_s(
@@ -636,6 +663,7 @@ fabr_p_to_s_func *fabr_p_to_s_funcs[] = { // const ?
   fabr_p_string_to_s,
   fabr_p_rep_to_s,
   fabr_p_alt_to_s,
+  fabr_p_alt_to_s, // altg
   fabr_p_seq_to_s,
   fabr_p_not_to_s,
   fabr_p_name_to_s,
@@ -779,10 +807,10 @@ fabr_tree *fabr_p_alt(
   int flags)
 {
   short result = 0;
-  size_t length = 0;
 
   fabr_tree *first = NULL;
   fabr_tree *prev = NULL;
+  fabr_tree *winner = NULL;
 
   for (size_t i = 0; p->children[i] != NULL; i++)
   {
@@ -794,12 +822,26 @@ fabr_tree *fabr_p_alt(
     if (prev != NULL) prev->sibling = t;
     prev = t;
 
-    result = t->result;
-    if (result < 0) { break; }
-    if (result == 1) { length = t->length; break; }
+    if (t->result == 1) result = 1;
+    if (t->result < 0) result = t->result;
+
+    if (result < 0) break;
+    if (t->result != 1) continue;
+
+    if (p->type == fabr_pt_alt)
+    {
+      winner = t; break;
+    }
+    if (winner != NULL && t->length <= winner->length)
+    {
+      t->result = 0; continue;
+    }
+    if (winner) winner->result = 0;
+    winner = t;
   }
 
-  return fabr_tree_malloc(result, offset, length, NULL, p, first);
+  return fabr_tree_malloc(
+    result, offset, winner ? winner->length : 0, NULL, p, first);
 }
 
 fabr_tree *fabr_p_seq(
@@ -961,6 +1003,7 @@ fabr_p_func *fabr_p_funcs[] = { // const ?
   fabr_p_string,
   fabr_p_rep,
   fabr_p_alt,
+  fabr_p_alt, //altg
   fabr_p_seq,
   fabr_p_not_implemented, //fabr_p_not,
   fabr_p_name,
@@ -1092,12 +1135,18 @@ char *fabr_error_message(fabr_tree *t)
 
 fabr_tree *fabr_tree_lookup(fabr_tree *t, const char *name)
 {
-  if (t->name != NULL && strcmp(t->name, name) == 0) return t;
+  return fabr_subtree_lookup(&((fabr_tree){ .child = t }), name);
+}
 
+fabr_tree *fabr_subtree_lookup(fabr_tree *t, const char *name)
+{
   for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
   {
-    fabr_tree *r = fabr_tree_lookup(c, name);
-    if (r != NULL) return r;
+    if (name == NULL && c->name != NULL) return c;
+    if (name && c->name && strcmp(c->name, name) == 0) return c;
+
+    fabr_tree *r = fabr_subtree_lookup(c, name);
+    if (r) return r;
   }
 
   return NULL;
@@ -1290,7 +1339,7 @@ static fabr_parser *fabr_regroup_rex(fabr_p_type t, flu_list *children)
 
 static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
 {
-//printf("adrs(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
+  //printf("adrs(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
   size_t sl = strlen(s);
 
   flu_list *children = flu_list_malloc();
@@ -1350,14 +1399,14 @@ static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
       flu_list_unshift(children, r);
       p = NULL;
       si = si + ei + 1;
-//printf("post range >%s<\n", s + si + 1);
+      //printf("post range >%s<\n", s + si + 1);
       continue;
     }
 
     if (c == '(')
     {
       ssize_t ei = fabr_find_group_end(s + si + 1);
-//printf("group end for >%s< is at %i\n", s + si + 1, ei);
+      //printf("group end for >%s< is at %i\n", s + si + 1, ei);
       if (ei == -1)
       {
         p = fabr_error("group not closed >%s<", s + si);
@@ -1368,7 +1417,7 @@ static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
       flu_list_unshift(children, g);
       p = NULL;
       si = si + ei + 1;
-//printf("post group >%s<\n", s + si + 1);
+      //printf("post group >%s<\n", s + si + 1);
       continue;
     }
 
@@ -1409,7 +1458,7 @@ static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
 
 static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n)
 {
-//printf("adrG(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
+  //printf("adrG(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
   flu_list *children = flu_list_malloc();
 
   for (size_t i = 0, j = 0, stack = 0, range = 0; ; j++)
