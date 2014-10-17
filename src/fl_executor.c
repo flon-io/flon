@@ -68,6 +68,8 @@ static int exe_invoke(fdja_value *exe)
   fdja_set(inv, "invoke", fdja_lookup_c(exe, "execute"));
   fdja_set(inv, "payload", fdja_lookup_c(exe, "payload"));
 
+  fdja_merge(fdja_lookup(inv, "payload"), fdja_lookup(exe, "execute.1"));
+
   fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
 
   fdja_value_free(inv);
