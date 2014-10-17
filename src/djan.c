@@ -793,16 +793,18 @@ fdja_value *fdja_value_at(fdja_value *v, long n)
   return NULL;
 }
 
-fdja_value *fdja_lookup(fdja_value *v, const char *path)
+fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
 {
   if (fdja_path_parser == NULL) fdja_path_parser_init();
 
-  fabr_tree *t = fabr_parse_all(path, 0, fdja_path_parser);
+  char *p = flu_svprintf(path, ap);
 
-  if (t->result != 1) { fabr_tree_free(t); return NULL; }
+  fabr_tree *t = fabr_parse_all(p, 0, fdja_path_parser);
 
-  //printf("path >%s<\n", path);
-  //puts(fabr_tree_to_string(t, path));
+  if (t->result != 1) { fabr_tree_free(t); free(p); return NULL; }
+
+  //printf("p >%s<\n", p);
+  //puts(fabr_tree_to_string(t, p));
 
   fdja_value *vv = v;
 
@@ -811,13 +813,13 @@ fdja_value *fdja_lookup(fdja_value *v, const char *path)
   for (flu_node *n = l->first; n; n = n->next)
   {
     fabr_tree *tt = ((fabr_tree *)n->item)->child;
-    //puts(fabr_tree_to_string(tt, path));
+    //puts(fabr_tree_to_string(tt, p));
     char ltype = tt->name[0];
 
     if (ltype == 'i' && vv->type != 'a') { vv = NULL; break; }
     if (ltype == 'k' && vv->type != 'o') { vv = NULL; break; }
 
-    char *s = fabr_tree_string(path, tt);
+    char *s = fabr_tree_string(p, tt);
 
     if (ltype == 'i')
     {
@@ -838,45 +840,75 @@ fdja_value *fdja_lookup(fdja_value *v, const char *path)
 
   flu_list_free(l);
   fabr_tree_free(t);
+  free(p);
 
   return vv;
 }
 
-char *fdja_lookup_string(fdja_value *v, const char *path, char *def)
+fdja_value *fdja_lookup(fdja_value *v, const char *path, ...)
 {
-  fdja_value *vv = fdja_lookup(v, path);
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  va_end(ap);
 
-  return vv ? fdja_to_string(vv) : def;
+  return r;
 }
 
-long long fdja_lookup_int(fdja_value *v, const char *path, long long def)
+fdja_value *fdja_lookup_c(fdja_value *v, const char *path, ...)
 {
-  fdja_value *vv = fdja_lookup(v, path);
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  va_end(ap);
 
-  return vv ? fdja_to_int(vv) : def;
+  return r ? fdja_clone(r) : NULL;
 }
 
-int fdja_lookup_boolean(fdja_value *v, const char *path, int def)
+char *fdja_lookup_string(fdja_value *v, const char *path, ...)
 {
-  fdja_value *vv = fdja_lookup(v, path);
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  char *def = va_arg(ap, char *);
+  va_end(ap);
 
-  if (vv == NULL) return def;
-  if (vv->type == 't') return 1;
-  if (vv->type == 'f') return 0;
+  return r ? fdja_to_string(r) : def;
+}
+
+long long fdja_lookup_int(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  long long def = va_arg(ap, long long);
+  va_end(ap);
+
+  return r ? fdja_to_int(r) : def;
+}
+
+int fdja_lookup_boolean(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  int def = va_arg(ap, int);
+  va_end(ap);
+
+  if (r == NULL) return def;
+  if (r->type == 't') return 1;
+  if (r->type == 'f') return 0;
   return def;
 }
 
-int fdja_lookup_bool(fdja_value *v, const char *path, int def)
+int fdja_lookup_bool(fdja_value *v, const char *path, ...)
 {
-  fdja_value *vv = fdja_lookup(v, path);
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  int def = va_arg(ap, int);
+  va_end(ap);
 
-  if (vv == NULL) return def;
-
-  char *s = vv->source + vv->soff;
-  if (strncasecmp(s, "true", vv->slen) == 0) return 1;
-  if (strncasecmp(s, "yes", vv->slen) == 0) return 1;
-  if (strncasecmp(s, "false", vv->slen) == 0) return 0;
-  if (strncasecmp(s, "no", vv->slen) == 0) return 0;
+  if (r == NULL) return def;
+  char *s = r->source + r->soff;
+  if (strncasecmp(s, "true", r->slen) == 0) return 1;
+  if (strncasecmp(s, "yes", r->slen) == 0) return 1;
+  if (strncasecmp(s, "false", r->slen) == 0) return 0;
+  if (strncasecmp(s, "no", r->slen) == 0) return 0;
   return def;
 }
 
@@ -922,6 +954,27 @@ int fdja_set(fdja_value *object, const char *key, fdja_value *v)
       }
       break;
     }
+  }
+
+  return 1;
+}
+
+int fdja_merge(fdja_value *dst, fdja_value *src)
+{
+  if (dst->type != 'o' || src->type != 'o') return 0;
+
+  fdja_value *last = dst->child;
+  while (last && last->sibling) { last = last->sibling; }
+
+  for (fdja_value *c = src->child; c != NULL; c = c->sibling)
+  {
+    fdja_value *cc = fdja_clone(c);
+    cc->key = strdup(c->key);
+
+    if (last) last->sibling = cc;
+    else dst->child = cc;
+
+    last = cc;
   }
 
   return 1;
@@ -1027,9 +1080,10 @@ int fdja_psetf(fdja_value *start, const char *path, ...)
   va_end(ap);
 
   fdja_value *v = fdja_parse(s);
-  if (v == NULL) return 0;
+  int r = v ? fdja_pset(start, p, v) : 0;
 
-  int r = fdja_pset(start, p, v);
+  if (r == 0 && v != NULL) fdja_free(v);
+
   free(p);
 
   return r;
