@@ -108,7 +108,7 @@ static int execute_j(fdja_value *msg)
   char *name = fdja_lookup_string(x, "0", NULL);
   flon_exe_func *func = NULL;
 
-  fgaj_d("name: '%s'", name);
+  fgaj_d("node name: '%s'", name);
 
   for (size_t i = 0; name_functions[i] != NULL; ++i)
   {
@@ -182,7 +182,7 @@ static void load_executes()
   {
     if ( ! name_matches(de->d_name)) continue;
 
-    fgaj_d("name: %s", de->d_name);
+    fgaj_d("fname: %s", de->d_name);
 
     fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
 

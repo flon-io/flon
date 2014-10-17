@@ -60,9 +60,6 @@ context "flon-executor"
       expect(fdja_lookup_string(v, "payload.args.color", NULL) ===f "blue");
       fdja_free(v);
 
-      expect(flu_fstat("var/log/exe/%s.json", exid) == 'f');
-      // TODO: check for logged activity
-
       free(exid);
     }
   }
