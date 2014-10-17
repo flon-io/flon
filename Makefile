@@ -13,13 +13,15 @@ upgrade:
 	cp -v ../mnemo/src/*.[ch] src/
 
 ctst:
-	rm -f tst/var/log/exe/*.txt
-	rm -f tst/var/log/inv/*.txt
 	rm -f tst/var/spool/dis/*.json
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
 	rm -f tst/var/spool/rejected/*.json
 	rm -f tst/var/spool/processed/*.json
+	rm -f tst/var/run/*.json
+	rm -f tst/var/run/processed/*.json
+	rm -f tst/var/log/exe/*.txt
+	rm -f tst/var/log/inv/*.txt
 
 .PHONY: spec clean upgrade ctst
 

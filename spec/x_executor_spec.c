@@ -54,11 +54,23 @@ context "flon-executor"
       fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0-0.json", exid);
 
       expect(v != NULL);
-      expect(fdja_lookup_string(v, "exid", NULL) ===f exid);
-      expect(fdja_lookup_string(v, "nid", NULL) ===f "0-0");
-      expect(fdja_lookup_string(v, "payload.hello", NULL) ===f "world");
-      expect(fdja_lookup_string(v, "payload.args.color", NULL) ===f "blue");
+      expect(fdja_ls(v, "exid", NULL) ===f exid);
+      expect(fdja_ls(v, "nid", NULL) ===f "0-0");
+      expect(fdja_ls(v, "payload.hello", NULL) ===f "world");
+      expect(fdja_ls(v, "payload.args.color", NULL) ===f "blue");
       fdja_free(v);
+
+      v = fdja_parse_f("var/run/%s.json", exid);
+
+      expect(v != NULL);
+      expect(fdja_ls(v, "exid", NULL) ===f exid);
+
+      expect(fdja_to_json(fdja_l(v, "trees.original")) ===f ""
+        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
+
+      fdja_free(v);
+
+      // over.
 
       free(exid);
     }

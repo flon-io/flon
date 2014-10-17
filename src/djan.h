@@ -119,6 +119,12 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
   //
   // the last arg is the default value
 
+#define fdja_l(...) fdja_lookup(__VA_ARGS__)
+#define fdja_lc(...) fdja_lookup_c(__VA_ARGS__)
+#define fdja_ls(...) fdja_lookup_string(__VA_ARGS__)
+#define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
+#define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
+
 int fdja_push(fdja_value *array, fdja_value *v);
 int fdja_set(fdja_value *object, const char *key, fdja_value *v);
 
@@ -126,8 +132,9 @@ int fdja_merge(fdja_value *dst, fdja_value *src);
 
 int fdja_splice(fdja_value *array, long long start, size_t count, ...);
 
-int fdja_pset(fdja_value *start, const char *path, fdja_value *v);
+int fdja_pset(fdja_value *start, const char *path, ...);
   // pset(v, "cars.-1", v1) to push in cars array
+  // pset(v, "cars.%i", -1, v1) too
 
 int fdja_psetf(fdja_value *start, const char *path, ...);
 

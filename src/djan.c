@@ -1043,32 +1043,48 @@ int fdja_splice(fdja_value *array, long long start, size_t count, ...)
   return 1;
 }
 
-int fdja_pset(fdja_value *start, const char *path, fdja_value *v)
+int fdja_pset(fdja_value *start, const char *path, ...)
 {
-  char *lastdot = strrchr(path, '.');
+  int r = 0;
 
-  if (lastdot == NULL) return fdja_set(start, path, v);
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  fdja_value *v = va_arg(ap, fdja_value *);
+  va_end(ap);
+
+  char *lastdot = strrchr(p, '.');
+
+  if (lastdot == NULL)
+  {
+    r = fdja_set(start, p, v);
+    goto _over;
+  }
 
   char *key = lastdot + 1;
-  char *pat = strndup(path, lastdot - path);
+  char *pat = strndup(p, lastdot - p);
 
   fdja_value *target = fdja_lookup(start, pat);
   free(pat);
 
-  if (target == NULL) return 0;
+  if (target == NULL) goto _over;
 
   if (target->type == 'o')
   {
-    return fdja_set(target, key, v);
+    r = fdja_set(target, key, v);
+    goto _over;
   }
 
   if (target->type == 'a')
   {
-    if (strcmp(key, "]") == 0) return fdja_push(target, v);
-    return fdja_splice(target, strtol(key, NULL, 10), 1, v, NULL);
+    if (strcmp(key, "]") == 0) r = fdja_push(target, v);
+    else r = fdja_splice(target, strtol(key, NULL, 10), 1, v, NULL);
   }
 
-  return 0;
+_over:
+
+  free(p); // key depends on it...
+
+  return r;
 }
 
 int fdja_psetf(fdja_value *start, const char *path, ...)

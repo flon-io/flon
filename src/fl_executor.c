@@ -56,11 +56,11 @@ static size_t counter = 0;
 //
 // execute and receive functions
 
-typedef int flon_exe_func(fdja_value *);
+typedef int flon_exe_func(fdja_value *, fdja_value *);
 
 // *** INVOKE
 
-static int exe_invoke(fdja_value *exe)
+static int exe_invoke(fdja_value *node, fdja_value *exe)
 {
   char *nid = "0-0";
 
@@ -77,7 +77,7 @@ static int exe_invoke(fdja_value *exe)
   return 0; // success
 }
 
-static int rcv_invoke(fdja_value *rcv)
+static int rcv_invoke(fdja_value *node, fdja_value *rcv)
 {
   return 1; // failure
 }
@@ -104,11 +104,12 @@ static int receive_j(fdja_value *msg)
 
 static int execute_j(fdja_value *msg)
 {
-  fdja_value *x = fdja_lookup(msg, "execute");
-  char *name = fdja_lookup_string(x, "0", NULL);
+  char *nid = fdja_lookup_string(msg, "nid", "0-0");
+  char *name = fdja_lookup_string(msg, "execute.0", NULL);
+
   flon_exe_func *func = NULL;
 
-  fgaj_d("node name: '%s'", name);
+  fgaj_d("node: \"%s\" %s", name, nid);
 
   for (size_t i = 0; name_functions[i] != NULL; ++i)
   {
@@ -119,19 +120,29 @@ static int execute_j(fdja_value *msg)
   if (func == NULL)
   {
     fgaj_e("don't know how to execute \"%s\"", name);
+
     free(name);
     return 1;
   }
 
-  // TODO: create node...
+  free(name);
 
-  int r = func(msg);
+  fdja_value *node = fdja_v("{ tree: null, nid: \"%s\" }", nid);
+  fdja_pset(execution, "nodes.%s", nid, node);
+
+  if (fdja_size(fdja_lookup(execution, "trees")) < 1)
+  {
+    fdja_pset(execution, "trees.original", fdja_lookup_c(msg, "execute"));
+  }
+
+  int r = func(node, msg);
 
   char *fname = fdja_lookup_string(msg, "fname", NULL);
-  if (fname) flu_move("var/spool/exe/%s", fname, "var/spool/processed");
-
-  free(name);
-  if (fname) free(fname);
+  if (fname)
+  {
+    flu_move("var/spool/exe/%s", fname, "var/spool/processed");
+    free(fname);
+  }
 
   return r;
 }
@@ -140,10 +151,15 @@ static void load_execution(const char *exid)
 {
   if (execution_id) return;
 
-  execution_id =
-    (char *)exid;
-  execution =
-    fdja_v("{ exid: \"%s\", trees: {}, nodes: {}, errors: {} }", exid);
+  execution_id = (char *)exid;
+
+  execution = fdja_parse_f("/var/run/%s.json", exid);
+
+  if (execution == NULL)
+  {
+    execution = fdja_v(
+      "{ exid: \"%s\", trees: {}, nodes: {}, errors: {} }", exid);
+  }
 
   executes = flu_list_malloc();
   errors = flu_list_malloc();
@@ -199,6 +215,42 @@ static void load_executes()
   closedir(dir);
 }
 
+static void persist()
+{
+  int r;
+
+  if (fdja_size(fdja_lookup(execution, "nodes")) > 0)
+  {
+    // flow is running, persist it
+
+    r = fdja_to_json_f(execution, "var/run/%s.json", execution_id);
+
+    if (r == 1) return;
+
+    fgaj_r("failed to persist execution to var/run/%s.json", execution_id);
+    return;
+  }
+
+  // else, flow is over, archive it
+
+  r = fdja_to_json_f(execution, "var/run/processed/%s.json", execution_id);
+
+  if (r != 1)
+  {
+    fgaj_r(
+      "failed to archive execution to var/run/processed/%s.json",
+      execution_id);
+    return;
+  }
+
+  r = flu_unlink("var/run/%s.json", execution_id);
+
+  if (r != 0)
+  {
+    fgaj_r("failed to unlink execution at var/run/%s.json", execution_id);
+  }
+}
+
 static void execute()
 {
   while (1)
@@ -224,8 +276,7 @@ static void execute()
     if (executes->size < 1) break;
   }
 
-  // TODO: persist to /var/run/
-  //       or archive to /var/run/processed/
+  persist();
 }
 
 int flon_execute(const char *exid)
