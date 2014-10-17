@@ -118,7 +118,9 @@ static int execute_j(fdja_value *msg)
 
   if (func == NULL)
   {
-    fgaj_e("don't know how to execute \"%s\"", name); return 1;
+    fgaj_e("don't know how to execute \"%s\"", name);
+    free(name);
+    return 1;
   }
 
   // TODO: create node...
@@ -127,6 +129,9 @@ static int execute_j(fdja_value *msg)
 
   char *fname = fdja_lookup_string(msg, "fname", NULL);
   if (fname) flu_move("var/spool/exe/%s", fname, "var/spool/processed");
+
+  free(name);
+  if (fname) free(fname);
 
   return r;
 }
@@ -187,6 +192,8 @@ static void load_executes()
 
     flu_list_add(executes, j);
   }
+
+  closedir(dir);
 }
 
 static void execute()
@@ -207,6 +214,8 @@ static void execute()
         receive_j(j);
       else
         reject("no 'execute' or 'receive' key", NULL, j);
+
+      fdja_free(j);
     }
 
     if (executes->size < 1) break;

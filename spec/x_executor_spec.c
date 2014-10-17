@@ -29,10 +29,9 @@ context "flon-executor"
     it "executes an invocation"
     {
       char *exid = flon_generate_id();
-      char *exe_path = flu_sprintf("var/spool/exe/exe_%s.json", exid);
 
       flu_writeall(
-        exe_path,
+        "var/spool/exe/exe_%s.json", exid,
         "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
         "exid: %s\n"
         "payload: {\n"
@@ -45,25 +44,26 @@ context "flon-executor"
 
       expect(r == 0);
 
+      expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
       expect(flu_fstat("var/spool/processed/exe_%s.json", exid) == 'f');
 
-      char *inv_path = flu_sprintf("var/spool/inv/inv_%s-0-0.json", exid);
-
-      expect(flu_fstat(inv_path) == 'f');
+      expect(flu_fstat("var/spool/inv/inv_%s-0-0.json", exid) == 'f');
 
       //puts(flu_readall(inv_path));
 
-      fdja_value *v = fdja_parse_f(inv_path);
+      fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0-0.json", exid);
+
       expect(v != NULL);
       expect(fdja_lookup_string(v, "exid", NULL) ===f exid);
       expect(fdja_lookup_string(v, "nid", NULL) ===f "0-0");
       expect(fdja_lookup_string(v, "payload.hello", NULL) ===f "world");
       expect(fdja_lookup_string(v, "payload.args.color", NULL) ===f "blue");
+      fdja_free(v);
 
-      char *log_path = flu_sprintf("var/log/exe/%s.json", exid);
-
-      expect(flu_fstat(inv_path) == 'f');
+      expect(flu_fstat("var/log/exe/%s.json", exid) == 'f');
       // TODO: check for logged activity
+
+      free(exid);
     }
   }
 }
