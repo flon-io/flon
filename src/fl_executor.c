@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 
@@ -46,7 +47,6 @@ static char *execution_id = NULL;
 static fdja_value *execution = NULL;
 
 static flu_list *executes = NULL;
-//static flu_list *invokes = NULL;
 static flu_list *errors = NULL;
 
 static size_t counter = 0;
@@ -143,7 +143,7 @@ static void load_execution(const char *exid)
   execution_id =
     (char *)exid;
   execution =
-    fdja_v("{ exid: \"%s\", trees: {}, nodes: {} }", exid);
+    fdja_v("{ exid: \"%s\", trees: {}, nodes: {}, errors: {} }", exid);
 
   executes = flu_list_malloc();
   errors = flu_list_malloc();
@@ -157,6 +157,9 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
   }
   if (fname == NULL)
   {
+    fgaj_w("cannot reject msg without 'fname' key");
+    char *s  = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
+    return;
   }
 
   flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
@@ -220,6 +223,9 @@ static void execute()
 
     if (executes->size < 1) break;
   }
+
+  // TODO: persist to /var/run/
+  //       or archive to /var/run/processed/
 }
 
 int flon_execute(const char *exid)
