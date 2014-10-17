@@ -52,11 +52,11 @@ int flon_invoke(const char *path)
 
   //printf(">>>\n%s\n<<<\n", fdja_to_json(inv));
 
-  fdja_value *invocation = fdja_lookup(inv, "invocation");
+  fdja_value *invocation = fdja_lookup(inv, "invoke");
 
   if (invocation == NULL)
   {
-    fgaj_e("no 'invocation' key in the message"); return 1;
+    fgaj_e("no 'invoke' key in the message"); return 1;
   }
 
   fdja_value *payload = fdja_lookup(inv, "payload");

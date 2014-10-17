@@ -37,97 +37,97 @@
 #include "fl_dispatcher.h"
 
 
-static int invoke(const char *path, fdja_value *j, fdja_value *inv)
+static int double_fork(char *ctx, char *log_path, char *argv[])
 {
-  //printf("invoke() >>>\n%s\n<<<\n", fdja_to_json(j));
-
-  // as quickly as possible discard useless invocations
-
   pid_t i = fork();
 
-  if (i < 0) { fgaj_r("fork 1 for invoker failed"); return 0; }
+  if (i < 0) { fgaj_r("fork 1 for %s failed", ctx); return 0; }
 
   if (i == 0) // intermediate parent
   {
     pid_t j = fork();
 
-    if (j < 0) { fgaj_r("fork 2 for invoker failed"); _exit(127); }
+    if (j < 0) { fgaj_r("fork 2 for %s failed", ctx); _exit(127); }
     if (j != 0) { _exit(0); } // intermediate parent exits immediately
 
     // double forked child
 
-    if (setsid() == -1)
-    {
-      fgaj_r("setsid() failed");
-      _exit(127);
-    }
+    if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
 
     char *dir = flon_conf_path("_root", ".");
     fgaj_i("dir is >%s<", dir);
-
-    if (chdir(dir) != 0)
-    {
-      fgaj_r("failed to chdir()");
-      _exit(127);
-    }
-
-    char *fn = flu_sprintf("var/log/inv/%s", flu_basename(path, ".txt"));
+    if (chdir(dir) != 0) { fgaj_r("failed to chdir()"); _exit(127); }
 
     fflush(stderr);
 
-    if (freopen(fn, "a", stderr) == NULL)
+    if (freopen(log_path, "a", stderr) == NULL)
     {
-      fgaj_r("failed to reopen stderr to %s", fn);
+      fgaj_r("failed to reopen stderr to %s", log_path);
       _exit(127);
     }
-    fgaj_i("pointing invoker stderr to %s", fn);
+    fgaj_i("pointing invoker stderr to %s", log_path);
 
-    char *invoker_bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
-
-    fgaj_i("cmd is >%s %s<", invoker_bin, path);
+    fgaj_i("cmd is >%s %s<", argv[0], argv[1]);
 
     fflush(stderr);
 
-    int r = execl(invoker_bin, invoker_bin, path, NULL);
+    int r = execv(argv[0], argv);
 
     // fail zone...
 
-    fgaj_r("execl failed (%i)", r);
+    fgaj_r("execv failed (%i)", r);
+
+    fflush(stderr);
 
     _exit(127);
   }
   else { // parent
-    fgaj_i("invoker forked");
+
+    fgaj_i("%s forked", ctx);
   }
 
   return 0; // success
 }
 
-static int reject(const char *path, fdja_value *j)
+static int invoke(const char *path)
+{
+  char *bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+
+  return double_fork(
+    "invoker",
+    flu_sprintf("var/log/inv/%s", flu_basename(path, ".txt")),
+    (char *[]){ bin, (char *)path, NULL });
+}
+
+static int execute(const char *path, fdja_value *j)
+{
+  return 1; // failure
+}
+
+static int reject(const char *path)
 {
   int r = flu_move(path, "var/spool/rejected/");
 
-  if (r == 0) { fgaj_i("rejected %s", path); return 1; }
+  if (r == 0) fgaj_i("rejected %s", path);
+  else fgaj_r("failed to move %s to var/spool/rejected", path);
 
-  fgaj_r("failed to move %s to var/spool/rejected", path);
-  return 1;
+  return 1; // failure
 }
 
 int flon_dispatch(const char *path)
 {
   fdja_value *j = fdja_parse_obj_f(path);
 
-  if (j == NULL) return reject(path, j);
+  if (j == NULL) return reject(path);
 
   // TODO reroute?
 
-  fdja_value *inv = fdja_lookup(j, "invocation");
-
   int r = -1;
 
-  if (inv) r = invoke(path, j, inv);
-  //else if (exe) r = execute(path, j, exe);
-  if (r == -1) r = reject(path, j);
+  if (fdja_l(j, "invoke")) r = invoke(path);
+  else if (fdja_l(j, "execute")) r = execute(path, j);
+  //
+  if (r == -1) r = reject(path);
 
   fdja_value_free(j);
 

@@ -44,7 +44,7 @@ context "flon-dispatcher"
       int r = flu_writeall(
         path,
         "{"
-          "invocation: [ stamp, {}, [] ]\n"
+          "invoke: [ stamp, {}, [] ]\n"
           "id: %s\n"
           "payload: {\n"
             "hello: world\n"
