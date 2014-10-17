@@ -58,7 +58,7 @@ context "flon-executor"
       expect(fdja_lookup_string(v, "exid", NULL) ===f exid);
       expect(fdja_lookup_string(v, "nid", NULL) ===f "0-0");
       expect(fdja_lookup_string(v, "payload.hello", NULL) ===f "world");
-      expect(fdja_lookup_string(v, "payload.color", NULL) ===f "blue");
+      expect(fdja_lookup_string(v, "payload.args.color", NULL) ===f "blue");
 
       char *log_path = flu_sprintf("var/log/exe/%s.json", exid);
 
