@@ -90,6 +90,8 @@ char *flon_conf_path(const char *key, char *def)
 char *flon_generate_id()
 {
   // TODO: check if conf says "local time". Default to UTC.
+  // TODO: introduce 99 counter to the right
+  // TODO: move that to fl_ids.[hc]
 
   struct timeval tv;
   struct tm *tm;
