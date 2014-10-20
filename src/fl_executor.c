@@ -31,6 +31,7 @@
 
 #include "djan.h"
 #include "gajeta.h"
+#include "fl_node.h"
 #include "fl_executor.h"
 
 
@@ -118,6 +119,17 @@ static int exe_sequence(fdja_value *node, fdja_value *exe)
   printf("seq: node: %s\n", fdja_to_json(node));
   printf("seq: exe: %s\n", fdja_to_json(exe));
 
+  char *nid = fdja_ls(node, "nid", NULL);
+
+  fdja_value *exe0 = fdja_v("{ nid: \"%s.0\", execute: 1 }", nid);
+  fdja_set(exe0, "payload", fdja_lc(exe, "payload"));
+
+  printf("seq: exe0: %s\n", fdja_to_json(exe0));
+
+  free(nid);
+
+  flu_list_add(executes, exe0);
+
   return 0; // success
 }
 
@@ -166,7 +178,10 @@ static void move_to_processed(fdja_value *msg)
 static int execute_j(fdja_value *msg)
 {
   char *nid = fdja_ls(msg, "nid", "0");
-  char *name = fdja_ls(msg, "execute.0", NULL);
+  fdja_value *exe = fdja_l(msg, "execute");
+
+  if (exe->type == 'n') exe = flon_node_tree(execution, nid);
+  char *name = fdja_ls(msg, "0", NULL);
 
   fgaj_d("node: \"%s\" %s", name, nid);
 

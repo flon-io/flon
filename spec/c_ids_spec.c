@@ -1,6 +1,6 @@
 
 //
-// specifying flon-invoker
+// specifying fl_id
 //
 // Mon Oct 20 09:23:20 JST 2014
 //
@@ -11,7 +11,7 @@
 #include "fl_common.h"
 
 
-context "common: ids"
+context "fl_id"
 {
   before each
   {
