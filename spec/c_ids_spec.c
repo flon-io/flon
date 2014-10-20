@@ -19,6 +19,7 @@ context "common: ids"
       "unit: {\n"
       "  gid: g0\n"
       "  id: u0\n"
+      //"  time: local\n"
       "}\n"
       "invoker: {\n"
       "  max_processes: 2\n"
@@ -37,7 +38,7 @@ context "common: ids"
     {
       char *i = flon_generate_exid("test");
 
-      //printf("exid: %s\n", i);
+      //printf("      exid: %s\n", i);
 
       expect(i != NULL);
       expect(i ^== "test-g0.u0-20");

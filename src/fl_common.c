@@ -26,9 +26,6 @@
 #define _POSIX_C_SOURCE 200809L
 
 //#include <time.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <sys/time.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -82,6 +79,19 @@ char *flon_conf_path(const char *key, char *def)
   char *r = flu_canopath(v);
 
   if (v != def) free(v);
+
+  return r;
+}
+
+int flon_conf_is(const char *key, const char *val)
+{
+  fdja_value *v = flon_conf(key);
+  if (v == NULL) { return (val == NULL); }
+  char *s = fdja_to_string(v);
+
+  int r = (strcmp(s, val) == 0);
+
+  free(s);
 
   return r;
 }

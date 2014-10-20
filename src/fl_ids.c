@@ -40,16 +40,15 @@ static short counter = 0;
 
 char *flon_generate_exid(const char *domain)
 {
-  // TODO: check if conf says "local time". Default to UTC.
-
   char *uid = flon_conf_uid();
+  short local = flon_conf_is("unit.time", "local");
 
   struct timeval tv;
   struct tm *tm;
   char t[20];
 
   gettimeofday(&tv, NULL);
-  tm = gmtime(&tv.tv_sec);
+  tm = local ? localtime(&tv.tv_sec) : gmtime(&tv.tv_sec);
   strftime(t, 20, "%Y%m%d.%H%M", tm);
 
   char *sus =

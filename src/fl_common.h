@@ -39,6 +39,7 @@ int flon_conf_boolean(const char *key, int def);
 long long flon_conf_int(const char *key, long long def);
 char *flon_conf_string(const char *key, char *def);
 char *flon_conf_path(const char *key, char *def);
+int flon_conf_is(const char *key, const char *val);
 
 char *flon_conf_uid();
 

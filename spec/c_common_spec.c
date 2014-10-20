@@ -62,5 +62,30 @@ context "common"
       expect(flon_conf_path("_root", NULL) $==f "/flon/tst");
     }
   }
+
+  describe "flon_conf_is()"
+  {
+    it "returns 1 if the desired value matches the actual value"
+    {
+      expect(flon_conf_is("invoker.xyz", "nada") == 1);
+    }
+
+    it "returns 0 else"
+    {
+      expect(flon_conf_is("invoker.xyz", "nemo") == 0);
+    }
+
+    it "turns actual values into strings for the comparison"
+    {
+      expect(flon_conf_is("invoker.max_processes", "2") == 1);
+      expect(flon_conf_is("invoker.max_processes", "20") == 0);
+    }
+
+    it "accepts NULL (not set) as a desired value"
+    {
+      expect(flon_conf_is("executor.p2", "x") == 0);
+      expect(flon_conf_is("executor.p2", NULL) == 1);
+    }
+  }
 }
 
