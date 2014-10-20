@@ -116,15 +116,15 @@ static int rcv_invoke(fdja_value *node, fdja_value *rcv)
 
 static int exe_sequence(fdja_value *node, fdja_value *exe)
 {
-  printf("seq: node: %s\n", fdja_to_json(node));
-  printf("seq: exe: %s\n", fdja_to_json(exe));
+  //printf("seq: node: %s\n", fdja_to_json(node));
+  //printf("seq: exe: %s\n", fdja_to_json(exe));
 
   char *nid = fdja_ls(node, "nid", NULL);
 
   fdja_value *exe0 = fdja_v("{ nid: \"%s.0\", execute: 1 }", nid);
   fdja_set(exe0, "payload", fdja_lc(exe, "payload"));
 
-  printf("seq: exe0: %s\n", fdja_to_json(exe0));
+  //printf("seq: exe0: %s\n", fdja_to_json(exe0));
 
   free(nid);
 
@@ -177,11 +177,11 @@ static void move_to_processed(fdja_value *msg)
 
 static int execute_j(fdja_value *msg)
 {
-  char *nid = fdja_ls(msg, "nid", "0");
+  char *nid = fdja_lsd(msg, "nid", "0");
   fdja_value *exe = fdja_l(msg, "execute");
 
   if (exe->type == 'n') exe = flon_node_tree(execution, nid);
-  char *name = fdja_ls(msg, "0", NULL);
+  char *name = fdja_ls(exe, "0", NULL);
 
   fgaj_d("node: \"%s\" %s", name, nid);
 
@@ -190,12 +190,11 @@ static int execute_j(fdja_value *msg)
   if (func == NULL) return 1;
 
   fdja_value *node = fdja_v("{ nid: \"%s\" }", nid);
-  if (strcmp(nid, "0") == 0)
-  {
-    fdja_set(node, "tree", fdja_lc(msg, "execute"));
-  }
+  if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_lc(msg, "execute"));
 
   fdja_pset(execution, "nodes.%s", nid, node);
+
+  free(nid);
 
   int r = func(node, msg);
 
@@ -228,6 +227,8 @@ static int receive_j(fdja_value *msg)
   int r = func(node, msg);
 
   if (r == 0) fdja_pset(execution, "nodes.%s", nid, NULL);
+
+  if (nid) free(nid);
 
   // TODO: what if the func signals an error?
   move_to_processed(msg);

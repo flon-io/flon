@@ -154,6 +154,17 @@ context "flon-executor"
       expect(r == 0);
 
       expect(flu_fstat("var/spool/inv/inv_%s-0.0.json", exid) == 'f');
+
+      fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0.0.json", exid);
+
+      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===f ""
+        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
+      expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===f ""
+        "{\"hello\":\"world\",\"args\":{\"color\":\"blue\"}}");
+
+      fdja_free(v);
+
+      // TODO
     }
   }
 }
