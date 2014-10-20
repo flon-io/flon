@@ -25,14 +25,13 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <time.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/time.h>
+//#include <time.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <sys/time.h>
 
 #include "flutil.h"
 #include "djan.h"
-#include "mnemo.h"
 #include "fl_common.h"
 
 
@@ -87,25 +86,16 @@ char *flon_conf_path(const char *key, char *def)
   return r;
 }
 
-char *flon_generate_id()
+char *flon_conf_uid()
 {
-  // TODO: check if conf says "local time". Default to UTC.
-  // TODO: introduce 99 counter to the right
-  // TODO: move that to fl_ids.[hc]
+  char *r = NULL;
+  char *gid = flon_conf_string("unit.gid", "");
+  char *uid = flon_conf_string("unit.id", "u0");
 
-  struct timeval tv;
-  struct tm *tm;
-  char t[20];
+  if (*gid != '\0') { r = flu_sprintf("%s.%s", gid, uid); free(uid); }
+  else { r = uid; }
 
-  gettimeofday(&tv, NULL);
-  tm = gmtime(&tv.tv_sec);
-  strftime(t, 20, "%Y%m%d.%H%M", tm);
-
-  char *sus = fmne_to_s((tv.tv_sec % 60) * 1000000 + tv.tv_usec);
-
-  char *r = flu_sprintf("%s.%s", t, sus);
-
-  free(sus);
+  free(gid);
 
   return r;
 }

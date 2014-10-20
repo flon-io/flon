@@ -23,26 +23,46 @@
 // Made in Japan.
 //
 
-// for specs
+#define _POSIX_C_SOURCE 200809L
 
-#ifndef FL_COMMON_H
-#define FL_COMMON_H
+#include <time.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/time.h>
 
-#include "djan.h"
+#include "flutil.h"
+#include "mnemo.h"
+#include "fl_common.h"
 
 
-void flon_configure(char *root);
-void flon_configure_j(fdja_value *obj);
+static short counter = 0;
 
-fdja_value *flon_conf(const char *key);
-int flon_conf_boolean(const char *key, int def);
-long long flon_conf_int(const char *key, long long def);
-char *flon_conf_string(const char *key, char *def);
-char *flon_conf_path(const char *key, char *def);
 
-char *flon_conf_uid();
+char *flon_generate_exid(const char *domain)
+{
+  // TODO: check if conf says "local time". Default to UTC.
 
-char *flon_generate_exid(const char *domain);
+  char *uid = flon_conf_uid();
 
-#endif // FL_COMMON_H
+  struct timeval tv;
+  struct tm *tm;
+  char t[20];
+
+  gettimeofday(&tv, NULL);
+  tm = gmtime(&tv.tv_sec);
+  strftime(t, 20, "%Y%m%d.%H%M", tm);
+
+  char *sus =
+    fmne_to_s((tv.tv_sec % 60) * 100000000 + tv.tv_usec * 100 + counter);
+
+  char *r =
+    flu_sprintf("%s-%s-%s.%s", domain, uid, t, sus);
+
+  free(sus);
+  free(uid);
+
+  counter++; if (counter > 99) counter = 0;
+
+  return r;
+}
 

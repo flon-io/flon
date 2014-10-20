@@ -5,8 +5,7 @@
 // Fri Oct  3 14:21:21 JST 2014
 //
 
-//#include <sys/stat.h>
-//#include <sys/types.h>
+//#include <stdiot.h>
 
 #include "flutil.h"
 #include "fl_common.h"
@@ -61,21 +60,6 @@ context "common"
       flon_configure("../tst");
 
       expect(flon_conf_path("_root", NULL) $==f "/flon/tst");
-    }
-  }
-
-  describe "flon_generate_id()"
-  {
-    it "returns an id"
-    {
-      char *id = flon_generate_id();
-
-      //printf("id: >%s<\n", id);
-
-      expect(id != NULL);
-      expect(id ^== "20");
-
-      free(id);
     }
   }
 }
