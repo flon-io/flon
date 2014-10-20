@@ -113,6 +113,7 @@ fdja_value *fdja_lookup(fdja_value *v, const char *path, ...);
 fdja_value *fdja_lookup_c(fdja_value *v, const char *path, ...);
 
 char *fdja_lookup_string(fdja_value *v, const char *path, ...);
+char *fdja_lookup_string_dup_default(fdja_value *v, const char *path, ...);
 long long fdja_lookup_int(fdja_value *v, const char *path, ...);
 int fdja_lookup_boolean(fdja_value *v, const char *path, ...);
 int fdja_lookup_bool(fdja_value *v, const char *path, ...);
@@ -122,6 +123,7 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 #define fdja_l(...) fdja_lookup(__VA_ARGS__)
 #define fdja_lc(...) fdja_lookup_c(__VA_ARGS__)
 #define fdja_ls(...) fdja_lookup_string(__VA_ARGS__)
+#define fdja_lsd(...) fdja_lookup_string_dup_default(__VA_ARGS__)
 #define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
 #define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
 

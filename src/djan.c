@@ -876,6 +876,17 @@ char *fdja_lookup_string(fdja_value *v, const char *path, ...)
   return r ? fdja_to_string(r) : def;
 }
 
+char *fdja_lookup_string_dup_default(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  char *def = va_arg(ap, char *);
+  va_end(ap);
+
+  if (r) return fdja_to_string(r);
+  return def == NULL ? NULL : strdup(def);
+}
+
 long long fdja_lookup_int(fdja_value *v, const char *path, ...)
 {
   va_list ap; va_start(ap, path);

@@ -36,38 +36,6 @@
 
 #define FLU_VERSION "1.0.0"
 
-//
-// str functions
-
-/* Returns 1 if the string s ends with the end string. Returns 0 else.
- */
-int flu_strends(const char *s, const char *end);
-
-/* Returns a copy of the string, trimmed on the right.
- */
-char *flu_strrtrim(const char *s);
-
-/* Returns a trimmed copy of the string, left and right.
- */
-char *flu_strtrim(const char *s);
-
-/* Returns the index of the first occurence of char c in string s.
- * Starts searching at s + off.
- */
-ssize_t flu_index(const char *s, size_t off, char c);
-
-/* Returns the index of the last occurence of char c in string s.
- * Starts searching at s + off.
- * Setting off to -1, is equivalent to setting it to strlen(s) - 1.
- */
-ssize_t flu_rindex(const char *s, ssize_t off, char c);
-
-/* Returns a list of the split chars.
- * Remember: you'll have to `flu_list_free_all(l)`.
- */
-//flu_list *flu_split(const char *s, const char *delim);
-  // see after flu_list is declared
-
 
 //
 // sbuffer
@@ -331,7 +299,36 @@ flu_list *flu_vd(va_list ap);
  */
 flu_list *flu_d(char *k0, void *v0, ...);
 
-// see doc above
+
+//
+// str functions
+
+/* Returns 1 if the string s ends with the end string. Returns 0 else.
+ */
+int flu_strends(const char *s, const char *end);
+
+/* Returns a copy of the string, trimmed on the right.
+ */
+char *flu_strrtrim(const char *s);
+
+/* Returns a trimmed copy of the string, left and right.
+ */
+char *flu_strtrim(const char *s);
+
+/* Returns the index of the first occurence of char c in string s.
+ * Starts searching at s + off.
+ */
+ssize_t flu_index(const char *s, size_t off, char c);
+
+/* Returns the index of the last occurence of char c in string s.
+ * Starts searching at s + off.
+ * Setting off to -1, is equivalent to setting it to strlen(s) - 1.
+ */
+ssize_t flu_rindex(const char *s, ssize_t off, char c);
+
+/* Returns a list of the split chars.
+ * Remember: you'll have to `flu_list_free_all(l)`.
+ */
 flu_list *flu_split(const char *s, const char *delim);
 
 
