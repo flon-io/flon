@@ -36,7 +36,7 @@
 
 #define ROW_SIZE 7
   // how many execute message are processed before the executor
-  // scans /var/spool/exe again
+  // scans var/spool/exe again
 
 
 // global vars:
@@ -51,6 +51,17 @@ static flu_list *errors = NULL;
 
 static size_t counter = 0;
   // how many executions got carried out in this session?
+
+// used by the specs
+//
+void flon_executor_reset()
+{
+  execution_id = NULL;
+  if (execution) fdja_free(execution); execution = NULL;
+  if (executes) flu_list_free(executes); executes = NULL;
+  if (errors) flu_list_free(errors); errors = NULL;
+  counter = 0;
+}
 
 
 static void reject(const char *reason, const char *fname, fdja_value *j)
@@ -176,7 +187,6 @@ static int receive_j(fdja_value *msg)
 
   //puts(fdja_to_json(node));
   char *name = fdja_ls(node, "tree.0");
-  puts(name);
 
   if (node == NULL) { reject("tree.0 not found", NULL, msg); return 1; }
 
@@ -198,9 +208,15 @@ static void load_execution(const char *exid)
 {
   if (execution_id) return;
 
+  fgaj_d("exid: %s", exid);
+
   execution_id = (char *)exid;
 
-  execution = fdja_parse_f("/var/run/%s.json", exid);
+  //char c = flu_fstat("var/run/%s.json", exid);
+  //if (c == 0) c = '0';
+  //fgaj_d("var/run/%s.json: %c", exid, c);
+
+  execution = fdja_parse_f("var/run/%s.json", exid);
 
   if (execution == NULL)
   {

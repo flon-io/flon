@@ -28,6 +28,8 @@
 #ifndef FL_EXECUTOR_H
 #define FL_EXECUTOR_H
 
+void flon_exe_reset();
+
 int flon_execute(const char *exid);
 
 #endif // FL_EXECUTOR_H

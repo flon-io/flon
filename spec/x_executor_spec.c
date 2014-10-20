@@ -15,7 +15,11 @@ context "flon-executor"
 {
   before each
   {
+    flon_executor_reset();
+
     int r;
+
+    char *exid = NULL;
 
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
@@ -25,12 +29,16 @@ context "flon-executor"
     chdir("../tst");
     flon_configure(".");
   }
+  after each
+  {
+    if (exid) free(exid);
+  }
 
   describe "flon_execute()"
   {
     it "executes an invocation"
     {
-      char *exid = flon_generate_exid("xtest.i");
+      exid = flon_generate_exid("xtest.i");
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
@@ -71,16 +79,14 @@ context "flon-executor"
 
       fdja_free(v);
 
-      // over.
-
-      free(exid);
+      expect(flu_fstat("var/spool/inv/inv_%s-0.json", exid) == 'f');
     }
 
     it "executes an invocation return"
     {
       // at first let's start an execution, with an invocation
 
-      char *exid = flon_generate_exid("xtest.ir");
+      exid = flon_generate_exid("xtest.ir");
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
@@ -95,6 +101,10 @@ context "flon-executor"
       r = flon_execute(exid);
 
       expect(r == 0);
+
+      flon_executor_reset();
+
+      //puts(flu_readall("var/run/%s.json", exid));
 
       // let's manually return to the execution
 
@@ -116,11 +126,9 @@ context "flon-executor"
       expect(r == 0);
 
       expect(flu_fstat("var/spool/exe/%s-0.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/ret_%s-0.json", exid) == 0);
       expect(flu_fstat("var/run/%s.json", exid) == 0);
       expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
-
-      // TODO
-      expect(1 == 0); // need to check for "hello: hiroshima"
     }
   }
 }
