@@ -215,7 +215,7 @@ static fabr_parser *fdja_path_parser = NULL;
 static void fdja_path_parser_init()
 {
   fabr_parser *index = fabr_n_rex("index", "-?[0-9]+");
-  fabr_parser *key = fabr_n_rex("key", "[a-zA-Z_][a-zA-Z_0-9]*");
+  fabr_parser *key = fabr_n_rex("key", "[a-zA-Z_0-9]+");
   fabr_parser *node = fabr_n_alt("node", index, key, NULL);
 
   fdja_path_parser =
@@ -804,7 +804,7 @@ fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
   if (t->result != 1) { fabr_tree_free(t); free(p); return NULL; }
 
   //printf("p >%s<\n", p);
-  //puts(fabr_tree_to_string(t, p));
+  //puts(fabr_tree_to_string(t, p, 1));
 
   fdja_value *vv = v;
 
@@ -813,11 +813,13 @@ fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
   for (flu_node *n = l->first; n; n = n->next)
   {
     fabr_tree *tt = ((fabr_tree *)n->item)->child;
-    //puts(fabr_tree_to_string(tt, p));
     char ltype = tt->name[0];
 
-    if (ltype == 'i' && vv->type != 'a') { vv = NULL; break; }
-    if (ltype == 'k' && vv->type != 'o') { vv = NULL; break; }
+    //puts(fabr_tree_to_string(tt, p, 1));
+
+    if (ltype == 'i' && vv->type == 'o') { ltype = 'k'; }
+    else if (ltype == 'i' && vv->type != 'a') { vv = NULL; break; }
+    else if (ltype == 'k' && vv->type != 'o') { vv = NULL; break; }
 
     char *s = fabr_tree_string(p, tt);
 
@@ -829,6 +831,7 @@ fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
     {
       for (vv = vv->child; vv; vv = vv->sibling)
       {
+        //printf("vv->key: %s, s: %s\n", vv->key, s);
         if (strcmp(vv->key, s) == 0) break;
       }
     }

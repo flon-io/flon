@@ -131,7 +131,7 @@ static void fabr_t_to_s(
 
   char *name = "null";
   char *note = "null";
-  char *resultc = ""; if (color) resultc = t->result ? "[0;32m" : "[0;0m";
+  char *resultc = ""; if (color) resultc = t->result ? "[0;0m" : "[1;30m";
   if (t->name) name = flu_sprintf("\"%s\"", t->name);
   if (t->note) note = flu_sprintf("\"%s\"", t->note);
   //
