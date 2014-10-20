@@ -62,17 +62,18 @@ typedef int flon_exe_func(fdja_value *, fdja_value *);
 
 static int exe_invoke(fdja_value *node, fdja_value *exe)
 {
-  char *nid = "0";
+  char *nid = fdja_ls(node, "nid");
 
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
-  fdja_set(inv, "invoke", fdja_lookup_c(exe, "execute"));
-  fdja_set(inv, "payload", fdja_lookup_c(exe, "payload"));
+  fdja_set(inv, "invoke", fdja_lc(exe, "execute"));
+  fdja_set(inv, "payload", fdja_lc(exe, "payload"));
 
-  fdja_pset(inv, "payload.args", fdja_lookup_c(exe, "execute.1"));
+  fdja_pset(inv, "payload.args", fdja_lc(exe, "execute.1"));
 
   fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
 
   fdja_value_free(inv);
+  free(nid);
 
   return 0; // success
 }
