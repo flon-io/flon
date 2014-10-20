@@ -25,7 +25,8 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <time.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -98,14 +99,15 @@ int flon_conf_is(const char *key, const char *val)
 
 char *flon_conf_uid()
 {
-  char *r = NULL;
-  char *gid = flon_conf_string("unit.gid", "");
-  char *uid = flon_conf_string("unit.id", "u0");
+  char *gid = flon_conf_string("unit.gid", NULL);
+  char *uid = flon_conf_string("unit.id", NULL);
 
-  if (*gid != '\0') { r = flu_sprintf("%s.%s", gid, uid); free(uid); }
-  else { r = uid; }
+  if (gid == NULL && uid == NULL) return strdup("u0");
+  if (gid == NULL) return uid;
 
-  free(gid);
+  char *r = flu_sprintf("%s.%s", gid, uid);
+
+  free(gid); free(uid);
 
   return r;
 }

@@ -18,7 +18,7 @@ context "flon-invoker"
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
     fgaj_conf_get()->out = stderr;
-    fgaj_conf_get()->params = "7p";
+    fgaj_conf_get()->params = "5p";
 
     chdir("../tst");
     flon_configure(".");
@@ -28,7 +28,7 @@ context "flon-invoker"
   {
     it "invokes"
     {
-      char *id = flon_generate_id();
+      char *id = flon_generate_exid("itest");
       char *path = flu_sprintf("var/spool/inv/inv_%s.json", id);
 
       flu_writeall(

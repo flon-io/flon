@@ -18,7 +18,7 @@ context "flon-executor"
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
     fgaj_conf_get()->out = stderr;
-    fgaj_conf_get()->params = "7p";
+    fgaj_conf_get()->params = "5p";
 
     chdir("../tst");
     flon_configure(".");
@@ -28,7 +28,7 @@ context "flon-executor"
   {
     it "executes an invocation"
     {
-      char *exid = flon_generate_id();
+      char *exid = flon_generate_exid("xtest");
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,

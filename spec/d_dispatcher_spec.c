@@ -18,7 +18,7 @@ context "flon-dispatcher"
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
     fgaj_conf_get()->out = stderr;
-    fgaj_conf_get()->params = "7p";
+    fgaj_conf_get()->params = "5p";
 
     chdir("../tst");
     flon_configure(".");
@@ -38,7 +38,7 @@ context "flon-dispatcher"
   {
     it "dispatches invocations"
     {
-      id = flon_generate_id();
+      id = flon_generate_exid("dtest");
       path = flu_sprintf("var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(
@@ -79,7 +79,7 @@ context "flon-dispatcher"
 
     it "rejects files it doesn't understand"
     {
-      id = flon_generate_id();
+      id = flon_generate_exid("dtest");
       path = flu_sprintf("var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(path, "NADA");
@@ -96,7 +96,7 @@ context "flon-dispatcher"
 
     it "rejects files it doesn't know how to dispatch"
     {
-      id = flon_generate_id();
+      id = flon_generate_exid("dtest");
       path = flu_sprintf("var/spool/dis/inv_%s.json", id);
 
       int r = flu_writeall(
