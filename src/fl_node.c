@@ -27,6 +27,7 @@
 
 //#include <time.h>
 
+#include "flutil.h"
 #include "djan.h"
 
 
@@ -37,12 +38,16 @@ fdja_value *flon_node(fdja_value *execution, char *nid)
 
 static fdja_value *node_tree(fdja_value *exe, char *nid, int clone)
 {
-  //fdja_value *n = flon_node(exe, nid);
-  fdja_value *n = flon_node(exe, "0");
+  fdja_value *t = fdja_l(exe, "nodes.0.tree");
 
-  //puts(fdja_to_json(n));
+  flu_list *l = flu_split(nid, ".");
+  if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
+  {
+    t = fdja_l(t, "2.%lli", strtol((char *)n->item, NULL, 16));
+  }
+  flu_list_free_all(l);
 
-  return clone ? fdja_lc(n, "tree") : fdja_l(n, "tree");
+  return clone ? fdja_clone(t) : t;
 }
 
 fdja_value *flon_node_tree(fdja_value *execution, char *nid)
