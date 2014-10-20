@@ -62,7 +62,7 @@ typedef int flon_exe_func(fdja_value *, fdja_value *);
 
 static int exe_invoke(fdja_value *node, fdja_value *exe)
 {
-  char *nid = "0-0";
+  char *nid = "0";
 
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
   fdja_set(inv, "invoke", fdja_lookup_c(exe, "execute"));
@@ -98,6 +98,8 @@ static flon_name_funcs *name_functions[] = {
 static int receive_j(fdja_value *msg)
 {
   // TODO
+
+  fgaj_d("...");
 
   return 1; // failure
 }
@@ -184,15 +186,23 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
 
 static int name_matches(const char *n)
 {
-  if (strncmp(n, "exe_", 4) != 0 && strncmp(n, "rcv_", 4) != 0) return 0;
+  // TODO: use fl_ids.c functions
+
+  if (
+    strncmp(n, "exe_", 4) != 0 &&
+    strncmp(n, "ret_", 4) != 0 &&
+    strncmp(n, "rcv_", 4) != 0
+  ) return 0;
+
   size_t l = strlen(execution_id);
-  if (n[4 + l] != '.') return 0;
+
+  if (n[4 + l] != '.' && n[4 + l] != '-') return 0;
   return strncmp(n + 4, execution_id, l) == 0;
 }
 
 static void load_executes()
 {
-  fgaj_d("exid: %s", execution_id);
+  //fgaj_d("exid: %s", execution_id);
 
   DIR *dir = opendir("var/spool/exe/");
   struct dirent *de;
@@ -211,6 +221,8 @@ static void load_executes()
 
     flu_list_add(executes, j);
   }
+
+  fgaj_d("exid: %s, executes: %zu", execution_id, executes->size);
 
   closedir(dir);
 }
