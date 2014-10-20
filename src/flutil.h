@@ -62,6 +62,12 @@ ssize_t flu_index(const char *s, size_t off, char c);
  */
 ssize_t flu_rindex(const char *s, ssize_t off, char c);
 
+/* Returns a list of the split chars.
+ * Remember: you'll have to `flu_list_free_all(l)`.
+ */
+//flu_list *flu_split(const char *s, const char *delim);
+  // see after flu_list is declared
+
 
 //
 // sbuffer
@@ -324,6 +330,9 @@ flu_list *flu_vd(va_list ap);
  * it has made a dict of all the memory from v0...
  */
 flu_list *flu_d(char *k0, void *v0, ...);
+
+// see doc above
+flu_list *flu_split(const char *s, const char *delim);
 
 
 //

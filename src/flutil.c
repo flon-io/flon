@@ -105,6 +105,24 @@ ssize_t flu_rindex(const char *s, ssize_t off, char c)
   return -1;
 }
 
+flu_list *flu_split(const char *s, const char *delim)
+{
+  size_t dl = strlen(delim);
+  flu_list *r = flu_list_malloc();
+
+  for (char *n = NULL; ; )
+  {
+    n = strstr(s, delim);
+
+    if (n == NULL) { flu_list_add(r, strdup(s)); break; }
+
+    flu_list_add(r, strndup(s, n - s));
+    s = n + dl;
+  }
+
+  return r;
+}
+
 //
 // sbuffer
 
