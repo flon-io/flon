@@ -53,6 +53,23 @@ static size_t counter = 0;
   // how many executions got carried out in this session?
 
 
+static void reject(const char *reason, const char *fname, fdja_value *j)
+{
+  if (fname == NULL)
+  {
+    fname = fdja_lookup_string(j, "fname", NULL);
+  }
+  if (fname == NULL)
+  {
+    fgaj_w("cannot reject msg without 'fname' key");
+    char *s  = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
+    return;
+  }
+
+  flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
+  fgaj_i("%s, rejected %s", reason, fname);
+}
+
 //
 // execute and receive functions
 
@@ -80,7 +97,7 @@ static int exe_invoke(fdja_value *node, fdja_value *exe)
 
 static int rcv_invoke(fdja_value *node, fdja_value *rcv)
 {
-  return 1; // failure
+  return 0; // success
 }
 
 // function table
@@ -96,56 +113,83 @@ static flon_name_funcs *name_functions[] = {
   NULL
 };
 
-static int receive_j(fdja_value *msg)
+static flon_exe_func *find_function(const char *name, char dir)
 {
-  // TODO
+  for (size_t i = 0; name_functions[i] != NULL; ++i)
+  {
+    flon_name_funcs *nf = name_functions[i];
+    if (strcmp(nf->name, name) == 0) return dir == 'r' ? nf->rcv : nf->exe;
+  }
 
-  fgaj_d("...");
+  fgaj_e(
+    "don't know how to %s \"%s\"",
+    dir == 'r' ? "receive" : "execute", name);
 
-  return 1; // failure
+  return NULL;
+}
+
+static void move_to_processed(fdja_value *msg)
+{
+  char *fname = fdja_ls(msg, "fname", NULL);
+  if (fname == NULL) return;
+  flu_move("var/spool/exe/%s", fname, "var/spool/processed");
+  free(fname);
 }
 
 static int execute_j(fdja_value *msg)
 {
-  char *nid = fdja_lookup_string(msg, "nid", "0");
-  char *name = fdja_lookup_string(msg, "execute.0", NULL);
-
-  flon_exe_func *func = NULL;
+  char *nid = fdja_ls(msg, "nid", "0");
+  char *name = fdja_ls(msg, "execute.0", NULL);
 
   fgaj_d("node: \"%s\" %s", name, nid);
 
-  for (size_t i = 0; name_functions[i] != NULL; ++i)
-  {
-    flon_name_funcs *nf = name_functions[i];
-    if (strcmp(nf->name, name) == 0) { func = nf->exe; break; }
-  }
-
-  if (func == NULL)
-  {
-    fgaj_e("don't know how to execute \"%s\"", name);
-
-    free(name);
-    return 1;
-  }
-
+  flon_exe_func *func = find_function(name, 'x');
   free(name);
+  if (func == NULL) return 1;
 
   fdja_value *node = fdja_v("{ nid: \"%s\" }", nid);
   if (strcmp(nid, "0") == 0)
   {
-    fdja_set(node, "tree", fdja_lookup_c(msg, "execute"));
+    fdja_set(node, "tree", fdja_lc(msg, "execute"));
   }
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
   int r = func(node, msg);
 
-  char *fname = fdja_lookup_string(msg, "fname", NULL);
-  if (fname)
-  {
-    flu_move("var/spool/exe/%s", fname, "var/spool/processed");
-    free(fname);
-  }
+  // TODO: what if the func signals an error?
+  move_to_processed(msg);
+
+  return r;
+}
+
+static int receive_j(fdja_value *msg)
+{
+  //puts(fdja_to_json(msg));
+
+  char *nid = fdja_ls(msg, "nid", NULL);
+  fgaj_d("nid: %s", nid);
+
+  fdja_value *node = fdja_l(execution, "nodes.%s", nid);
+
+  if (node == NULL) { reject("node not found", NULL, msg); return 1; }
+
+  //puts(fdja_to_json(node));
+  char *name = fdja_ls(node, "tree.0");
+  puts(name);
+
+  if (node == NULL) { reject("tree.0 not found", NULL, msg); return 1; }
+
+  flon_exe_func *func = find_function(name, 'r');
+  free(name);
+  if (func == NULL) return 1;
+
+  int r = func(node, msg);
+
+  if (r == 0) fdja_pset(execution, "nodes.%s", nid, NULL);
+
+  // TODO: what if the func signals an error?
+  move_to_processed(msg);
 
   return r;
 }
@@ -166,23 +210,6 @@ static void load_execution(const char *exid)
 
   executes = flu_list_malloc();
   errors = flu_list_malloc();
-}
-
-static void reject(const char *reason, const char *fname, fdja_value *j)
-{
-  if (fname == NULL)
-  {
-    fname = fdja_lookup_string(j, "fname", NULL);
-  }
-  if (fname == NULL)
-  {
-    fgaj_w("cannot reject msg without 'fname' key");
-    char *s  = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
-    return;
-  }
-
-  flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
-  fgaj_i("%s, rejected %s", reason, fname);
 }
 
 static int name_matches(const char *n)

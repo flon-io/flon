@@ -120,6 +120,7 @@ context "flon-executor"
       expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
 
       // TODO
+      expect(1 == 0); // need to check for "hello: hiroshima"
     }
   }
 }
