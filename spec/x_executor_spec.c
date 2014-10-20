@@ -130,6 +130,31 @@ context "flon-executor"
       expect(flu_fstat("var/run/%s.json", exid) == 0);
       expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
     }
+
+    it "passes the return to the parent node"
+    {
+      exid = flon_generate_exid("xtest.pn");
+
+      flu_writeall(
+        "var/spool/exe/exe_%s.json", exid,
+        "execute:\n"
+        "  [ sequence, {}, [\n"
+        "    [ invoke, { _0: stamp, color: blue }, [] ]\n"
+        "    [ invoke, { _0: stamp, color: green }, [] ]\n"
+        "  ] ]\n"
+        "exid: %s\n"
+        "payload: {\n"
+          "hello: world\n"
+        "}\n",
+        exid
+      );
+
+      r = flon_execute(exid);
+
+      expect(r == 0);
+
+      expect(flu_fstat("var/spool/inv/inv_%s-0.0.json", exid) == 'f');
+    }
   }
 }
 

@@ -111,6 +111,21 @@ static int rcv_invoke(fdja_value *node, fdja_value *rcv)
   return 0; // success
 }
 
+// *** SEQUENCE
+
+static int exe_sequence(fdja_value *node, fdja_value *exe)
+{
+  printf("seq: node: %s\n", fdja_to_json(node));
+  printf("seq: exe: %s\n", fdja_to_json(exe));
+
+  return 0; // success
+}
+
+static int rcv_sequence(fdja_value *node, fdja_value *rcv)
+{
+  return 0; // success
+}
+
 // function table
 
 typedef struct {
@@ -121,6 +136,7 @@ typedef struct {
 
 static flon_name_funcs *name_functions[] = {
   &(flon_name_funcs){ "invoke", exe_invoke, rcv_invoke },
+  &(flon_name_funcs){ "sequence", exe_sequence, rcv_sequence },
   NULL
 };
 
