@@ -104,7 +104,7 @@ static int receive_j(fdja_value *msg)
 
 static int execute_j(fdja_value *msg)
 {
-  char *nid = fdja_lookup_string(msg, "nid", "0-0");
+  char *nid = fdja_lookup_string(msg, "nid", "0");
   char *name = fdja_lookup_string(msg, "execute.0", NULL);
 
   flon_exe_func *func = NULL;
@@ -127,13 +127,13 @@ static int execute_j(fdja_value *msg)
 
   free(name);
 
-  fdja_value *node = fdja_v("{ tree: null, nid: \"%s\" }", nid);
-  fdja_pset(execution, "nodes.%s", nid, node);
-
-  if (fdja_size(fdja_lookup(execution, "trees")) < 1)
+  fdja_value *node = fdja_v("{ nid: \"%s\" }", nid);
+  if (strcmp(nid, "0") == 0)
   {
-    fdja_pset(execution, "trees.original", fdja_lookup_c(msg, "execute"));
+    fdja_set(node, "tree", fdja_lookup_c(msg, "execute"));
   }
+
+  fdja_pset(execution, "nodes.%s", nid, node);
 
   int r = func(node, msg);
 
@@ -158,7 +158,7 @@ static void load_execution(const char *exid)
   if (execution == NULL)
   {
     execution = fdja_v(
-      "{ exid: \"%s\", trees: {}, nodes: {}, errors: {} }", exid);
+      "{ exid: \"%s\", nodes: {}, errors: {} }", exid);
   }
 
   executes = flu_list_malloc();
