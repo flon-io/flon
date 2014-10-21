@@ -79,6 +79,7 @@ fdja_value *fdja_clone(fdja_value *v);
 
 char *fdja_to_json(fdja_value *v);
 char *fdja_to_djan(fdja_value *v);
+char *fdja_to_pretty_djan(fdja_value *v);
 //char *fdja_to_radial(fdja_value *v);
 
 int fdja_to_json_f(fdja_value *v, const char *path, ...);
