@@ -26,9 +26,11 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
+#include <string.h>
 
 #include "flutil.h"
 #include "djan.h"
+#include "fl_ids.h"
 #include "fl_node.h"
 
 
@@ -64,14 +66,24 @@ fdja_value *flon_node_tree_c(fdja_value *exe, const char *nid)
 char *flon_node_parent_nid(fdja_value *exe, const char *nid)
 {
   fdja_value *node = flon_node(exe, nid);
-
   if (node == NULL) return NULL;
 
   char *pnid = fdja_ls(node, "parent", NULL);
 
   if (pnid) return pnid;
 
-  // TODO
-  return NULL;
+  fdja_value *v = flon_parse_nid(nid);
+  if (v == NULL) return NULL;
+
+  char *ni = fdja_ls(v, "node", NULL);
+  fdja_free(v);
+  if (ni == NULL) return NULL;
+
+  char *u = strrchr(ni, '_');
+  if (u == NULL) { free(ni); return NULL; }
+
+  *u = '\0';
+
+  return ni;
 }
 

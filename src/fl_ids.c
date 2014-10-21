@@ -112,8 +112,7 @@ static void flon_nid_parser_init()
       NULL);
 }
 
-
-fdja_value *flon_parse_nid(char *s)
+fdja_value *flon_parse_nid(const char *s)
 {
   if (flon_nid_parser == NULL) flon_nid_parser_init();
 
