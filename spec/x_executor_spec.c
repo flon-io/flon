@@ -133,6 +133,8 @@ context "flon-executor"
 
     it "passes the return to the parent node"
     {
+      fdja_value *v = NULL;
+
       exid = flon_generate_exid("xtest.pn");
 
       flu_writeall(
@@ -149,15 +151,19 @@ context "flon-executor"
         exid
       );
 
+      // let it flow towards "blue"
+
       r = flon_execute(exid);
 
       expect(r == 0);
 
-      expect(flu_fstat("var/spool/inv/inv_%s-0.0.json", exid) == 'f');
+      flon_executor_reset();
+
+      expect(flu_fstat("var/spool/inv/inv_%s-0_0.json", exid) == 'f');
 
       //puts(flu_readall("var/spool/inv/inv_%s-0.0.json", exid));
 
-      fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0.0.json", exid);
+      v = fdja_parse_f("var/spool/inv/inv_%s-0_0.json", exid);
 
       expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: blue }, [] ]"));
@@ -166,7 +172,47 @@ context "flon-executor"
 
       fdja_free(v);
 
-      // TODO
+      // check the "execution"
+
+      v = fdja_parse_f("var/run/%s.json", exid);
+      puts(fdja_to_pretty_djan(v));
+
+      //expect(fdja_lj(v, "nodes.0.0"...
+
+      fdja_free(v);
+
+      // inject ret_ back, towards "green"
+
+      expect(flu_unlink("var/spool/inv/inv_%s-0_0.json", exid) == 0);
+
+      flu_writeall(
+        "var/spool/exe/ret_%s-0_0.json", exid,
+        "receive: 1\n"
+        "exid: %s\n"
+        "nid: 0_0\n"
+        "payload: {\n"
+          "hello: chuugoku\n"
+        "}\n",
+        exid
+      );
+
+      r = flon_execute(exid);
+
+      expect(r == 0);
+
+      expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
+
+      expect(flu_fstat("var/spool/inv/inv_%s-0_1.json", exid) == 'f');
+
+      v = fdja_parse_f("var/spool/inv/inv_%s-0_0.json", exid);
+
+      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
+        "[ invoke, { _0: stamp, color: green }, [] ]"));
+      expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
+        "{ hello: chuugoku, args: { _0: stamp, color: green } }"));
+
+      fdja_free(v);
     }
   }
 }

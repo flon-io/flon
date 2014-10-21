@@ -29,9 +29,9 @@ context "fl_node"
           "    ] ]\n"
           "  ] ]\n"
           "}\n"
-          "0.0: {}\n"
-          "0.1: {}\n"
-          "0.1.0: {}\n"
+          "0_0: {}\n"
+          "0_1: {}\n"
+          "0_1_0: {}\n"
         "}");
     }
     after each
@@ -51,7 +51,7 @@ context "fl_node"
 
     it "looks up a sub tree"
     {
-      fdja_value *t = flon_node_tree(exe, "0.1.0");
+      fdja_value *t = flon_node_tree(exe, "0_1_0");
 
       expect(t != NULL);
 

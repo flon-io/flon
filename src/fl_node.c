@@ -40,7 +40,7 @@ static fdja_value *node_tree(fdja_value *exe, char *nid, int clone)
 {
   fdja_value *t = fdja_l(exe, "nodes.0.tree");
 
-  flu_list *l = flu_split(nid, ".");
+  flu_list *l = flu_split(nid, "_");
   if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
   {
     t = fdja_l(t, "2.%lli", strtol((char *)n->item, NULL, 16));

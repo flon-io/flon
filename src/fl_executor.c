@@ -53,6 +53,7 @@ static flu_list *errors = NULL;
 static size_t counter = 0;
   // how many executions got carried out in this session?
 
+
 // used by the specs
 //
 void flon_executor_reset()
@@ -121,7 +122,7 @@ static int exe_sequence(fdja_value *node, fdja_value *exe)
 
   char *nid = fdja_ls(node, "nid", NULL);
 
-  fdja_value *exe0 = fdja_v("{ nid: \"%s.0\", execute: 1 }", nid);
+  fdja_value *exe0 = fdja_v("{ nid: \"%s_0\", execute: 1 }", nid);
   fdja_set(exe0, "payload", fdja_lc(exe, "payload"));
 
   //printf("seq: exe0: %s\n", fdja_to_json(exe0));
@@ -177,64 +178,79 @@ static void move_to_processed(fdja_value *msg)
 
 static int execute_j(fdja_value *msg)
 {
+  int r = 0;
+  char *nid = NULL;
+  char *name = NULL;
+
   // TODO: string extrapolation
 
-  char *nid = fdja_lsd(msg, "nid", "0");
+  nid = fdja_lsd(msg, "nid", "0");
   fdja_value *tree = fdja_l(msg, "execute");
 
   if (tree->type == 'n') tree = flon_node_tree(execution, nid);
   fdja_set(msg, "tree", fdja_clone(tree));
-  char *name = fdja_ls(tree, "0", NULL);
+  name = fdja_ls(tree, "0", NULL);
 
   fgaj_d("node: \"%s\" %s", name, nid);
 
   flon_exe_func *func = find_function(name, 'x');
-  free(name);
-  if (func == NULL) return 1;
+  if (func == NULL) { r = 1; goto _over; }
 
-  fdja_value *node = fdja_v("{ nid: \"%s\" }", nid);
+  fdja_value *node = fdja_v("{ nid: %s, t: %s }", nid, name);
   if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_lc(msg, "execute"));
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
-  free(nid);
-
-  int r = func(node, msg);
+  r = func(node, msg);
 
   // TODO: what if the func signals an error?
   move_to_processed(msg);
+
+_over:
+
+  if (name) free(name);
+  if (nid) free(nid);
 
   return r;
 }
 
 static int receive_j(fdja_value *msg)
 {
-  //puts(fdja_to_json(msg));
+  int r = 0;
+  char *nid = NULL;
+  char *name = NULL;
 
-  char *nid = fdja_ls(msg, "nid", NULL);
+  puts("receive_j:");
+  puts(fdja_to_pretty_djan(msg));
+  puts(fdja_to_pretty_djan(execution));
+
+  nid = fdja_ls(msg, "nid", NULL);
   fgaj_d("nid: %s", nid);
 
   fdja_value *node = fdja_l(execution, "nodes.%s", nid);
 
   if (node == NULL) { reject("node not found", NULL, msg); return 1; }
 
-  //puts(fdja_to_json(node));
-  char *name = fdja_ls(node, "tree.0");
+  puts(fdja_to_json(node));
+  fdja_value *tree = flon_node_tree(execution, nid);
+  name = fdja_ls(tree, "0", NULL);
 
-  if (node == NULL) { reject("tree.0 not found", NULL, msg); return 1; }
+  //if (name == NULL) { reject("tree.0 not found", NULL, msg); return 1; }
 
   flon_exe_func *func = find_function(name, 'r');
-  free(name);
-  if (func == NULL) return 1;
+  if (func == NULL) { r = 1; goto _over; }
 
-  int r = func(node, msg);
+  r = func(node, msg);
 
   if (r == 0) fdja_pset(execution, "nodes.%s", nid, NULL);
 
-  if (nid) free(nid);
-
   // TODO: what if the func signals an error?
   move_to_processed(msg);
+
+_over:
+
+  if (nid) free(nid);
+  if (name) free(name);
 
   return r;
 }
