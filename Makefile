@@ -11,6 +11,7 @@ upgrade:
 	cp -v ../djan/src/*.[ch] src/
 	cp -v ../flutil/src/*.[ch] src/
 	cp -v ../mnemo/src/*.[ch] src/
+	rm src/todjan.c # no
 
 ctst:
 	find tst/var/ -name *.json | xargs rm -fv
