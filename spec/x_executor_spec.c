@@ -155,12 +155,14 @@ context "flon-executor"
 
       expect(flu_fstat("var/spool/inv/inv_%s-0.0.json", exid) == 'f');
 
+      //puts(flu_readall("var/spool/inv/inv_%s-0.0.json", exid));
+
       fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0.0.json", exid);
 
-      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===f ""
-        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
-      expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===f ""
-        "{\"hello\":\"world\",\"args\":{\"color\":\"blue\"}}");
+      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
+        "[ invoke, { _0: stamp, color: blue }, [] ]"));
+      expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
+        "{ hello: world, args: { _0: stamp, color: blue } }"));
 
       fdja_free(v);
 

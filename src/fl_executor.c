@@ -94,14 +94,14 @@ static int exe_invoke(fdja_value *node, fdja_value *exe)
   char *nid = fdja_ls(node, "nid");
 
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
-  fdja_set(inv, "invoke", fdja_lc(exe, "execute"));
+  fdja_set(inv, "invoke", fdja_lc(exe, "tree"));
   fdja_set(inv, "payload", fdja_lc(exe, "payload"));
 
-  fdja_pset(inv, "payload.args", fdja_lc(exe, "execute.1"));
+  fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
 
   fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
 
-  fdja_value_free(inv);
+  fdja_free(inv);
   free(nid);
 
   return 0; // success
@@ -177,11 +177,14 @@ static void move_to_processed(fdja_value *msg)
 
 static int execute_j(fdja_value *msg)
 {
-  char *nid = fdja_lsd(msg, "nid", "0");
-  fdja_value *exe = fdja_l(msg, "execute");
+  // TODO: string extrapolation
 
-  if (exe->type == 'n') exe = flon_node_tree(execution, nid);
-  char *name = fdja_ls(exe, "0", NULL);
+  char *nid = fdja_lsd(msg, "nid", "0");
+  fdja_value *tree = fdja_l(msg, "execute");
+
+  if (tree->type == 'n') tree = flon_node_tree(execution, nid);
+  fdja_set(msg, "tree", fdja_clone(tree));
+  char *name = fdja_ls(tree, "0", NULL);
 
   fgaj_d("node: \"%s\" %s", name, nid);
 
