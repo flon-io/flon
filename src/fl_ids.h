@@ -23,18 +23,15 @@
 // Made in Japan.
 //
 
-#ifndef FL_NODE_H
-#define FL_NODE_H
+#ifndef FL_IDS_H
+#define FL_IDS_H
 
-#include "aabro.h"
 #include "djan.h"
 
 
-fdja_value *flon_node(fdja_value *execution, const char *nid);
-fdja_value *flon_node_tree(fdja_value *execution, const char *nid);
-fdja_value *flon_node_tree_c(fdja_value *execution, const char *nid);
+char *flon_generate_exid(const char *domain);
 
-char *flon_node_parent_nid(fdja_value *execution, const char *nid);
+fdja_value *flon_parse_nid(char *s);
 
-#endif // FL_NODE_H
+#endif // FL_IDS_H
 

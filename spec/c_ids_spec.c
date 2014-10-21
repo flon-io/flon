@@ -8,7 +8,8 @@
 //#include <stdiot.h>
 
 #include "flutil.h"
-#include "fl_common.h"
+#include "djan.h"
+#include "fl_ids.h"
 
 
 context "fl_id"
@@ -44,6 +45,49 @@ context "fl_id"
       expect(i ^== "test-g0.u0-20");
 
       free(i);
+    }
+  }
+
+  describe "flon_parse_nid()"
+  {
+    before each
+    {
+      fdja_value *v = NULL;
+    }
+    after each
+    {
+      if (v) fdja_free(v);
+    }
+
+    it "parses simple nids"
+    {
+      v = flon_parse_nid("0_1_2");
+
+      expect(fdja_to_djan(v) ===f ""
+        "{ nid: 0_1_2, node: 0_1_2 }");
+    }
+
+    it "parses nids with counters"
+    {
+      v = flon_parse_nid("0_1_2-ff");
+
+      expect(fdja_to_djan(v) ===f ""
+        "{ nid: 0_1_2-ff, node: 0_1_2, counter: ff }");
+    }
+
+    it "parses complete nids"
+    {
+      v = flon_parse_nid("xtest.pn-u0-20141021.0803.chatsidiseba-0_1_2-ff");
+
+      expect(fdja_to_djan(v) ===f ""
+        "{ domain: xtest.pn, feu: u0,"
+        " tid: 20141021.0803.chatsidiseba,"
+        " nid: 0_1_2-ff, node: 0_1_2, counter: ff }");
+    }
+
+    it "returns NULL if it cannot parse"
+    {
+      expect(flon_parse_nid("/") == NULL);
     }
   }
 }

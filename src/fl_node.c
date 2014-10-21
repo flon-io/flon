@@ -25,18 +25,19 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <time.h>
+#include <stdlib.h>
 
 #include "flutil.h"
 #include "djan.h"
+#include "fl_node.h"
 
 
-fdja_value *flon_node(fdja_value *execution, char *nid)
+fdja_value *flon_node(fdja_value *exe, const char *nid)
 {
-  return fdja_l(execution, "nodes.%s", nid);
+  return fdja_l(exe, "nodes.%s", nid);
 }
 
-static fdja_value *node_tree(fdja_value *exe, char *nid, int clone)
+static fdja_value *node_tree(fdja_value *exe, const char *nid, int clone)
 {
   fdja_value *t = fdja_l(exe, "nodes.0.tree");
 
@@ -50,13 +51,27 @@ static fdja_value *node_tree(fdja_value *exe, char *nid, int clone)
   return clone ? fdja_clone(t) : t;
 }
 
-fdja_value *flon_node_tree(fdja_value *execution, char *nid)
+fdja_value *flon_node_tree(fdja_value *exe, const char *nid)
 {
-  return node_tree(execution, nid, 0);
+  return node_tree(exe, nid, 0);
 }
 
-fdja_value *flon_node_tree_c(fdja_value *execution, char *nid)
+fdja_value *flon_node_tree_c(fdja_value *exe, const char *nid)
 {
-  return node_tree(execution, nid, 1);
+  return node_tree(exe, nid, 1);
+}
+
+char *flon_node_parent_nid(fdja_value *exe, const char *nid)
+{
+  fdja_value *node = flon_node(exe, nid);
+
+  if (node == NULL) return NULL;
+
+  char *pnid = fdja_ls(node, "parent", NULL);
+
+  if (pnid) return pnid;
+
+  // TODO
+  return NULL;
 }
 

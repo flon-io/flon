@@ -32,7 +32,9 @@
 
 #include "flutil.h"
 #include "mnemo.h"
+#include "aabro.h"
 #include "fl_common.h"
+#include "fl_ids.h"
 
 
 static short counter = 0;
@@ -61,6 +63,85 @@ char *flon_generate_exid(const char *domain)
   free(uid);
 
   counter++; if (counter > 99) counter = 0;
+
+  return r;
+}
+
+
+static fabr_parser *flon_nid_parser = NULL;
+
+static void flon_nid_parser_init()
+{
+  fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
+  fabr_parser *mne = fabr_rex("[a-z]+");
+  fabr_parser *symb = fabr_rex("[a-z0-9_]+");
+  fabr_parser *under = fabr_string("_");
+  fabr_parser *dash = fabr_string("-");
+  fabr_parser *dot = fabr_string(".");
+
+  fabr_parser *node =
+    fabr_n_seq("node", hex, fabr_seq(under, hex, fabr_r("*")), NULL);
+  fabr_parser *counter =
+    fabr_name("counter", hex);
+
+  fabr_parser *domain =
+    fabr_n_seq("domain", symb, fabr_seq(dot, symb, fabr_r("*")), NULL);
+  fabr_parser *feu =
+    fabr_n_seq(
+      "feu",
+      fabr_n_seq("group", symb, dot, fabr_r("?")),
+      fabr_name("unit", symb), NULL);
+  fabr_parser *tid =
+    fabr_n_seq(
+      "tid",
+      fabr_n_rex("date", "[0-9]{8}"), dot,
+      fabr_n_rex("hour", "[0-9]{4}"), dot,
+      fabr_name("sec", mne),
+      NULL);
+
+  fabr_parser *exid =
+    fabr_n_seq("exid", domain, dash, feu, dash, tid, NULL);
+  fabr_parser *nid =
+    fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
+
+  flon_nid_parser =
+    fabr_alt(
+      fabr_seq(exid, dash, nid, NULL),
+      exid,
+      nid,
+      NULL);
+}
+
+
+fdja_value *flon_parse_nid(char *s)
+{
+  if (flon_nid_parser == NULL) flon_nid_parser_init();
+
+  //fabr_tree *dt = fabr_parse_f(s, 0, flon_nid_parser, 0);
+  ////fabr_tree *dt = fabr_parse_all(s, 0, flon_nid_parser);
+  //printf("s >%s<\n", s);
+  //puts(fabr_tree_to_string(dt, s, 1));
+
+  fabr_tree *t = fabr_parse_all(s, 0, flon_nid_parser);
+  if (t->result != 1) { fabr_tree_free(t); return NULL; }
+
+  fdja_value *r = fdja_v("{}");
+
+  char *keys[] = {
+    "domain", "feu", "tid", "nid", "node", "counter", NULL
+  };
+  size_t i = 0; for (char *k = keys[i]; k != NULL; k = keys[++i])
+  {
+    fabr_tree *tt = fabr_tree_lookup(t, k);
+    if (tt)
+    {
+      char *v  = fabr_tree_string(s, tt);
+      fdja_set(r, k, fdja_s(v));
+      free(v);
+    }
+  }
+
+  fabr_tree_free(t);
 
   return r;
 }

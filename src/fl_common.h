@@ -43,7 +43,5 @@ int flon_conf_is(const char *key, const char *val);
 
 char *flon_conf_uid();
 
-char *flon_generate_exid(const char *domain);
-
 #endif // FL_COMMON_H
 
