@@ -391,6 +391,24 @@ fdja_value *fdja_v(char *format, ...)
   return fdja_parse(s);
 }
 
+char *fdja_vj(char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *s = flu_svprintf(format, ap);
+  va_end(ap);
+
+  fdja_value *v = fdja_parse(s);
+
+  if (v == NULL) { free(s); return NULL; }
+
+  char *r = fdja_to_json(v);
+
+  fdja_free(v);
+  //free(s);
+
+  return r;
+}
+
 fdja_value *fdja_s(char *format, ...)
 {
   va_list ap; va_start(ap, format);
@@ -590,6 +608,8 @@ fdja_value *fdja_c(char *format, ...)
   va_end(ap);
 
   fdja_value *v = fdja_parse_obj(s);
+
+  if (v == NULL) free(s);
 
   return v;
 }
@@ -924,6 +944,15 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...)
   if (strncasecmp(s, "false", r->slen) == 0) return 0;
   if (strncasecmp(s, "no", r->slen) == 0) return 0;
   return def;
+}
+
+char *fdja_lj(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  va_end(ap);
+
+  return r ? fdja_to_json(r) : NULL;
 }
 
 int fdja_push(fdja_value *array, fdja_value *v)

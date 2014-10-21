@@ -56,6 +56,7 @@ fdja_value *fdja_dparse(char *input);
 fdja_value *fdja_parse_f(const char *path, ...);
 
 fdja_value *fdja_v(char *format, ...);
+char *fdja_vj(char *format, ...);
 
 /* Wraps a string in a fdja_value.
  */
@@ -126,6 +127,8 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 #define fdja_lsd(...) fdja_lookup_string_dup_default(__VA_ARGS__)
 #define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
 #define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
+
+char *fdja_lj(fdja_value *v, const char *path, ...);
 
 int fdja_push(fdja_value *array, fdja_value *v);
 int fdja_set(fdja_value *object, const char *key, fdja_value *v);
