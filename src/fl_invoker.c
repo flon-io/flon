@@ -38,9 +38,6 @@
 #include "fl_invoker.h"
 
 
-// TODO run invoker through Strace (which outputs by default to stderr)
-// TODO run invoker through Valgrind
-
 int flon_invoke(const char *path)
 {
   fdja_value *inv = fdja_parse_obj_f(path);
