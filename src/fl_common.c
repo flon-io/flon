@@ -68,7 +68,7 @@ long long flon_conf_int(const char *key, long long def)
 
 char *flon_conf_string(const char *key, char *def)
 {
-  return fdja_lookup_string(flon_configuration, key, def);
+  return fdja_lsd(flon_configuration, key, def);
 }
 
 char *flon_conf_path(const char *key, char *def)

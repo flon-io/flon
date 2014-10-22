@@ -92,11 +92,18 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
 static int invoke(const char *path)
 {
   char *bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+  char *basename = flu_basename(path, ".txt");
+  char *logfname = flu_sprintf("var/log/inv/%s", basename);
 
-  return double_fork(
-    "invoker",
-    flu_sprintf("var/log/inv/%s", flu_basename(path, ".txt")),
-    (char *[]){ bin, (char *)path, NULL });
+  free(basename);
+
+  int r = double_fork(
+    "invoker", logfname, (char *[]){ bin, (char *)path, NULL });
+
+  free(logfname);
+  free(bin);
+
+  return r;
 }
 
 static int execute(const char *path, fdja_value *j)
