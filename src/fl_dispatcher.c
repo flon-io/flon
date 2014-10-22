@@ -33,6 +33,7 @@
 #include "flutil.h"
 #include "djan.h"
 #include "gajeta.h"
+#include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
 
@@ -95,11 +96,12 @@ static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
 
-  if (strncmp(fname, "ret_", 4))
+  if (strncmp(fname, "ret_", 4) == 0)
   {
     fdja_value *v = flon_parse_nid(fname);
-    fdja_set(v, "receive", 1);
+    fdja_set(v, "receive", fdja_v("1"));
     fdja_set(v, "payload", j);
+    fdja_to_json_f(v, "var/spool/dis/%s", fname);
     j = v;
   }
 
