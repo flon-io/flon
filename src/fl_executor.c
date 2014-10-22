@@ -48,8 +48,7 @@
 static char *execution_id = NULL;
 static fdja_value *execution = NULL;
 
-static flu_list *executes = NULL;
-static flu_list *errors = NULL;
+static flu_list *msgs = NULL;
 
 static size_t counter = 0;
   // how many executions got carried out in this session?
@@ -61,8 +60,7 @@ void flon_executor_reset()
 {
   execution_id = NULL;
   if (execution) fdja_free(execution); execution = NULL;
-  if (executes) flu_list_free(executes); executes = NULL;
-  if (errors) flu_list_free(errors); errors = NULL;
+  if (msgs) flu_list_free(msgs); msgs = NULL;
   counter = 0;
 }
 
@@ -92,7 +90,7 @@ static void queue_msg(
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
   fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
 
-  flu_list_add(executes, msg);
+  flu_list_add(msgs, msg);
 }
 
 //
@@ -303,8 +301,7 @@ static void load_execution(const char *exid)
       "{ exid: \"%s\", nodes: {}, errors: {} }", exid);
   }
 
-  executes = flu_list_malloc();
-  errors = flu_list_malloc();
+  msgs = flu_list_malloc();
 }
 
 static int name_matches(const char *n)
@@ -323,7 +320,7 @@ static int name_matches(const char *n)
   return strncmp(n + 4, execution_id, l) == 0;
 }
 
-static void load_executes()
+static void load_msgs()
 {
   //fgaj_d("exid: %s", execution_id);
 
@@ -342,10 +339,10 @@ static void load_executes()
 
     fdja_set(j, "fname", fdja_s(de->d_name));
 
-    flu_list_add(executes, j);
+    flu_list_add(msgs, j);
   }
 
-  fgaj_d("exid: %s, executes: %zu", execution_id, executes->size);
+  fgaj_d("exid: %s, msgs: %zu", execution_id, msgs->size);
 
   closedir(dir);
 }
@@ -390,11 +387,11 @@ static void execute()
 {
   while (1)
   {
-    load_executes();
+    load_msgs();
 
     for (size_t i = 0; i < ROW_SIZE; ++i)
     {
-      fdja_value *j = flu_list_shift(executes);
+      fdja_value *j = flu_list_shift(msgs);
 
       if (j == NULL) break;
 
@@ -408,7 +405,7 @@ static void execute()
       fdja_free(j);
     }
 
-    if (executes->size < 1) break;
+    if (msgs->size < 1) break;
   }
 
   persist();
