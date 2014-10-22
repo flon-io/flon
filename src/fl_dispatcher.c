@@ -29,7 +29,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-//#include <libgen.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -72,6 +71,8 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
 
     fflush(stderr);
 
+    // TODO: if ctx is "executor", write var/run/{exid}.pid
+
     int r = execv(argv[0], argv);
 
     // fail zone...
@@ -90,35 +91,46 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
   return 0; // success
 }
 
-static int invoke(const char *fname)
+static int dispatch(const char *fname, fdja_value *j)
 {
-  char *bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
-  char *basename = flu_basename(fname, ".txt");
+  if (j == NULL) return -1;
+  if ( ! (fdja_l(j, "invoke") || fdja_l(j, "execute"))) return -1;
 
-  char *invpath = flu_sprintf("var/spool/inv/%s", fname);
-  char *logpath = flu_sprintf("var/log/inv/%s", basename);
+  // TODO:
+  // return success if executor and executor already running for that exid
 
-  free(basename);
+  int r = 1;
 
-  if (flu_move("var/spool/dis/%s", fname, invpath) != 0)
+  char *bin = NULL;
+  if (*fname == 'i') bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+  else bin = flon_conf_string("executor.bin", "bin/flon-executor");
+
+  char *txtname = flu_basename(fname, ".txt");
+
+  char *acro = (*fname == 'i') ? "inv" : "exe";
+
+  char *msgpath = flu_sprintf("var/spool/%s/%s", acro, fname);
+  char *logpath = flu_sprintf("var/log/%s/%s", acro, txtname);
+
+  free(txtname);
+
+  if (flu_move("var/spool/dis/%s", fname, msgpath) != 0)
   {
-    fgaj_r("failed to move %s to %s", fname, invpath);
-    return -1; // triggers rejection
+    fgaj_r("failed to move %s to %s", fname, msgpath);
+    r = -1; // triggers rejection
   }
 
-  int r = double_fork(
-    "invoker", logpath, (char *[]){ bin, (char *)invpath, NULL });
+  if (r == 1)
+  {
+    r = double_fork(
+      "invoker", logpath, (char *[]){ bin, (char *)msgpath, NULL });
+  }
 
   free(bin);
-  free(invpath);
+  free(msgpath);
   free(logpath);
 
   return r;
-}
-
-static int execute(const char *fname, fdja_value *j)
-{
-  return 1; // failure
 }
 
 static int reject(const char *fname)
@@ -129,14 +141,6 @@ static int reject(const char *fname)
   else fgaj_r("failed to move %s to var/spool/rejected/", fname);
 
   return 1; // failure
-}
-
-static int dispatch(const char *fname, fdja_value *j)
-{
-  if (j == NULL) return -1;
-  if (fdja_l(j, "invoke")) return invoke(fname);
-  if (fdja_l(j, "execute")) return execute(fname, j);
-  return -1;
 }
 
 int flon_dispatch(const char *fname)
