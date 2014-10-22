@@ -73,14 +73,12 @@ static fabr_parser *flon_nid_parser = NULL;
 static void flon_nid_parser_init()
 {
   fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
-  fabr_parser *mne = fabr_rex("[a-z]+");
   fabr_parser *symb = fabr_rex("[a-z0-9_]+");
-  fabr_parser *under = fabr_string("_");
   fabr_parser *dash = fabr_string("-");
   fabr_parser *dot = fabr_string(".");
 
   fabr_parser *node =
-    fabr_n_seq("node", hex, fabr_seq(under, hex, fabr_r("*")), NULL);
+    fabr_n_seq("node", hex, fabr_seq(fabr_string("_"), hex, fabr_r("*")), NULL);
   fabr_parser *counter =
     fabr_name("counter", hex);
 
@@ -94,9 +92,9 @@ static void flon_nid_parser_init()
   fabr_parser *tid =
     fabr_n_seq(
       "tid",
-      fabr_n_rex("date", "[0-9]{8}"), dot,
+      fabr_n_rex("date", "[0-9]{8,9}"), dot,
       fabr_n_rex("hour", "[0-9]{4}"), dot,
-      fabr_name("sec", mne),
+      fabr_n_rex("sec", "[a-z]+"),
       NULL);
 
   fabr_parser *exid =
