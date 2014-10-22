@@ -153,6 +153,7 @@ char *flon_nid_next(const char *nid)
   long l = strtol(u + 1, NULL, 16);
   char *r = flu_sprintf("%s_%x", n, l + 1);
 
+  free(n);
   fdja_free(i);
 
   return r;

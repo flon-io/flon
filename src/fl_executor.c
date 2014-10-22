@@ -133,6 +133,7 @@ static char rcv_invoke(fdja_value *node, fdja_value *rcv)
 
 static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 {
+  char r = 'o'; // ok
   char *nid = fdja_ls(node, "nid", NULL);
   char *from = fdja_ls(rcv, "from", NULL);
 
@@ -141,12 +142,15 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
   fdja_value *tree = flon_node_tree(execution, next);
 
   if (tree)
-  {
     queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));
-    return 'o'; // ok
-  }
+  else
+    r = 'v'; // over
 
-  return 'v'; // over
+  free(nid);
+  free(next);
+  if (from) free(from);
+
+  return r;
 }
 
 static char exe_sequence(fdja_value *node, fdja_value *exe)
@@ -263,6 +267,7 @@ static void receive_j(fdja_value *msg)
     if (parent_nid)
     {
       queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
+      free(parent_nid);
     }
 
     fdja_pset(execution, "nodes.%s", nid, NULL); // over
