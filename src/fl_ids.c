@@ -102,8 +102,14 @@ static void flon_nid_parser_init()
   fabr_parser *nid =
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
 
+  fabr_parser *msg =
+    fabr_n_rex("msg", "(exe_|inv_|rcv_|ret_)");
+  fabr_parser *ftype =
+    fabr_n_rex("ftype", "\\.json");
+
   flon_nid_parser =
     fabr_alt(
+      fabr_seq(msg, exid, fabr_seq(dash, nid, fabr_r("?")), ftype, NULL),
       fabr_seq(exid, dash, nid, NULL),
       exid,
       nid,
@@ -125,7 +131,7 @@ fdja_value *flon_parse_nid(const char *s)
   fdja_value *r = fdja_v("{}");
 
   char *keys[] = {
-    "domain", "feu", "tid", "nid", "node", "counter", NULL
+    "msg", "domain", "feu", "tid", "nid", "node", "counter", "ftype", NULL
   };
   size_t i = 0; for (char *k = keys[i]; k != NULL; k = keys[++i])
   {

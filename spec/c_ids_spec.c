@@ -89,6 +89,20 @@ context "fl_id"
     {
       expect(flon_parse_nid("/") == NULL);
     }
+
+    it "accepts filenames as input"
+    {
+      v = flon_parse_nid(
+        "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json");
+
+      expect(fdja_to_djan(v) ===f ""
+        "{ msg: ret_,"
+        " domain: xtest.pn, feu: u0,"
+        " tid: 20141021.0803.kurukuru,"
+        " nid: 0_1_2-ff, node: 0_1_2, counter: ff,"
+        " ftype: .json"
+        " }");
+    }
   }
 }
 
