@@ -25,12 +25,14 @@ context "flon-dispatcher"
     flon_configure(".");
 
     char *id = NULL;
+    char *name = NULL;
     char *path = NULL;
     char *s = NULL;
   }
   after each
   {
     if (id) free(id);
+    if (name) free(name);
     if (path) free(path);
     if (s) free(s);
   }
@@ -39,8 +41,9 @@ context "flon-dispatcher"
   {
     it "dispatches invocations"
     {
-      id = flon_generate_exid("dtest");
-      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
+      id = flon_generate_exid("dtest.inv");
+      name = flu_sprintf("inv_%s.json", id);
+      path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(
         path,
@@ -55,7 +58,7 @@ context "flon-dispatcher"
       );
       expect(r == 1);
 
-      r = flon_dispatch(path);
+      r = flon_dispatch(name);
       expect(r == 0);
 
       sleep(1);
@@ -80,13 +83,14 @@ context "flon-dispatcher"
 
     it "rejects files it doesn't understand"
     {
-      id = flon_generate_exid("dtest");
-      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
+      id = flon_generate_exid("dtest.rju");
+      name = flu_sprintf("inv_%s.json", id);
+      path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(path, "NADA");
       expect(r == 1);
 
-      r = flon_dispatch(path);
+      r = flon_dispatch(name);
       expect(r == 1);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", id);
@@ -97,8 +101,9 @@ context "flon-dispatcher"
 
     it "rejects files it doesn't know how to dispatch"
     {
-      id = flon_generate_exid("dtest");
-      path = flu_sprintf("var/spool/dis/inv_%s.json", id);
+      id = flon_generate_exid("dtest.rjk");
+      name = flu_sprintf("inv_%s.json", id);
+      path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(
         path,
@@ -113,8 +118,8 @@ context "flon-dispatcher"
       );
       expect(r == 1);
 
-      r = flon_dispatch(path);
-      expect(r == 1);
+      r = flon_dispatch(name);
+      expect(r i== 1);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", id);
       expect(s ^== "{nada: [ stamp");

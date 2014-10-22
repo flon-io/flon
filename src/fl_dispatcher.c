@@ -89,54 +89,64 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
   return 0; // success
 }
 
-static int invoke(const char *path)
+static int invoke(const char *fname)
 {
   char *bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
-  char *basename = flu_basename(path, ".txt");
-  char *logfname = flu_sprintf("var/log/inv/%s", basename);
+  char *basename = flu_basename(fname, ".txt");
+
+  char *invpath = flu_sprintf("var/spool/inv/%s", fname);
+  char *logpath = flu_sprintf("var/log/inv/%s", basename);
 
   free(basename);
 
-  int r = double_fork(
-    "invoker", logfname, (char *[]){ bin, (char *)path, NULL });
+  if (flu_move("var/spool/dis/%s", fname, invpath) != 0)
+  {
+    fgaj_r("failed to move %s to %s", fname, invpath);
+    return -1; // triggers rejection
+  }
 
-  free(logfname);
+  int r = double_fork(
+    "invoker", logpath, (char *[]){ bin, (char *)invpath, NULL });
+
   free(bin);
+  free(invpath);
+  free(logpath);
 
   return r;
 }
 
-static int execute(const char *path, fdja_value *j)
+static int execute(const char *fname, fdja_value *j)
 {
   return 1; // failure
 }
 
-static int reject(const char *path)
+static int reject(const char *fname)
 {
-  int r = flu_move(path, "var/spool/rejected/");
+  int r = flu_move("var/spool/dis/%s", fname, "var/spool/rejected/");
 
-  if (r == 0) fgaj_i("rejected %s", path);
-  else fgaj_r("failed to move %s to var/spool/rejected", path);
+  if (r == 0) fgaj_i("rejected %s", fname);
+  else fgaj_r("failed to move %s to var/spool/rejected/", fname);
 
   return 1; // failure
 }
 
-int flon_dispatch(const char *path)
+int flon_dispatch(const char *fname)
 {
-  fdja_value *j = fdja_parse_obj_f(path);
+  fgaj_i(fname);
 
-  if (j == NULL) return reject(path);
+  fdja_value *j = fdja_parse_obj_f("var/spool/dis/%s", fname);
 
   // TODO reroute?
 
   int r = -1;
 
-  if (fdja_l(j, "invoke")) r = invoke(path);
-  else if (fdja_l(j, "execute")) r = execute(path, j);
+  if (j == NULL) {}
+  else if (fdja_l(j, "invoke")) r = invoke(fname);
+  else if (fdja_l(j, "execute")) r = execute(fname, j);
   //
-  if (r == -1) r = reject(path);
+  if (r == -1) r = reject(fname);
 
-  fdja_value_free(j);
+  if (j) fdja_value_free(j);
 
   return r;
 }
