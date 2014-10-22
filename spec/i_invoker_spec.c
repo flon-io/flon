@@ -29,17 +29,19 @@ context "flon-invoker"
   {
     it "invokes"
     {
-      char *id = flon_generate_exid("itest");
-      char *path = flu_sprintf("var/spool/inv/inv_%s.json", id);
+      char *exid = flon_generate_exid("itest");
+      char *nid = "0_0_7";
+      char *path = flu_sprintf("var/spool/inv/inv_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
         "invoke: [ stamp, {}, [] ]\n"
-        "id: %s\n"
+        "exid: %s\n"
+        "nid: %s\n"
         "payload: {\n"
           "hello: world\n"
         "}\n",
-        id
+        exid, nid
       );
 
       flon_invoke(path);
@@ -48,13 +50,13 @@ context "flon-invoker"
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      char *s = flu_readall("var/spool/dis/ret_%s.json", id);
+      char *s = flu_readall("var/spool/dis/ret_%s-%s.json", exid, nid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, ",\"stamp\":\"") != NULL);
 
-      flu_unlink("var/spool/inv/inv_%s.json", id);
-      flu_unlink("var/spool/dis/ret_%s.json", id);
+      flu_unlink("var/spool/inv/inv_%s-%s.json", exid, nid);
+      flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
 
       //s = flu_readall("var/log/inv/%s.txt", id);
       ////printf(">>>\n%s<<<\n", s);

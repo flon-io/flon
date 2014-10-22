@@ -59,12 +59,19 @@ int flon_invoke(const char *path)
   fdja_value *payload = fdja_lookup(inv, "payload");
   if (payload == NULL) payload = fdja_v("{}");
 
-  char *id = fdja_lookup_string(inv, "id", NULL);
-  char *invoked = fdja_to_string(invocation->child);
+  char *exid = fdja_ls(inv, "exid", NULL);
+  char *nid = fdja_ls(inv, "nid", NULL);
+
+  char *invoked = fdja_ls(invocation, "0", NULL);
+  if (strcmp(invoked, "invoke") == 0)
+  {
+    invoked = fdja_ls(invocation, "1._0", NULL);
+  }
+
   char *invoker_path = flu_sprintf("usr/local/inv/%s", invoked);
 
   fgaj_i("cwd: %s", getcwd(NULL, 0));
-  fgaj_i("id: %s", id);
+  fgaj_i("exid: %s, nid: %s", exid, nid);
   fgaj_i("invocation: %s", fdja_to_json(invocation));
   fgaj_i("invoker at %s", invoker_path);
 
@@ -116,7 +123,7 @@ int flon_invoke(const char *path)
       return 127;
     }
 
-    char *out = flu_sprintf("var/spool/dis/ret_%s.json", id);
+    char *out = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
 
     if (freopen(out, "w", stdout) == NULL)
     {

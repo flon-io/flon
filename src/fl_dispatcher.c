@@ -94,7 +94,20 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
 static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
-  if ( ! (fdja_l(j, "invoke") || fdja_l(j, "execute"))) return -1;
+
+  if (strncmp(fname, "ret_", 4))
+  {
+    fdja_value *v = flon_parse_nid(fname);
+    fdja_set(v, "receive", 1);
+    fdja_set(v, "payload", j);
+    j = v;
+  }
+
+  if (
+    fdja_l(j, "execute") == NULL &&
+    fdja_l(j, "receive") == NULL &&
+    fdja_l(j, "invoke") == NULL
+  ) return -1;
 
   // TODO:
   // return success if executor and executor already running for that exid

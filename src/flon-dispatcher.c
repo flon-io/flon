@@ -32,6 +32,7 @@
 #include <ev.h>
 
 #include "gajeta.h"
+#include "fl_common.h"
 #include "fl_dispatcher.h"
 
 
@@ -58,6 +59,8 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 
 int main(int argc, char *argv[])
 {
+  // set up logging
+
   fgaj_conf_get()->out = stderr;
 
   // change dir
@@ -66,6 +69,10 @@ int main(int argc, char *argv[])
   if (argc > 1) d = argv[1];
 
   if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
+
+  // load configuration
+
+  flon_configure(".");
 
   // scan once
 
