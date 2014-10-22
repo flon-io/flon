@@ -7,6 +7,7 @@
 
 #include "flutil.h"
 #include "gajeta.h"
+#include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_executor.h"
 
@@ -205,7 +206,8 @@ context "flon-executor"
 
       expect(flu_fstat("var/spool/inv/inv_%s-0_1.json", exid) == 'f');
 
-      v = fdja_parse_f("var/spool/inv/inv_%s-0_0.json", exid);
+      v = fdja_parse_f("var/spool/inv/inv_%s-0_1.json", exid);
+      puts(fdja_to_pretty_djan(v));
 
       expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: green }, [] ]"));

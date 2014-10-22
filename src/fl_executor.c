@@ -31,6 +31,7 @@
 
 #include "djan.h"
 #include "gajeta.h"
+#include "fl_ids.h"
 #include "fl_node.h"
 #include "fl_executor.h"
 
@@ -83,14 +84,31 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
   fgaj_i("%s, rejected %s", reason, fname);
 }
 
+static void queue_msg(
+  char *type, char *nid, char *from_nid, fdja_value *payload)
+{
+  fdja_value *msg = fdja_v("{ %s: 1, nid: %s }", type, nid);
+
+  fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
+  fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
+
+  flu_list_add(executes, msg);
+}
+
 //
 // execute and receive functions
 
-typedef int flon_exe_func(fdja_value *, fdja_value *);
+typedef char flon_exe_func(fdja_value *, fdja_value *);
+  //
+  // return codes:
+  //
+  // 'o' ok
+  // 'v' over, reply to parent
+  // 'r' error
 
 // *** INVOKE
 
-static int exe_invoke(fdja_value *node, fdja_value *exe)
+static char exe_invoke(fdja_value *node, fdja_value *exe)
 {
   char *nid = fdja_ls(node, "nid");
 
@@ -105,38 +123,38 @@ static int exe_invoke(fdja_value *node, fdja_value *exe)
   fdja_free(inv);
   free(nid);
 
-  return 0; // success
+  return 'o'; // ok
 }
 
-static int rcv_invoke(fdja_value *node, fdja_value *rcv)
+static char rcv_invoke(fdja_value *node, fdja_value *rcv)
 {
-  return 0; // success
+  return 'v'; // over
 }
 
 // *** SEQUENCE
 
-static int exe_sequence(fdja_value *node, fdja_value *exe)
+static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 {
-  //printf("seq: node: %s\n", fdja_to_json(node));
-  //printf("seq: exe: %s\n", fdja_to_json(exe));
-
   char *nid = fdja_ls(node, "nid", NULL);
+  char *from = fdja_ls(rcv, "from", NULL);
 
-  fdja_value *exe0 = fdja_v("{ nid: \"%s_0\", execute: 1 }", nid);
-  fdja_set(exe0, "payload", fdja_lc(exe, "payload"));
+  char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
+  printf("next: %s\n", next);
 
-  //printf("seq: exe0: %s\n", fdja_to_json(exe0));
+  fdja_value *tree = flon_node_tree(execution, next);
 
-  free(nid);
+  if (tree)
+  {
+    queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));
+    return 'o'; // ok
+  }
 
-  flu_list_add(executes, exe0);
-
-  return 0; // success
+  return 'v'; // over
 }
 
-static int rcv_sequence(fdja_value *node, fdja_value *rcv)
+static char exe_sequence(fdja_value *node, fdja_value *exe)
 {
-  return 0; // success
+  return rcv_sequence(node, exe);
 }
 
 // function table
@@ -176,9 +194,8 @@ static void move_to_processed(fdja_value *msg)
   free(fname);
 }
 
-static int execute_j(fdja_value *msg)
+static void execute_j(fdja_value *msg)
 {
-  int r = 0;
   char *nid = NULL;
   char *name = NULL;
 
@@ -194,29 +211,30 @@ static int execute_j(fdja_value *msg)
   fgaj_d("node: \"%s\" %s", name, nid);
 
   flon_exe_func *func = find_function(name, 'x');
-  if (func == NULL) { r = 1; goto _over; }
+  if (func == NULL) goto _over;
 
   fdja_value *node = fdja_v("{ nid: %s, t: %s }", nid, name);
   if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_lc(msg, "execute"));
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
-  r = func(node, msg);
+  char r = func(node, msg);
 
-  // TODO: what if the func signals an error?
+  if (r == 'r')
+  {
+    // TODO
+  }
+
   move_to_processed(msg);
 
 _over:
 
   if (name) free(name);
   if (nid) free(nid);
-
-  return r;
 }
 
-static int receive_j(fdja_value *msg)
+static void receive_j(fdja_value *msg)
 {
-  int r = 0;
   char *nid = NULL;
   char *name = NULL;
 
@@ -229,30 +247,40 @@ static int receive_j(fdja_value *msg)
 
   fdja_value *node = fdja_l(execution, "nodes.%s", nid);
 
-  if (node == NULL) { reject("node not found", NULL, msg); return 1; }
+  if (node == NULL) { reject("node not found", NULL, msg); return; }
 
-  puts(fdja_to_json(node));
+  //puts(fdja_to_json(node));
   fdja_value *tree = flon_node_tree(execution, nid);
   name = fdja_ls(tree, "0", NULL);
 
   //if (name == NULL) { reject("tree.0 not found", NULL, msg); return 1; }
 
   flon_exe_func *func = find_function(name, 'r');
-  if (func == NULL) { r = 1; goto _over; }
+  if (func == NULL) goto _over;
 
-  r = func(node, msg);
+  char r = func(node, msg);
 
-  if (r == 0) fdja_pset(execution, "nodes.%s", nid, NULL);
+  if (r == 'v')
+  {
+    char *parent_nid = flon_node_parent_nid(execution, nid);
+    if (parent_nid)
+    {
+      queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
+    }
 
-  // TODO: what if the func signals an error?
+    fdja_pset(execution, "nodes.%s", nid, NULL); // over
+  }
+  //else if (r == 'r')
+  //{
+  //  // TODO
+  //}
+
   move_to_processed(msg);
 
 _over:
 
   if (nid) free(nid);
   if (name) free(name);
-
-  return r;
 }
 
 static void load_execution(const char *exid)

@@ -220,7 +220,7 @@ static fabr_parser *fdja_path_parser = NULL;
 static void fdja_path_parser_init()
 {
   fabr_parser *index = fabr_n_rex("index", "-?[0-9]+");
-  fabr_parser *key = fabr_n_rex("key", "[^\n\r\t\.]+");
+  fabr_parser *key = fabr_n_rex("key", "[^\n\r\t\\.]+");
   fabr_parser *node = fabr_n_altg("node", index, key, NULL);
 
   fdja_path_parser =

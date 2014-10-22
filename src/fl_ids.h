@@ -33,5 +33,7 @@ char *flon_generate_exid(const char *domain);
 
 fdja_value *flon_parse_nid(const char *s);
 
+char *flon_nid_next(const char *nid);
+
 #endif // FL_IDS_H
 
