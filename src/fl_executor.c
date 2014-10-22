@@ -335,13 +335,17 @@ static void load_msgs()
   {
     if ( ! name_matches(de->d_name)) continue;
 
-    fgaj_d("fname: %s", de->d_name);
+    fgaj_d("from %s", de->d_name);
 
     fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
 
     if (j == NULL) { reject("couldn't parse", de->d_name, NULL); continue; }
 
     fdja_set(j, "fname", fdja_s(de->d_name));
+
+    // TODO:
+    // it's probably better to put msgs from disk in front of the list
+    // especially if they're cancel msgs
 
     flu_list_add(msgs, j);
   }
