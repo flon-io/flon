@@ -137,7 +137,6 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
   char *from = fdja_ls(rcv, "from", NULL);
 
   char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
-  printf("next: %s\n", next);
 
   fdja_value *tree = flon_node_tree(execution, next);
 
@@ -236,16 +235,16 @@ static void receive_j(fdja_value *msg)
   char *nid = NULL;
   char *name = NULL;
 
-  puts("receive_j:");
-  puts(fdja_to_pretty_djan(msg));
-  puts(fdja_to_pretty_djan(execution));
+  //puts("receive_j:");
+  //puts(fdja_to_pretty_djan(msg));
+  //puts(fdja_to_pretty_djan(execution));
 
   nid = fdja_ls(msg, "nid", NULL);
   fgaj_d("nid: %s", nid);
 
   fdja_value *node = fdja_l(execution, "nodes.%s", nid);
 
-  if (node == NULL) { reject("node not found", NULL, msg); return; }
+  if (node == NULL) { reject("node not found", NULL, msg); goto _over; }
 
   //puts(fdja_to_json(node));
   fdja_value *tree = flon_node_tree(execution, nid);
@@ -342,7 +341,7 @@ static void load_msgs()
     flu_list_add(msgs, j);
   }
 
-  fgaj_d("exid: %s, msgs: %zu", execution_id, msgs->size);
+  //fgaj_d("exid: %s, msgs: %zu", execution_id, msgs->size);
 
   closedir(dir);
 }

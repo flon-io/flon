@@ -176,9 +176,10 @@ context "flon-executor"
       // check the "execution"
 
       v = fdja_parse_f("var/run/%s.json", exid);
-      puts(fdja_to_pretty_djan(v));
+      //puts(fdja_to_pretty_djan(v));
 
-      //expect(fdja_lj(v, "nodes.0.0"...
+      expect(
+        fdja_lj(v, "nodes.0_0", NULL) ===F fdja_vj("{ nid: 0_0, t: invoke }"));
 
       fdja_free(v);
 
@@ -201,18 +202,67 @@ context "flon-executor"
 
       expect(r == 0);
 
+      flon_executor_reset();
+
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
 
       expect(flu_fstat("var/spool/inv/inv_%s-0_1.json", exid) == 'f');
 
       v = fdja_parse_f("var/spool/inv/inv_%s-0_1.json", exid);
-      puts(fdja_to_pretty_djan(v));
+      //puts(fdja_to_pretty_djan(v));
 
-      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
+      expect(fdja_lj(v, "invoke", NULL) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: green }, [] ]"));
-      expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
+      expect(fdja_lj(v, "payload", NULL) ===F fdja_vj(""
         "{ hello: chuugoku, args: { _0: stamp, color: green } }"));
+
+      fdja_free(v);
+
+      // check the "execution"
+
+      v = fdja_parse_f("var/run/%s.json", exid);
+      //puts(fdja_to_pretty_djan(v));
+
+      expect(
+        fdja_lj(v, "nodes.0_1", NULL) ===F fdja_vj("{ nid: 0_1, t: invoke }"));
+
+      fdja_free(v);
+
+      // inject ret_ back, towards "eox" (end of execution)
+
+      expect(flu_unlink("var/spool/inv/inv_%s-0_1.json", exid) == 0);
+
+      flu_writeall(
+        "var/spool/exe/ret_%s-0_1.json", exid,
+        "receive: 1\n"
+        "exid: %s\n"
+        "nid: 0_1\n"
+        "payload: {\n"
+          "hello: staabakusu\n"
+        "}\n",
+        exid
+      );
+
+      r = flon_execute(exid);
+
+      expect(r == 0);
+
+      //flon_executor_reset();
+
+      expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
+
+      expect(flu_fstat("var/run/%s.json", exid) == 0);
+      expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
+
+      // check the processed/ execution
+
+      v = fdja_parse_f("var/run/processed/%s.json", exid);
+      //puts(fdja_to_pretty_djan(v));
+
+      expect(fdja_lj(v, "nodes", NULL) ===F fdja_vj("{}"));
+      expect(fdja_lj(v, "errors", NULL) ===F fdja_vj("{}"));
 
       fdja_free(v);
     }

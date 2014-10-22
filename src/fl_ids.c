@@ -146,13 +146,12 @@ fdja_value *flon_parse_nid(const char *s)
 char *flon_nid_next(const char *nid)
 {
   fdja_value *i = flon_parse_nid(nid);
-  puts(fdja_to_djan(i));
+
   char *n = fdja_ls(i, "node");
   char *u = strrchr(n, '_');
   *u = 0;
   long l = strtol(u + 1, NULL, 16);
   char *r = flu_sprintf("%s_%x", n, l + 1);
-  printf("r: %s\n", r);
 
   fdja_free(i);
 
