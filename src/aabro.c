@@ -126,14 +126,16 @@ static void fabr_t_to_s(
     return;
   }
 
-  char *stringc = color ? "[1;33m" : "";
+  char *stringc = color ? "[1;33m" : ""; // yellow
   char *clearc = color ? "[0;0m" : "";
+  char *namec = color ? "[1;34m" : ""; // light blue
+  char *notec = color ? "[1;31m" : ""; // light red
 
   char *name = "null";
   char *note = "null";
   char *resultc = ""; if (color) resultc = t->result ? "[0;0m" : "[1;30m";
-  if (t->name) name = flu_sprintf("\"%s\"", t->name);
-  if (t->note) note = flu_sprintf("\"%s\"", t->note);
+  if (t->name) name = flu_sprintf("\"%s%s%s\"", namec, t->name, resultc);
+  if (t->note) note = flu_sprintf("\"%s%s%s\"", notec, t->note, resultc);
   //
   flu_sbprintf(
     b,
