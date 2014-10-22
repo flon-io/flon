@@ -7,6 +7,7 @@
 
 #include "flutil.h"
 #include "gajeta.h"
+#include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
 
