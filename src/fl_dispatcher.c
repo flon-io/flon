@@ -31,6 +31,7 @@
 #include <unistd.h>
 //#include <libgen.h>
 
+#include "flutil.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_common.h"
@@ -124,26 +125,42 @@ static int reject(const char *fname)
 {
   int r = flu_move("var/spool/dis/%s", fname, "var/spool/rejected/");
 
-  if (r == 0) fgaj_i("rejected %s", fname);
+  if (r == 0) fgaj_i(fname);
   else fgaj_r("failed to move %s to var/spool/rejected/", fname);
 
   return 1; // failure
+}
+
+static int dispatch(const char *fname, fdja_value *j)
+{
+  if (j == NULL) return -1;
+  if (fdja_l(j, "invoke")) return invoke(fname);
+  if (fdja_l(j, "execute")) return execute(fname, j);
+  return -1;
 }
 
 int flon_dispatch(const char *fname)
 {
   fgaj_i(fname);
 
-  fdja_value *j = fdja_parse_obj_f("var/spool/dis/%s", fname);
+  int r = 0;
+  fdja_value *j = NULL;
+
+  if ( ! flu_strends(fname, ".json")) r = -1;
+
+  if (
+    r == 0 &&
+    strncmp(fname, "exe_", 4) != 0 &&
+    strncmp(fname, "inv_", 4) != 0 &&
+    strncmp(fname, "ret_", 4) != 0 &&
+    strncmp(fname, "rcv_", 4) != 0
+  ) r = -1;
+
+  if (r == 0) j = fdja_parse_obj_f("var/spool/dis/%s", fname);
 
   // TODO reroute?
 
-  int r = -1;
-
-  if (j == NULL) {}
-  else if (fdja_l(j, "invoke")) r = invoke(fname);
-  else if (fdja_l(j, "execute")) r = execute(fname, j);
-  //
+  if (r == 0) r = dispatch(fname, j);
   if (r == -1) r = reject(fname);
 
   if (j) fdja_value_free(j);

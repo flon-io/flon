@@ -82,10 +82,15 @@ ssi: is
 flon-executor: $(XDEPS)
 flon-invoker: $(IDEPS)
 
+flon-dispatcher: $(DDEPS)
+	$(CC) -I../src $(CFLAGS) ../src/flon-dispatcher.c $(DDEPS) -lev -o flon-dispatcher
+
 executor: flon-executor
 	mv flon-executor ../tst/bin/
 invoker: flon-invoker
 	mv flon-invoker ../tst/bin/
+dispatcher: flon-dispatcher
+	mv flon-dispatcher ../tst/bin/
 
 spec:
 	$(MAKE) sc

@@ -26,12 +26,59 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <unistd.h>
+#include <dirent.h>
+
+#include <ev.h>
+
+#include "gajeta.h"
+#include "fl_dispatcher.h"
 
 
-int main()
+static void scan_dir()
+{
+  fgaj_i("scanning var/spool/dis/");
+
+  DIR *dir = opendir("var/spool/dis/");
+  struct dirent *de;
+
+  while ((de = readdir(dir)) != NULL)
+  {
+    if (*de->d_name == '.') continue;
+    flon_dispatch(de->d_name);
+  }
+
+  closedir(dir);
+}
+
+static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
+{
+  if (w->attr.st_nlink) scan_dir();
+}
+
+int main(int argc, char *argv[])
 {
   fgaj_conf_get()->out = stderr;
 
-  puts("hello from " __FILE__);
+  // change dir
+
+  char *d = ".";
+  if (argc > 1) d = argv[1];
+
+  if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
+
+  // scan once
+
+  scan_dir();
+
+  // then watch
+
+  struct ev_loop *l = ev_default_loop(0);
+  ev_stat est;
+
+  ev_stat_init(&est, spool_cb, "var/spool/dis/", 0.);
+  ev_stat_start(l, &est);
+
+  ev_loop(l, 0);
 }
 
