@@ -131,7 +131,9 @@ fdja_value *flon_parse_nid(const char *s)
   fdja_value *r = fdja_v("{}");
 
   char *keys[] = {
-    "msg", "domain", "feu", "tid", "nid", "node", "counter", "ftype", NULL
+    "msg",
+    "exid", "domain", "feu", "tid", "nid", "node", "counter",
+    "ftype", NULL
   };
   size_t i = 0; for (char *k = keys[i]; k != NULL; k = keys[++i])
   {

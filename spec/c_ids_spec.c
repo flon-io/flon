@@ -80,7 +80,9 @@ context "fl_id"
       v = flon_parse_nid("xtest.pn-u0-20141021.0803.chatsidiseba-0_1_2-ff");
 
       expect(fdja_to_djan(v) ===f ""
-        "{ domain: xtest.pn, feu: u0,"
+        "{"
+        " exid: xtest.pn-u0-20141021.0803.chatsidiseba,"
+        " domain: xtest.pn, feu: u0,"
         " tid: 20141021.0803.chatsidiseba,"
         " nid: 0_1_2-ff, node: 0_1_2, counter: ff }");
     }
@@ -97,6 +99,7 @@ context "fl_id"
 
       expect(fdja_to_djan(v) ===f ""
         "{ msg: ret_,"
+        " exid: xtest.pn-u0-20141021.0803.kurukuru,"
         " domain: xtest.pn, feu: u0,"
         " tid: 20141021.0803.kurukuru,"
         " nid: 0_1_2-ff, node: 0_1_2, counter: ff,"
