@@ -38,7 +38,7 @@
 #include "fl_dispatcher.h"
 
 
-static int double_fork(char *ctx, char *log_path, char *argv[])
+static int double_fork(char *ctx, char *logpath, char *msgpath)
 {
   pid_t i = fork();
 
@@ -61,20 +61,27 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
 
     fflush(stderr);
 
-    if (freopen(log_path, "a", stderr) == NULL)
+    if (freopen(logpath, "a", stderr) == NULL)
     {
-      fgaj_r("failed to reopen stderr to %s", log_path);
+      fgaj_r("failed to reopen stderr to %s", logpath);
       _exit(127);
     }
-    fgaj_i("pointing invoker stderr to %s", log_path);
-
-    fgaj_i("cmd is >%s %s<", argv[0], argv[1]);
+    fgaj_i("pointing invoker stderr to %s", logpath);
 
     fflush(stderr);
 
     // TODO: if ctx is "executor", write var/run/{exid}.pid
 
-    int r = execv(argv[0], argv);
+    char *bin = NULL;
+    if (*ctx == 'i')
+      bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+    else
+      bin = flon_conf_string("executor.bin", "bin/flon-executor");
+
+    fgaj_i("cmd is >%s %s<", bin, msgpath);
+
+    //int r = execv(argv[0], argv);
+    int r = execv(bin, (char *[]){ bin, msgpath, NULL });
 
     // fail zone...
 
@@ -126,16 +133,13 @@ static int dispatch(const char *fname, fdja_value *j)
 
   int r = 1;
 
-  char *bin = NULL;
-  if (*fname == 'i') bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
-  else bin = flon_conf_string("executor.bin", "bin/flon-executor");
-
   char *txtname = flu_basename(fname, ".txt");
 
-  char *acro = (*fname == 'i') ? "inv" : "exe";
+  char *ct = "exe"; char *ctx = "executor";
+  if (*fname == 'i') { ct = "inv"; ctx = "invoker"; }
 
-  char *msgpath = flu_sprintf("var/spool/%s/%s", acro, fname);
-  char *logpath = flu_sprintf("var/log/%s/%s", acro, txtname);
+  char *msgpath = flu_sprintf("var/spool/%s/%s", ct, fname);
+  char *logpath = flu_sprintf("var/log/%s/%s", ct, txtname);
 
   free(txtname);
 
@@ -145,13 +149,8 @@ static int dispatch(const char *fname, fdja_value *j)
     r = -1; // triggers rejection
   }
 
-  if (r == 1)
-  {
-    r = double_fork(
-      "invoker", logpath, (char *[]){ bin, (char *)msgpath, NULL });
-  }
+  if (r == 1) r = double_fork(ctx, logpath, msgpath);
 
-  free(bin);
   free(msgpath);
   free(logpath);
 
