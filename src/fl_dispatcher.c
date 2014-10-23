@@ -99,28 +99,9 @@ static int double_fork(char *ctx, char *logpath, char *msgpath)
   return 0; // success
 }
 
-static fdja_value *receive_ret(const char *fname, fdja_value *j)
-{
-  fdja_value *v = flon_parse_nid(fname);
-  fdja_set(v, "receive", fdja_v("1"));
-  fdja_set(v, "payload", j);
-  fdja_to_json_f(v, "var/spool/dis/%s", fname);
-
-  if (flu_unlink("var/spool/inv/inv_%s", fname + 4) == 0)
-    fgaj_i("unlinked var/spool/inv/inv_%s", fname + 4);
-  else
-    fgaj_i("couldn't unlink var/spool/inv/inv_%s", fname + 4);
-
-  // TODO: what if invocation.feu != ret.feu ???
-
-  return v;
-}
-
 static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
-
-  if (strncmp(fname, "ret_", 4) == 0) j = receive_ret(fname, j);
 
   if (
     fdja_l(j, "execute") == NULL &&
@@ -167,6 +148,47 @@ static int reject(const char *fname)
   return 1; // failure
 }
 
+static int receive_ret(const char *fname)
+{
+  int r = 0;
+
+  fdja_value *i = NULL;
+  fdja_value *j = NULL;
+
+  j = fdja_parse_obj_f("var/spool/dis/%s", fname);
+  if (j == NULL) { r = -1; goto _over; }
+
+  i = flon_parse_nid(fname);
+  if (i == NULL) { r = -1; goto _over; }
+
+  fdja_set(i, "receive", fdja_v("1"));
+  fdja_set(i, "payload", j);
+
+  int rr = fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4);
+  if (rr != 1) { r = -1; goto _over; }
+
+  // unlink inv_
+
+  if (flu_unlink("var/spool/inv/inv_%s", fname + 4) == 0)
+    fgaj_i("unlinked var/spool/inv/inv_%s", fname + 4);
+  else
+    fgaj_i("failed to unlink var/spool/inv/inv_%s", fname + 4);
+
+  // unlink ret_
+
+  if (flu_unlink("var/spool/dis/%s", fname) == 0)
+    fgaj_i("unlinked var/spool/dis/%s", fname);
+  else
+    fgaj_i("failed to unlink var/spool/dis/%s", fname);
+
+_over:
+
+  if (i && j) fdja_free(i);
+  else if (j) fdja_free(j);
+
+  return r;
+}
+
 int flon_dispatch(const char *fname)
 {
   fgaj_i(fname);
@@ -174,23 +196,25 @@ int flon_dispatch(const char *fname)
   int r = 0;
   fdja_value *j = NULL;
 
-  if ( ! flu_strends(fname, ".json")) r = -1;
+  if ( ! flu_strends(fname, ".json")) { r = -1; goto _over; }
+
+  if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
 
   if (
-    r == 0 &&
     strncmp(fname, "exe_", 4) != 0 &&
     strncmp(fname, "inv_", 4) != 0 &&
-    strncmp(fname, "ret_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0
-  ) r = -1;
+  ) { r = -1; goto _over; }
 
-  if (r == 0) j = fdja_parse_obj_f("var/spool/dis/%s", fname);
+  j = fdja_parse_obj_f("var/spool/dis/%s", fname);
 
   // TODO reroute?
 
-  if (r == 0) r = dispatch(fname, j);
-  if (r == -1) r = reject(fname);
+  r = dispatch(fname, j);
 
+_over:
+
+  if (r == -1) r = reject(fname);
   if (j) fdja_value_free(j);
 
   return r;

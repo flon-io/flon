@@ -156,12 +156,29 @@ context "flon-dispatcher"
       );
       expect(r i== 1);
 
+      // dispatch for the ret_
+
       r = flon_dispatch(name);
       expect(r i== 0);
 
       sleep(1);
 
       expect(flu_fstat("var/spool/inv/inv_%s-0_7-f.json", exid) == 0);
+      expect(flu_fstat("var/spool/dis/ret_%s-0_7-f.json", exid) == 0);
+
+      expect(flu_fstat("var/spool/dis/rcv_%s-0_7-f.json", exid) == 'f');
+
+      // dispatch for the rcv_
+
+      free(name);
+      name = flu_sprintf("rcv_%s-0-7-f.json", exid);
+
+      r = flon_dispatch(name);
+      expect(r i== 0);
+
+      sleep(1);
+
+      // TODO
     }
   }
 }
