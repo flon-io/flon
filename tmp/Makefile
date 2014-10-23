@@ -55,7 +55,7 @@ is: $(IDEPS)
 
 sc: cs
 	time ./cs
-sd: ds invoker
+sd: ds invoker executor
 	time ./ds
 sx: xs
 	time ./xs

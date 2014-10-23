@@ -66,11 +66,11 @@ context "flon-dispatcher"
 
       fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
       expect(v != NULL);
-      puts(fdja_to_pretty_djan(v));
+      //puts(fdja_to_pretty_djan(v));
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
 
-      s = flu_readall("var/log/inv/inv_%s-0_2.txt", exid);
+      s = flu_readall("var/log/inv/%s-0_2.txt", exid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " invoked >ruby stamp.rb<") != NULL);
@@ -80,7 +80,7 @@ context "flon-dispatcher"
 
       flu_unlink("var/spool/dis/ret_%s-0_2.json", exid);
       flu_unlink("var/spool/inv/inv_%s-0_2.json", exid);
-      flu_unlink("var/log/inv/inv_%s-0_2.txt", exid);
+      flu_unlink("var/log/inv/%s-0_2.txt", exid);
     }
 
     it "rejects files it doesn't understand"
@@ -171,12 +171,14 @@ context "flon-dispatcher"
       // dispatch for the rcv_
 
       free(name);
-      name = flu_sprintf("rcv_%s-0-7-f.json", exid);
+      name = flu_sprintf("rcv_%s-0_7-f.json", exid);
 
       r = flon_dispatch(name);
       expect(r i== 0);
 
       sleep(1);
+
+      expect(flu_fstat("var/log/exe/%s.txt", exid) == 'f');
 
       // TODO
     }

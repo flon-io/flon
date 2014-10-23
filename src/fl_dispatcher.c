@@ -38,7 +38,7 @@
 #include "fl_dispatcher.h"
 
 
-static int double_fork(char *ctx, char *logpath, char *msgpath)
+static int double_fork(char *ctx, char *logpath, char *arg)
 {
   pid_t i = fork();
 
@@ -73,15 +73,15 @@ static int double_fork(char *ctx, char *logpath, char *msgpath)
     // TODO: if ctx is "executor", write var/run/{exid}.pid
 
     char *bin = NULL;
+    //
     if (*ctx == 'i')
       bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
     else
       bin = flon_conf_string("executor.bin", "bin/flon-executor");
 
-    fgaj_i("cmd is >%s %s<", bin, msgpath);
+    fgaj_i("cmd is >%s %s<", bin, arg);
 
-    //int r = execv(argv[0], argv);
-    int r = execv(bin, (char *[]){ bin, msgpath, NULL });
+    int r = execv(bin, (char *[]){ bin, arg, NULL });
 
     // fail zone...
 
@@ -103,6 +103,8 @@ static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
 
+  //puts(fdja_to_pretty_djan(j));
+
   if (
     fdja_l(j, "execute") == NULL &&
     fdja_l(j, "receive") == NULL &&
@@ -114,25 +116,37 @@ static int dispatch(const char *fname, fdja_value *j)
 
   int r = 1;
 
-  char *txtname = flu_basename(fname, ".txt");
+  char *tname = flu_basename(fname, ".txt");
+  char *exid = fdja_ls(j, "exid", NULL);
+  char *nid = fdja_ls(j, "nid", NULL);
 
-  char *ct = "exe"; char *ctx = "executor";
-  if (*fname == 'i') { ct = "inv"; ctx = "invoker"; }
-
-  char *msgpath = flu_sprintf("var/spool/%s/%s", ct, fname);
-  char *logpath = flu_sprintf("var/log/%s/%s", ct, txtname);
-
-  free(txtname);
-
-  if (flu_move("var/spool/dis/%s", fname, msgpath) != 0)
+  char *ct = "exe";
+  char *ctx = "executor";
+  char *arg = exid;
+  char *logpath = NULL;
+  //
+  if (*fname == 'i') // invoke
   {
-    fgaj_r("failed to move %s to %s", fname, msgpath);
+    ct = "inv";
+    ctx = "invoker";
+    arg = flu_sprintf("var/spool/inv/%s", fname);
+    logpath = flu_sprintf("var/log/inv/%s-%s.txt", exid, nid);
+  }
+  else // execute, receive
+  {
+    logpath = flu_sprintf("var/log/exe/%s.txt", exid);
+  }
+
+  if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
+  {
+    fgaj_r("failed to move %s to var/spool/%s/%s", fname, ct, fname);
     r = -1; // triggers rejection
   }
 
-  if (r == 1) r = double_fork(ctx, logpath, msgpath);
+  if (r == 1) r = double_fork(ctx, logpath, arg);
 
-  free(msgpath);
+  free(exid);
+  free(nid);
   free(logpath);
 
   return r;

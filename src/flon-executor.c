@@ -27,11 +27,20 @@
 
 #include <stdio.h>
 
+#include "gajeta.h"
+#include "fl_executor.h"
 
-int main()
+
+int main(int argc, char *argv[])
 {
   fgaj_conf_get()->out = stderr;
 
-  puts("hello from " __FILE__);
+  if (argc < 2)
+  {
+    fgaj_e("missing exid as arg");
+    return 1;
+  }
+
+  return flon_execute(argv[1]);
 }
 
