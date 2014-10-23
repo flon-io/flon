@@ -116,7 +116,6 @@ static int dispatch(const char *fname, fdja_value *j)
 
   int r = 1;
 
-  char *tname = flu_basename(fname, ".txt");
   char *exid = fdja_ls(j, "exid", NULL);
   char *nid = fdja_ls(j, "nid", NULL);
 
@@ -145,6 +144,7 @@ static int dispatch(const char *fname, fdja_value *j)
 
   if (r == 1) r = double_fork(ctx, logpath, arg);
 
+  if (*fname == 'i') free(arg); // else arg == exid
   free(exid);
   free(nid);
   free(logpath);
