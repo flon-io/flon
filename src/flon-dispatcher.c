@@ -38,7 +38,7 @@
 
 static void scan_dir()
 {
-  fgaj_i("< scanning var/spool/dis/");
+  fgaj_i(".");
 
   DIR *dir = opendir("var/spool/dis/");
   struct dirent *de;
@@ -50,7 +50,8 @@ static void scan_dir()
   }
 
   closedir(dir);
-  fgaj_i("> scanning over.");
+
+  //fgaj_i("> scanning over.");
 }
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
