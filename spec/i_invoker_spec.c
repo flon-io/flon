@@ -7,6 +7,7 @@
 
 #include "flutil.h"
 #include "gajeta.h"
+#include "djan.h"
 #include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_invoker.h"
@@ -44,26 +45,29 @@ context "flon-invoker"
         exid, nid
       );
 
-      flon_invoke(path);
+      int r = flon_invoke(path);
+
+      expect(r == 0);
 
       sleep(1);
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      char *s = flu_readall("var/spool/dis/ret_%s-%s.json", exid, nid);
-      //printf(">>>\n%s<<<\n", s);
-      expect(s != NULL);
-      expect(strstr(s, ",\"stamp\":\"") != NULL);
+      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) == 'f');
+        // it's still here, it's the dispatcher's work to nuke it
+
+      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) == 'f');
+
+      fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+      //puts(fdja_to_pretty_djan(v));
+
+      expect(fdja_ls(v, "hello", NULL) ===f "world");
+      expect(fdja_l(v, "stamp") != NULL);
+
+      fdja_free(v);
 
       flu_unlink("var/spool/inv/inv_%s-%s.json", exid, nid);
       flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
-
-      //s = flu_readall("var/log/inv/%s.txt", id);
-      ////printf(">>>\n%s<<<\n", s);
-      //expect(s != NULL);
-      //expect(strstr(s, " stamp.rb over.") != NULL);
-      //
-      //flu_unlink("var/log/inv/%s.txt", id);
     }
   }
 }
