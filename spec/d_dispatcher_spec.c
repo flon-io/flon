@@ -117,7 +117,7 @@ context "flon-dispatcher"
           "}\n"
         "}", exid
       );
-      expect(r == 1);
+      expect(r i== 1);
 
       r = flon_dispatch(name);
       expect(r i== 1);
@@ -126,6 +126,42 @@ context "flon-dispatcher"
       expect(s ^== "{nada: [ stamp");
 
       flu_unlink("var/spool/rejected/inv_%s.json", exid);
+    }
+
+    it "receives invocation returns"
+    {
+      int r = -1;
+      exid = flon_generate_exid("dtest.rir");
+      name = flu_sprintf("ret_%s-0_7-f.json", exid);
+
+      r = flu_writeall(
+        "var/spool/inv/inv_%s-0_7-f.json", exid,
+        "{"
+          "invoke: [ stamp, {}, [] ]\n"
+          "exid: %s\n"
+          "nid: 0_7-f\n"
+          "payload: {\n"
+            "hello: dtest.rir\n"
+          "}\n"
+        "}", exid
+      );
+      expect(r i== 1);
+
+      r = flu_writeall(
+        "var/spool/dis/ret_%s-0_7-f.json", exid,
+        "{"
+          "hello: dtest.rir\n"
+          "return: true\n"
+        "}"
+      );
+      expect(r i== 1);
+
+      r = flon_dispatch(name);
+      expect(r i== 0);
+
+      sleep(1);
+
+      expect(flu_fstat("var/spool/inv/inv_%s-0_7-f.json", exid) == 0);
     }
   }
 }

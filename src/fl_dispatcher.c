@@ -92,18 +92,28 @@ static int double_fork(char *ctx, char *log_path, char *argv[])
   return 0; // success
 }
 
+static fdja_value *receive_ret(const char *fname, fdja_value *j)
+{
+  fdja_value *v = flon_parse_nid(fname);
+  fdja_set(v, "receive", fdja_v("1"));
+  fdja_set(v, "payload", j);
+  fdja_to_json_f(v, "var/spool/dis/%s", fname);
+
+  if (flu_unlink("var/spool/inv/inv_%s", fname + 4) == 0)
+    fgaj_i("unlinked var/spool/inv/inv_%s", fname + 4);
+  else
+    fgaj_i("couldn't unlink var/spool/inv/inv_%s", fname + 4);
+
+  // TODO: what if invocation.feu != ret.feu ???
+
+  return v;
+}
+
 static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
 
-  if (strncmp(fname, "ret_", 4) == 0)
-  {
-    fdja_value *v = flon_parse_nid(fname);
-    fdja_set(v, "receive", fdja_v("1"));
-    fdja_set(v, "payload", j);
-    fdja_to_json_f(v, "var/spool/dis/%s", fname);
-    j = v;
-  }
+  if (strncmp(fname, "ret_", 4) == 0) j = receive_ret(fname, j);
 
   if (
     fdja_l(j, "execute") == NULL &&
