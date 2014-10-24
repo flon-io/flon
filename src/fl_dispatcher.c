@@ -56,8 +56,8 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     if (setsid() == -1) { fgaj_r("setsid() failed"); _exit(127); }
 
     char *dir = flon_conf_path("_root", ".");
-    fgaj_i("dir is >%s<", dir);
-    if (chdir(dir) != 0) { fgaj_r("failed to chdir()"); _exit(127); }
+    //fgaj_i("dir is >%s<", dir);
+    if (chdir(dir) != 0) { fgaj_r("failed to chdir() to %s", dir); _exit(127); }
 
     fflush(stderr);
 
@@ -66,11 +66,22 @@ static int double_fork(char *ctx, char *logpath, char *arg)
       fgaj_r("failed to reopen stderr to %s", logpath);
       _exit(127);
     }
-    fgaj_i("pointing invoker stderr to %s", logpath);
+    fgaj_i("pointed %s stderr to %s", ctx, logpath);
+
+    if (*ctx == 'e')
+    {
+      freopen(logpath, "a", stdout);
+      fflush(stdout);
+      fgaj_i("pointed %s stdout to %s", ctx, logpath);
+    }
+      //
+      // the invoker stdout is kept for payload output.
 
     fflush(stderr);
 
     // TODO: if ctx is "executor", write var/run/{exid}.pid
+
+    // TODO: allow for Valgrind runs
 
     char *bin = NULL;
     //
@@ -79,9 +90,27 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     else
       bin = flon_conf_string("executor.bin", "bin/flon-executor");
 
-    fgaj_i("cmd is >%s %s<", bin, arg);
+    char *val = "/usr/bin/valgrind";
+    void *args = NULL;
 
-    int r = execv(bin, (char *[]){ bin, arg, NULL });
+    char *v = getenv("VALFLON");
+    if (
+      v &&
+      ((*ctx == 'i' && strstr(v, "inv")) || (*ctx == 'e' && strstr(v, "exe")))
+    )
+    {
+      args = &(char *[]){ val, bin, arg, NULL };
+      bin = val;
+    }
+    else
+    {
+      args = &(char *[]){ bin, arg, NULL };
+    }
+
+    fgaj_i("cmd is >%s<", bin);
+    fflush(stderr);
+
+    int r = execv(bin, args);
 
     // fail zone...
 
@@ -141,6 +170,8 @@ static int dispatch(const char *fname, fdja_value *j)
     fgaj_r("failed to move %s to var/spool/%s/%s", fname, ct, fname);
     r = -1; // triggers rejection
   }
+
+  //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
 
   if (r == 1) r = double_fork(ctx, logpath, arg);
 
@@ -221,6 +252,8 @@ int flon_dispatch(const char *fname)
   ) { r = -1; goto _over; }
 
   j = fdja_parse_obj_f("var/spool/dis/%s", fname);
+
+  //if (j) fgaj_d(fdja_tod(j));
 
   // TODO reroute?
 

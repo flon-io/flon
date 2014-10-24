@@ -109,6 +109,8 @@ static void move_to_processed(fdja_value *msg)
 
 static void handle(fdja_value *msg)
 {
+  fgaj_i("%s", fdja_tod(msg));
+
   char *nid = NULL;
   fdja_value *action = NULL;
   fdja_value *tree = NULL;
@@ -118,12 +120,16 @@ static void handle(fdja_value *msg)
   char a = 'x'; action = fdja_l(msg, "execute");
   if (action == NULL) { a = 'r'; action = fdja_l(msg, "receive"); }
 
+  fgaj_i("a: %c", a);
+
   nid = fdja_lsd(msg, "nid", "0");
 
   if (a == 'x') { tree = action; }
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
 
   instruction = fdja_ls(tree, "0", NULL);
+
+  fgaj_i("%c _ %s", a, instruction);
 
   if (a == 'x')
     node = create_node(nid, instruction, tree);
@@ -132,7 +138,7 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
 
-  //fgaj_d("'%c' nid: %s", a, nid);
+  //fgaj_i("%c _ %s", a, instruction);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
   if (inst == NULL) goto _over;
@@ -222,7 +228,7 @@ static void load_msgs()
   {
     if ( ! name_matches(de->d_name)) continue;
 
-    fgaj_d("from %s", de->d_name);
+    fgaj_i("from %s", de->d_name);
 
     fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
 
@@ -237,7 +243,7 @@ static void load_msgs()
     flu_list_add(msgs, j);
   }
 
-  //fgaj_d("exid: %s, msgs: %zu", execution_id, msgs->size);
+  fgaj_i("exid: %s, msgs: %zu", execution_id, msgs->size);
 
   closedir(dir);
 }
@@ -290,6 +296,8 @@ static void execute()
 
       if (j == NULL) break;
 
+      //fgaj_i(fdja_tod(j));
+
       if (fdja_lookup(j, "execute") || fdja_lookup(j, "receive"))
         handle(j);
       else
@@ -306,6 +314,8 @@ static void execute()
 
 int flon_execute(const char *exid)
 {
+  fgaj_i(exid);
+
   load_execution(exid);
   execute();
 
