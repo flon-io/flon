@@ -121,7 +121,7 @@ static void handle(fdja_value *msg)
   nid = fdja_lsd(msg, "nid", "0");
 
   if (a == 'x') { tree = action; }
-  if (tree == NULL || tree->type != 'a') tree = flon_node_tree(execution, nid);
+  if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
 
   instruction = fdja_ls(tree, "0", NULL);
 
@@ -145,7 +145,7 @@ static void handle(fdja_value *msg)
 
   if (r == 'v') // over
   {
-    char *parent_nid = flon_node_parent_nid(execution, nid);
+    char *parent_nid = flon_node_parent_nid(nid);
     //
     if (parent_nid)
     {

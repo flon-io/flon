@@ -73,7 +73,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
 
-  fdja_value *tree = flon_node_tree(execution, next);
+  fdja_value *tree = flon_node_tree(next);
 
   if (tree)
     flon_queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));

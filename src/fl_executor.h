@@ -59,11 +59,11 @@ flon_instruction *flon_instruction_lookup(char dir, const char *name);
 //
 // nodes
 
-fdja_value *flon_node(fdja_value *execution, const char *nid);
-fdja_value *flon_node_tree(fdja_value *execution, const char *nid);
-fdja_value *flon_node_tree_c(fdja_value *execution, const char *nid);
+fdja_value *flon_node(const char *nid);
+fdja_value *flon_node_tree(const char *nid);
+fdja_value *flon_node_tree_c(const char *nid);
 
-char *flon_node_parent_nid(fdja_value *execution, const char *nid);
+char *flon_node_parent_nid(const char *nid);
 
 #endif // FL_EXECUTOR_H
 

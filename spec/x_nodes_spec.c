@@ -14,7 +14,7 @@ context "fl_exe_nodes"
 {
   before each
   {
-    fdja_value *exe = fdja_c(
+    execution = fdja_c(
       "exid: xtest.pn-u0-20141020.0754.chipeduzuba\n"
       "nodes: {\n"
         "0: { tree:\n"
@@ -35,14 +35,14 @@ context "fl_exe_nodes"
   }
   after each
   {
-    if (exe) fdja_free(exe);
+    fdja_free(execution);
   }
 
   describe "flon_node_tree()"
   {
     it "looks up the root tree"
     {
-      fdja_value *t = flon_node_tree(exe, "0");
+      fdja_value *t = flon_node_tree("0");
 
       expect(t != NULL);
 
@@ -52,7 +52,7 @@ context "fl_exe_nodes"
 
     it "looks up a sub tree"
     {
-      fdja_value *t = flon_node_tree(exe, "0_1_0");
+      fdja_value *t = flon_node_tree("0_1_0");
 
       expect(t != NULL);
 
@@ -65,27 +65,27 @@ context "fl_exe_nodes"
   {
     it "returns NULL for node 0"
     {
-      expect(flon_node_parent_nid(exe, "0") == NULL);
+      expect(flon_node_parent_nid("0") == NULL);
     }
 
     it "returns the parent nid"
     {
-      expect(flon_node_parent_nid(exe, "0_1_0") ===f "0_1");
+      expect(flon_node_parent_nid("0_1_0") ===f "0_1");
     }
 
     it "ignores the 'counter' part of the nid"
     {
-      expect(flon_node_parent_nid(exe, "0_1_0-1") ===f "0_1");
+      expect(flon_node_parent_nid("0_1_0-1") ===f "0_1");
     }
 
     it "returns the 'parent' if present"
     {
-      expect(flon_node_parent_nid(exe, "9_1_9") ===f "9_0");
+      expect(flon_node_parent_nid("9_1_9") ===f "9_0");
     }
 
     it "returns NULL if it doesn't find the node"
     {
-      expect(flon_node_parent_nid(exe, "9") == NULL);
+      expect(flon_node_parent_nid("9") == NULL);
     }
   }
 }

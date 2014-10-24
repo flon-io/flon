@@ -34,14 +34,14 @@
 #include "fl_executor.h"
 
 
-fdja_value *flon_node(fdja_value *exe, const char *nid)
+fdja_value *flon_node(const char *nid)
 {
-  return fdja_l(exe, "nodes.%s", nid);
+  return fdja_l(execution, "nodes.%s", nid);
 }
 
-static fdja_value *node_tree(fdja_value *exe, const char *nid, int clone)
+static fdja_value *node_tree(const char *nid, int clone)
 {
-  fdja_value *t = fdja_l(exe, "nodes.0.tree");
+  fdja_value *t = fdja_l(execution, "nodes.0.tree");
 
   flu_list *l = flu_split(nid, "_");
   if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
@@ -53,19 +53,19 @@ static fdja_value *node_tree(fdja_value *exe, const char *nid, int clone)
   return clone ? fdja_clone(t) : t;
 }
 
-fdja_value *flon_node_tree(fdja_value *exe, const char *nid)
+fdja_value *flon_node_tree(const char *nid)
 {
-  return node_tree(exe, nid, 0);
+  return node_tree(nid, 0);
 }
 
-fdja_value *flon_node_tree_c(fdja_value *exe, const char *nid)
+fdja_value *flon_node_tree_c(const char *nid)
 {
-  return node_tree(exe, nid, 1);
+  return node_tree(nid, 1);
 }
 
-char *flon_node_parent_nid(fdja_value *exe, const char *nid)
+char *flon_node_parent_nid(const char *nid)
 {
-  fdja_value *node = flon_node(exe, nid);
+  fdja_value *node = flon_node(nid);
   if (node == NULL) return NULL;
 
   char *pnid = fdja_ls(node, "parent", NULL);
