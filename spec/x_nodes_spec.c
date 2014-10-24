@@ -1,17 +1,16 @@
 
 //
-// specifying fl_node.[ch]
+// specifying fl_exe_nodes.c
 //
 // Mon Oct 20 16:58:10 JST 2014
 //
 
 //#include <stdio.h>
 
-//#include "flutil.h"
-#include "fl_node.h"
+#include "fl_executor.h"
 
 
-context "fl_node"
+context "fl_exe_nodes"
 {
   before each
   {

@@ -37,9 +37,9 @@ clean:
 
 n_helpers.o: n_helpers.c
 
-DEPS=flutil.o gajeta.o aabro.o djan.o mnemo.o fl_common.o fl_ids.o fl_node.o
+DEPS=flutil.o gajeta.o aabro.o djan.o mnemo.o fl_common.o fl_ids.o
 DDEPS=$(DEPS) fl_dispatcher.o
-XDEPS=$(DEPS) fl_executor.o
+XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) fl_invoker.o
 NDEPS=$(DEPS) n_helpers.o
 

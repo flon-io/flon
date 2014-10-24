@@ -28,9 +28,42 @@
 #ifndef FL_EXECUTOR_H
 #define FL_EXECUTOR_H
 
-void flon_executor_reset();
+#include "aabro.h"
+#include "djan.h"
+
 
 int flon_execute(const char *exid);
+
+void flon_executor_reset();
+
+char *flon_execution_id();
+fdja_value *flon_execution();
+
+void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload);
+
+
+//
+// instructions
+
+typedef char flon_instruction(fdja_value *, fdja_value *);
+  //
+  // return codes:
+  //
+  // 'k' ok
+  // 'v' over, reply to parent
+  // 'r' error
+
+flon_instruction *flon_instruction_lookup(char dir, const char *name);
+
+
+//
+// nodes
+
+fdja_value *flon_node(fdja_value *execution, const char *nid);
+fdja_value *flon_node_tree(fdja_value *execution, const char *nid);
+fdja_value *flon_node_tree_c(fdja_value *execution, const char *nid);
+
+char *flon_node_parent_nid(fdja_value *execution, const char *nid);
 
 #endif // FL_EXECUTOR_H
 
