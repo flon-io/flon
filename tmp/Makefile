@@ -62,14 +62,19 @@ is: $(IDEPS)
 ns: $(NDEPS)
 
 sc: cs
+	@echo "\n--- sc -------------------------------------------------------------------------\n"
 	time ./cs
 sd: ds invoker executor
+	@echo "\n--- sd -------------------------------------------------------------------------\n"
 	time ./ds
 sx: xs
+	@echo "\n--- sx -------------------------------------------------------------------------\n"
 	time ./xs
 si: is
+	@echo "\n--- si -------------------------------------------------------------------------\n"
 	time ./is
 sn: ns invoker executor dispatcher
+	@echo "\n--- sn -------------------------------------------------------------------------\n"
 	time ./ns
 
 vsc: cs
@@ -105,13 +110,8 @@ invoker: flon-invoker
 dispatcher: flon-dispatcher
 	mv flon-dispatcher ../tst/bin/
 
-spec:
-	$(MAKE) sc
-	#$(MAKE) sl
-	$(MAKE) sd
-	$(MAKE) sx
-	$(MAKE) si
-	$(MAKE) sn
+spec: sc sd sx si sn
+s: spec
 
 .PHONY: clean
 
