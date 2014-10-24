@@ -32,12 +32,15 @@ clean:
 	rm -f *.o
 	rm -f *.so
 	rm -f *.c
-	rm -f [cdxi]s
+	rm -f [cdxnil]s
+
+n_helpers.o: n_helpers.c
 
 DEPS=flutil.o gajeta.o aabro.o djan.o mnemo.o fl_common.o fl_ids.o fl_node.o
 DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o
 IDEPS=$(DEPS) fl_invoker.o
+NDEPS=$(DEPS) n_helpers.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
@@ -47,11 +50,15 @@ xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
+ns.c: ../spec/n_*_spec.c
+	$(RODZO) ../spec/n_*_spec.c -o ns.c
+	cp ../spec/n_helpers.[ch] .
 
 cs: $(DEPS)
 ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
+ns: $(NDEPS)
 
 sc: cs
 	time ./cs
@@ -61,6 +68,8 @@ sx: xs
 	time ./xs
 si: is
 	time ./is
+sn: ns invoker executor dispatcher
+	time ./ns
 
 vsc: cs
 	valgrind --leak-check=full -v ./cs
@@ -75,6 +84,9 @@ vsi: is
 	valgrind ./is # an invoker may lose as much mem as he wants...
 	#valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
+vsn: ns
+	valgrind --leak-check=full -v ./ns
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 
 ssi: is
 	strace -r ./is
@@ -98,6 +110,7 @@ spec:
 	$(MAKE) sd
 	$(MAKE) sx
 	$(MAKE) si
+	$(MAKE) sn
 
 .PHONY: clean
 

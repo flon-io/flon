@@ -5,7 +5,7 @@ tmp/*.c
 tmp/*.o
 tmp/*.so
 tmp/s
-tmp/[cixdl]s
+tmp/[cixdnl]s
 tmp/spec_*.txt
 tst/bin/*
 
