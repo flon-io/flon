@@ -112,7 +112,7 @@ context "flon-executor"
       expect(flu_unlink("var/spool/inv/inv_%s-0.json", exid) == 0);
 
       flu_writeall(
-        "var/spool/exe/ret_%s-0.json", exid,
+        "var/spool/exe/rcv_%s-0.json", exid,
         "receive: 1\n"
         "exid: %s\n"
         "nid: 0\n"
@@ -127,7 +127,7 @@ context "flon-executor"
       expect(r == 0);
 
       expect(flu_fstat("var/spool/exe/%s-0.json", exid) == 0);
-      expect(flu_fstat("var/spool/rejected/ret_%s-0.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/rcv_%s-0.json", exid) == 0);
       expect(flu_fstat("var/run/%s.json", exid) == 0);
       expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
     }
