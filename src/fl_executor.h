@@ -32,15 +32,15 @@
 #include "djan.h"
 
 
+extern char *execution_id;
+extern fdja_value *execution;
+
+
 int flon_execute(const char *exid);
 
 void flon_executor_reset();
 
-char *flon_execution_id();
-fdja_value *flon_execution();
-
 void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload);
-
 
 //
 // instructions

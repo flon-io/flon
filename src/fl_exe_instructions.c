@@ -42,16 +42,15 @@
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
 {
-  char *exid = flon_execution_id();
   char *nid = fdja_ls(node, "nid");
 
-  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
+  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
   fdja_set(inv, "invoke", fdja_lc(exe, "tree"));
   fdja_set(inv, "payload", fdja_lc(exe, "payload"));
 
   fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
 
-  fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", exid, nid);
+  fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
 
   fdja_free(inv);
   free(nid);
@@ -74,7 +73,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
 
-  fdja_value *tree = flon_node_tree(flon_execution(), next);
+  fdja_value *tree = flon_node_tree(execution, next);
 
   if (tree)
     flon_queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));

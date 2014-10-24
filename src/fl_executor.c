@@ -44,8 +44,8 @@
 //   the current execution and a list of
 //   outgoing executes and invokes
 
-static char *execution_id = NULL;
-static fdja_value *execution = NULL;
+char *execution_id = NULL;
+fdja_value *execution = NULL;
 
 static flu_list *msgs = NULL;
 
@@ -58,16 +58,6 @@ void flon_executor_reset()
   if (execution) fdja_free(execution); execution = NULL;
   if (msgs) flu_list_free(msgs); msgs = NULL;
   //counter = 0;
-}
-
-char *flon_execution_id()
-{
-  return execution_id;
-}
-
-fdja_value *flon_execution()
-{
-  return execution;
 }
 
 static void reject(const char *reason, const char *fname, fdja_value *j)
