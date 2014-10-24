@@ -33,6 +33,7 @@ clean:
 	rm -f *.so
 	rm -f *.c
 	rm -f [cdxnil]s
+	rm -f n_helpers.[ch]
 
 n_helpers.o: n_helpers.c
 
@@ -50,9 +51,9 @@ xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
-ns.c: ../spec/n_*_spec.c
-	$(RODZO) ../spec/n_*_spec.c -o ns.c
-	cp ../spec/n_helpers.[ch] .
+ns.c: ../spec/n/n_*_spec.c
+	$(RODZO) ../spec/n/n_*_spec.c -o ns.c
+	cp ../spec/n/n_helpers.[ch] .
 
 cs: $(DEPS)
 ds: $(DDEPS)
