@@ -111,9 +111,11 @@ fdja_value *launch(char *exid, char *flow, char *payload)
     nanosleep(&treq, &trem);
 
     system("tree var/");
+
     nlog("--8<-- exe log");
     char *s = flu_readall("var/log/exe/%s.txt", exid);
-    puts(s);
+    printf(s);
+    free(s);
     nlog("-->8-- exe log");
 
     // TODO...
