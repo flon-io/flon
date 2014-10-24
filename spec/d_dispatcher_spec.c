@@ -180,7 +180,11 @@ context "flon-dispatcher"
 
       expect(flu_fstat("var/log/exe/%s.txt", exid) == 'f');
 
-      // TODO
+      // check that rcv_ got rejected (no execution going on)
+
+      expect(flu_fstat("var/spool/rejected/rcv_%s-0_7-f.json", exid) == 'f');
+
+      expect(0 == 1);
     }
   }
 }

@@ -78,8 +78,17 @@ fdja_value *fdja_c(char *input, ...);
 fdja_value *fdja_clone(fdja_value *v);
 
 char *fdja_to_json(fdja_value *v);
-char *fdja_to_djan(fdja_value *v);
-char *fdja_to_pretty_djan(fdja_value *v);
+
+enum // flags for fdja_to_djan()
+{
+  FDJA_F_COLOR    = 1 << 0, // colour output
+  FDJA_F_ONELINE  = 1 << 1  // result will come in one line
+};
+
+char *fdja_to_djan(fdja_value *v, int flags);
+#define fdja_tod(v) fdja_to_djan(v, 2)
+#define fdja_todc(v) fdja_to_djan(v, 1)
+
 //char *fdja_to_radial(fdja_value *v);
 
 int fdja_to_json_f(fdja_value *v, const char *path, ...);

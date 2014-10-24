@@ -63,7 +63,7 @@ context "fl_id"
     {
       v = flon_parse_nid("0_1_2");
 
-      expect(fdja_to_djan(v) ===f ""
+      expect(fdja_tod(v) ===f ""
         "{ nid: 0_1_2, node: 0_1_2 }");
     }
 
@@ -71,7 +71,7 @@ context "fl_id"
     {
       v = flon_parse_nid("0_1_2-ff");
 
-      expect(fdja_to_djan(v) ===f ""
+      expect(fdja_tod(v) ===f ""
         "{ nid: 0_1_2-ff, node: 0_1_2, counter: ff }");
     }
 
@@ -79,7 +79,7 @@ context "fl_id"
     {
       v = flon_parse_nid("xtest.pn-u0-20141021.0803.chatsidiseba-0_1_2-ff");
 
-      expect(fdja_to_djan(v) ===f ""
+      expect(fdja_tod(v) ===f ""
         "{"
         " exid: xtest.pn-u0-20141021.0803.chatsidiseba,"
         " domain: xtest.pn, feu: u0,"
@@ -97,7 +97,7 @@ context "fl_id"
       v = flon_parse_nid(
         "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json");
 
-      expect(fdja_to_djan(v) ===f ""
+      expect(fdja_tod(v) ===f ""
         "{ msg: ret_,"
         " exid: xtest.pn-u0-20141021.0803.kurukuru,"
         " domain: xtest.pn, feu: u0,"

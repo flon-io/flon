@@ -27,8 +27,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include "djan.h"
-
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -37,6 +35,8 @@
 
 #include "aabro.h"
 #include "flutil.h"
+
+#include "djan.h"
 
 
 //
@@ -709,102 +709,120 @@ static int fdja_is_number(char *s)
   return fabr_match(s, fdja_number_parser);
 }
 
-static void fdja_v_to_d(FILE *f, char *s, int do_free)
+static void fdja_k_to_d(FILE *f, char *s, int flags, int do_free)
 {
-  if (fdja_is_symbol(s) && ! fdja_is_number(s)) fputs(s, f);
-  else fprintf(f, "\"%s\"", s);
+  //int cl = flags & FDJA_F_COLOR;
 
-  if (do_free) free(s);
-}
-
-static void fdja_k_to_d(FILE *f, char *s, int do_free)
-{
   if (fdja_is_symbol(s)) fputs(s, f); else fprintf(f, "\"%s\"", s);
   if (do_free) free(s);
 }
 
-static void fdja_to_d(FILE *f, fdja_value *v, size_t depth)
+static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 {
-  if (v->key && depth > 0) { fdja_k_to_d(f, v->key, 0); fputs(": ", f); }
+  short ol = flags & FDJA_F_ONELINE;
+  short cl = flags & FDJA_F_COLOR;
 
-  if (v->type == 'q' || v->type == 's')
-  {
-    fdja_v_to_d(f, fdja_to_string(v), 1);
-  }
-  else if (v->type == 'y')
-  {
-    char *s = fdja_string(v); fputs(s, f); free(s);
-  }
-  else if (v->type == 'a' || v->type == 'o')
-  {
-    if (v->type == 'a') fputc('[', f); else fputc('{', f);
-    for (fdja_value *c = v->child; c != NULL; c = c->sibling)
-    {
-      fputc(' ', f); fdja_to_d(f, c, depth + 1);
-      if (c->sibling) fputc(',', f);
-    }
-    if (v->child) fputc(' ', f);
-    if (v->type == 'a') fputc(']', f); else fputc('}', f);
-  }
-  else fwrite(v->source + v->soff, sizeof(char), v->slen, f);
-}
+  char *infrac = cl ? "[1;30m" : "";
+  char *keyc = cl ? "[0;33m" : "";
+  char *stringc = cl ? "[1;33m" : "";
+  char *truec = cl ? "[0;32m" : "";
+  char *falsec = cl ? "[0;31m" : "";
+  char *clearc = cl ? "[0;0m" : "";
 
-char *fdja_to_djan(fdja_value *v)
-{
-  if (v == NULL) return NULL;
-
-  flu_sbuffer *b = flu_sbuffer_malloc();
-  fdja_to_d(b->stream, v, 0);
-
-  return flu_sbuffer_to_string(b);
-}
-
-static void fdja_to_pd(FILE *f, fdja_value *v, size_t depth)
-{
-  char *indent = flu_sprintf("%*s", depth * 2, "");
+  char *indent = flu_sprintf("%*s", (ol ? 0 : depth) * 2, "");
+  char *s = NULL;
 
   fputs(indent, f);
 
-  if (v->key && depth > 0) { fdja_k_to_d(f, v->key, 0); fputs(": ", f); }
+  if (v->key && depth > 0)
+  {
+    fputs(keyc, f);
+    fdja_k_to_d(f, v->key, flags, 0);
+    fputs(clearc, f);
+    fputs(": ", f);
+  }
 
   if (v->type == 'q' || v->type == 's')
   {
-    fdja_v_to_d(f, fdja_to_string(v), 1);
+    s = fdja_to_string(v);
+
+    fputs(stringc, f);
+
+    if (fdja_is_symbol(s) && ! fdja_is_number(s))
+      fputs(s, f);
+    else
+      fprintf(f, "\"%s\"", s);
+
+    fputs(clearc, f);
   }
   else if (v->type == 'y')
   {
-    char *s = fdja_string(v); fputs(s, f); free(s);
+    s = fdja_string(v);
+    fprintf(f, "%s%s%s", stringc, s, clearc);
   }
   else if (v->type == 'a' || v->type == 'o')
   {
-    char *d = fdja_to_djan(v); size_t dl = strlen(d);
-
-    if (dl < 3 || depth * 2 + dl < 80)
+    if (ol)
     {
-      fputs(d, f);
+      fputs(infrac, f);
+      if (v->type == 'a') fputc('[', f); else fputc('{', f);
+      fputs(clearc, f);
+      for (fdja_value *c = v->child; c != NULL; c = c->sibling)
+      {
+        fputc(' ', f); fdja_to_d(f, c, flags, depth + 1);
+        if (c->sibling) fputc(',', f);
+      }
+      if (v->child) fputc(' ', f);
+      fputs(infrac, f);
+      if (v->type == 'a') fputc(']', f); else fputc('}', f);
+      fputs(clearc, f);
     }
     else
     {
-      if (v->type == 'a') fputs("[\n", f); else fputs("{\n", f);
-      for (fdja_value *c = v->child; c != NULL; c = c->sibling)
+      char *d = fdja_to_djan(v, FDJA_F_ONELINE); size_t dl = strlen(d);
+
+      if (dl < 3 || depth * 2 + dl < 80)
       {
-        fdja_to_pd(f, c, depth + 1); fputc('\n', f);
+        char *dd = fdja_to_djan(v, FDJA_F_ONELINE | (flags & FDJA_F_COLOR));
+        fputs(dd, f);
+        free(dd);
       }
-      fputs(indent, f); if (v->type == 'a') fputc(']', f); else fputc('}', f);
+      else
+      {
+        fputs(infrac, f);
+        if (v->type == 'a') fputs("[\n", f); else fputs("{\n", f);
+        fputs(clearc, f);
+        for (fdja_value *c = v->child; c != NULL; c = c->sibling)
+        {
+          fdja_to_d(f, c, flags, depth + 1); fputc('\n', f);
+        }
+        fputs(infrac, f);
+        fputs(indent, f); if (v->type == 'a') fputc(']', f); else fputc('}', f);
+        fputs(clearc, f);
+      }
+      free(d);
     }
-    free(d);
   }
-  else fwrite(v->source + v->soff, sizeof(char), v->slen, f);
+  else
+  {
+    if (v->type == 't') fputs(truec, f);
+    else if (v->type == 'f') fputs(falsec, f);
+
+    fwrite(v->source + v->soff, sizeof(char), v->slen, f);
+
+    fputs(clearc, f);
+  }
 
   free(indent);
+  if (s) free(s);
 }
 
-char *fdja_to_pretty_djan(fdja_value *v)
+char *fdja_to_djan(fdja_value *v, int flags)
 {
   if (v == NULL) return NULL;
 
   flu_sbuffer *b = flu_sbuffer_malloc();
-  fdja_to_pd(b->stream, v, 0);
+  fdja_to_d(b->stream, v, flags, 0);
 
   return flu_sbuffer_to_string(b);
 }
