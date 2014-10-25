@@ -125,7 +125,7 @@ static void handle(fdja_value *msg)
   char a = 'x'; action = fdja_l(msg, "execute");
   if (action == NULL) { a = 'r'; action = fdja_l(msg, "receive"); }
 
-  fgaj_i("a: %c", a);
+  //fgaj_i("a: %c", a);
 
   nid = fdja_lsd(msg, "nid", "0");
 
@@ -135,7 +135,7 @@ static void handle(fdja_value *msg)
 
   instruction = fdja_ls(tree, "0", NULL);
 
-  fgaj_i("%c _ %s", a, instruction);
+  //fgaj_i("%c _ %s", a, instruction);
 
   if (a == 'x')
     node = create_node(nid, instruction, tree);
@@ -144,7 +144,9 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
 
-  //fgaj_i("%c _ %s", a, instruction);
+  fgaj_d(
+    "%s%-11s %s-%s",
+    a == 'x' ? "exe_" : "rcv_", instruction, execution_id, nid);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
   if (inst == NULL) goto _over;
@@ -188,7 +190,7 @@ static void load_execution(const char *exid)
 {
   if (execution_id) return;
 
-  fgaj_d("exid: %s", exid);
+  //fgaj_d("exid: %s", exid);
 
   execution_id = (char *)exid;
 
@@ -209,8 +211,6 @@ static void load_execution(const char *exid)
 
 static int name_matches(const char *n)
 {
-  // TODO: use fl_ids.c functions
-
   if (
     strncmp(n, "exe_", 4) != 0 &&
     strncmp(n, "ret_", 4) != 0 &&
@@ -242,7 +242,7 @@ static void load_msgs()
 
     fdja_set(j, "fname", fdja_s(de->d_name));
 
-    // TODO:
+    // TODO
     // it's probably better to put msgs from disk in front of the list
     // especially if they're cancel msgs
 
