@@ -42,7 +42,7 @@
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
 {
-  char *nid = fdja_ls(node, "nid");
+  char *nid = fdja_ls(node, "nid", NULL);
 
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
   fdja_set(inv, "invoke", fdja_lc(exe, "tree"));
