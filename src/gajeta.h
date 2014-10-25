@@ -142,6 +142,11 @@ void fgaj_level_string_free(char *s);
  */
 char fgaj_normalize_level(char level);
 
+/* Turns a string like 'i', 'info', 'INFO', '30', ... into a numeric level
+ * like 30, 40, ...
+ */
+char fgaj_parse_level(char *s);
+
 /* Returns a (malloc'ed) string detailing the current time.
  */
 char *fgaj_now();

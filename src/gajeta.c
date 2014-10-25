@@ -151,6 +151,12 @@ void fgaj_level_string_free(char *s)
   if (s[0] >= '0' && s[0] <= '9') free(s);
 }
 
+char fgaj_parse_level(char *s)
+{
+  if (*s >= '0' && *s <= '9') return strtol(s, NULL, 10);
+  return fgaj_normalize_level(*s);
+}
+
 //
 // loggers
 
