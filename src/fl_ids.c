@@ -33,6 +33,7 @@
 #include "flutil.h"
 #include "mnemo.h"
 #include "aabro.h"
+#include "djan.h"
 #include "fl_common.h"
 #include "fl_ids.h"
 
@@ -147,6 +148,24 @@ fdja_value *flon_parse_nid(const char *s)
   }
 
   fabr_tree_free(t);
+
+  return r;
+}
+
+char *flon_exid_path(const char *s)
+{
+  fdja_value *i = flon_parse_nid(s);
+  if (i == NULL) return NULL;
+
+  char *exid = fdja_ls(i, "exid", NULL);
+  fdja_free(i);
+  if (exid == NULL) return NULL;
+
+  size_t l = strlen(exid);
+
+  char *r = flu_sprintf("%s/%s", exid + l - 2, exid);
+
+  free(exid);
 
   return r;
 }

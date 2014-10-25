@@ -107,5 +107,19 @@ context "fl_id"
         " }");
     }
   }
+
+  describe "flon_exid_path"
+  {
+    it "returns the path to the given exid / nid"
+    {
+      expect(flon_exid_path("xtest.pn-u0-20141021.0803.kurukuru") ===f ""
+        "ru/xtest.pn-u0-20141021.0803.kurukuru");
+
+      expect(flon_exid_path("xtest.pn-u0-20141021.0803.kurufuru-0_1-f") ===f ""
+        "ru/xtest.pn-u0-20141021.0803.kurufuru");
+
+      expect(flon_exid_path("rcv_xtest.pn-u0-20141021.0803.kuruluru-0_1-f.json") ===f "ru/xtest.pn-u0-20141021.0803.kuruluru");
+    }
+  }
 }
 
