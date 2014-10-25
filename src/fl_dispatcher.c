@@ -93,7 +93,7 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     char *val = "/usr/bin/valgrind";
     void *args = NULL;
 
-    char *v = getenv("VALFLON");
+    char *v = getenv("FLONVAL");
     if (
       v &&
       ((*ctx == 'i' && strstr(v, "inv")) || (*ctx == 'e' && strstr(v, "exe")))
