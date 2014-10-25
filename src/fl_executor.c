@@ -62,9 +62,12 @@ void flon_executor_reset()
 
 static void reject(const char *reason, const char *fname, fdja_value *j)
 {
+  short own_fname = 0;
+
   if (fname == NULL)
   {
     fname = fdja_lookup_string(j, "fname", NULL);
+    own_fname = 1;
   }
   if (fname == NULL)
   {
@@ -75,6 +78,8 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
 
   flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
   fgaj_i("%s, rejected %s", reason, fname);
+
+  if (own_fname) free((char *)fname);
 }
 
 void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
@@ -109,7 +114,7 @@ static void move_to_processed(fdja_value *msg)
 
 static void handle(fdja_value *msg)
 {
-  fgaj_i("%s", fdja_tod(msg));
+  //fgaj_i("%s", fdja_tod(msg));
 
   char *nid = NULL;
   fdja_value *action = NULL;
