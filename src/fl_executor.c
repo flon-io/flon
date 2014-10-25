@@ -126,6 +126,7 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') { tree = action; }
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
+  if (tree == NULL) { reject("node not found", NULL, msg); goto _over; }
 
   instruction = fdja_ls(tree, "0", NULL);
 
