@@ -53,56 +53,47 @@ static char *fgaj_getenv(const char *k0, const char *k1)
   return s;
 }
 
+void fgaj_read_env()
+{
+  char *s = NULL;
+
+  s = fgaj_getenv("FLON_LOG_COLOR", "FGAJ_COLOR");
+  if (s) fgaj__conf->color = *s;
+
+  s = fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
+  if (s) fgaj__conf->utc = (*s == '1' || tolower(*s) == 't');
+
+  s = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
+  if (s) fgaj__conf->host = s;
+
+  s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
+  if (s) fgaj__conf->level = fgaj_parse_level(s);
+  //printf("level: %i\n", fgaj__conf->level);
+}
+
 static void fgaj_init()
 {
   fgaj__conf = calloc(1, sizeof(fgaj_conf));
 
-  char *s = NULL;
+  // set defaults
 
-  // color or not?
+  fgaj__conf->color = 't'; // default to 'true'
 
-  s = fgaj_getenv("FLON_LOG_COLOR", "FGAJ_COLOR");
+  fgaj__conf->utc = 0; // default to 'local'
 
-  fgaj__conf->color = s == NULL ? 't' : s[0];
+  char *h = calloc(32, sizeof(char));
+  gethostname(h, 32);
+  fgaj__conf->host = h;
 
-  // utc or not?
-
-  s = fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
-
-  fgaj__conf->utc = (s != NULL && (s[0] == '1' || tolower(s[0]) == 't'));
-
-  // determine host
-
-  fgaj__conf->host = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
-
-  if (fgaj__conf->host == NULL)
-  {
-    char *h = calloc(16, sizeof(char));
-    gethostname(h, 16);
-    fgaj__conf->host = h;
-  }
-
-  // determine level
-
-  fgaj__conf->level = 30;
-
-  s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
-  //
-  if (s != NULL)
-  {
-    if (s[0] > '0' && s[1] < '9') fgaj__conf->level = atoi(s);
-    else fgaj__conf->level = fgaj_normalize_level(s[0]);
-  }
-  //printf("level: %i\n", fgaj__level);
-
-  // determine logger
+  fgaj__conf->level = 30; // default to INFO
 
   fgaj__conf->logger = fgaj_color_file_logger;
   fgaj__conf->out = NULL;
-
-  // no need for params with fgaj_color_file_logger (for now)
-
   fgaj__conf->params = NULL;
+
+  // now that the defaults are in place, read the env
+
+  fgaj_read_env();
 }
 
 fgaj_conf *fgaj_conf_get()

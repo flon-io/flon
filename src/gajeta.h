@@ -71,6 +71,13 @@ fgaj_conf *fgaj_conf_get();
  */
 void fgaj_conf_reset();
 
+/* Reads the env and sets the configuration accordingly.
+ * Is called behind the scene, but is available here for cases when
+ * one wants to do custom configuration and then give the env the
+ * last word (by calling this method).
+ */
+void fgaj_read_env();
+
 
 //
 // loggers
