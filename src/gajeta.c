@@ -55,8 +55,6 @@ static char *fgaj_getenv(const char *k0, const char *k1)
 
 static void fgaj_init()
 {
-  if (fgaj__conf) return;
-
   fgaj__conf = calloc(1, sizeof(fgaj_conf));
 
   char *s = NULL;
@@ -186,7 +184,7 @@ static char *fgaj_clear(int c) { return c ? "[0;0m" : ""; }
 
 char *fgaj_now()
 {
-  fgaj_init();
+  if (fgaj__conf == NULL) fgaj_init();
 
   struct timeval tv;
   struct tm *tm;
@@ -295,7 +293,7 @@ static void fgaj_do_log(
   const char *file, int line, const char *func,
   const char *format, va_list ap, short err)
 {
-  fgaj_init();
+  if (fgaj__conf == NULL) fgaj_init();
 
   if (fgaj__conf->logger == NULL) return;
 
