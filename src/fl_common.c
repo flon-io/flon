@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -113,20 +114,26 @@ char *flon_conf_uid()
   return r;
 }
 
+static void setup_logging(fdja_value *v)
+{
+  if (v == NULL) return;
+
+  char *l = fdja_lookup_string(v, "level", NULL);
+  if (l) { fgaj_conf_get()->level = fgaj_parse_level(l); free(l); }
+
+  char *h = fdja_lookup_string(v, "host", NULL);
+  if (h) { fgaj_conf_get()->host = h; }
+
+  char *u = fdja_lookup_string(v, "utc", NULL);
+  if (u) { fgaj_conf_get()->utc = (tolower(*u) == 't' || *u == '1'); free(u); }
+}
+
 void flon_setup_logging(const char *context)
 {
-  // so, env setup overrides conf setup
+  setup_logging(flon_conf("all.log"));
+  setup_logging(fdja_lookup(flon_configuration, "%s.log", context));
 
-  // this method is called after flon_configure(dir) is called
-
-  // these are the things gajeta grabs from env:
-  //
-  // fgaj_getenv("FLON_LOG_COLOR", "FGAJ_COLOR");
-  // fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
-  // fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
-  // fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
-
-  // TODO apply configuration
+  fgaj_read_env();
 
   // FLONLOG=hostname,dis10,exe30,inv10
   //   or

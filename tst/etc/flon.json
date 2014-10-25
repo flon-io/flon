@@ -3,6 +3,9 @@
 # a flon sample /etc/flon.json
 #
 
+all: {
+  log: { level: debug, host: t, utc: true }
+}
 listener: {
 }
 dispatcher: {
@@ -12,5 +15,6 @@ executor: {
 }
 invoker: {
   bin: bin/flon-invoker
+  log: { level: debug }
 }
 
