@@ -99,7 +99,7 @@ static int double_fork(char *ctx, char *logpath, char *arg)
       ((*ctx == 'i' && strstr(v, "inv")) || (*ctx == 'e' && strstr(v, "exe")))
     )
     {
-      args = &(char *[]){ val, bin, arg, NULL };
+      args = &(char *[]){ val, "--leak-check=full", "-v", bin, arg, NULL };
       bin = val;
     }
     else
