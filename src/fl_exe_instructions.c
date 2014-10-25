@@ -60,6 +60,8 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
 
 static char rcv_invoke(fdja_value *node, fdja_value *rcv)
 {
+  // TODO enventually remove payload.args?
+
   return 'v'; // over
 }
 
@@ -96,26 +98,12 @@ static char exe_sequence(fdja_value *node, fdja_value *exe)
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
-  puts("exe:");
-  puts(fdja_todc(exe));
-  puts("node:");
-  puts(fdja_todc(node));
-
-  fdja_value *pl = fdja_lc(exe, "payload");
+  fdja_value *pl = fdja_l(exe, "payload");
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
   fdja_push(trace, fdja_lc(exe, "tree.1._0"));
 
-  char *nid = fdja_ls(node, "nid", NULL);
-
-  puts("pl:");
-  puts(fdja_todc(pl));
-
-  //queue_msg("receive", next, nid, pl);
-
-  free(nid);
-
-  return 'k'; // ok
+  return 'v'; // over
 }
 
 // function table

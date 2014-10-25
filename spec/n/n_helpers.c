@@ -108,15 +108,24 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
   while(1)
   {
-    nanosleep(&treq, &trem);
+    //nanosleep(&treq, &trem);
+    sleep(3);
 
     system("tree var/");
 
+    char *s = NULL;
+    //
     nlog("--8<-- exe log");
-    char *s = flu_readall("var/log/exe/%s.txt", exid);
-    printf(s);
+    s = flu_readall("var/log/exe/%s.txt", exid);
+    if (s) puts(s);
     free(s);
     nlog("-->8-- exe log");
+    //
+    nlog("--8<-- /var/run ");
+    s = flu_readall("var/run/processed/%s.json", exid);
+    if (s) puts(s);
+    free(s);
+    nlog("-->8-- /var/run ");
 
     // TODO...
 

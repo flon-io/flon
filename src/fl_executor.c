@@ -144,9 +144,7 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
 
-  fgaj_d(
-    "%s%-11s %s-%s",
-    a == 'x' ? "exe_" : "rcv_", instruction, execution_id, nid);
+  fgaj_d("%s%-11s %s", a == 'x' ? "exe_" : "rcv_", instruction, nid);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
   if (inst == NULL) goto _over;
