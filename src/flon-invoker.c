@@ -28,12 +28,14 @@
 #include <stdio.h>
 
 #include "gajeta.h"
+#include "fl_common.h"
 #include "fl_invoker.h"
 
 
 int main(int argc, char *argv[])
 {
-  fgaj_conf_get()->out = stderr;
+  flon_configure(".");
+  flon_setup_logging("invoker");
 
   if (argc < 2)
   {

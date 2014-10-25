@@ -30,6 +30,7 @@
 
 #include "flutil.h"
 #include "djan.h"
+#include "gajeta.h"
 #include "fl_common.h"
 
 
@@ -110,5 +111,33 @@ char *flon_conf_uid()
   free(gid); free(uid);
 
   return r;
+}
+
+void flon_setup_logging(const char *context)
+{
+  // so, env setup overrides conf setup
+
+  // this method is called after flon_configure(dir) is called
+
+  // these are the things gajeta grabs from env:
+  //
+  // fgaj_getenv("FLON_LOG_COLOR", "FGAJ_COLOR");
+  // fgaj_getenv("FLON_LOG_UTC", "FGAJ_UTC");
+  // fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
+  // fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
+
+  // TODO apply configuration
+
+  // FLONLOG=hostname,dis10,exe30,inv10
+  //   or
+  // FLONLOG=hostname,all10
+  // FLONLOG=hostname,allDEBUG
+
+  //char *env = getenv("FLONLOG");
+
+  // TODO use putenv() to set FGAJ_HOST and _LEVEL
+  //      NO, use fgaj_cong_get()->x = y;
+
+  fgaj_conf_get()->out = stderr;
 }
 

@@ -61,10 +61,6 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 
 int main(int argc, char *argv[])
 {
-  // set up logging
-
-  fgaj_conf_get()->out = stderr;
-
   // change dir
 
   char *d = ".";
@@ -75,6 +71,10 @@ int main(int argc, char *argv[])
   // load configuration
 
   flon_configure(".");
+
+  // set up logging
+
+  flon_setup_logging("dispatcher");
 
   // scan once
 

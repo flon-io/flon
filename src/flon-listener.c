@@ -30,6 +30,9 @@
 
 int main()
 {
+  //flon_configure(".");
+  flon_setup_logging("listener");
+
   puts("hello from " __FILE__);
 }
 

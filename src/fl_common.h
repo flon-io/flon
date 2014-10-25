@@ -31,6 +31,8 @@
 #include "djan.h"
 
 
+void flon_setup_logging(const char *context);
+
 void flon_configure(char *root);
 void flon_configure_j(fdja_value *obj);
 
