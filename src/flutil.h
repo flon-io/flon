@@ -172,6 +172,12 @@ char flu_fstat(const char *path, ...);
  */
 int flu_move(const char *path, ...);
 
+/* Creates a series of directories.
+ * Expects `int mode` as its last argument.
+ * Like mkdir(3) returns 0 in case of success.
+ */
+int flu_mkdir_p(const char *path, ...);
+
 
 //
 // flu_list
