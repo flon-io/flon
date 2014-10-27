@@ -106,6 +106,13 @@ void fdja_value_free(fdja_value *v);
 char *fdja_string(fdja_value *v);
 
 /*
+ * Returns a copy of the string representation *content* of the fdja_value.
+ * Mostly like fdja_string(), but for strings returns what's inside of the
+ * surrounding double or single quotes.
+ */
+char *fdja_str(fdja_value *v);
+
+/*
  * Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.

@@ -93,20 +93,34 @@ static void fdja_parser_init()
   fabr_parser *string =
     fabr_n_rex(
       "string",
-      "\"("
-        //"\\\\." "|"
-        "\\\\[\"\\/\\\\bfnrt]" "|"
-        "\\\\u[0-9a-fA-F]{4}" "|"
-        "[^\"\\\\]"
-      ")*\"");
+      "\""
+        "("
+          "\\\\[\"\\/\\\\bfnrt]" "|"
+          "\\\\u[0-9a-fA-F]{4}" "|"
+          "[^"
+            "\"" "\\\\" /*"\\/"*/ "\b" "\f" "\n" "\r" "\t"
+          "]"
+        ")*"
+      "\"");
   fabr_parser *sqstring =
-    fabr_n_rex("sqstring", "'(\\\\'|[^'])*'");
+    fabr_n_rex(
+      "sqstring",
+      "'"
+        "("
+          "\\\\['\\/\\\\bfnrt]" "|"
+          "\\\\u[0-9a-fA-F]{4}" "|"
+          "[^"
+            "'" "\\\\" /*"\\/"*/ "\b" "\f" "\n" "\r" "\t"
+          "]"
+        ")*"
+      "'");
+  fabr_parser *symbol =
+    fabr_n_rex(
+      "symbol",
+      "[^ \b\f\n\r\t\"':,\\[\\]\\{\\}#\\\\]+");
 
   fabr_parser *number =
     fabr_n_rex("number", "-?[0-9]+(\\.[0-9]+)?([eE][+-]?[0-9]+)?");
-
-  fabr_parser *symbol =
-    fabr_n_rex("symbol", "[^ \t\n\r\"':,\\[\\]\\{\\}#]+");
 
   fabr_parser *entry =
     fabr_n_seq(
@@ -235,13 +249,20 @@ static fdja_value *fdja_extract_value(char *input, fabr_tree *t);
 
 static char *fdja_sq_unescape(const char *s, size_t n)
 {
-  char *r = calloc(n + 1, sizeof(char));
-  for (size_t i = 0, j = 0; i < n; i++)
+  char *ues = flu_n_unescape(s, n);
+  size_t uel = strlen(ues);
+
+  char *r = calloc(uel + 1, sizeof(char));
+
+  for (size_t i = 0, j = 0; i < uel; i++)
   {
-    char c = s[i];
-    if (c == '\0') break;
-    if (c != '\\') r[j++] = c;
+    char c = ues[i];
+    if (c == '\\' && ues[i + 1] == '\'') { ++i; r[j++] = '\''; }
+    else r[j++] = c;
   }
+
+  free(ues);
+
   return r;
 }
 
@@ -256,7 +277,8 @@ static char *fdja_extract_key(char *input, fabr_tree *t)
     return flu_n_unescape(input + c->offset + 1, c->length - 2);
 
   if (strcmp(c->name, "sqstring") == 0)
-    return fdja_sq_unescape(input + c->offset + 1, c->length - 2);
+    //return fdja_sq_unescape(input + c->offset + 1, c->length - 2);
+    return flu_n_unescape(input + c->offset + 1, c->length - 2);
 
   //if (strcmp(c->name, "symbol") == 0)
   return strndup(input + c->offset, c->length);
@@ -420,7 +442,10 @@ fdja_value *fdja_s(char *format, ...)
   char *s = flu_svprintf(format, ap);
   va_end(ap);
 
-  return fdja_value_malloc('y', s, 0, strlen(s), 1);
+  char *ss = flu_escape(s);
+  free(s);
+
+  return fdja_value_malloc('y', ss, 0, strlen(ss), 1);
 }
 
 static void fdja_add_radc(fdja_value *parent, fdja_value *child)
@@ -637,15 +662,20 @@ static void fdja_to_j(FILE *f, fdja_value *v, size_t depth)
 
   if (v->type == 'q')
   {
-    char *s = fdja_to_string(v);
-    fprintf(f, "\"%s\"", s);
-    free(s);
+    fputc('"', f);
+    for (size_t i = 0; i < v->slen - 2; ++i)
+    {
+      char *s = v->source + v->soff + 1 + i;
+      if (s[0] == '\\' && s[1] == '\'') { ++i; fputc('\'', f); }
+      else { fputc(s[0], f); }
+    }
+    fputc('"', f);
   }
   else if (v->type == 'y')
   {
-    char *s = fdja_string(v);
-    fprintf(f, "\"%s\"", s);
-    free(s);
+    fputc('"', f);
+    fwrite(v->source + v->soff, sizeof(char), v->slen, f);
+    fputc('"', f);
   }
   else if (v->type == 'a')
   {
@@ -709,14 +739,6 @@ static int fdja_is_number(char *s)
   return fabr_match(s, fdja_number_parser);
 }
 
-static void fdja_k_to_d(FILE *f, char *s, int flags, int do_free)
-{
-  //int cl = flags & FDJA_F_COLOR;
-
-  if (fdja_is_symbol(s)) fputs(s, f); else fprintf(f, "\"%s\"", s);
-  if (do_free) free(s);
-}
-
 static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 {
   short ol = flags & FDJA_F_ONELINE;
@@ -734,19 +756,29 @@ static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
   fputs(indent, f);
 
+  // key (if there is one)
+
   if (v->key && depth > 0)
   {
     fputs(keyc, f);
-    fdja_k_to_d(f, v->key, flags, 0);
+
+    if (fdja_is_symbol(v->key))
+      fputs(v->key, f);
+    else
+      fprintf(f, "\"%s\"", v->key);
+
     fputs(clearc, f);
+
     fputs(": ", f);
   }
 
+  // actual value
+
   if (v->type == 'q' || v->type == 's')
   {
-    s = fdja_to_string(v);
-
     fputs(stringc, f);
+
+    s = fdja_str(v);
 
     if (fdja_is_symbol(s) && ! fdja_is_number(s))
       fputs(s, f);
@@ -836,16 +868,21 @@ char *fdja_string(fdja_value *v)
   return strndup(v->source + v->soff, v->slen);
 }
 
-char *fdja_to_string(fdja_value *v)
+char *fdja_str(fdja_value *v)
 {
   if (v->type == 's' || v->type == 'q')
-  {
-    char *start = v->source + v->soff + 1;
-    size_t len = v->slen - 2;
+    return strndup(v->source + v->soff + 1, v->slen - 2);
 
-    if (v->type == 'q') return fdja_sq_unescape(start, len);
-    return flu_n_unescape(start, len);
-  }
+  return fdja_string(v);
+}
+
+char *fdja_to_string(fdja_value *v)
+{
+  if (v->type == 's')
+    return flu_n_unescape(v->source + v->soff + 1, v->slen - 2);
+
+  if (v->type == 'q')
+    return fdja_sq_unescape(v->source + v->soff + 1, v->slen - 2);
 
   return fdja_string(v);
 }
