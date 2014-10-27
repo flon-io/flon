@@ -21,6 +21,7 @@ context "flon-executor"
     int r;
 
     char *exid = NULL;
+    char *fep = NULL;
 
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
@@ -32,6 +33,7 @@ context "flon-executor"
   }
   after each
   {
+    if (fep) free(fep);
     if (exid) free(exid);
   }
 
@@ -40,6 +42,7 @@ context "flon-executor"
     it "executes an invocation"
     {
       exid = flon_generate_exid("xtest.i");
+      fep = flon_exid_path(exid);
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
@@ -56,7 +59,7 @@ context "flon-executor"
       expect(r == 0);
 
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
-      expect(flu_fstat("var/spool/processed/exe_%s.json", exid) == 'f');
+      expect(flu_fstat("var/spool/processed/%s/exe_%s.json", fep, exid) == 'f');
 
       expect(flu_fstat("var/spool/inv/inv_%s-0.json", exid) == 'f');
 

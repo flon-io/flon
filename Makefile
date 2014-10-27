@@ -17,9 +17,8 @@ ctst:
 	rm -f tst/var/spool/dis/*.json
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
-	rm -f tst/var/spool/processed/*.json
+	find tst/var/spool/processed -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
 	rm -f tst/var/spool/rejected/*.json
-	rm -f tst/var/spool/orphaned/*.json
 	rm -f tst/var/run/*.json
 	rm -f tst/var/run/processed/*.json
 	rm -f tst/var/log/exe/*.txt

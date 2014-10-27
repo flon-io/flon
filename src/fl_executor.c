@@ -108,8 +108,21 @@ static void move_to_processed(fdja_value *msg)
 {
   char *fname = fdja_ls(msg, "fname", NULL);
   if (fname == NULL) return;
-  flu_move("var/spool/exe/%s", fname, "var/spool/processed");
+
+  char *fep = flon_exid_path(fname);
+
+  if (flu_mkdir_p("var/spool/processed/%s", fep, 0755) != 0)
+  {
+    fgaj_r("failed to mkdir -p var/spool/processed/%s", fep);
+  }
+
+  if (flu_move("var/spool/exe/%s", fname, "var/spool/processed/%s/", fep) != 0)
+  {
+    fgaj_r("failed to move %s to var/spool/processed/%s", fname, fep);
+  }
+
   free(fname);
+  free(fep);
 }
 
 static void handle(fdja_value *msg)
