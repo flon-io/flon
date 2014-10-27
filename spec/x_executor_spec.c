@@ -59,7 +59,7 @@ context "flon-executor"
       expect(r == 0);
 
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
-      expect(flu_fstat("var/spool/processed/%s/exe_%s.json", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
 
       expect(flu_fstat("var/spool/inv/inv_%s-0.json", exid) == 'f');
 

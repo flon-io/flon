@@ -111,14 +111,14 @@ static void move_to_processed(fdja_value *msg)
 
   char *fep = flon_exid_path(fname);
 
-  if (flu_mkdir_p("var/spool/processed/%s", fep, 0755) != 0)
+  if (flu_mkdir_p("var/run/%s/processed", fep, 0755) != 0)
   {
-    fgaj_r("failed to mkdir -p var/spool/processed/%s", fep);
+    fgaj_r("failed to mkdir -p var/run/%s/processed", fep);
   }
 
-  if (flu_move("var/spool/exe/%s", fname, "var/spool/processed/%s/", fep) != 0)
+  if (flu_move("var/spool/exe/%s", fname, "var/run/%s/processed/", fep) != 0)
   {
-    fgaj_r("failed to move %s to var/spool/processed/%s", fname, fep);
+    fgaj_r("failed to move %s to var/run/%s/processed", fname, fep);
   }
 
   free(fname);
