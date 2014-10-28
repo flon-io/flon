@@ -154,6 +154,8 @@ fdja_value *launch(char *exid, char *flow, char *payload)
     break;
   }
 
+  free(fep);
+
   // return result
 
   return r;
