@@ -53,15 +53,6 @@ static flu_list *msgs = NULL;
 //static size_t counter = 0;
   // how many executions got carried out in this session?
 
-void flon_executor_reset()
-{
-  if (execution_id) free(execution_id); execution_id = NULL;
-  if (execution_path) free(execution_path); execution_path = NULL;
-  if (execution) fdja_free(execution); execution = NULL;
-  if (msgs) flu_list_free(msgs); msgs = NULL;
-  //counter = 0;
-}
-
 static void reject(const char *reason, const char *fname, fdja_value *j)
 {
   short own_fname = 0;
@@ -222,6 +213,15 @@ static void load_execution(const char *exid)
   msgs = flu_list_malloc();
 }
 
+static void unload_execution()
+{
+  if (execution_id) free(execution_id); execution_id = NULL;
+  if (execution_path) free(execution_path); execution_path = NULL;
+  if (execution) fdja_free(execution); execution = NULL;
+  if (msgs) flu_list_free(msgs); msgs = NULL;
+  //counter = 0;
+}
+
 static int name_matches(const char *n)
 {
   if (
@@ -344,7 +344,10 @@ int flon_execute(const char *exid)
   fgaj_i(exid);
 
   load_execution(exid);
+
   execute();
+
+  unload_execution();
 
   return 0; // success
 }

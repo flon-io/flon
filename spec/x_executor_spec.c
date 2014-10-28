@@ -16,8 +16,6 @@ context "flon-executor"
 {
   before each
   {
-    flon_executor_reset();
-
     int r;
 
     char *exid = NULL;
@@ -107,8 +105,6 @@ context "flon-executor"
 
       expect(r == 0);
 
-      flon_executor_reset();
-
       //puts(flu_readall("var/run/%s.json", exid));
 
       // let's manually return to the execution
@@ -163,8 +159,6 @@ context "flon-executor"
 
       expect(r == 0);
 
-      flon_executor_reset();
-
       expect(flu_fstat("var/spool/inv/inv_%s-0_0.json", exid) == 'f');
 
       //puts(flu_readall("var/spool/inv/inv_%s-0.0.json", exid));
@@ -206,8 +200,6 @@ context "flon-executor"
       r = flon_execute(exid);
 
       expect(r == 0);
-
-      flon_executor_reset();
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
@@ -253,11 +245,8 @@ context "flon-executor"
 
       expect(r == 0);
 
-      //flon_executor_reset();
-
       expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
-        // TODO: place rejected in var/run/{fep}/rejected/
 
       //printf("var/archive/%s/run.json\n", fep);
       expect(flu_fstat("var/run/%s/run.json", fep) == 0);
