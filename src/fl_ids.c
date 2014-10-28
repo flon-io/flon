@@ -154,19 +154,29 @@ fdja_value *flon_parse_nid(const char *s)
 
 char *flon_exid_path(const char *s)
 {
-  fdja_value *i = flon_parse_nid(s);
-  if (i == NULL) return NULL;
+  char *r = NULL;
+  fdja_value *i = NULL;
+  char *exid = NULL;
+  char *domain = NULL;
 
-  char *exid = fdja_ls(i, "exid", NULL);
-  fdja_free(i);
-  if (exid == NULL) return NULL;
+  i = flon_parse_nid(s);
+  if (i == NULL) goto _over;
+
+  exid = fdja_ls(i, "exid", NULL);
+  domain = fdja_ls(i, "domain", NULL);
+
+  if (exid == NULL) goto _over;
 
   size_t l = strlen(exid);
   char *dot = strrchr(exid, '.') + 1;
 
-  char *r = flu_sprintf("%.2s/%s", dot, exid);
+  r = flu_sprintf("%s/%.2s/%s", domain, dot, exid);
 
-  free(exid);
+_over:
+
+  if (i) fdja_free(i);
+  if (exid) free(exid);
+  if (domain) free(domain);
 
   return r;
 }

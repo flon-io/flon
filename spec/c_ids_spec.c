@@ -113,12 +113,13 @@ context "fl_id"
     it "returns the path to the given exid / nid"
     {
       expect(flon_exid_path("xtest.pn-u0-20141021.0803.kurukuru") ===f ""
-        "ku/xtest.pn-u0-20141021.0803.kurukuru");
+        "xtest.pn/ku/xtest.pn-u0-20141021.0803.kurukuru");
 
       expect(flon_exid_path("xtest.pn-u0-20141021.0803.karufuru-0_1-f") ===f ""
-        "ka/xtest.pn-u0-20141021.0803.karufuru");
+        "xtest.pn/ka/xtest.pn-u0-20141021.0803.karufuru");
 
-      expect(flon_exid_path("rcv_xtest.pn-u0-20141021.0803.koruluru-0_1-f.json") ===f "ko/xtest.pn-u0-20141021.0803.koruluru");
+      expect(flon_exid_path("rcv_xtest.pn-u0-20141021.0803.koruluru-0_1-f.json") ===f ""
+        "xtest.pn/ko/xtest.pn-u0-20141021.0803.koruluru");
     }
   }
 }
