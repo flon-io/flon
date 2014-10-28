@@ -739,10 +739,12 @@ static int fdja_is_number(char *s)
   return fabr_match(s, fdja_number_parser);
 }
 
-static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
+void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 {
-  short ol = flags & FDJA_F_ONELINE;
   short cl = flags & FDJA_F_COLOR;
+  short ol = flags & FDJA_F_ONELINE;
+  short cp = flags & FDJA_F_COMPACT;
+  if (cp) ol = 1;
 
   char *infrac = cl ? "[1;30m" : "";
   char *keyc = cl ? "[0;33m" : "";
@@ -769,7 +771,7 @@ static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
     fputs(clearc, f);
 
-    fputs(": ", f);
+    fputc(':', f); if ( ! cp) fputc(' ', f);
   }
 
   // actual value
@@ -801,10 +803,11 @@ static void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
       fputs(clearc, f);
       for (fdja_value *c = v->child; c != NULL; c = c->sibling)
       {
-        fputc(' ', f); fdja_to_d(f, c, flags, depth + 1);
+        if ( ! cp) fputc(' ', f);
+        fdja_to_d(f, c, flags, depth + 1);
         if (c->sibling) fputc(',', f);
       }
-      if (v->child) fputc(' ', f);
+      if ( ! cp && v->child) fputc(' ', f);
       fputs(infrac, f);
       if (v->type == 'a') fputc(']', f); else fputc('}', f);
       fputs(clearc, f);
