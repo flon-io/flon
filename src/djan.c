@@ -1106,14 +1106,22 @@ int fdja_push(fdja_value *array, fdja_value *v)
   return 1;
 }
 
-int fdja_set(fdja_value *object, const char *key, fdja_value *v)
+int fdja_set(fdja_value *object, const char *key, fdja_value *val)
 {
   if (object->type != 'o') return 0;
 
-  if (v != NULL)
+  fdja_value *v = val;
+
+  char *k = (char *)key;
+  short start = (val != NULL && *k == '\b');
+
+  if (*k == '\b') k = k + 1;
+  if (start) v = NULL;
+
+  if (val != NULL)
   {
-    if (v->key) free(v->key);
-    v->key = strdup(key);
+    if (val->key) free(val->key);
+    val->key = strdup(k);
   }
 
   for (fdja_value **link = &object->child; ; link = &(*link)->sibling)
@@ -1122,7 +1130,7 @@ int fdja_set(fdja_value *object, const char *key, fdja_value *v)
 
     if (child == NULL) { *link = v; break; }
 
-    if (strcmp(key, child->key) == 0)
+    if (strcmp(k, child->key) == 0)
     {
       if (v == NULL)
       {
@@ -1137,6 +1145,11 @@ int fdja_set(fdja_value *object, const char *key, fdja_value *v)
       }
       break;
     }
+  }
+  if (start)
+  {
+    val->sibling = object->child;
+    object->child = val;
   }
 
   return 1;
