@@ -287,8 +287,10 @@ static void persist()
   {
     // flow is over, archive it
 
-    r = flu_mkdir_p("var/archive/%s", execution_path, 0755);
-      // FIXME: prevent var/archive/{kk}/{exid}/{exid}/ path
+    char *fep = strdup(execution_path);
+    *(strrchr(fep, '/')) = '\0';
+
+    r = flu_mkdir_p("var/archive/%s", fep, 0755);
 
     if (r != 0)
     {
@@ -298,27 +300,15 @@ static void persist()
 
     r = flu_move(
       "var/run/%s", execution_path,
-      "var/archive/%s", execution_path);
+      "var/archive/%s", fep);
+
+    free(fep);
 
     if (r != 0)
     {
       fgaj_r("failed to move execution to var/archive/%s/", execution_path);
     }
   }
-
-  //r = fdja_to_json_f(execution, "var//%s.json", execution_id);
-  //if (r != 1)
-  //{
-  //  fgaj_r(
-  //    "failed to archive execution to var/run/processed/%s.json",
-  //    execution_id);
-  //  return;
-  //}
-  //r = flu_unlink("var/run/%s.json", execution_id);
-  //if (r != 0)
-  //{
-  //  fgaj_r("failed to unlink execution at var/run/%s.json", execution_id);
-  //}
 }
 
 static void execute()

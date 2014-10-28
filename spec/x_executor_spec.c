@@ -72,8 +72,8 @@ context "flon-executor"
       expect(fdja_ls(v, "payload.args.color", NULL) ===f "blue");
       fdja_free(v);
 
-      //puts(flu_readall("var/run/%s.json", exid));
-      v = fdja_parse_f("var/run/%s.json", exid);
+      //puts(fdja_f_todc("var/run/%s/run.json", fep));
+      v = fdja_parse_f("var/run/%s/run.json", fep);
 
       expect(v != NULL);
       expect(fdja_ls(v, "exid", NULL) ===f exid);
@@ -91,6 +91,7 @@ context "flon-executor"
       // at first let's start an execution, with an invocation
 
       exid = flon_generate_exid("xtest.ir");
+      fep = flon_exid_path(exid);
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
@@ -132,7 +133,7 @@ context "flon-executor"
       expect(flu_fstat("var/spool/exe/%s-0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/rcv_%s-0.json", exid) == 0);
       expect(flu_fstat("var/run/%s.json", exid) == 0);
-      expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
+      expect(flu_fstat("var/archive/%s/run.json", fep) == 'f');
     }
 
     it "passes the return to the parent node"
@@ -258,13 +259,14 @@ context "flon-executor"
       expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
         // TODO: place rejected in var/run/{fep}/rejected/
 
-      //expect(flu_fstat("var/run/%s.json", exid) == 0);
-      expect(flu_fstat("var/run/%s/run.json", fep) == 'f');
+      //printf("var/archive/%s/run.json\n", fep);
+      expect(flu_fstat("var/run/%s/run.json", fep) == 0);
+      expect(flu_fstat("var/archive/%s/run.json", fep) == 'f');
 
-      // check the processed/ execution
+      // check the archived/ execution
 
-      v = fdja_parse_f("var/run/%s/run.json", exid);
-      //puts(fdja_to_pretty_djan(v));
+      v = fdja_parse_f("var/archive/%s/run.json", fep);
+      //puts(fdja_todc(v));
 
       expect(fdja_lj(v, "nodes", NULL) ===F fdja_vj("{}"));
       expect(fdja_lj(v, "errors", NULL) ===F fdja_vj("{}"));
