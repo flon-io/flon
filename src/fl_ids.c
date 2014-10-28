@@ -196,3 +196,26 @@ char *flon_nid_next(const char *nid)
   return r;
 }
 
+void flon_stamp(fdja_value *o, const char *key)
+{
+  fdja_value *entry = fdja_v("{}");
+  fdja_set(o, key, entry);
+
+  struct timeval tv;
+  struct tm *tm;
+  char t[28];
+
+  gettimeofday(&tv, NULL);
+
+  tm = gmtime(&tv.tv_sec);
+  strftime(t, 20, "%Y%m%d.%H%M%S.", tm);
+  sprintf(t + 16, "%lli", tv.tv_usec);
+
+  fdja_set(entry, "utc", fdja_s(t));
+
+  tm = localtime(&tv.tv_sec);
+  strftime(t, 20, "%Y%m%d.%H%M%S", tm);
+
+  fdja_set(entry, "local", fdja_s(t));
+}
+

@@ -37,5 +37,7 @@ char *flon_exid_path(const char *s);
 
 char *flon_nid_next(const char *nid);
 
+void flon_stamp(fdja_value *o, const char *key);
+
 #endif // FL_IDS_H
 

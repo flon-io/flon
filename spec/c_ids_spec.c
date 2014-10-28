@@ -108,7 +108,7 @@ context "fl_id"
     }
   }
 
-  describe "flon_exid_path"
+  describe "flon_exid_path()"
   {
     it "returns the path to the given exid / nid"
     {
@@ -120,6 +120,24 @@ context "fl_id"
 
       expect(flon_exid_path("rcv_xtest.pn-u0-20141021.0803.koruluru-0_1-f.json") ===f ""
         "xtest.pn/ko/xtest.pn-u0-20141021.0803.koruluru");
+    }
+  }
+
+  describe "flon_stamp()"
+  {
+    it "time-stamps the given object"
+    {
+      fdja_value *v = fdja_v("{ question: \"what time is it?\" }");
+
+      flon_stamp(v, "seen");
+
+      //puts(fdja_todc(v));
+      expect(fdja_ls(v, "question", NULL) ===f "what time is it?");
+      expect(fdja_l(v, "seen") != NULL);
+      expect(fdja_l(v, "seen.utc") != NULL);
+      expect(fdja_l(v, "seen.local") != NULL);
+
+      fdja_free(v);
     }
   }
 }
