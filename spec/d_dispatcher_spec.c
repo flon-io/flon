@@ -25,6 +25,7 @@ context "flon-dispatcher"
     flon_configure(".");
 
     char *exid = NULL;
+    char *fep = NULL;
     char *nid = NULL;
     char *name = NULL;
     char *path = NULL;
@@ -33,6 +34,7 @@ context "flon-dispatcher"
   after each
   {
     if (exid) free(exid);
+    if (fep) free(fep);
     if (nid) free(nid);
     if (name) free(name);
     if (path) free(path);
@@ -132,6 +134,7 @@ context "flon-dispatcher"
     {
       int r = -1;
       exid = flon_generate_exid("dtest.rir");
+      fep = flon_exid_path(exid);
       name = flu_sprintf("ret_%s-0_7-f.json", exid);
 
       r = flu_writeall(
@@ -178,7 +181,11 @@ context "flon-dispatcher"
 
       sleep(1);
 
-      expect(flu_fstat("var/log/exe/%s.txt", exid) == 'f');
+      //expect(flu_fstat("var/archive/%s/exe.log", fep) == 'f');
+      s = flu_readall("var/archive/%s/exe.log", fep);
+      expect(s != NULL);
+      expect(strstr(s, "reject node not found, ") != NULL);
+      //free(s);
 
       // check that rcv_ got rejected (no execution going on)
 

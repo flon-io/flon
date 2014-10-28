@@ -61,6 +61,16 @@ static int double_fork(char *ctx, char *logpath, char *arg)
 
     fflush(stderr);
 
+    char *basepath = strdup(logpath);
+    *(strrchr(basepath, '/')) = '\0';
+    //
+    if (flu_mkdir_p(basepath, 0755) != 0)
+    {
+      fgaj_r("failed to mkdir -p %s", basepath);
+      _exit(127);
+    }
+    //free(basepath);
+
     if (freopen(logpath, "a", stderr) == NULL)
     {
       fgaj_r("failed to reopen stderr to %s", logpath);
@@ -146,6 +156,7 @@ static int dispatch(const char *fname, fdja_value *j)
   int r = 1;
 
   char *exid = fdja_ls(j, "exid", NULL);
+  char *fep = flon_exid_path(exid);
   char *nid = fdja_ls(j, "nid", NULL);
 
   char *ct = "exe";
@@ -162,7 +173,7 @@ static int dispatch(const char *fname, fdja_value *j)
   }
   else // execute, receive
   {
-    logpath = flu_sprintf("var/log/exe/%s.txt", exid);
+    logpath = flu_sprintf("var/run/%s/exe.log", fep);
   }
 
   if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
@@ -177,6 +188,7 @@ static int dispatch(const char *fname, fdja_value *j)
 
   if (*fname == 'i') free(arg); // else arg == exid
   free(exid);
+  free(fep);
   free(nid);
   free(logpath);
 
