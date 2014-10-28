@@ -8,6 +8,7 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <time.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -65,7 +66,7 @@ void dispatcher_start()
   {
     nlog("dispatcher started pid: %i...", dispatcher_pid);
 
-    sleep(1);
+    //sleep(1);
   }
 }
 
@@ -73,11 +74,14 @@ void dispatcher_stop()
 {
   if (dispatcher_pid < 1) return;
 
-  nlog("stopping dispatcher pid: %i...", dispatcher_pid);
+  if (kill(dispatcher_pid, SIGTERM) == 0)
+    nlog("stopped dispatcher pid: %i", dispatcher_pid);
+  else
+    nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
 
-  kill(dispatcher_pid, SIGTERM);
+  dispatcher_pid = -1;
 
-  sleep(1);
+  //sleep(1);
 }
 
 fdja_value *launch(char *exid, char *flow, char *payload)
