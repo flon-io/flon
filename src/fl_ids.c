@@ -167,7 +167,6 @@ char *flon_exid_path(const char *s)
 
   if (exid == NULL) goto _over;
 
-  size_t l = strlen(exid);
   char *dot = strrchr(exid, '.') + 1;
 
   r = flu_sprintf("%s/%.2s/%s", domain, dot, exid);
