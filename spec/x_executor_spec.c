@@ -182,6 +182,14 @@ context "flon-executor"
 
       fdja_free(v);
 
+      char *s = flu_readall("var/run/%s/msgs.log", fep);
+      expect(s != NULL);
+      expect(strstr(s, "color:blue}") != NULL);
+      expect(strstr(s, "color:green}") != NULL);
+      expect(strstr(s, "\n") != NULL);
+      expect(strstr(s, exid) != NULL);
+      free(s);
+
       // inject ret_ back, towards "green"
 
       expect(flu_unlink("var/spool/inv/inv_%s-0_0.json", exid) == 0);

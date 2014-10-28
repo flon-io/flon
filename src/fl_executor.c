@@ -46,6 +46,7 @@
 
 char *execution_id = NULL;
 char *execution_path = NULL;
+FILE *msgs_log = NULL;
 fdja_value *execution = NULL;
 
 static flu_list *msgs = NULL;
@@ -117,6 +118,16 @@ static void move_to_processed(fdja_value *msg)
   free(fname);
 }
 
+static void do_log(fdja_value *msg)
+{
+  if (msgs_log == NULL) return;
+
+  flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
+
+  fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
+  fputc('\n', msgs_log);
+}
+
 static void handle(fdja_value *msg)
 {
   //fgaj_i("%s", fdja_tod(msg));
@@ -182,6 +193,7 @@ static void handle(fdja_value *msg)
   }
 
   move_to_processed(msg);
+  do_log(msg);
 
 _over:
 
@@ -198,9 +210,25 @@ static void load_execution(const char *exid)
   execution_id = strdup((char *)exid);
   execution_path = flon_exid_path(execution_id);
 
-  //char c = flu_fstat("var/run/%s.json", exid);
-  //if (c == 0) c = '0';
-  //fgaj_d("var/run/%s.json: %c", exid, c);
+  // TODO: make msgs_log optional!!!
+
+  char *log = flu_sprintf("var/run/%s/msgs.log", execution_path);
+  char *blog = strdup(log);
+  *(strrchr(blog, '/')) = '\0';
+
+  if (flu_mkdir_p(blog, 0755) != 0)
+  {
+    fgaj_r("couldn't mkdir -p %s", blog);
+  }
+  free(blog);
+
+  msgs_log = fopen(log, "a");
+
+  if (msgs_log == NULL)
+  {
+    fgaj_r("couldn't open %s for appending", log);
+  }
+  free(log);
 
   execution = fdja_parse_f("var/run/%s/run.json", execution_path);
 
@@ -217,6 +245,7 @@ static void unload_execution()
 {
   if (execution_id) free(execution_id); execution_id = NULL;
   if (execution_path) free(execution_path); execution_path = NULL;
+  if (msgs_log) { fclose(msgs_log); msgs_log = NULL; }
   if (execution) fdja_free(execution); execution = NULL;
   if (msgs) flu_list_free(msgs); msgs = NULL;
   //counter = 0;

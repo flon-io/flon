@@ -211,11 +211,11 @@ void flon_stamp(fdja_value *o, const char *key)
   strftime(t, 20, "%Y%m%d.%H%M%S.", tm);
   sprintf(t + 16, "%lli", tv.tv_usec);
 
-  fdja_set(entry, "utc", fdja_s(t));
+  fdja_set(entry, "u", fdja_s(t));
 
   tm = localtime(&tv.tv_sec);
   strftime(t, 20, "%Y%m%d.%H%M%S", tm);
 
-  fdja_set(entry, "local", fdja_s(t));
+  fdja_set(entry, "l", fdja_s(t));
 }
 
