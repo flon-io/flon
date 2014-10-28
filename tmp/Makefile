@@ -51,8 +51,8 @@ xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
-ns.c: ../spec/n/n_*_spec.c
-	$(RODZO) ../spec/n/n_*_spec.c -o ns.c
+ns.c: ../spec/n/*_spec.c
+	$(RODZO) ../spec/n/*_spec.c -o ns.c
 	cp ../spec/n/n_helpers.[ch] .
 
 cs: $(DEPS)
