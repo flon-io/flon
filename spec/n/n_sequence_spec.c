@@ -51,7 +51,13 @@ context "instruction:"
 
       expect(result != NULL);
 
-      expect(fdja_tod(result) ===f ""
+      expect(fdja_ls(result, "receive", NULL) ===f "1");
+      expect(fdja_ls(result, "nid", NULL) ===f "0");
+      expect(fdja_ls(result, "from", NULL) ===f "0_1");
+
+      fdja_value *pl = fdja_l(result, "payload");
+
+      expect(fdja_tod(pl) ===f ""
         "{ hello: world, trace: [ a, b ] }");
     }
   }

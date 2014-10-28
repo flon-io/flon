@@ -81,6 +81,8 @@ void dispatcher_stop()
 
 fdja_value *launch(char *exid, char *flow, char *payload)
 {
+  char *fep = flon_exid_path(exid);
+
   // launch
 
   fdja_value *fl = fdja_parse_radial(strdup(flow));
@@ -106,34 +108,52 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
   struct timespec trem;
 
-  while(1)
+  fdja_value *r = NULL;
+
+  while (1)
   {
-    //nanosleep(&treq, &trem);
-    sleep(3);
+    nanosleep(&treq, &trem);
 
-    system("tree var/");
+    printf(".");
 
-    char *s = NULL;
-    //
-    nlog("--8<-- exe log");
-    s = flu_readall("var/log/exe/%s.txt", exid);
-    if (s) puts(s);
+    if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
+
+    printf("\n");
+
+    //system("tree var/");
+    ////
+    //char *s = NULL;
+    ////
+    //nlog("--8<-- exe.log");
+    //s = flu_readall("var/archive/%s/exe.log", fep);
+    //if (s) puts(s);
+    //free(s);
+    //nlog("-->8--");
+    ////
+    //nlog("--8<-- run.json");
+    //s = flu_readall("var/archive/%s/run.json", fep);
+    //if (s) puts(s);
+    //free(s);
+    //nlog("-->8--");
+    ////
+    //nlog("--8<-- msgs.log");
+    //s = flu_readall("var/archive/%s/msgs.log", fep);
+    //if (s) puts(s);
+    //free(s);
+    //nlog("-->8--");
+
+    char *s = flu_readall("var/archive/%s/msgs.log", fep);
+    *(strrchr(s, '}') + 1) = '\0';
+    char *ss = strdup(strrchr(s, '\n') + 1);
+    //puts(ss);
+    r = fdja_parse(ss);
     free(s);
-    nlog("-->8-- exe log");
-    //
-    nlog("--8<-- /var/run ");
-    s = flu_readall("var/run/processed/%s.json", exid);
-    if (s) puts(s);
-    free(s);
-    nlog("-->8-- /var/run ");
 
-    // TODO...
-
-    return NULL;
+    break;
   }
 
   // return result
 
-  return NULL;
+  return r;
 }
 
