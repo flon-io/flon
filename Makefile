@@ -20,7 +20,7 @@ ctst:
 	rm -f tst/var/spool/rejected/*.json
 	rm -f tst/var/run/*.json
 	find tst/var/run -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
-	rm -f tst/var/run/processed/*.json
+	find tst/var/archive -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
 	rm -f tst/var/log/exe/*.txt
 	rm -f tst/var/log/inv/*.txt
 

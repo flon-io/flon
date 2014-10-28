@@ -140,6 +140,7 @@ context "flon-executor"
       fdja_value *v = NULL;
 
       exid = flon_generate_exid("xtest.pn");
+      fep = flon_exid_path(exid);
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
@@ -178,7 +179,7 @@ context "flon-executor"
 
       // check the "execution"
 
-      v = fdja_parse_f("var/run/%s.json", exid);
+      v = fdja_parse_f("var/run/%s/run.json", fep);
       //puts(fdja_to_pretty_djan(v));
 
       expect(
@@ -224,7 +225,7 @@ context "flon-executor"
 
       // check the "execution"
 
-      v = fdja_parse_f("var/run/%s.json", exid);
+      v = fdja_parse_f("var/run/%s/run.json", fep);
       //puts(fdja_to_pretty_djan(v));
 
       expect(
@@ -255,13 +256,14 @@ context "flon-executor"
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
+        // TODO: place rejected in var/run/{fep}/rejected/
 
-      expect(flu_fstat("var/run/%s.json", exid) == 0);
-      expect(flu_fstat("var/run/processed/%s.json", exid) == 'f');
+      //expect(flu_fstat("var/run/%s.json", exid) == 0);
+      expect(flu_fstat("var/run/%s/run.json", fep) == 'f');
 
       // check the processed/ execution
 
-      v = fdja_parse_f("var/run/processed/%s.json", exid);
+      v = fdja_parse_f("var/run/%s/run.json", exid);
       //puts(fdja_to_pretty_djan(v));
 
       expect(fdja_lj(v, "nodes", NULL) ===F fdja_vj("{}"));

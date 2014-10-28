@@ -45,6 +45,7 @@
 //   outgoing executes and invokes
 
 char *execution_id = NULL;
+char *execution_path = NULL;
 fdja_value *execution = NULL;
 
 static flu_list *msgs = NULL;
@@ -54,7 +55,8 @@ static flu_list *msgs = NULL;
 
 void flon_executor_reset()
 {
-  execution_id = NULL;
+  if (execution_id) free(execution_id); execution_id = NULL;
+  if (execution_path) free(execution_path); execution_path = NULL;
   if (execution) fdja_free(execution); execution = NULL;
   if (msgs) flu_list_free(msgs); msgs = NULL;
   //counter = 0;
@@ -109,7 +111,7 @@ static void move_to_processed(fdja_value *msg)
   char *fname = fdja_ls(msg, "fname", NULL);
   if (fname == NULL) return;
 
-  char *fep = flon_exid_path(fname);
+  char *fep = execution_path;
 
   if (flu_mkdir_p("var/run/%s/processed", fep, 0755) != 0)
   {
@@ -122,7 +124,6 @@ static void move_to_processed(fdja_value *msg)
   }
 
   free(fname);
-  free(fep);
 }
 
 static void handle(fdja_value *msg)
@@ -203,13 +204,14 @@ static void load_execution(const char *exid)
 
   //fgaj_d("exid: %s", exid);
 
-  execution_id = (char *)exid;
+  execution_id = strdup((char *)exid);
+  execution_path = flon_exid_path(execution_id);
 
   //char c = flu_fstat("var/run/%s.json", exid);
   //if (c == 0) c = '0';
   //fgaj_d("var/run/%s.json: %c", exid, c);
 
-  execution = fdja_parse_f("var/run/%s.json", exid);
+  execution = fdja_parse_f("var/run/%s/run.json", execution_path);
 
   if (execution == NULL)
   {
@@ -269,36 +271,54 @@ static void persist()
 {
   int r;
 
-  if (fdja_size(fdja_lookup(execution, "nodes")) > 0)
-  {
-    // flow is running, persist it
-
-    r = fdja_to_json_f(execution, "var/run/%s.json", execution_id);
-
-    if (r == 1) return;
-
-    fgaj_r("failed to persist execution to var/run/%s.json", execution_id);
-    return;
-  }
-
-  // else, flow is over, archive it
-
-  r = fdja_to_json_f(execution, "var/run/processed/%s.json", execution_id);
+  r = fdja_to_json_f(execution, "var/run/%s/run.json", execution_path);
 
   if (r != 1)
   {
     fgaj_r(
-      "failed to archive execution to var/run/processed/%s.json",
-      execution_id);
+      "failed to persist execution to var/run/%s/run.json", execution_path);
+
+    // TODO: eventually persist to some dump?
+
     return;
   }
 
-  r = flu_unlink("var/run/%s.json", execution_id);
-
-  if (r != 0)
+  if (fdja_size(fdja_lookup(execution, "nodes")) < 1)
   {
-    fgaj_r("failed to unlink execution at var/run/%s.json", execution_id);
+    // flow is over, archive it
+
+    r = flu_mkdir_p("var/archive/%s", execution_path, 0755);
+      // FIXME: prevent var/archive/{kk}/{exid}/{exid}/ path
+
+    if (r != 0)
+    {
+      fgaj_r("failed to mkdir -p var/archive/%s", execution_path);
+      return;
+    }
+
+    r = flu_move(
+      "var/run/%s", execution_path,
+      "var/archive/%s", execution_path);
+
+    if (r != 0)
+    {
+      fgaj_r("failed to move execution to var/archive/%s/", execution_path);
+    }
   }
+
+  //r = fdja_to_json_f(execution, "var//%s.json", execution_id);
+  //if (r != 1)
+  //{
+  //  fgaj_r(
+  //    "failed to archive execution to var/run/processed/%s.json",
+  //    execution_id);
+  //  return;
+  //}
+  //r = flu_unlink("var/run/%s.json", execution_id);
+  //if (r != 0)
+  //{
+  //  fgaj_r("failed to unlink execution at var/run/%s.json", execution_id);
+  //}
 }
 
 static void execute()

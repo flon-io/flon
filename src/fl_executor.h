@@ -33,6 +33,7 @@
 
 
 extern char *execution_id;
+extern char *execution_path;
 extern fdja_value *execution;
 
 
