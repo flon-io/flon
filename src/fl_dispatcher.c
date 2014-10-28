@@ -130,8 +130,8 @@ static int double_fork(char *ctx, char *logpath, char *arg)
 
     _exit(127);
   }
-  else { // parent
-
+  else // parent
+  {
     fgaj_i("%s forked", ctx);
   }
 
