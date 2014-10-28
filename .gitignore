@@ -7,5 +7,6 @@ tmp/*.so
 tmp/s
 tmp/[cixdnl]s
 tmp/spec_*.txt
-tst/bin/*
+tst/bin
+tst/var
 
