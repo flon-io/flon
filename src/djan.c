@@ -859,6 +859,26 @@ char *fdja_to_djan(fdja_value *v, int flags)
   return flu_sbuffer_to_string(b);
 }
 
+char *fdja_f_todc(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  va_end(ap);
+
+  fdja_value *v = fdja_parse_f(p);
+  if (v == NULL) v = fdja_parse_obj_f(p);
+
+  free(p);
+
+  if (v == NULL) return NULL;
+
+  char *r = fdja_todc(v);
+
+  fdja_free(v);
+
+  return r;
+}
+
 
 //
 // extracting stuff out of fdja_value items

@@ -88,6 +88,7 @@ enum // flags for fdja_to_djan()
 char *fdja_to_djan(fdja_value *v, int flags);
 #define fdja_tod(v) fdja_to_djan(v, 2)
 #define fdja_todc(v) fdja_to_djan(v, 1)
+char *fdja_f_todc(const char *path, ...);
 
 //char *fdja_to_radial(fdja_value *v);
 
