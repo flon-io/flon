@@ -209,7 +209,7 @@ void flon_stamp(fdja_value *o, const char *key)
 
   tm = gmtime(&tv.tv_sec);
   strftime(t, 20, "%Y%m%d.%H%M%S.", tm);
-  sprintf(t + 16, "%lli", tv.tv_usec);
+  sprintf(t + 16, "%li", tv.tv_usec);
 
   fdja_set(entry, "u", fdja_s(t));
 

@@ -16,6 +16,7 @@
 #include <sys/types.h>
 
 #include "flutil.h"
+#include "fl_ids.h"
 #include "fl_common.h"
 #include "n_helpers.h"
 
@@ -144,7 +145,8 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
     char *s = flu_readall("var/archive/%s/msgs.log", fep);
     *(strrchr(s, '}') + 1) = '\0';
-    char *ss = strdup(strrchr(s, '\n') + 1);
+    char *lf = strrchr(s, '\n');
+    char *ss = strdup(lf ? lf + 1 : s);
     //puts(ss);
     r = fdja_parse(ss);
     free(s);

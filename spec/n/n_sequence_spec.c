@@ -60,6 +60,29 @@ context "instruction:"
       expect(fdja_tod(pl) ===f ""
         "{ hello: world, trace: [ a, b ] }");
     }
+
+    it "runs ok when empty"
+    {
+      exid = flon_generate_exid("n.sequence.0t");
+
+      result = launch(
+        exid,
+        "sequence\n"
+        "",
+        "{ hello: emptiness }");
+
+      expect(result != NULL);
+
+      expect(fdja_ld(result, "execute", NULL) ===f "[ sequence, {}, [] ]");
+      expect(fdja_ld(result, "tree", NULL) ===f "[ sequence, {}, [] ]");
+      expect(fdja_ls(result, "nid", NULL) == NULL);
+      expect(fdja_ls(result, "from", NULL) == NULL);
+
+      fdja_value *pl = fdja_l(result, "payload");
+
+      expect(fdja_tod(pl) ===f ""
+        "{ hello: emptiness }");
+    }
   }
 }
 
