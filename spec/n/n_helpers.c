@@ -184,6 +184,8 @@ void dump_execution_state(const char *exid)
     path = flu_sprintf("var/archive/%s", fep);
   }
 
+  free(fep);
+
   nlog("");
   nlog("--8<-- execution: %s", exid);
 
@@ -211,17 +213,28 @@ void dump_execution_state(const char *exid)
     while (getline(&line, &len, f) != -1)
     {
       v = fdja_parse(line);
-      if (v) { puts(fdja_todc(v)); fdja_free(v); }
+      if (v)
+      {
+        v->sowner = 0;
+        char *s = fdja_todc(v); puts(s); free(s);
+        fdja_free(v); }
       else { puts(line); }
     }
+    free(line);
     fclose(f);
   }
   free(fpath);
 
   puts("\n## run.json\n#");
   fdja_value *v = fdja_parse_f("%s/run.json", path);
-  if (v) { puts(fdja_todc(v)); fdja_free(v); }
-  else { flu_system("cat %s/run.json", path); }
+  if (v) {
+    char *s = fdja_todc(v); puts(s); free(s);
+    fdja_free(v);
+  }
+  else
+  {
+    flu_system("cat %s/run.json", path);
+  }
 
   puts("\n## processed\n#");
   printf("[0;32m"); fflush(stdout);
@@ -232,5 +245,7 @@ void dump_execution_state(const char *exid)
 
   nlog("-->8--");
   nlog("");
+
+  free(path);
 }
 

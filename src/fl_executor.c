@@ -56,6 +56,8 @@ static flu_list *msgs = NULL;
 
 static void reject(const char *reason, const char *fname, fdja_value *j)
 {
+  fgaj_d("reason: %s", reason);
+
   short own_fname = 0;
 
   if (fname == NULL)
@@ -78,6 +80,8 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
 
 void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 {
+  fgaj_i("%s %s from %s", type, nid, from_nid);
+
   fdja_value *msg = fdja_v("{ %s: 1, nid: %s }", type, nid);
 
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
@@ -167,21 +171,34 @@ static void handle(fdja_value *msg)
 
   char r = inst(node, msg);
 
-  //fgaj_d("%c %s --> %c", a, instruction, r);
+  fgaj_i("%c %s --> %c", a, instruction, r);
 
   // v, k, r
 
   if (r == 'v') // over
   {
-    char *parent_nid = flon_node_parent_nid(nid);
-    //
-    if (parent_nid)
+    //char *parent_nid = flon_node_parent_nid(nid);
+    //if ( ! parent_nid) parent_nid = strdup("0");
+
+    //flon_queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
+    //free(parent_nid);
+
+    //if (a == 'r') fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
+
+    if (a == 'x')
     {
+      flon_queue_msg("receive", nid, nid, fdja_l(msg, "payload", NULL));
+    }
+    else // (a == 'r')
+    {
+      char *parent_nid = flon_node_parent_nid(nid);
+      if ( ! parent_nid) parent_nid = strdup("0");
+
       flon_queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
       free(parent_nid);
-    }
 
-    fdja_pset(execution, "nodes.%s", nid, NULL); // over
+      fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
+    }
   }
   else if (r == 'k') // ok
   {
@@ -344,7 +361,11 @@ static void execute()
 {
   while (1)
   {
+    fgaj_i("in");
+
     load_msgs();
+
+    if (msgs->size < 1) break;
 
     for (size_t i = 0; i < ROW_SIZE; ++i)
     {
@@ -361,8 +382,6 @@ static void execute()
 
       fdja_free(j);
     }
-
-    if (msgs->size < 1) break;
   }
 
   persist();

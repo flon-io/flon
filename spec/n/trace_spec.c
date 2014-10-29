@@ -47,9 +47,9 @@ context "instruction:"
         "",
         "{ hello: trace }");
 
-      expect(result != NULL);
-
       dump_execution_state(exid);
+
+      expect(result != NULL);
 
 /*
       puts(fdja_todc(result));
