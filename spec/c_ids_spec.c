@@ -134,8 +134,8 @@ context "fl_id"
       //puts(fdja_todc(v));
       expect(fdja_ls(v, "question", NULL) ===f "what time is it?");
       expect(fdja_l(v, "seen") != NULL);
-      expect(fdja_l(v, "seen.utc") != NULL);
-      expect(fdja_l(v, "seen.local") != NULL);
+      expect(fdja_l(v, "seen.u") != NULL);
+      expect(fdja_l(v, "seen.l") != NULL);
 
       fdja_free(v);
     }
