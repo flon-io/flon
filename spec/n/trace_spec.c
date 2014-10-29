@@ -49,6 +49,9 @@ context "instruction:"
 
       expect(result != NULL);
 
+      dump_execution_state(exid);
+
+/*
       puts(fdja_todc(result));
 
       expect(fdja_ls(result, "receive", NULL) ===f "1");
@@ -59,6 +62,8 @@ context "instruction:"
 
       expect(fdja_tod(pl) ===f ""
         "{ hello: world, trace: [ a, b ] }");
+*/
+      expect(0 == 1);
     }
   }
 }

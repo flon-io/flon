@@ -173,3 +173,64 @@ fdja_value *launch(char *exid, char *flow, char *payload)
   return r;
 }
 
+void dump_execution_state(const char *exid)
+{
+  char *fep = flon_exid_path(exid);
+
+  char *path = flu_sprintf("var/run/%s", fep);
+  if (flu_fstat(path) == '\0')
+  {
+    free(path);
+    path = flu_sprintf("var/archive/%s", fep);
+  }
+
+  nlog("");
+  nlog("--8<-- execution: %s", exid);
+
+  printf("\n# %s/\n", path);
+
+  puts("\n## execution log\n#");
+  printf("[0;32m"); fflush(stdout);
+  flu_system("cat %s/exe.log", path);
+  printf("[0;0m");
+
+  puts("\n## msgs log\n#");
+  char *fpath = flu_sprintf("%s/msgs.log", path);
+  FILE *f = fopen(fpath, "r");
+  if (f == NULL)
+  {
+    printf("couldn't read file at %s\n", fpath);
+    perror("reason:");
+  }
+  else
+  {
+    char *line = NULL;
+    size_t len = 0;
+    fdja_value *v = NULL;
+
+    while (getline(&line, &len, f) != -1)
+    {
+      v = fdja_parse(line);
+      if (v) { puts(fdja_todc(v)); fdja_free(v); }
+      else { puts(line); }
+    }
+    fclose(f);
+  }
+  free(fpath);
+
+  puts("\n## run.json\n#");
+  fdja_value *v = fdja_parse_f("%s/run.json", path);
+  if (v) { puts(fdja_todc(v)); fdja_free(v); }
+  else { flu_system("cat %s/run.json", path); }
+
+  puts("\n## processed\n#");
+  printf("[0;32m"); fflush(stdout);
+  flu_system("ls -lh %s/processed", path);
+  printf("[0;0m");
+
+  puts("");
+
+  nlog("-->8--");
+  nlog("");
+}
+

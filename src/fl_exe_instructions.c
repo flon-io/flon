@@ -35,8 +35,7 @@
 #include "fl_executor.h"
 
 
-//
-// execute and receive functions
+// TODO: include parsable documentation on top of each "instruction"
 
 // *** INVOKE
 

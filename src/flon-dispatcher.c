@@ -56,7 +56,7 @@ static void scan_dir()
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
-  fgaj_i(".");
+  //fgaj_i(".");
   if (w->attr.st_nlink) scan_dir();
 }
 
