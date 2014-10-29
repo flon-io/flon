@@ -97,16 +97,16 @@ static char exe_sequence(fdja_value *node, fdja_value *exe)
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
-  return 'v'; // over
-}
-
-static char rcv_trace(fdja_value *node, fdja_value *exe)
-{
   fdja_value *pl = fdja_l(exe, "payload");
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
   fdja_push(trace, fdja_lc(exe, "tree.1._0"));
 
+  return 'v'; // over
+}
+
+static char rcv_trace(fdja_value *node, fdja_value *exe)
+{
   return 'v'; // over
 }
 

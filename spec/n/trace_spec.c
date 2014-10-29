@@ -47,23 +47,20 @@ context "instruction:"
         "",
         "{ hello: trace }");
 
-      dump_execution(exid);
+      //dump_execution(exid);
 
       expect(result != NULL);
 
-/*
-      puts(fdja_todc(result));
+      //puts(fdja_todc(result));
 
       expect(fdja_ls(result, "receive", NULL) ===f "1");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0_1");
+      expect(fdja_ls(result, "from", NULL) ===f "0");
 
       fdja_value *pl = fdja_l(result, "payload");
 
       expect(fdja_tod(pl) ===f ""
-        "{ hello: world, trace: [ a, b ] }");
-*/
-      expect(0 == 1);
+        "{ hello: trace, trace: [ a ] }");
     }
   }
 }

@@ -177,14 +177,6 @@ static void handle(fdja_value *msg)
 
   if (r == 'v') // over
   {
-    //char *parent_nid = flon_node_parent_nid(nid);
-    //if ( ! parent_nid) parent_nid = strdup("0");
-
-    //flon_queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
-    //free(parent_nid);
-
-    //if (a == 'r') fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
-
     if (a == 'x')
     {
       flon_queue_msg("receive", nid, nid, fdja_l(msg, "payload", NULL));
