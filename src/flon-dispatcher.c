@@ -56,6 +56,7 @@ static void scan_dir()
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
+  fgaj_i(".");
   if (w->attr.st_nlink) scan_dir();
 }
 
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
   if (argc > 1) d = argv[1];
 
   if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
+  fgaj_i("changed dir to %s", flu_canopath(d));
 
   // load configuration
 
@@ -89,5 +91,7 @@ int main(int argc, char *argv[])
   ev_stat_start(l, &est);
 
   ev_loop(l, 0);
+
+  fgaj_r("something went wrong");
 }
 

@@ -66,7 +66,8 @@ void dispatcher_start()
   {
     nlog("dispatcher started pid: %i...", dispatcher_pid);
 
-    //sleep(1);
+    sleep(1);
+      // seems necessary, else the ev io watch doesn't seem to get in
   }
 }
 
@@ -75,12 +76,14 @@ void dispatcher_stop()
   if (dispatcher_pid < 1) return;
 
   if (kill(dispatcher_pid, SIGTERM) == 0)
-    nlog("stopped dispatcher pid: %i", dispatcher_pid);
+  {
+    int status; waitpid(dispatcher_pid, &status, 0);
+    nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+  }
   else
+  {
     nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
-
-  int status; waitpid(dispatcher_pid, &status, 0);
-  nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+  }
 
   dispatcher_pid = -1;
 
@@ -104,7 +107,13 @@ fdja_value *launch(char *exid, char *flow, char *payload)
   fdja_set(v, "execute", fl);
   fdja_set(v, "payload", pl);
 
-  fdja_to_json_f(v, "var/spool/dis/exe_%s.json", exid);
+  int i = fdja_to_json_f(v, "var/spool/dis/exe_%s.json", exid);
+  if (i != 1)
+  {
+    nlog("failed to write launch file at var/spool/dis/exe_%s.json", exid);
+    return NULL;
+  }
+  //flu_system("touch var/spool/dis/");
 
   fdja_free(v);
 
@@ -116,7 +125,7 @@ fdja_value *launch(char *exid, char *flow, char *payload)
   {
     flu_msleep(100);
 
-    printf(".");
+    printf("."); fflush(stdout);
 
     //printf("fep: %s\n", fep);
     //flu_system("cat var/run/%s/exe.log", fep);
