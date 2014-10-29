@@ -71,6 +71,8 @@ context "instruction:"
         "",
         "{ hello: emptiness }");
 
+      dump_execution(exid);
+
       expect(result != NULL);
 
       expect(fdja_ld(result, "execute", NULL) ===f "[ sequence, {}, [] ]");

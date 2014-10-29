@@ -37,6 +37,30 @@
 
 // TODO: include parsable documentation on top of each "instruction"
 
+// helpers
+
+static fdja_value *tree(fdja_value *node)
+{
+  char *nid = fdja_ls(node, "nid", NULL);
+  if (nid == NULL) return NULL;
+
+  fdja_value *r = flon_node_tree(nid);
+  free(nid);
+
+  return r;
+}
+
+static ssize_t child_count(fdja_value *node)
+{
+  fdja_value *t = tree(node);
+  if (t == NULL) return -1;
+
+  fdja_value *cs = fdja_lookup(t, "2");
+  if (cs == NULL) return -1;
+
+  return fdja_size(cs);
+}
+
 // *** INVOKE
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
@@ -74,9 +98,9 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
 
-  fdja_value *tree = flon_node_tree(next);
+  fdja_value *t = flon_node_tree(next);
 
-  if (tree)
+  if (t)
     flon_queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));
   else
     r = 'v'; // over
@@ -90,6 +114,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
 static char exe_sequence(fdja_value *node, fdja_value *exe)
 {
+  //if (child_count(node) < 1) return 'v';
   return rcv_sequence(node, exe);
 }
 
