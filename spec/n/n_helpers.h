@@ -13,5 +13,5 @@ void dispatcher_stop();
 
 fdja_value *launch(char *exid, char *flow, char *payload);
 
-void dump_execution_state(const char *exid);
+void dump_execution(const char *exid);
 

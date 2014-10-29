@@ -173,7 +173,7 @@ fdja_value *launch(char *exid, char *flow, char *payload)
   return r;
 }
 
-void dump_execution_state(const char *exid)
+void dump_execution(const char *exid)
 {
   char *fep = flon_exid_path(exid);
 

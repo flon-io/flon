@@ -47,7 +47,7 @@ context "instruction:"
         "",
         "{ hello: trace }");
 
-      dump_execution_state(exid);
+      dump_execution(exid);
 
       expect(result != NULL);
 
