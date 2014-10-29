@@ -140,5 +140,23 @@ context "fl_id"
       fdja_free(v);
     }
   }
+
+  describe "flon_nid_depth()"
+  {
+    it "returns the depth of a nid"
+    {
+      expect(flon_nid_depth("1") zu== 0);
+      expect(flon_nid_depth("1_2") zu== 1);
+      expect(flon_nid_depth("1_2_0") zu== 2);
+      expect(flon_nid_depth("1_2-f") zu== 1);
+
+      expect(flon_nid_depth("x_nada-u0-20141021.0803.karufuru-0_1-f") zu== 1);
+    }
+
+    it "returns 0 for non-nids"
+    {
+      expect(flon_nid_depth("/") zu== 0);
+    }
+  }
 }
 

@@ -184,7 +184,7 @@ char *flon_nid_next(const char *nid)
 {
   fdja_value *i = flon_parse_nid(nid);
 
-  char *n = fdja_ls(i, "node");
+  char *n = fdja_ls(i, "node", "");
   char *u = strrchr(n, '_');
   *u = 0;
   long l = strtol(u + 1, NULL, 16);
@@ -192,6 +192,35 @@ char *flon_nid_next(const char *nid)
 
   free(n);
   fdja_free(i);
+
+  return r;
+}
+
+size_t flon_nid_depth(const char *nid)
+{
+  char *s = (char *)nid;
+  short f = 0;
+  //
+  if (strchr(nid, '-'))
+  {
+    fdja_value *i = flon_parse_nid(nid);
+    s = fdja_ls(i, "node", "");
+    fdja_free(i);
+    f = 1;
+  }
+
+  char *ss = s;
+
+  size_t r = 0;
+  while (1)
+  {
+    ss = strchr(ss, '_');
+    if (ss == NULL) break;
+    ++r;
+    ++ss;
+  }
+
+  if (f) free(s);
 
   return r;
 }
