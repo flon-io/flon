@@ -7,7 +7,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <time.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +14,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 
 #include "flutil.h"
 #include "fl_ids.h"
@@ -79,6 +79,9 @@ void dispatcher_stop()
   else
     nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
 
+  int status; waitpid(dispatcher_pid, &status, 0);
+  nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+
   dispatcher_pid = -1;
 
   //sleep(1);
@@ -107,26 +110,22 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
   // wait for result
 
-  struct timespec treq;
-  treq.tv_sec = 0;
-  treq.tv_nsec = 1000000;
-
-  struct timespec trem;
-
   fdja_value *r = NULL;
 
   while (1)
   {
-    nanosleep(&treq, &trem);
+    flu_msleep(100);
 
     printf(".");
+
+    //printf("fep: %s\n", fep);
+    //flu_system("cat var/run/%s/exe.log", fep);
+    //flu_system("cat var/run/%s/msgs.log", fep);
 
     if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
 
     printf("\n");
 
-    //system("tree var/");
-    ////
     //char *s = NULL;
     ////
     //nlog("--8<-- exe.log");
