@@ -828,3 +828,29 @@ long long flu_getMs()
   return r == 0 ? tv.tv_sec * 1000000 + tv.tv_usec : 0;
 }
 
+long long flu_msleep(long long milliseconds)
+{
+  long long start = flu_getms();
+
+  struct timespec treq;
+  treq.tv_sec = 0;
+  treq.tv_nsec = milliseconds * 1000 * 1000;
+
+  struct timespec trem;
+
+  nanosleep(&treq, &trem);
+
+  return flu_getms() - start;
+}
+
+int flu_system(const char *cmd, ...)
+{
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  int r = system(c);
+
+  free(c);
+
+  return r;
+}
+
