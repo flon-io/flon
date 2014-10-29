@@ -121,7 +121,7 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
   fdja_value *r = NULL;
 
-  while (1)
+  for (size_t i = 0; i < 3 * 10; ++i) // max 3 seconds
   {
     flu_msleep(100);
 
