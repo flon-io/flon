@@ -38,29 +38,30 @@ void dispatcher_start()
 {
   if (dispatcher_pid > 0) return;
 
-  //printf("[1;30m\n");
-  //system("make -C ../tst webapp");
-  //printf("[0;0m\n");
+  //printf("\n\n** FLONVAL: %s\n\n", getenv("FLONVAL"));
 
   dispatcher_pid = fork();
 
   if (dispatcher_pid == 0)
   {
-    char *v = getenv("VALDIS");
+    char *v = getenv("FLONVAL");
 
-    if (v != NULL && (strcmp(v, "1") == 0 || strcmp(v, "true") == 0))
+    if (v && strstr(v, "dis"))
     {
-      char *env[] = { "FGAJ_HOST=l", "FGAJ_LEVEL=10", NULL };
-      execle("/usr/bin/valgrind", "", dispatcher_path, "", NULL, env);
+      execl(
+        "/usr/bin/valgrind", "",
+        "--leak-check=full", "-v", dispatcher_path, NULL);
     }
     else
     {
-      //char *env[] = { "FGAJ_HOST=g", "FGAJ_LEVEL=10", NULL };
-      char *env[] = { "FGAJ_HOST=l", NULL };
-      execle(dispatcher_path, "", NULL, env);
+      execl(
+        dispatcher_path, "",
+        NULL);
     }
 
-    perror("execle failed"); exit(1);
+    // fail zone...
+
+    perror("execl failed"); exit(1);
   }
   else
   {
@@ -121,7 +122,7 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
   fdja_value *r = NULL;
 
-  for (size_t i = 0; i < 3 * 10; ++i) // max 3 seconds
+  for (size_t i = 0; i < 2 * 10; ++i) // max 2 seconds
   {
     flu_msleep(100);
 
