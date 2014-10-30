@@ -91,17 +91,17 @@ void dispatcher_stop()
   //sleep(1);
 }
 
-fdja_value *launch(char *exid, char *flow, char *payload)
+void launch(char *exid, char *flow, char *payload)
 {
   char *fep = flon_exid_path(exid);
 
   // launch
 
   fdja_value *fl = fdja_parse_radial(strdup(flow));
-  if (fl == NULL) { nlog("couldn't parse radial flow..."); return NULL; }
+  if (fl == NULL) { nlog("couldn't parse radial flow..."); return; }
 
   fdja_value *pl = fdja_v(payload);
-  if (pl == NULL) { nlog("couldn't parse payload..."); return NULL; }
+  if (pl == NULL) { nlog("couldn't parse payload..."); return; }
 
   fdja_value *v = fdja_v("{ exid: %s }", exid);
 
@@ -112,17 +112,23 @@ fdja_value *launch(char *exid, char *flow, char *payload)
   if (i != 1)
   {
     nlog("failed to write launch file at var/spool/dis/exe_%s.json", exid);
-    return NULL;
+    return;
   }
   //flu_system("touch var/spool/dis/");
 
   fdja_free(v);
+  free(fep);
+}
 
-  // wait for result
+
+fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
+{
+  char *fep = flon_exid_path(exid);
+  if (nid == NULL) nid = "0";
 
   fdja_value *r = NULL;
 
-  for (size_t i = 0; i < 2 * 10; ++i) // max 2 seconds
+  for (size_t i = 0; i < maxsec * 10; ++i) // approx...
   {
     flu_msleep(100);
 
@@ -130,15 +136,24 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
     if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
 
-    printf("\n");
 
     char *s = flu_readall("var/archive/%s/msgs.log", fep);
     *(strrchr(s, '}') + 1) = '\0';
     char *lf = strrchr(s, '\n');
     char *ss = strdup(lf ? lf + 1 : s);
     //puts(ss);
-    r = fdja_parse(ss);
+    fdja_value *v = fdja_parse(ss);
     free(s);
+
+    char a = fdja_lookup(v, "receive") ? 'r' : 'x';
+    if (action != a) { fdja_free(v); continue; }
+
+    char *n = fdja_lsd(v, "nid", "0");
+    if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }
+
+    free(n);
+    printf("\n");
+    r = v;
 
     break;
   }

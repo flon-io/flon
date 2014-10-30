@@ -41,13 +41,15 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.sequence.2t");
 
-      result = launch(
+      launch(
         exid,
         "sequence\n"
         "  trace a\n"
         "  trace b\n"
         "",
         "{ hello: world }");
+
+      result = ewait(exid, 'r', "0", 10);
 
       expect(result != NULL);
 
@@ -65,13 +67,15 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.sequence.0t");
 
-      result = launch(
+      launch(
         exid,
         "sequence\n"
         "",
         "{ hello: emptiness }");
 
-      dump_execution(exid);
+      result = ewait(exid, 'r', "0", 10);
+
+      //dump_execution(exid);
 
       expect(result != NULL);
 

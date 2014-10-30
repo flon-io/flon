@@ -41,11 +41,13 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.trace.firstarg");
 
-      result = launch(
+      launch(
         exid,
         "trace a\n"
         "",
         "{ hello: trace }");
+
+      result = ewait(exid, 'r', "0", 3);
 
       //dump_execution(exid);
 

@@ -41,11 +41,13 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.invoke.main");
 
-      result = launch(
+      launch(
         exid,
         "invoke stamp\n"
         "",
         "{ hello: invoke }");
+
+      result = ewait(exid, 'r', "0", 3);
 
       dump_execution(exid);
 
