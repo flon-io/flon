@@ -158,5 +158,16 @@ context "fl_id"
       expect(flon_nid_depth("/") zu== 0);
     }
   }
+
+  describe "flon_nid_next()"
+  {
+    it "returns the next nid"
+    {
+      expect(flon_nid_next("0") == NULL);
+      expect(flon_nid_next("0_1") ===f "0_2");
+      expect(flon_nid_next("1_2") ===f "1_3");
+      expect(flon_nid_next("1_2_3") ===f "1_2_4");
+    }
+  }
 }
 
