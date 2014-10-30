@@ -75,10 +75,9 @@ context "instruction:"
 
       expect(result != NULL);
 
-      expect(fdja_ld(result, "execute", NULL) ===f "[ sequence, {}, [] ]");
-      expect(fdja_ld(result, "tree", NULL) ===f "[ sequence, {}, [] ]");
-      expect(fdja_ls(result, "nid", NULL) == NULL);
-      expect(fdja_ls(result, "from", NULL) == NULL);
+      expect(fdja_ld(result, "receive", NULL) ===f "1");
+      expect(fdja_ls(result, "nid", NULL) ===f "0");
+      expect(fdja_ls(result, "from", NULL) ===f "0");
 
       fdja_value *pl = fdja_l(result, "payload");
 

@@ -128,33 +128,9 @@ fdja_value *launch(char *exid, char *flow, char *payload)
 
     printf("."); fflush(stdout);
 
-    //printf("fep: %s\n", fep);
-    //flu_system("cat var/run/%s/exe.log", fep);
-    //flu_system("cat var/run/%s/msgs.log", fep);
-
     if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
 
     printf("\n");
-
-    //char *s = NULL;
-    ////
-    //nlog("--8<-- exe.log");
-    //s = flu_readall("var/archive/%s/exe.log", fep);
-    //if (s) puts(s);
-    //free(s);
-    //nlog("-->8--");
-    ////
-    //nlog("--8<-- run.json");
-    //s = flu_readall("var/archive/%s/run.json", fep);
-    //if (s) puts(s);
-    //free(s);
-    //nlog("-->8--");
-    ////
-    //nlog("--8<-- msgs.log");
-    //s = flu_readall("var/archive/%s/msgs.log", fep);
-    //if (s) puts(s);
-    //free(s);
-    //nlog("-->8--");
 
     char *s = flu_readall("var/archive/%s/msgs.log", fep);
     *(strrchr(s, '}') + 1) = '\0';

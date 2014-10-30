@@ -91,8 +91,6 @@ static int double_fork(char *ctx, char *logpath, char *arg)
 
     // TODO: if ctx is "executor", write var/run/{exid}.pid
 
-    // TODO: allow for Valgrind runs
-
     char *bin = NULL;
     //
     if (*ctx == 'i')
@@ -106,7 +104,11 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     char *v = getenv("FLONVAL");
     if (
       v &&
-      ((*ctx == 'i' && strstr(v, "inv")) || (*ctx == 'e' && strstr(v, "exe")))
+      (
+        strstr(v, "all") ||
+        (*ctx == 'i' && strstr(v, "inv")) ||
+        (*ctx == 'e' && strstr(v, "exe"))
+      )
     )
     {
       args = &(char *[]){ val, "--leak-check=full", "-v", bin, arg, NULL };
@@ -116,6 +118,7 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     {
       args = &(char *[]){ bin, arg, NULL };
     }
+    //fgaj_d("FLONVAL: \"%s\", e: '%c'", v, *ctx);
 
     fgaj_i("cmd is >%s<", bin);
     fflush(stderr);

@@ -182,16 +182,26 @@ _over:
 
 char *flon_nid_next(const char *nid)
 {
+  char *r = NULL;
+  char *n = NULL;
+
   fdja_value *i = flon_parse_nid(nid);
+  if (i == NULL) goto _over;
 
-  char *n = fdja_ls(i, "node", "");
+  n = fdja_ls(i, "node", NULL);
+  if (n == NULL) goto _over;
+
   char *u = strrchr(n, '_');
-  *u = 0;
-  long l = strtol(u + 1, NULL, 16);
-  char *r = flu_sprintf("%s_%x", n, l + 1);
+  if (u == NULL) goto _over;
 
-  free(n);
-  fdja_free(i);
+  *u = '\0';
+  long l = strtol(u + 1, NULL, 16);
+  r = flu_sprintf("%s_%x", n, l + 1);
+
+_over:
+
+  if (n) free(n);
+  if (i) fdja_free(i);
 
   return r;
 }

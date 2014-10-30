@@ -164,14 +164,14 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
 
-  fgaj_d("%s%-11s %s", a == 'x' ? "exe_" : "rcv_", instruction, nid);
+  fgaj_d("%-*s%s %c %s", flon_nid_depth(nid), "", nid, a, instruction);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
   if (inst == NULL) goto _over;
 
   char r = inst(node, msg);
 
-  fgaj_i("%c %s --> %c", a, instruction, r);
+  fgaj_i("%c_%s --> %c", a, instruction, r);
 
   // v, k, r
 

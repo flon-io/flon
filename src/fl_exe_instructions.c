@@ -50,6 +50,13 @@ static fdja_value *tree(fdja_value *node)
   return r;
 }
 
+//static fdja_value *payload(fdja_value *exe, int clone)
+//{
+//  fdja_value *pl = fdja_l(exe, "payload");
+//  if (pl == NULL) return NULL;
+//  return clone ? fdja_clone(pl) : pl;
+//}
+
 static ssize_t child_count(fdja_value *node)
 {
   fdja_value *t = tree(node);
@@ -98,7 +105,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
 
-  fdja_value *t = flon_node_tree(next);
+  fdja_value *t = next ? flon_node_tree(next) : NULL;
 
   if (t)
     flon_queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));
@@ -114,7 +121,8 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
 static char exe_sequence(fdja_value *node, fdja_value *exe)
 {
-  //if (child_count(node) < 1) return 'v';
+  //fgaj_d("cc: %zu", child_count(node));
+  if (child_count(node) < 1) return 'v';
   return rcv_sequence(node, exe);
 }
 
