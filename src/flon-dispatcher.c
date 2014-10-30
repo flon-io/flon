@@ -59,7 +59,11 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
   //fgaj_i(".");
   scan_dir();
-  flu_do_msleep(1050);
+  flu_do_msleep(200);
+  scan_dir();
+  flu_do_msleep(300);
+  scan_dir();
+  flu_do_msleep(600);
   scan_dir();
 }
 
