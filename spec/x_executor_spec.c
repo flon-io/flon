@@ -59,9 +59,9 @@ context "flon-executor"
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
       expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
 
-      expect(flu_fstat("var/spool/inv/inv_%s-0.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/inv_%s-0.json", exid) == 'f');
 
-      fdja_value *v = fdja_parse_f("var/spool/inv/inv_%s-0.json", exid);
+      fdja_value *v = fdja_parse_f("var/spool/dis/inv_%s-0.json", exid);
 
       expect(v != NULL);
       expect(fdja_ls(v, "exid", NULL) ===f exid);
@@ -80,8 +80,6 @@ context "flon-executor"
         "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
 
       fdja_free(v);
-
-      expect(flu_fstat("var/spool/inv/inv_%s-0.json", exid) == 'f');
     }
 
     it "executes an invocation return"
@@ -109,7 +107,7 @@ context "flon-executor"
 
       // let's manually return to the execution
 
-      expect(flu_unlink("var/spool/inv/inv_%s-0.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/inv_%s-0.json", exid) == 0);
 
       flu_writeall(
         "var/spool/exe/rcv_%s-0.json", exid,
@@ -159,11 +157,11 @@ context "flon-executor"
 
       expect(r == 0);
 
-      expect(flu_fstat("var/spool/inv/inv_%s-0_0.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/inv_%s-0_0.json", exid) == 'f');
 
-      //puts(flu_readall("var/spool/inv/inv_%s-0.0.json", exid));
+      //puts(flu_readall("var/spool/dis/inv_%s-0.0.json", exid));
 
-      v = fdja_parse_f("var/spool/inv/inv_%s-0_0.json", exid);
+      v = fdja_parse_f("var/spool/dis/inv_%s-0_0.json", exid);
 
       expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: blue }, [] ]"));
@@ -192,7 +190,7 @@ context "flon-executor"
 
       // inject ret_ back, towards "green"
 
-      expect(flu_unlink("var/spool/inv/inv_%s-0_0.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/inv_%s-0_0.json", exid) == 0);
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_0.json", exid,
@@ -212,9 +210,9 @@ context "flon-executor"
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
 
-      expect(flu_fstat("var/spool/inv/inv_%s-0_1.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/inv_%s-0_1.json", exid) == 'f');
 
-      v = fdja_parse_f("var/spool/inv/inv_%s-0_1.json", exid);
+      v = fdja_parse_f("var/spool/dis/inv_%s-0_1.json", exid);
       //puts(fdja_to_pretty_djan(v));
 
       expect(fdja_lj(v, "invoke", NULL) ===F fdja_vj(""
@@ -236,7 +234,7 @@ context "flon-executor"
 
       // inject ret_ back, towards "eox" (end of execution)
 
-      expect(flu_unlink("var/spool/inv/inv_%s-0_1.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/inv_%s-0_1.json", exid) == 0);
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_1.json", exid,
