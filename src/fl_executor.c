@@ -130,6 +130,7 @@ static void do_log(fdja_value *msg)
 
   fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
   fputc('\n', msgs_log);
+  fflush(msgs_log);
 }
 
 static void handle(fdja_value *msg)
@@ -184,10 +185,18 @@ static void handle(fdja_value *msg)
     else // (a == 'r')
     {
       char *parent_nid = flon_node_parent_nid(nid);
-      if ( ! parent_nid) parent_nid = strdup("0");
+      //if ( ! parent_nid) parent_nid = strdup("0");
 
-      flon_queue_msg("receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
-      free(parent_nid);
+      if (parent_nid)
+      {
+        flon_queue_msg(
+          "receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
+        free(parent_nid);
+      }
+      //else
+      //{
+      //  // TODO queue "terminate" msg?
+      //}
 
       fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
     }
