@@ -71,7 +71,7 @@ context "instruction:"
         "",
         "{ hello: emptiness }");
 
-      dump_execution(exid);
+      //dump_execution(exid);
 
       expect(result != NULL);
 

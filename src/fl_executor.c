@@ -164,7 +164,7 @@ static void handle(fdja_value *msg)
 
   if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
 
-  fgaj_d("%-*s%s %c %s", flon_nid_depth(nid), "", nid, a, instruction);
+  fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
   if (inst == NULL) goto _over;
@@ -276,8 +276,6 @@ static int name_matches(const char *n)
 
 static void load_msgs()
 {
-  //fgaj_d("exid: %s", execution_id);
-
   DIR *dir = opendir("var/spool/exe/");
   struct dirent *de;
 
@@ -285,7 +283,7 @@ static void load_msgs()
   {
     if ( ! name_matches(de->d_name)) continue;
 
-    fgaj_i("from %s", de->d_name);
+    //fgaj_t("from %s", de->d_name);
 
     fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
 
@@ -353,8 +351,6 @@ static void execute()
 {
   while (1)
   {
-    fgaj_i("in");
-
     load_msgs();
 
     if (msgs->size < 1) break;
