@@ -1,6 +1,6 @@
 
-#CFLAGS=-I../src -g -Wall -O3
-CFLAGS=-I../src -g -Wall
+#CFLAGS=-I../src -g -Wall -O3 -lrt
+CFLAGS=-I../src -g -Wall -lrt
 LDLIBS=
 CC=c99
 VPATH=../src

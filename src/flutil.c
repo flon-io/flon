@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <sys/time.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -811,34 +810,63 @@ char *flu_strdup(char *s)
   int l = strlen(s);
   char *r = calloc(l + 1, sizeof(char));
   strcpy(r, s);
+
   return r;
 }
 
 long long flu_getms()
 {
-  struct timeval tv;
-  int r = gettimeofday(&tv, NULL);
-  return r == 0 ? tv.tv_sec * 1000 + tv.tv_usec / 1000 : 0;
+  struct timespec ts;
+  int r = clock_gettime(CLOCK_REALTIME, &ts);
+
+  return r == 0 ? ts.tv_sec * 1000 + ts.tv_nsec / 1000000 : 0;
 }
 
 long long flu_getMs()
 {
-  struct timeval tv;
-  int r = gettimeofday(&tv, NULL);
-  return r == 0 ? tv.tv_sec * 1000000 + tv.tv_usec : 0;
+  struct timespec ts;
+  int r = clock_gettime(CLOCK_REALTIME, &ts);
+
+  return r == 0 ? ts.tv_sec * 1000000 + ts.tv_nsec / 1000 : 0;
 }
 
 long long flu_msleep(long long milliseconds)
 {
+  struct timespec treq;
+  treq.tv_sec = milliseconds / 1000;
+  treq.tv_nsec = (milliseconds * 1000000) % 1000000000;
+
+  struct timespec trem;
+  trem.tv_sec = 0;
+  trem.tv_nsec = 0;
+
+  nanosleep(&treq, &trem);
+
+  return trem.tv_sec * 1000 + trem.tv_nsec / 1000000;
+}
+
+long long flu_do_msleep(long long milliseconds)
+{
   long long start = flu_getms();
 
   struct timespec treq;
-  treq.tv_sec = 0;
-  treq.tv_nsec = milliseconds * 1000 * 1000;
+  treq.tv_sec = milliseconds / 1000;
+  treq.tv_nsec = (milliseconds * 1000000) % 1000000000;
 
   struct timespec trem;
+  trem.tv_sec = 0;
+  trem.tv_nsec = 0;
 
-  nanosleep(&treq, &trem);
+  while (1)
+  {
+    nanosleep(&treq, &trem);
+
+    //printf("trem s: %llu, ns: %llu\n", trem.tv_sec, trem.tv_nsec);
+    if (trem.tv_sec == 0 && trem.tv_nsec == 0) break;
+
+    treq.tv_sec = trem.tv_sec; treq.tv_nsec = trem.tv_nsec;
+    trem.tv_sec = 0; trem.tv_nsec = 0;
+  }
 
   return flu_getms() - start;
 }
