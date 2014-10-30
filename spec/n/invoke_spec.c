@@ -57,14 +57,10 @@ context "instruction:"
 
       expect(fdja_ls(result, "receive", NULL) ===f "1");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0");
+      expect(fdja_ls(result, "from", NULL) == NULL);
 
-      fdja_value *pl = fdja_l(result, "payload");
-
-      expect(fdja_tod(pl) ===f ""
-        "{ hello: trace, trace: [ a ] }");
-
-      // TODO: finish adapting
+      expect(fdja_ls(result, "payload.hello", NULL) ===f "invoke");
+      expect(fdja_ls(result, "payload.stamp", NULL) != NULL);
     }
   }
 }
