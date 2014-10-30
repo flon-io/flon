@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
   if (argc > 1) d = argv[1];
 
   if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
-  fgaj_i("changed dir to %s", flu_canopath(d));
+  char *cp = flu_canopath(d); fgaj_i("changed dir to %s", cp); free(cp);
 
   // load configuration
 

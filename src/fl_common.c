@@ -119,13 +119,25 @@ static void setup_logging(fdja_value *v)
   if (v == NULL) return;
 
   char *l = fdja_lookup_string(v, "level", NULL);
-  if (l) { fgaj_conf_get()->level = fgaj_parse_level(l); free(l); }
+  if (l)
+  {
+    fgaj_conf_get()->level = fgaj_parse_level(l);
+    free(l);
+  }
 
   char *h = fdja_lookup_string(v, "host", NULL);
-  if (h) { fgaj_conf_get()->host = h; }
+  if (h)
+  {
+    if (fgaj_conf_get()->host) free(fgaj_conf_get()->host);
+    fgaj_conf_get()->host = h;
+  }
 
   char *u = fdja_lookup_string(v, "utc", NULL);
-  if (u) { fgaj_conf_get()->utc = (tolower(*u) == 't' || *u == '1'); free(u); }
+  if (u)
+  {
+    fgaj_conf_get()->utc = (tolower(*u) == 't' || *u == '1');
+    free(u);
+  }
 }
 
 void flon_setup_logging(const char *context)
