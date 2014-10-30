@@ -80,7 +80,8 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
 
   fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
 
-  fdja_to_json_f(inv, "var/spool/inv/inv_%s-%s.json", execution_id, nid);
+  fdja_to_json_f(inv, "var/spool/dis/inv_%s-%s.json", execution_id, nid);
+  fgaj_i("wrote inv file to var/spool/dis/inv_%s-%s.json", execution_id, nid);
 
   fdja_free(inv);
   free(nid);
