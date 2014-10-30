@@ -6,6 +6,7 @@
 //
 
 #include "fl_ids.h"
+#include "fl_tools.h"
 #include "fl_common.h"
 #include "n_helpers.h"
 
@@ -49,7 +50,7 @@ context "instruction:"
 
       result = ewait(exid, 'r', "0", 10);
 
-      dump_execution(exid);
+      //flon_prettyprint(exid);
 
       expect(result != NULL);
 

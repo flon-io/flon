@@ -75,7 +75,7 @@ context "instruction:"
 
       result = ewait(exid, 'r', "0", 10);
 
-      //dump_execution(exid);
+      //flon_prettyprint(exid);
 
       expect(result != NULL);
 

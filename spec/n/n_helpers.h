@@ -14,5 +14,3 @@ void dispatcher_stop();
 void launch(char *exid, char *flow, char *payload);
 fdja_value *ewait(char *exid, char action, char *nid, int maxsec);
 
-void dump_execution(const char *exid);
-
