@@ -49,13 +49,13 @@ void dispatcher_start()
     if (v && strstr(v, "dis"))
     {
       execl(
-        "/usr/bin/valgrind", "",
+        "/usr/bin/valgrind", "v n_flon-dispatcher",
         "--leak-check=full", "-v", dispatcher_path, NULL);
     }
     else
     {
       execl(
-        dispatcher_path, "",
+        dispatcher_path, "n_flon-dispatcher",
         NULL);
     }
 
@@ -136,7 +136,6 @@ fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
 
     if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
 
-
     char *s = flu_readall("var/archive/%s/msgs.log", fep);
     *(strrchr(s, '}') + 1) = '\0';
     char *lf = strrchr(s, '\n');
@@ -152,7 +151,7 @@ fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
     if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }
 
     free(n);
-    printf("\n");
+    puts(""); fflush(stdout);
     r = v;
 
     break;

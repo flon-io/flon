@@ -58,7 +58,9 @@ static void scan_dir()
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
   //fgaj_i(".");
-  if (w->attr.st_nlink) scan_dir();
+  scan_dir();
+  flu_do_msleep(1050);
+  scan_dir();
 }
 
 int main(int argc, char *argv[])
@@ -83,13 +85,25 @@ int main(int argc, char *argv[])
 
   scan_dir();
 
-  // then watch
+  // then, ev...
 
   struct ev_loop *l = ev_default_loop(0);
-  ev_stat est;
 
+  // watch var/spool/dis/
+
+  ev_stat est;
   ev_stat_init(&est, spool_cb, "var/spool/dis/", 0.);
   ev_stat_start(l, &est);
+
+  // check from time to time too
+
+  //ev_periodic epe;
+  //ev_periodic_init (&epe, spool_cb, 0., .5, 0);
+  //ev_periodic_start (l, &epe);
+
+  // loop
+
+  //fgaj_i("about to ev_loop...");
 
   ev_loop(l, 0);
 

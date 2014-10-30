@@ -47,7 +47,7 @@ context "instruction:"
         "",
         "{ hello: invoke }");
 
-      result = ewait(exid, 'r', "0", 3);
+      result = ewait(exid, 'r', "0", 10);
 
       dump_execution(exid);
 
