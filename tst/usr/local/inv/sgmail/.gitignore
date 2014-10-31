@@ -1,1 +1,4 @@
-sendgrid.key
+sendgrid.credentials
+bin/sgmail
+tmp/*.o
+tmp/sgmail

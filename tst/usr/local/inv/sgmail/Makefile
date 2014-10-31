@@ -1,5 +1,6 @@
 
 NAME=sgmail
+FLOND=../../../../..
 
 default: m
 
@@ -7,8 +8,8 @@ default: m
 	$(MAKE) -C tmp/ $@ NAME=$(NAME)
 
 upgrade:
-	cp ../../../../../../bocla/src/flutil.* src
-	cp ../../../../../../bocla/src/bocla.* src
+	cp $(FLOND)/../bocla/src/bocla.* src
+	cp $(FLOND)/../flutil/src/flutil.* src
 
 #.PHONY: clean
 
