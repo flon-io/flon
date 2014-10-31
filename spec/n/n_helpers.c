@@ -34,11 +34,15 @@ void nlog(char *format, ...)
 char *dispatcher_path = "../tst/bin/flon-dispatcher";
 pid_t dispatcher_pid = -1;
 
+int logtoterm()
+{
+  char *s = getenv("FLONLOG");
+  return s && strstr(s, "term");
+}
+
 void dispatcher_start()
 {
   if (dispatcher_pid > 0) return;
-
-  //printf("\n\n** FLONVAL: %s\n\n", getenv("FLONVAL"));
 
   dispatcher_pid = fork();
 
@@ -54,6 +58,11 @@ void dispatcher_start()
     }
     else
     {
+      freopen("var/log/dispatcher.log", "a", stdout);
+      fflush(stdout);
+      freopen("var/log/dispatcher.log", "a", stderr);
+      fflush(stderr);
+
       execl(
         dispatcher_path, "n_flon-dispatcher",
         NULL);
@@ -65,10 +74,11 @@ void dispatcher_start()
   }
   else
   {
-    nlog("dispatcher started pid: %i...", dispatcher_pid);
+    if (logtoterm()) nlog("dispatcher started pid: %i...", dispatcher_pid);
 
     sleep(1);
       // seems necessary, else the ev io watch doesn't seem to get in
+      // TODO: replace with flu_do_msleep(500) or something like that
   }
 }
 
@@ -79,9 +89,12 @@ void dispatcher_stop()
   if (kill(dispatcher_pid, SIGTERM) == 0)
   {
     int status; waitpid(dispatcher_pid, &status, 0);
-    nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+    if (logtoterm())
+    {
+      nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+    }
   }
-  else
+  else if (logtoterm())
   {
     nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
   }
@@ -132,7 +145,7 @@ fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
   {
     flu_msleep(100);
 
-    printf("."); fflush(stdout);
+    //printf("."); fflush(stdout);
 
     if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
 
@@ -151,7 +164,9 @@ fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
     if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }
 
     free(n);
-    puts(""); fflush(stdout);
+
+    //puts(""); fflush(stdout);
+
     r = v;
 
     break;
