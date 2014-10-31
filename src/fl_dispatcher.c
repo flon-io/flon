@@ -190,7 +190,7 @@ static int dispatch(const char *fname, fdja_value *j)
     ct = "inv";
     ctx = "invoker";
     arg = flu_sprintf("var/spool/inv/%s", fname);
-    logpath = flu_sprintf("var/log/inv/%s-%s.txt", exid, nid);
+    logpath = flu_sprintf("var/log/%s/inv_%s-%s.log", fep, exid, nid);
   }
   else // execute, receive
   {

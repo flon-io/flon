@@ -46,6 +46,7 @@ context "flon-dispatcher"
     it "dispatches invocations"
     {
       exid = flon_generate_exid("dtest.inv");
+      fep = flon_exid_path(exid);
       name = flu_sprintf("inv_%s-0_2.json", exid);
 
       int r = flu_writeall(
@@ -72,7 +73,7 @@ context "flon-dispatcher"
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
 
-      s = flu_readall("var/log/inv/%s-0_2.txt", exid);
+      s = flu_readall("var/log/%s/inv_%s-0_2.log", fep, exid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
       expect(strstr(s, " invoked >ruby stamp.rb<") != NULL);
@@ -222,7 +223,7 @@ context "flon-dispatcher"
     it "doesn't launch a new executor if the previous is still here"
     {
       int r;
-      exid = flon_generate_exid("d_test.pid");
+      exid = flon_generate_exid("d_test.xid");
       fep = flon_exid_path(exid);
       name = flu_sprintf("exe_%s.json", exid);
 
@@ -233,7 +234,7 @@ context "flon-dispatcher"
             "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
           "exid: %s\n"
           "payload: {\n"
-            "hello: d_test.pid\n"
+            "hello: d_test.xid\n"
           "}\n"
         "}", exid
       );
