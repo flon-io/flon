@@ -61,9 +61,7 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
   scan_dir();
   flu_do_msleep(200);
   scan_dir();
-  flu_do_msleep(300);
-  scan_dir();
-  flu_do_msleep(600);
+  flu_do_msleep(850);
   scan_dir();
 }
 
