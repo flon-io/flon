@@ -29,97 +29,108 @@
 #include <string.h>
 #include <stdlib.h>
 
-//#include "flutil.h"
+#include "flutil.h"
+#include "djan.h"
 #include "bocla.h"
 
 
+#define SENDGRID "https://api.sendgrid.com/api/mail.send.json"
+
+
+static int fail(fdja_value *j, char *msg)
+{
+  fdja_value *r = j;
+  if (r == NULL) r = fdja_v("{_r:0}");
+  fdja_set(r, "msg", fdja_s(msg));
+
+  puts(fdja_to_json(r));
+
+  if (j == NULL) fdja_free(r);
+
+  return 1; // not 0
+}
+
+static void set(
+  flu_sbuffer *sb, char *sgkey, fdja_value *j, char *jkey, char *def, int amp)
+{
+  char *val = NULL;
+
+  // TODO lookup in `args` first
+
+  if (j) val = fdja_ls(j, jkey, NULL);
+  else val = strdup(jkey);
+
+  if (val == NULL && def == NULL) return;
+  if (val == NULL) val = strdup(def);
+
+  char *eval = flu_urlencode(val);
+
+  flu_sbputs(sb, sgkey);
+  flu_sbputc(sb, '=');
+  flu_sbputs(sb, eval);
+
+  if (amp) flu_sbputc(sb, '&');
+
+  free(val);
+  free(eval);
+}
+
 int main(int argc, char *argv[])
 {
-  // TODO: read payload
+  char *in = flu_freadall(stdin);
+  fdja_value *pl = fdja_parse(in);
 
-  char *u = flu_readall("sendgrid.credentials");
-  if (u == NULL)
-  {
-    puts("{\"outcome\":\"couldn't send: couldn't read sengrid.credentials\"}");
-    return 1;
-  }
-  *(strchr(u, '\n')) = '\0'; // trim right
-  char *col = strchr(u, ':');
-  if (col == NULL)
-  {
-    puts("{\"outcome\":\"couldn't send: couldn't split sengrid.credentials\"}");
-    return 1;
-  }
+  if (pl == NULL) return fail("couldn't parse payload");
+
+  //
+  // prepare email
+
+  char *user = flu_readall("sendgrid.credentials");
+  if (user == NULL) return fail("couldn't read sendgrid.credentials");
+
+  *(strchr(user, '\n')) = '\0'; // trim right
+  char *col = strchr(user, ':');
+  if (col == NULL) return fail("couldn't split sendgrid.credentials");
   *col = '\0';
-  char *p = col + 1;
+  char *pass = col + 1;
 
   char *s = NULL;
   flu_sbuffer *sb = flu_sbuffer_malloc();
 
-  s = flu_urlencode(u, -1);
-  flu_sbprintf(sb, "api_user=%s&", s);
-  free(s);
+  set(sb, "api_user", NULL, user, NULL, 1);
+  set(sb, "api_key", NULL, pass, NULL, 1);
 
-  s = flu_urlencode(p, -1);
-  flu_sbprintf(sb, "api_key=%s&", s);
-  free(s);
+  free(user);
 
-  free(u);
+  set(sb, "to", j, "to", "jmettraux+flon@gmail.com", 1);
+  //set(sb, "toname", j, "toname", NULL, 1);
+  set(sb, "subject", j, "subject", "(missing subject)", 1);
+  set(sb, "text", j, "text", "(missing text)", 1);
+  set(sb, "from", j, "from", "jmettraux+flon@gmail.com", 0);
 
-  s = flu_urlencode("jmettraux+flon@gmail.com", -1);
-  flu_sbprintf(sb, "to=%s&", s);
-  free(s);
+  form = flu_sbuffer_to_string(sb);
 
-  s = flu_urlencode("John Mettraux (flon)", -1);
-  flu_sbprintf(sb, "toname=%s&", s);
-  free(s);
+  //
+  // post email
 
-  s = flu_urlencode("maitre corbeau sur un arbe perche", -1);
-  flu_sbprintf(sb, "subject=%s&", s);
-  free(s);
+  fcla_response *res = fcla_post(SENDGRID, NULL, form);
 
-  s = flu_urlencode(
-    "Maitre corbeau, sur un arbre perche,\n"
-    "Tenait en son bec un fromage.\n"
-    "Maitre renard, par l'odeur alleche,\n"
-    "Lui tint a peu pres ce language :\n"
-    "...\n",
-    -1);
-  flu_sbprintf(sb, "text=%s&", s);
-  free(s);
+  //
+  // deal with result
 
-  s = flu_urlencode("jmettraux+flon_sgmail@gmail.com", -1);
-  flu_sbprintf(sb, "from=%s", s);
-  free(s);
-
-  char *form = flu_sbuffer_to_string(sb);
-
-  fcla_response *res = fcla_post(
-    "https://api.sendgrid.com/api/mail.send.json", NULL, form);
-
-  free(form);
-
-  printf("res: %i\n", res->status_code);
-  printf("body: >%s<\n", res->body);
+  fdja_set(j, "_sendgrid", fdja_v("{}"));
+  fdja_set(j, "_sendgrid.status", fdja_v("%i", res->status_code));
+  fdja_set(j, "_sendgrid.body", fdja_s(res->body));
 
   fcla_response_free(res);
 
-  puts("{\"outcome\":\"ok\"}");
+  //
+  // respond (to dispatcher)
+
+  fdja_set(j, "_r", fdja_v("1")); // success
+
+  puts(fdja_to_json(j));
+
   return 0;
 }
-
-/*
-POST
-https://api.sendgrid.com/api/mail.send.json
-
-POST Data
-api_user=your_sendgrid_username&api_key=your_sendgrid_password&to[]=destination@example.com&toname[]=Destination&to[]=destination2@example.com&toname[]=Destination2&subject=Example_Subject&text=testingtextbody&from=info@domain.com
-
-
-POST
-https://api.sendgrid.com/api/mail.send.json
-
-POST Data
-api_user=your_sendgrid_username&api_key=your_sendgrid_password&to=destination@example.com&toname=Destination&subject=Example_Subject&text=testingtextbody&from=info@domain.com
-*/
 
