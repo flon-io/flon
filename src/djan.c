@@ -776,7 +776,8 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
   // actual value
 
-  if (v->type == 'q' || v->type == 's')
+  //if (v->type == 'q' || v->type == 's')
+  if (v->type == 'q' || v->type == 's' || v->type == 'y')
   {
     fputs(stringc, f);
 
@@ -789,11 +790,11 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
     fputs(clearc, f);
   }
-  else if (v->type == 'y')
-  {
-    s = fdja_string(v);
-    fprintf(f, "%s%s%s", stringc, s, clearc);
-  }
+  //else if (v->type == 'y')
+  //{
+  //  s = fdja_string(v);
+  //  fprintf(f, "%s%s%s", stringc, s, clearc);
+  //}
   else if (v->type == 'a' || v->type == 'o')
   {
     if (ol)
