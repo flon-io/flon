@@ -61,7 +61,7 @@ context "instruction:"
       expect(fdja_ls(result, "from", NULL) == NULL);
 
       expect(fdja_ls(result, "payload.hello", NULL) ===f "invoke");
-      expect(fdja_ls(result, "payload.stamp", NULL) != NULL);
+      expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
     }
   }
 }
