@@ -29,6 +29,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <signal.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -83,13 +85,16 @@ static int double_fork(char *ctx, char *logpath, char *arg)
       freopen(logpath, "a", stdout);
       fflush(stdout);
       fgaj_i("pointed %s stdout to %s", ctx, logpath);
+
+      char *exid = strrchr(basepath, '/') + 1;
+
+      flu_writeall("var/run/%s.pid", exid, "%i", getpid());
+      fgaj_d("wrote var/run/%s.pid", exid);
     }
       //
       // the invoker stdout is kept for payload output.
 
     fflush(stderr);
-
-    // TODO: if ctx is "executor", write var/run/{exid}.pid
 
     char *bin = NULL;
     //
@@ -141,6 +146,22 @@ static int double_fork(char *ctx, char *logpath, char *arg)
   return 0; // success
 }
 
+static int executor_not_running(const char *exid)
+{
+  if (flu_fstat("var/run/%s.pid", exid) == '\0') return 1;
+
+  char *spid = flu_readall("var/run/%s.pid", exid);
+  if (spid == NULL) return 1;
+
+  pid_t pid = strtoll(spid, NULL, 10);
+  if (pid == 0) return 1;
+
+  if (kill(pid, 0) != 0) return 1;
+    // it might be a zombie though...
+
+  return 0;
+}
+
 static int dispatch(const char *fname, fdja_value *j)
 {
   if (j == NULL) return -1;
@@ -152,9 +173,6 @@ static int dispatch(const char *fname, fdja_value *j)
     fdja_l(j, "receive") == NULL &&
     fdja_l(j, "invoke") == NULL
   ) return -1;
-
-  // TODO:
-  // return success if executor and executor already running for that exid
 
   int r = 1;
 
@@ -187,7 +205,12 @@ static int dispatch(const char *fname, fdja_value *j)
 
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
 
-  if (r == 1) r = double_fork(ctx, logpath, arg);
+  if (r == 1 && executor_not_running(exid))
+  {
+    r = double_fork(ctx, logpath, arg);
+  }
+
+  // over
 
   if (*fname == 'i') free(arg); // else arg == exid
   free(exid);

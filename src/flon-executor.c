@@ -32,17 +32,32 @@
 #include "fl_executor.h"
 
 
+static void unlink_exe_pid(const char *exid)
+{
+  if (flu_unlink("var/run/%s.pid", exid) == 0)
+    fgaj_d("unlinked var/run/%s.pid", exid);
+  else
+    fgaj_r("failed to unlink var/run/%s.pid", exid);
+}
+
 int main(int argc, char *argv[])
 {
+  int r = 0;
+
   flon_configure(".");
   flon_setup_logging("executor");
 
   if (argc < 2)
   {
-    fgaj_e("missing exid as arg");
-    return 1;
+    fgaj_e("missing exid as arg"); r = 1; goto _over;
   }
 
-  return flon_execute(argv[1]);
+  r = flon_execute(argv[1]);
+
+_over:
+
+  unlink_exe_pid(argv[1]);
+
+  return r;
 }
 

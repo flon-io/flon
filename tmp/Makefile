@@ -80,7 +80,7 @@ sn: ns invoker executor dispatcher
 vsc: cs
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
-vsd: ds invoker
+vsd: ds executor invoker
 	valgrind --leak-check=full -v ./ds
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
 vsx: xs
@@ -96,6 +96,8 @@ vsn: ns
 
 ssi: is
 	strace -r ./is
+ssd: ds executor invoker
+	strace -r ./ds
 
 flon-executor: $(XDEPS)
 flon-invoker: $(IDEPS)

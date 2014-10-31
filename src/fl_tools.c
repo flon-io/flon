@@ -104,8 +104,12 @@ void flon_prettyprint(const char *exid)
   flu_system("ls -lh %s/processed", path);
   printf("[0;0m");
 
-  printf("\n# %s/ .\n", path);
+  puts("\n## exe.pid\n#");
+  flu_system("cat %s/exe.pid", path);
 
+  // over
+
+  printf("\n\n# %s/ .\n", path);
   puts("");
 
   free(path);

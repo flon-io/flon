@@ -191,6 +191,68 @@ context "flon-dispatcher"
 
       expect(flu_fstat("var/spool/rejected/rcv_%s-0_7-f.json", exid) == 'f');
     }
+
+    /*
+    it "writes down the executor pid in var/run/{exid}.pid"
+    {
+      int r;
+      exid = flon_generate_exid("d_test.pid");
+      name = flu_sprintf("exe_%s.json", exid);
+
+      r = flu_writeall(
+        "var/spool/dis/exe_%s.json", exid,
+        "{"
+          "execute:"
+            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "hello: d_test.pid\n"
+          "}\n"
+        "}", exid
+      );
+      expect(r i== 1);
+
+      r = flon_dispatch(name);
+      expect(r i== 0);
+
+      // too fast, already gone...
+    }
+    */
+
+    it "doesn't launch a new executor if the previous is still here"
+    {
+      int r;
+      exid = flon_generate_exid("d_test.pid");
+      fep = flon_exid_path(exid);
+      name = flu_sprintf("exe_%s.json", exid);
+
+      r = flu_writeall(
+        "var/spool/dis/exe_%s.json", exid,
+        "{"
+          "execute:"
+            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "hello: d_test.pid\n"
+          "}\n"
+        "}", exid
+      );
+      expect(r i== 1);
+
+      flu_writeall("var/run/%s.pid", exid, "%i", getpid());
+      //flu_system("cat var/run/%s.pid", exid);
+        //
+        // pass the current pid (existing process to prevent executor from
+        // being forked...
+
+      r = flon_dispatch(name);
+      expect(r i== 1);
+
+      //printf("var/run/%s\n", fep);
+      expect(flu_fstat("var/run/%s", fep) == 0);
+      expect(flu_fstat("var/archive/%s", fep) == 0);
+        // execution never ran
+    }
   }
 }
 
