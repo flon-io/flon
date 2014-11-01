@@ -782,6 +782,50 @@ char *flu_n_unescape(const char *s, size_t n)
   return d;
 }
 
+char *flu_urlencode(const char *s, ssize_t n)
+{
+  if (n < 0) n = strlen(s);
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  for (size_t i = 0; i < n; ++i)
+  {
+    char c = s[i];
+
+    if (
+      (c >= 'a' && c <= 'z') ||
+      (c >= 'A' && c <= 'Z') ||
+      (c >= '0' && c <= '9') ||
+      c == '-' || c == '_' || c == '.' || c == '~'
+    )
+      flu_sbputc(b, c);
+    else
+      flu_sbprintf(b, "%%%02x", c);
+  }
+
+  return flu_sbuffer_to_string(b);
+}
+
+char *flu_urldecode(const char *s, ssize_t n)
+{
+  if (n < 0) n = strlen(s);
+
+  char *r = calloc(n + 1, sizeof(char));
+
+  for (size_t i = 0, j = 0; i < n; ++j)
+  {
+    if (s[i] != '%') { r[j] = s[i++]; continue; }
+
+    char *code = strndup(s + i + 1, 2);
+    char c = strtol(code, NULL, 16);
+    free(code);
+    i = i + 3;
+    r[j] = c;
+  }
+
+  return r;
+}
+
 
 //
 // misc

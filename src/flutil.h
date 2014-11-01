@@ -353,6 +353,9 @@ char *flu_n_escape(const char *s, size_t n);
 char *flu_unescape(const char *s);
 char *flu_n_unescape(const char *s, size_t n);
 
+char *flu_urlencode(const char *s, ssize_t n);
+char *flu_urldecode(const char *s, ssize_t n);
+
 
 //
 // misc
