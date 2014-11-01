@@ -63,7 +63,7 @@ static void set(
   if (val == NULL && def == NULL) return;
   if (val == NULL) val = strdup(def);
 
-  char *eval = flu_urlencode(val);
+  char *eval = flu_urlencode(val, -1);
 
   flu_sbputs(sb, sgkey);
   flu_sbputc(sb, '=');
@@ -78,23 +78,22 @@ static void set(
 int main(int argc, char *argv[])
 {
   char *in = flu_freadall(stdin);
-  fdja_value *pl = fdja_parse(in);
+  fdja_value *pl = fdja_parse_obj(in);
 
-  if (pl == NULL) return fail("couldn't parse payload");
+  if (pl == NULL) return fail(NULL, "couldn't parse payload");
 
   //
   // prepare email
 
   char *user = flu_readall("sendgrid.credentials");
-  if (user == NULL) return fail("couldn't read sendgrid.credentials");
+  if (user == NULL) return fail(NULL, "couldn't read sendgrid.credentials");
 
-  *(strchr(user, '\n')) = '\0'; // trim right
+  char *n = strchr(user, '\n'); if (n) *n = '\0'; // trim right
   char *col = strchr(user, ':');
-  if (col == NULL) return fail("couldn't split sendgrid.credentials");
+  if (col == NULL) return fail(NULL, "couldn't split sendgrid.credentials");
   *col = '\0';
   char *pass = col + 1;
 
-  char *s = NULL;
   flu_sbuffer *sb = flu_sbuffer_malloc();
 
   set(sb, "api_user", NULL, user, NULL, 1);
@@ -102,13 +101,14 @@ int main(int argc, char *argv[])
 
   free(user);
 
-  set(sb, "to", j, "to", "jmettraux+flon@gmail.com", 1);
-  //set(sb, "toname", j, "toname", NULL, 1);
-  set(sb, "subject", j, "subject", "(missing subject)", 1);
-  set(sb, "text", j, "text", "(missing text)", 1);
-  set(sb, "from", j, "from", "jmettraux+flon@gmail.com", 0);
+  set(sb, "to", pl, "to", "jmettraux+flon@gmail.com", 1);
+  //set(sb, "toname", pl, "toname", NULL, 1);
+  set(sb, "subject", pl, "subject", "(missing subject)", 1);
+  set(sb, "text", pl, "text", "(missing text)", 1);
+  set(sb, "from", pl, "from", "jmettraux+flon@gmail.com", 0);
 
-  form = flu_sbuffer_to_string(sb);
+  char *form = flu_sbuffer_to_string(sb);
+  puts(form);
 
   //
   // post email
@@ -118,18 +118,18 @@ int main(int argc, char *argv[])
   //
   // deal with result
 
-  fdja_set(j, "_sendgrid", fdja_v("{}"));
-  fdja_set(j, "_sendgrid.status", fdja_v("%i", res->status_code));
-  fdja_set(j, "_sendgrid.body", fdja_s(res->body));
+  fdja_pset(pl, "_sendgrid", fdja_v("{}"));
+  fdja_pset(pl, "_sendgrid.status", fdja_v("%i", res->status_code));
+  fdja_pset(pl, "_sendgrid.body", fdja_s(res->body));
 
   fcla_response_free(res);
 
   //
   // respond (to dispatcher)
 
-  fdja_set(j, "_r", fdja_v("1")); // success
+  fdja_set(pl, "_r", fdja_v("1")); // success
 
-  puts(fdja_to_json(j));
+  puts(fdja_to_json(pl));
 
   return 0;
 }

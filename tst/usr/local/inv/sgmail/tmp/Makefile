@@ -4,7 +4,7 @@ LDLIBS=
 CC=c99
 VPATH=../src
 
-sgmail: flutil.o bocla.o
+sgmail: flutil.o bocla.o aabro.o djan.o
 
 m: sgmail
 	cp sgmail ../bin/
