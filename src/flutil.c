@@ -858,20 +858,30 @@ char *flu_strdup(char *s)
   return r;
 }
 
-long long flu_getms()
+int flu_system(const char *cmd, ...)
 {
-  struct timespec ts;
-  int r = clock_gettime(CLOCK_REALTIME, &ts);
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
 
-  return r == 0 ? ts.tv_sec * 1000 + ts.tv_nsec / 1000000 : 0;
+  int r = system(c);
+
+  free(c);
+
+  return r;
 }
 
-long long flu_getMs()
+
+//
+// time
+
+long long flu_gets(char level)
 {
   struct timespec ts;
   int r = clock_gettime(CLOCK_REALTIME, &ts);
 
-  return r == 0 ? ts.tv_sec * 1000000 + ts.tv_nsec / 1000 : 0;
+  if (level == 'n') return r == 0 ? ts.tv_sec * 1000000000 + ts.tv_nsec : 0;
+  if (level == 'u') return r == 0 ? ts.tv_sec * 1000000 + ts.tv_nsec / 1000 : 0;
+  if (level == 'm') return r == 0 ? ts.tv_sec * 1000 + ts.tv_nsec / 1000000 : 0;
+  return r == 0 ? ts.tv_sec : 0; // else, 's'
 }
 
 long long flu_msleep(long long milliseconds)
@@ -891,7 +901,7 @@ long long flu_msleep(long long milliseconds)
 
 long long flu_do_msleep(long long milliseconds)
 {
-  long long start = flu_getms();
+  long long start = flu_gets('m');
 
   struct timespec treq;
   treq.tv_sec = milliseconds / 1000;
@@ -912,16 +922,135 @@ long long flu_do_msleep(long long milliseconds)
     trem.tv_sec = 0; trem.tv_nsec = 0;
   }
 
-  return flu_getms() - start;
+  return flu_gets('m') - start;
 }
 
-int flu_system(const char *cmd, ...)
+char *flu_tstamp(struct timespec *ts, int utc, char format)
 {
-  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+  if (ts == NULL)
+  {
+    struct timespec tss;
+    int i = clock_gettime(CLOCK_REALTIME, &tss);
+    if (i != 0) return NULL;
+    ts = &tss;
+  }
 
-  int r = system(c);
+  if (format == 'z' || format == 'Z') utc = 1;
 
-  free(c);
+  struct tm *tm = utc ? gmtime(&ts->tv_sec) : localtime(&ts->tv_sec);
+
+  if (tm == NULL) return NULL;
+
+  char *r = calloc(32, sizeof(char));
+
+  if (format == 'z' || format == 'Z')
+  {
+    strftime(r, 32, "%Y-%m-%dT%H:%M:%SZ", tm);
+    return r;
+  }
+
+  strftime(r, 32, "%Y%m%d.%H%M%S", tm);
+  size_t l = strlen(r);
+
+  if (format == 'h') { *(r + l - 2) = '\0'; return r; }
+  if (format == 's') { return r; }
+
+  *(r + l) = '.';
+
+  sprintf(r + l + 1, "%09li", ts->tv_nsec);
+
+  size_t off = 9;
+  //
+  if (format == 'u') off = 6;
+  else if (format == 'm') off = 3;
+  //
+  *(r + l + 1 + off) = '\0';
+
+  return r;
+}
+
+struct timespec *flu_parse_tstamp(char *s, int utc)
+{
+  struct tm tm = {};
+  char *subseconds = NULL;
+
+  if (strchr(s, '-'))
+  {
+    utc = 1;
+    char *r = strptime(s, "%Y-%m-%dT%H:%M:%SZ", &tm);
+    if (r == NULL) return NULL;
+  }
+  else
+  {
+    char *format = "%Y%m%d.%H%M";
+
+    char *a = strchr(s, '.');
+    char *b = strrchr(s, '.');
+
+    if (a == NULL) return NULL;
+
+    char *ss = NULL;
+    if (a != b) { subseconds = b + 1; ss = strndup(s, b - s); }
+    else ss = strdup(s);
+
+    if (strlen(a + 1) > 4) format = "%Y%m%d.%H%M%S";
+
+    char *r = strptime(ss, format, &tm);
+
+    free(ss);
+
+    if (r == NULL) return NULL;
+  }
+
+  char *tz = NULL;
+  if (utc) { tz = getenv("TZ"); setenv("TZ", "UTC", 1); tzset(); }
+    //
+  time_t t = mktime(&tm);
+    //
+  if (utc) { if ( ! tz) unsetenv("TZ"); else setenv("TZ", tz, 1); tzset(); }
+    //
+    // /!\ not thread-safe /!\.
+
+  struct timespec *ts = calloc(1, sizeof(struct timespec));
+  ts->tv_sec = t;
+  ts->tv_nsec = 0;
+
+  if (subseconds)
+  {
+    size_t st = strlen(subseconds);
+
+    ts->tv_nsec = strtoll(subseconds, NULL, 10);
+    if (st == 3) ts->tv_nsec = ts->tv_nsec * 1000 * 1000;
+    else if (st == 6) ts->tv_nsec = ts->tv_nsec * 1000;
+  }
+
+  return ts;
+}
+
+struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0)
+{
+  struct timespec *t2 = calloc(1, sizeof(struct timespec));
+
+  t2->tv_sec = t1->tv_sec - t0->tv_sec;
+  t2->tv_nsec = t1->tv_nsec - t0->tv_nsec;
+
+  if (t2->tv_nsec < 0) { --t2->tv_sec; t2->tv_nsec += 1000000000; }
+
+  return t2;
+}
+
+char *flu_ts_to_s(struct timespec *ts, char format)
+{
+  char *r = calloc(10 + 1 + 9 + 1, sizeof(char));
+
+  snprintf(r, 20, "%lis%09li", ts->tv_sec, ts->tv_nsec);
+
+  ssize_t off = -1;
+  if (format == 's') off = 0;
+  else if (format == 'm') off = 3;
+  else if (format == 'u') off = 6;
+  //
+  if (off > -1) *(strchr(r, 's') + 1 + off) = '\0';
 
   return r;
 }
