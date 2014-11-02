@@ -95,9 +95,12 @@ static fdja_value *create_node(
   const char *nid, const char *instruction, fdja_value *tree)
 {
   fdja_value *node = fdja_v("{ nid: %s, t: %s }", nid, instruction);
+  fdja_set(node, "c", fdja_sym(flu_tstamp(NULL, 1, 'u')));
   if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
 
   fdja_pset(execution, "nodes.%s", nid, node);
+
+  //puts(fdja_todc(execution));
 
   return node;
 }
