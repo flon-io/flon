@@ -82,7 +82,7 @@ void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 {
   fgaj_i("%s %s from %s", type, nid, from_nid);
 
-  fdja_value *msg = fdja_v("{ %s: 1, nid: %s }", type, nid);
+  fdja_value *msg = fdja_v("{ %s: 1, nid: '%s' }", type, nid);
 
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
   fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
@@ -94,7 +94,7 @@ void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 static fdja_value *create_node(
   const char *nid, const char *instruction, fdja_value *tree)
 {
-  fdja_value *node = fdja_v("{ nid: %s, t: %s }", nid, instruction);
+  fdja_value *node = fdja_v("{ nid: '%s', t: %s }", nid, instruction);
   fdja_set(node, "c", fdja_sym(flu_tstamp(NULL, 1, 'u')));
   if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
 
