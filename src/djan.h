@@ -63,6 +63,11 @@ char *fdja_vj(char *format, ...);
  */
 fdja_value *fdja_s(char *format, ...);
 
+/* Wraps a string as a symbol, directly owns it.
+ * Warning: performs no escaping on the input!
+ */
+fdja_value *fdja_sym(char *s);
+
 fdja_value *fdja_parse_radial(char *input);
 fdja_value *fdja_dparse_radial(char *input);
 fdja_value *fdja_parse_radial_f(const char *path, ...);
@@ -71,6 +76,8 @@ fdja_value *fdja_parse_obj(char *input);
 fdja_value *fdja_dparse_obj(char *input);
 fdja_value *fdja_parse_obj_f(const char *path, ...);
 
+/* Parses a 'conf' object (surrounding {} optional).
+ */
 fdja_value *fdja_c(char *input, ...);
 
 //fdja_value *fdja_a(fdja_value *v0, ...);

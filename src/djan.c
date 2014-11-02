@@ -448,6 +448,11 @@ fdja_value *fdja_s(char *format, ...)
   return fdja_value_malloc('y', ss, 0, strlen(ss), 1);
 }
 
+fdja_value *fdja_sym(char *s)
+{
+  return fdja_value_malloc('y', s, 0, strlen(s), 1);
+}
+
 static void fdja_add_radc(fdja_value *parent, fdja_value *child)
 {
   parent = fdja_value_at(parent, 2);
