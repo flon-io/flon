@@ -92,11 +92,17 @@ void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 
 
 static fdja_value *create_node(
-  const char *nid, const char *instruction, fdja_value *tree)
+  const char *nid,
+  const char *parent_nid,
+  const char *instruction,
+  fdja_value *tree)
 {
   fdja_value *node = fdja_v("{ nid: '%s', t: %s }", nid, instruction);
+
   fdja_set(node, "c", fdja_sym(flu_tstamp(NULL, 1, 'u')));
-  if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
+  fdja_set(node, "p", parent_nid ? fdja_s(parent_nid) : fdja_v("null"));
+
+  if (tree && strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
@@ -141,6 +147,7 @@ static void handle(fdja_value *msg)
   //fgaj_i("%s", fdja_tod(msg));
 
   char *nid = NULL;
+  char *parent_nid = NULL;
   fdja_value *action = NULL;
   fdja_value *tree = NULL;
   char *instruction = NULL;
@@ -152,6 +159,7 @@ static void handle(fdja_value *msg)
   //fgaj_i("a: %c", a);
 
   nid = fdja_lsd(msg, "nid", "0");
+  parent_nid = fdja_ls(msg, "parent", NULL);
 
   if (a == 'x') { tree = action; }
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
@@ -162,7 +170,7 @@ static void handle(fdja_value *msg)
   //fgaj_i("%c _ %s", a, instruction);
 
   if (a == 'x')
-    node = create_node(nid, instruction, tree);
+    node = create_node(nid, parent_nid, instruction, tree);
   else // a == 'r'
     node = fdja_l(execution, "nodes.%s", nid);
 
@@ -219,6 +227,7 @@ static void handle(fdja_value *msg)
 _over:
 
   if (nid) free(nid);
+  if (parent_nid) free(parent_nid);
   if (instruction) free(instruction);
 }
 

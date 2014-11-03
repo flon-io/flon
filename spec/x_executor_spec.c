@@ -173,10 +173,12 @@ context "flon-executor"
       // check the "execution"
 
       v = fdja_parse_f("var/run/%s/run.json", fep);
-      //puts(fdja_to_pretty_djan(v));
+      //puts(fdja_todc(v));
 
-      expect(
-        fdja_lj(v, "nodes.0_0", NULL) ===F fdja_vj("{ nid: 0_0, t: invoke }"));
+      expect(fdja_lj(v, "nodes.0_0.nid", NULL) ===f "\"0_0\"");
+      expect(fdja_lj(v, "nodes.0_0.p", NULL) ===f "\"0\"");
+      expect(fdja_lj(v, "nodes.0_0.t", NULL) ===f "\"invoke\"");
+      expect(fdja_lj(v, "nodes.0_0.c", NULL) ^==f "\"20");
 
       fdja_free(v);
 
@@ -213,7 +215,7 @@ context "flon-executor"
       expect(flu_fstat("var/spool/dis/inv_%s-0_1.json", exid) == 'f');
 
       v = fdja_parse_f("var/spool/dis/inv_%s-0_1.json", exid);
-      //puts(fdja_to_pretty_djan(v));
+      //puts(fdja_todc(v));
 
       expect(fdja_lj(v, "invoke", NULL) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: green }, [] ]"));
@@ -227,8 +229,10 @@ context "flon-executor"
       v = fdja_parse_f("var/run/%s/run.json", fep);
       //puts(fdja_to_pretty_djan(v));
 
-      expect(
-        fdja_lj(v, "nodes.0_1", NULL) ===F fdja_vj("{ nid: 0_1, t: invoke }"));
+      expect(fdja_lj(v, "nodes.0_1.nid", NULL) ===f "\"0_1\"");
+      expect(fdja_lj(v, "nodes.0_1.p", NULL) ===f "\"0\"");
+      expect(fdja_lj(v, "nodes.0_1.t", NULL) ===f "\"invoke\"");
+      expect(fdja_lj(v, "nodes.0_1.c", NULL) ^==f "\"20");
 
       fdja_free(v);
 
