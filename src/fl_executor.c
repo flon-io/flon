@@ -204,10 +204,20 @@ static void handle(fdja_value *msg)
           "receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
         free(parent_nid);
       }
-      //else
-      //{
-      //  // TODO queue "terminate" msg?
-      //}
+      else
+      {
+        char *tsp = fdja_ls(node, "c", NULL);
+        //fgaj_d("tsp: %s", tsp);
+        struct timespec *tsc = flu_parse_tstamp(tsp, 1);
+        struct timespec *delta = flu_tdiff(NULL, tsc);
+        char *sdelta = flu_ts_to_s(delta, 'n');
+        fgaj_d("delta: %s", sdelta);
+        free(sdelta);
+        free(delta);
+        free(tsc);
+        free(tsp);
+          // TODO: package most of that into a flu_ method
+      }
 
       fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
     }
