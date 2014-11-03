@@ -37,13 +37,17 @@
 
 static fdja_value *flon_configuration = NULL;
 
-void flon_configure(char *root)
+int flon_configure(char *root)
 {
   fdja_value *v = fdja_parse_obj_f("%s/etc/flon.json", root);
 
-  if (v) fdja_set(v, "_root", fdja_s(root));
+  if (v == NULL) return 1;
+
+  fdja_set(v, "_root", fdja_s(root));
 
   flon_configure_j(v);
+
+  return 0;
 }
 
 void flon_configure_j(fdja_value *obj)

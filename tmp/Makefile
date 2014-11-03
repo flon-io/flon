@@ -106,6 +106,7 @@ flon-dispatcher: $(DDEPS)
 	$(CC) -I../src $(CFLAGS) ../src/flon-dispatcher.c $(DDEPS) -lev -o flon-dispatcher
 #
 flon-scope: $(DEPS)
+flon-flon: $(DEPS)
 
 executor: flon-executor
 	mv flon-executor ../tst/bin/
@@ -115,6 +116,8 @@ dispatcher: flon-dispatcher
 	mv flon-dispatcher ../tst/bin/
 scope: flon-scope
 	mv flon-scope ../tst/bin/
+fflon: flon-flon
+	mv flon-flon ../tst/bin/
 
 spec: sc sd sx si sn
 s: spec

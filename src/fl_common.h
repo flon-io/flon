@@ -33,7 +33,7 @@
 
 void flon_setup_logging(const char *context);
 
-void flon_configure(char *root);
+int flon_configure(char *root);
 void flon_configure_j(fdja_value *obj);
 
 fdja_value *flon_conf(const char *key);
