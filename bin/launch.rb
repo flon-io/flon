@@ -1,8 +1,7 @@
 
 dom = ARGV[0] || 'launch.rb'
 
-t = Time.now.strftime("%Y%m%d.%H%M.babiberu");
-id = "#{dom}-u0-#{t}"
+id = `tst/bin/flon-flon -i #{dom}`.strip
 
 f = File.open("tst/var/spool/dis/exe_#{id}.json", 'w')
 f.write(%[

@@ -63,6 +63,8 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
   scan_dir();
   flu_do_msleep(850);
   scan_dir();
+    //
+    // delta: 3s179 for a sequence of 3 stamps
 }
 
 int main(int argc, char *argv[])
