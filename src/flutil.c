@@ -888,10 +888,12 @@ long long flu_gets(char level)
   struct timespec ts;
   int r = clock_gettime(CLOCK_REALTIME, &ts);
 
-  if (level == 'n') return r == 0 ? ts.tv_sec * 1000000000 + ts.tv_nsec : 0;
-  if (level == 'u') return r == 0 ? ts.tv_sec * 1000000 + ts.tv_nsec / 1000 : 0;
-  if (level == 'm') return r == 0 ? ts.tv_sec * 1000 + ts.tv_nsec / 1000000 : 0;
-  return r == 0 ? ts.tv_sec : 0; // else, 's'
+  if (r != 0) return 0;
+
+  if (level == 'n') return ts.tv_sec * 1000000000 + ts.tv_nsec;
+  if (level == 'u') return ts.tv_sec * 1000000 + ts.tv_nsec / 1000;
+  if (level == 'm') return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+  return ts.tv_sec; // else, 's'
 }
 
 long long flu_msleep(long long milliseconds)
