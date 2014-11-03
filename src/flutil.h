@@ -379,6 +379,10 @@ int flu_system(const char *format, ...);
 //
 // time
 
+/* Returns the seconds/nanoseconds since the Epoch.
+ */
+struct timespec *flu_now();
+
 /* Returns the count of seconds since the Epoch.
  * If level is set to 'm', it will return milliseconds.
  * If level is set to 'u', it will return microseconds.

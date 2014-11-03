@@ -873,6 +873,16 @@ int flu_system(const char *cmd, ...)
 //
 // time
 
+struct timespec *flu_now()
+{
+  struct timespec *r = calloc(1, sizeof(struct timespec));
+
+  int i = clock_gettime(CLOCK_REALTIME, r);
+
+  if (i != 0) { free(r); return NULL; }
+  return r;
+}
+
 long long flu_gets(char level)
 {
   struct timespec ts;
@@ -1029,12 +1039,17 @@ struct timespec *flu_parse_tstamp(char *s, int utc)
 
 struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0)
 {
+  short t1null = 0;
   struct timespec *t2 = calloc(1, sizeof(struct timespec));
+
+  if (t1 == NULL) { t1null = 1; t1 = flu_now(); }
 
   t2->tv_sec = t1->tv_sec - t0->tv_sec;
   t2->tv_nsec = t1->tv_nsec - t0->tv_nsec;
 
   if (t2->tv_nsec < 0) { --t2->tv_sec; t2->tv_nsec += 1000000000; }
+
+  if (t1null) free(t1);
 
   return t2;
 }
