@@ -154,7 +154,7 @@ static int executor_not_running(const char *exid)
   char *spid = flu_readall("var/run/%s.pid", exid);
   if (spid == NULL) return 1;
 
-  pid_t pid = strtoll(spid, NULL, 10);
+  pid_t pid = strtoll(spid, NULL, 10); free(spid);
   if (pid == 0) return 1;
 
   if (kill(pid, 0) != 0) return 1;
