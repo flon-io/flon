@@ -68,6 +68,9 @@ context "flon-invoker"
 
       flu_unlink("var/spool/inv/inv_%s-%s.json", exid, nid);
       flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
+
+      free(exid);
+      free(path);
     }
   }
 }

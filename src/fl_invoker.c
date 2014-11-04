@@ -70,17 +70,18 @@ int flon_invoke(const char *path)
 
   char *invoker_path = flu_sprintf("usr/local/inv/%s", invoked);
 
-  fgaj_i("cwd: %s", getcwd(NULL, 0));
+  char cwd[1024 + 1]; getcwd(cwd, 1024);
+  fgaj_i("cwd: %s", cwd);
+
   fgaj_i("exid: %s, nid: %s", exid, nid);
-  fgaj_i("invocation: %s", fdja_to_json(invocation));
+  //fgaj_i("invocation: %s", fdja_to_json(invocation));
   fgaj_i("invoker at %s", invoker_path);
 
-  char *inv_conf_path = flu_sprintf("%s/flon.json", invoker_path);
-  fdja_value *inv_conf = fdja_parse_obj_f(inv_conf_path);
+  fdja_value *inv_conf = fdja_parse_obj_f("%s/flon.json", invoker_path);
 
   if (inv_conf == NULL)
   {
-    fgaj_r("didn't find invoker conf at %s", inv_conf_path);
+    fgaj_r("didn't find invoker conf at %s/flon.json", invoker_path);
     return 1;
   }
 
@@ -88,7 +89,7 @@ int flon_invoke(const char *path)
 
   if (cmd == NULL)
   {
-    fgaj_e("no 'invoke' key in invoker conf at %s", inv_conf_path);
+    fgaj_e("no 'invoke' key in invoker conf at %s/flon.json", invoker_path);
     return 1;
   }
   fgaj_i("invoking >%s<", cmd);
@@ -127,7 +128,6 @@ int flon_invoke(const char *path)
 
     if (freopen(out, "w", stdout) == NULL)
     {
-      //fgaj_r("cwd: %s", getcwd(NULL, 0));
       fgaj_r("failed to reopen child stdout to %s", out);
       return 127;
     }
@@ -151,7 +151,7 @@ int flon_invoke(const char *path)
     close(pds[0]);
 
     FILE *f = fdopen(pds[1], "w");
-    fputs(fdja_to_json(payload), f);
+    fdja_to_j(f, payload, 0);
     fclose(f);
 
     // over, no wait
@@ -159,7 +159,20 @@ int flon_invoke(const char *path)
     fgaj_i("invoked >%s< pid %i", cmd, i);
   }
 
-  // no resource cleanup, we exit.
+  // resource cleanup
+  //
+  // not really necessary, but it helps when debugging / checking...
+  // 0 lost, like all the others (hopefully).
+
+  fdja_free(inv);
+  fdja_free(inv_conf);
+  free(exid);
+  free(nid);
+  free(invoker_path);
+  free(cmd);
+  free(invoked);
+
+  // exit
 
   return 0;
 }

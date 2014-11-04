@@ -87,8 +87,8 @@ vsx: xs
 	valgrind --leak-check=full -v ./xs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 vsi: is
-	valgrind ./is # an invoker may lose as much mem as he wants...
-	#valgrind --leak-check=full -v ./is
+	#valgrind ./is # an invoker may lose as much mem as he wants...
+	valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
 vsn: ns
 	valgrind --leak-check=full -v ./ns
