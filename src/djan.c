@@ -658,7 +658,7 @@ fdja_value *fdja_clone(fdja_value *v)
 //
 // outputting
 
-static void fdja_to_j(FILE *f, fdja_value *v, size_t depth)
+void fdja_to_j(FILE *f, fdja_value *v, size_t depth)
 {
   if (v->key != NULL && depth > 0)
   {

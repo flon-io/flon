@@ -429,5 +429,16 @@ struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0);
  */
 char *flu_ts_to_s(struct timespec *ts, char format);
 
+/* Given a string like "10h55s" returns a timespec instance.
+ * Returns NULL when it fails to parse.
+ */
+struct timespec *flu_parse_ts(const char *s);
+
+/* Like flu_parse_ts() but returns seconds (not a full timespec, so no
+ * nanoseconds).
+ * When it cannot parse, it sets errno to EINVAL and returns 0.
+ */
+long long flu_parse_t(const char *s);
+
 #endif // FLON_FLUTIL_H
 

@@ -97,8 +97,9 @@ enum // flags for fdja_to_djan()
 };
   // compact implies oneline...
 
-/* Low level function, made available for dumpers that need it...
+/* Low level functions, available for dumpers that need it...
  */
+void fdja_to_j(FILE *f, fdja_value *v, size_t depth);
 void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth);
 
 char *fdja_to_djan(fdja_value *v, int flags);
