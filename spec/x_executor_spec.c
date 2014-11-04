@@ -44,11 +44,13 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
-        "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
-        "exid: %s\n"
-        "payload: {\n"
-          "hello: world\n"
-        "}\n",
+        "{"
+          "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "hello: world\n"
+          "}\n"
+        "}",
         exid
       );
 
@@ -91,11 +93,13 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
-        "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
-        "exid: %s\n"
-        "payload: {\n"
-          "hello: world\n"
-        "}\n",
+        "{"
+          "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "hello: world\n"
+          "}\n"
+        "}",
         exid
       );
 
@@ -111,12 +115,14 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/rcv_%s-0.json", exid,
-        "receive: 1\n"
-        "exid: %s\n"
-        "nid: 0\n"
-        "payload: {\n"
-          "hello: hiroshima\n"
-        "}\n",
+        "{"
+          "receive: 1\n"
+          "exid: %s\n"
+          "nid: 0\n"
+          "payload: {\n"
+            "hello: hiroshima\n"
+          "}\n"
+        "}",
         exid
       );
 
@@ -139,15 +145,17 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
-        "execute:\n"
-        "  [ sequence, {}, [\n"
-        "    [ invoke, { _0: stamp, color: blue }, [] ]\n"
-        "    [ invoke, { _0: stamp, color: green }, [] ]\n"
-        "  ] ]\n"
-        "exid: %s\n"
-        "payload: {\n"
-          "hello: world\n"
-        "}\n",
+        "{"
+          "execute:\n"
+          "  [ sequence, {}, [\n"
+          "    [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "    [ invoke, { _0: stamp, color: green }, [] ]\n"
+          "  ] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "hello: world\n"
+          "}\n"
+        "}",
         exid
       );
 
@@ -196,12 +204,14 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_0.json", exid,
-        "receive: 1\n"
-        "exid: %s\n"
-        "nid: 0_0\n"
-        "payload: {\n"
-          "hello: chuugoku\n"
-        "}\n",
+        "{"
+          "receive: 1\n"
+          "exid: %s\n"
+          "nid: 0_0\n"
+          "payload: {\n"
+            "hello: chuugoku\n"
+          "}\n"
+        "}",
         exid
       );
 
@@ -242,12 +252,14 @@ context "flon-executor"
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_1.json", exid,
-        "receive: 1\n"
-        "exid: %s\n"
-        "nid: 0_1\n"
-        "payload: {\n"
-          "hello: staabakusu\n"
-        "}\n",
+        "{"
+          "receive: 1\n"
+          "exid: %s\n"
+          "nid: 0_1\n"
+          "payload: {\n"
+            "hello: staabakusu\n"
+          "}\n"
+        "}",
         exid
       );
 
