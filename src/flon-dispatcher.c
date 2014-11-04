@@ -37,9 +37,11 @@
 #include "fl_dispatcher.h"
 
 
-static void scan_dir()
+static size_t scan_dir()
 {
-  fgaj_i(".");
+  fgaj_d(".");
+
+  size_t dispatched = 0;
 
   DIR *dir = opendir("var/spool/dis/");
   struct dirent *de;
@@ -47,24 +49,46 @@ static void scan_dir()
   while ((de = readdir(dir)) != NULL)
   {
     if (*de->d_name == '.') continue;
-    flon_dispatch(de->d_name);
+
+    short r = flon_dispatch(de->d_name);
+    if (r > 0) ++dispatched;
+
+    //fgaj_d("flon_dispatch: %i", r);
   }
 
   closedir(dir);
 
   //fgaj_i("> scanning over.");
+  return dispatched;
 }
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
   //fgaj_i(".");
-  scan_dir();
-  flu_do_msleep(200);
-  scan_dir();
-  flu_do_msleep(850);
-  scan_dir();
+
+  //scan_dir();
+  //flu_do_msleep(200);
+  //scan_dir();
+  //flu_do_msleep(850);
+  //scan_dir();
     //
     // delta: 3s179 for a sequence of 3 stamps
+
+  size_t count = 0;
+  long long start = flu_gets('s');
+  int sleep = 0;
+
+  while (1)
+  {
+    count = scan_dir();
+    long long now = flu_gets('s');
+    if (count > 0) { sleep = 0; start = now; }
+    if (now >= start + 2) break;
+    if (count < 1) sleep += 10;
+    if (sleep > 0) flu_do_msleep(sleep);
+  }
+    //
+    // delta: 0s085, no, it's: 0s165
 }
 
 int main(int argc, char *argv[])

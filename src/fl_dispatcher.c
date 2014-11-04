@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <signal.h>
 
@@ -40,11 +41,11 @@
 #include "fl_dispatcher.h"
 
 
-static int double_fork(char *ctx, char *logpath, char *arg)
+static short double_fork(char *ctx, char *logpath, char *arg)
 {
   pid_t i = fork();
 
-  if (i < 0) { fgaj_r("fork 1 for %s failed", ctx); return 0; }
+  if (i < 0) { fgaj_r("fork 1 for %s failed", ctx); return 1; /* 'seen' */ }
 
   if (i == 0) // intermediate parent
   {
@@ -143,7 +144,7 @@ static int double_fork(char *ctx, char *logpath, char *arg)
     fgaj_i("%s forked", ctx);
   }
 
-  return 0; // success
+  return 2; // success, 'dispatched'
 }
 
 static int executor_not_running(const char *exid)
@@ -162,10 +163,8 @@ static int executor_not_running(const char *exid)
   return 0;
 }
 
-static int dispatch(const char *fname, fdja_value *j)
+static short dispatch(const char *fname, fdja_value *j)
 {
-  if (j == NULL) return -1;
-
   //puts(fdja_to_pretty_djan(j));
 
   if (
@@ -174,7 +173,7 @@ static int dispatch(const char *fname, fdja_value *j)
     fdja_l(j, "invoke") == NULL
   ) return -1;
 
-  int r = 1;
+  int r = 2; // 'dispatched' for now
 
   char *exid = fdja_ls(j, "exid", NULL);
   char *fep = flon_exid_path(exid);
@@ -205,7 +204,7 @@ static int dispatch(const char *fname, fdja_value *j)
 
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
 
-  if (r == 1 && executor_not_running(exid))
+  if (r == 2 && executor_not_running(exid))
   {
     r = double_fork(ctx, logpath, arg);
   }
@@ -231,18 +230,21 @@ static int reject(const char *fname)
   return 1; // failure
 }
 
-static int receive_ret(const char *fname)
+static short receive_ret(const char *fname)
 {
-  int r = 0;
+  short r = 2;
 
   fdja_value *i = NULL;
   fdja_value *j = NULL;
 
-  j = fdja_parse_obj_f("var/spool/dis/%s", fname);
-  if (j == NULL) { r = -1; goto _over; }
-
   i = flon_parse_nid(fname);
   if (i == NULL) { r = -1; goto _over; }
+    // TODO: move that check upstream
+
+  j = fdja_parse_f("var/spool/dis/%s", fname);
+
+  if (j == NULL) { r = 1; goto _over; }
+    // the file's mtime will get examined
 
   fdja_set(i, "receive", fdja_v("1"));
   fdja_set(i, "payload", j);
@@ -272,12 +274,19 @@ _over:
   return r;
 }
 
-int flon_dispatch(const char *fname)
+// returns
+//
+//   -1 rejected
+//    0 not seen
+//    1 seen
+//    2 dispatched
+//
+short flon_dispatch(const char *fname)
 {
   fgaj_i(fname);
 
-  int r = 0;
-  fdja_value *j = NULL;
+  int r = 1;
+  fdja_value *msg = NULL;
 
   if ( ! flu_strends(fname, ".json")) { r = -1; goto _over; }
 
@@ -289,18 +298,45 @@ int flon_dispatch(const char *fname)
     strncmp(fname, "rcv_", 4) != 0
   ) { r = -1; goto _over; }
 
-  j = fdja_parse_obj_f("var/spool/dis/%s", fname);
+  msg = fdja_parse_f("var/spool/dis/%s", fname);
 
-  //if (j) fgaj_d(fdja_tod(j));
+  if (msg == NULL) { r = 1; goto _over; }
 
   // TODO reroute?
 
-  r = dispatch(fname, j);
+  r = dispatch(fname, msg);
+  //r = route_or_dispatch(fname, msg);
 
 _over:
 
+  if (r == 1)
+  {
+    char *path = flu_sprintf("var/spool/dis/%s", fname);
+    struct stat sta;
+
+    if (stat(path, &sta) != 0)
+    {
+      fgaj_r("failed to stat var/spool/dis/%s, rejecting...", fname);
+      r = -1;
+    }
+    else
+    {
+      long long age = flu_gets('s') - sta.st_mtime;
+      //fgaj_d("age: %lli", age);
+
+      if (age > 1 * 60 * 60) r = -1; // reject
+      else if (age > 2) r = 0; // not seen
+      // else r = 1; // seen
+
+      // TODO: make those 2 thresholds configurable (flu_parse_t())
+    }
+  }
+
   if (r == -1) r = reject(fname);
-  if (j) fdja_value_free(j);
+
+  if (msg) fdja_value_free(msg);
+
+  fgaj_d("r: %i", r);
 
   return r;
 }

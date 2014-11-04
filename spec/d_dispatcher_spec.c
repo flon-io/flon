@@ -63,7 +63,7 @@ context "flon-dispatcher"
       expect(r == 1);
 
       r = flon_dispatch(name);
-      expect(r == 0);
+      expect(r == 2);
 
       sleep(1);
 
@@ -163,7 +163,7 @@ context "flon-dispatcher"
       // dispatch for the ret_
 
       r = flon_dispatch(name);
-      expect(r i== 0);
+      expect(r i== 2);
 
       sleep(1);
 
@@ -178,7 +178,7 @@ context "flon-dispatcher"
       name = flu_sprintf("rcv_%s-0_7-f.json", exid);
 
       r = flon_dispatch(name);
-      expect(r i== 0);
+      expect(r i== 2);
 
       sleep(1);
 
@@ -193,32 +193,30 @@ context "flon-dispatcher"
       expect(flu_fstat("var/spool/rejected/rcv_%s-0_7-f.json", exid) == 'f');
     }
 
-    /*
-    it "writes down the executor pid in var/run/{exid}.pid"
-    {
-      int r;
-      exid = flon_generate_exid("d_test.pid");
-      name = flu_sprintf("exe_%s.json", exid);
-
-      r = flu_writeall(
-        "var/spool/dis/exe_%s.json", exid,
-        "{"
-          "execute:"
-            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
-          "exid: %s\n"
-          "payload: {\n"
-            "hello: d_test.pid\n"
-          "}\n"
-        "}", exid
-      );
-      expect(r i== 1);
-
-      r = flon_dispatch(name);
-      expect(r i== 0);
-
-      // too fast, already gone...
-    }
-    */
+//    it "writes down the executor pid in var/run/{exid}.pid"
+//    {
+//      int r;
+//      exid = flon_generate_exid("d_test.pid");
+//      name = flu_sprintf("exe_%s.json", exid);
+//
+//      r = flu_writeall(
+//        "var/spool/dis/exe_%s.json", exid,
+//        "{"
+//          "execute:"
+//            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
+//          "exid: %s\n"
+//          "payload: {\n"
+//            "hello: d_test.pid\n"
+//          "}\n"
+//        "}", exid
+//      );
+//      expect(r i== 1);
+//
+//      r = flon_dispatch(name);
+//      expect(r i== 0);
+//
+//      // too fast, already gone...
+//    }
 
     it "doesn't launch a new executor if the previous is still here"
     {
@@ -247,7 +245,7 @@ context "flon-dispatcher"
         // being forked...
 
       r = flon_dispatch(name);
-      expect(r i== 1);
+      expect(r i== 2);
 
       //printf("var/run/%s\n", fep);
       expect(flu_fstat("var/run/%s", fep) == 0);

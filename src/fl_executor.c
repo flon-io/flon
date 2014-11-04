@@ -100,7 +100,7 @@ static fdja_value *create_node(
   fdja_value *node = fdja_v("{ nid: '%s', t: %s }", nid, instruction);
 
   fdja_set(node, "c", fdja_sym(flu_tstamp(NULL, 1, 'u')));
-  fdja_set(node, "p", parent_nid ? fdja_s(parent_nid) : fdja_v("null"));
+  fdja_set(node, "p", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
 
   if (tree && strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
 
@@ -316,7 +316,7 @@ static void load_msgs()
 
     //fgaj_t("from %s", de->d_name);
 
-    fdja_value *j = fdja_parse_obj_f("var/spool/exe/%s", de->d_name);
+    fdja_value *j = fdja_parse_f("var/spool/exe/%s", de->d_name);
 
     if (j == NULL) { reject("couldn't parse", de->d_name, NULL); continue; }
 

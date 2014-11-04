@@ -12,7 +12,7 @@ task = JSON.parse(STDIN.read)
 
 task['stamp'] = Time.now.to_s
 
-puts(JSON.dump(task))
+STDOUT.puts(JSON.dump(task))
 
 t = Time.now
 STDERR.puts("#{t} .#{t.usec} xxx #{Process.pid} stamp.rb over.")
