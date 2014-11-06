@@ -7,6 +7,7 @@
 # copy up-to-date versions of dep libs into src/
 #
 upgrade:
+	cp -v ../shervin/src/*.[ch] src/
 	cp -v ../gajeta/src/*.[ch] src/
 	cp -v ../djan/src/*.[ch] src/
 	cp -v ../flutil/src/*.[ch] src/

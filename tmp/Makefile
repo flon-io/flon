@@ -28,6 +28,8 @@ endif
 #dspec: s
 #	gdb ./s
 
+SHV_OS=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/sh*.c))
+
 clean:
 	rm -f *.o
 	rm -f *.so
@@ -45,6 +47,7 @@ DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) fl_invoker.o
 NDEPS=$(DEPS) n_helpers.o
+LDEPS=$(DEPS) $(SHV_OS)
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
@@ -106,7 +109,11 @@ flon-executor: $(XDEPS)
 flon-invoker: $(IDEPS)
 #
 flon-dispatcher: $(DDEPS)
-	$(CC) -I../src $(CFLAGS) ../src/flon-dispatcher.c $(DDEPS) -lev -o flon-dispatcher
+	$(CC) -I../src $(CFLAGS) ../src/flon-dispatcher.c $(DDEPS) \
+      -lev -o flon-dispatcher
+flon-listener: $(LDEPS)
+	$(CC) -I../src $(CFLAGS) ../src/flon-listener.c $(LDEPS) \
+      -lev -o flon-listener
 #
 flon-scope: $(DEPS)
 flon-flon: $(DEPS)
@@ -117,6 +124,8 @@ invoker: flon-invoker
 	mv flon-invoker ../tst/bin/
 dispatcher: flon-dispatcher
 	mv flon-dispatcher ../tst/bin/
+listener: flon-listener
+	mv flon-listener ../tst/bin/
 scope: flon-scope
 	mv flon-scope ../tst/bin/
 fflon: flon-flon

@@ -23,76 +23,82 @@
 // Made in Japan.
 //
 
+// https://github.com/flon-io/shervin
+
+// handlers, and guards
+
 #define _POSIX_C_SOURCE 200809L
 
-#include <stdio.h>
+#include <ctype.h>
+#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-#include "flutil.h"
 #include "shervin.h"
 #include "shv_protected.h"
-#include "fl_common.h"
 
 
-static int root_handler(
+//
+// guards
+
+int shv_filter_guard(
   shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  res->status_code = 200;
-
-  flu_list_add(res->body, strdup("hello world"));
-
   return 1;
 }
 
-static void print_usage()
+int shv_any_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  fprintf(stderr, "" "\n");
-  fprintf(stderr, "# flon-listener" "\n");
-  fprintf(stderr, "" "\n");
-  fprintf(stderr, "  flon-listener [-d {dir}]" "\n");
-  fprintf(stderr, "" "\n");
-  fprintf(stderr, "starts the flon-listener" "\n");
-  fprintf(stderr, "" "\n");
+  return 1;
 }
 
-int main(int argc, char *argv[])
+int shv_path_guard(
+  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
 {
-  // read options
+  char *path = (char *)flu_list_get(params, "path");
+  char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
-  char *dir = NULL;
-  short badarg = 0;
-
-  int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
+  if (path[0] != '/')
   {
-    if (opt == 'd') dir = optarg;
-    else badarg = 1;
+    char m = tolower(path[0]);
+    if (tolower(path[1]) == 'u') m = 'u';
+    char rm = req->method;
+    if (rm == 'h') rm = 'g';
+    if (m != rm) return 0;
+    path = strchr(path, ' ') + 1;
   }
 
-  if (badarg) { print_usage(); return 1; }
+  int success = 1;
 
-  // configure
-
-  if (dir == NULL) dir = ".";
-
-  if (flon_configure(dir) != 0)
+  while (1)
   {
-    perror(
-      flu_sprintf(
-        "couldn't read %s/etc/flon.json, cannot start", flu_canopath(dir)));
-    return 1;
+    char *slash = strchr(path, '/');
+    char *rslash = strchr(rpath, '/');
+
+    if (slash == NULL) slash = strchr(path, '\0');
+    if (rslash == NULL) rslash = strchr(rpath, '\0');
+
+    if (path[0] == ':')
+    {
+      char *k = strndup(path + 1, slash - path - 1);
+      flu_list_set(rod, k, strndup(rpath, rslash - rpath));
+      free(k);
+    }
+    else
+    {
+      if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
+    }
+
+    if (slash[0] == '\0' && rslash[0] == '\0') break;
+    if (slash[0] == '\0' || rslash[0] == '\0') { success = 0; break; }
+
+    path = slash + 1;
+    rpath = rslash + 1;
   }
 
-  flon_setup_logging("listener");
-
-  shv_route *routes[] =
-  {
-    shv_rp("/", root_handler, NULL),
-    NULL
-  };
-
-  // serve
-
-  shv_serve(1980, routes);
+  return success;
 }
+
+//
+// handlers
 
