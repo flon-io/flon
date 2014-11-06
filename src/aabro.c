@@ -1250,12 +1250,18 @@ static ssize_t fabr_find_range_end(const char *s)
 
 static ssize_t fabr_find_group_end(const char *s)
 {
+  //printf("afge s >%s<\n", s);
+
   for (size_t i = 0, stack = 0, range = 0; ; ++i)
   {
     char c = s[i];
 
+    //printf("afge 0 c:%zu '%c'\n", i, c);
+
     if (c == '\0') break;
-    if (c == '\\') continue;
+    if (c == '\\') { ++i; continue; }
+
+    //printf("afge 1 c:%zu '%c'\n", i, c);
 
     if (c == '[') { range = 1; continue; };
     if (c == ']') { range = 0; continue; };
@@ -1341,7 +1347,8 @@ static fabr_parser *fabr_regroup_rex(fabr_p_type t, flu_list *children)
 
 static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
 {
-  //printf("adrs(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
+  //printf("adrs(\"%s\", %li) \"%s\"\n", s, n, strndup(s, n));
+
   size_t sl = strlen(s);
 
   flu_list *children = flu_list_malloc();
@@ -1354,7 +1361,8 @@ static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
   {
     char c = (si == n) ? '\0' : s[si];
 
-    if (c == '\0') { break; }
+    if (c == '\0') break;
+    //if (c == '\\') { continue; }
 
     if (c == '?' || c == '*' || c == '+' || c == '{')
     {
@@ -1460,14 +1468,19 @@ static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
 
 static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n)
 {
-  //printf("adrG(\"%s\", %i) \"%s\"\n", s, n, strndup(s, n));
+  //printf("adrG(\"%s\", %li) \"%s\"\n", s, n, strndup(s, n));
+
   flu_list *children = flu_list_malloc();
 
   for (size_t i = 0, j = 0, stack = 0, range = 0; ; j++)
   {
-    char c = (j == n) ? '\0' : s[j];
+    char c = (j >= n) ? '\0' : s[j];
+    //char c1 = (c == '\0') ? '\0' : s[j + 1];
+    //printf("i: %zu, j: %zu c+1: >%c%c<\n", i, j, c, c1);
 
-    if (c == '\\') continue;
+    //if (c == '\\') printf(" \\ + %c\n", s[j + 1]);
+    //if (c == '\\' && (c1 == '(' || c1 == ')')) { j++; continue; }
+    if (c == '\\') { j++; continue; }
 
     if (range && c != ']' && c != '\0') continue;
     if (range && c == ']') { range = 0; continue; }

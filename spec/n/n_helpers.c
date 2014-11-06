@@ -17,6 +17,7 @@
 #include <sys/wait.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "fl_ids.h"
 #include "fl_common.h"
 #include "n_helpers.h"

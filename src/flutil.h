@@ -32,7 +32,6 @@
 
 #include <stdio.h>
 #include <stdarg.h>
-#include <time.h>
 
 
 #define FLU_VERSION "1.0.0"
@@ -375,70 +374,10 @@ char *flu_strdup(char *s);
  */
 int flu_system(const char *format, ...);
 
-
-//
-// time
-
-/* Returns the seconds/nanoseconds since the Epoch.
+/* Like strtoll(3), but accepts a length.
+ * Returns 0 when in doubt.
  */
-struct timespec *flu_now();
-
-/* Returns the count of seconds since the Epoch.
- * If level is set to 'm', it will return milliseconds.
- * If level is set to 'u', it will return microseconds.
- * If level is set to 'n', it will return nanoseconds.
- */
-long long flu_gets(char level);
-
-/* Sleeps for a given amount of milliseconds.
- * Returns how many milliseconds still have to be slepts (interrupted).
- */
-long long flu_msleep(long long milliseconds);
-
-/* Sleeps for a given amount of milliseconds.
- * If interrupted, sleeps again until the required milliseconds have all been
- * slept through. Returns the how many milliseconds it actually slept.
- */
-long long flu_do_msleep(long long milliseconds);
-
-/* Formats the given time into a string.
- *
- * 'z' --> "2014-11-01T16:34:01Z"
- * 'h' --> "20141101.1634"
- * 's' --> "20141101.163401"
- * 'm' --> "20141101.163401.001"  // milliseconds
- * 'u' --> "20141101.163401.000001"  // microseconds
- * 'n' --> "20141101.163401.000000001"  // nanoseconds
- *
- * If the tm arg is NULL, the function will grab the time thanks to
- * clock_gettime(CLOCK_REALTIME, &ts).
- */
-char *flu_tstamp(struct timespec *ts, int utc, char format);
-
-/* Parses a timestamp, takes a utc hint.
- *
- * /!\ not thread-safe, sets and resets the "TZ" env variable /!\
- */
-struct timespec *flu_parse_tstamp(char *s, int utc);
-
-/* Does t1 - t0, over seconds and nanoseconds.
- */
-struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0);
-
-/* Use to print the output of flu_tdiff().
- */
-char *flu_ts_to_s(struct timespec *ts, char format);
-
-/* Given a string like "10h55s" returns a timespec instance.
- * Returns NULL when it fails to parse.
- */
-struct timespec *flu_parse_ts(const char *s);
-
-/* Like flu_parse_ts() but returns seconds (not a full timespec, so no
- * nanoseconds).
- * When it cannot parse, it sets errno to EINVAL and returns 0.
- */
-long long flu_parse_t(const char *s);
+long long flu_stoll(char *s, size_t l, int base);
 
 #endif // FLON_FLUTIL_H
 

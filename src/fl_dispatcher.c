@@ -34,6 +34,7 @@
 #include <signal.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"

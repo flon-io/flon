@@ -29,6 +29,7 @@
 #include <string.h>
 #include <dirent.h>
 
+#include "flutim.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"

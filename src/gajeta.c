@@ -29,14 +29,12 @@
 
 #include <ctype.h>
 #include <errno.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
-#include <sys/time.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "gajeta.h"
 
 
@@ -183,16 +181,20 @@ char *fgaj_now()
 {
   if (fgaj__conf == NULL) fgaj_init();
 
-  struct timeval tv;
-  struct tm *tm;
-
-  gettimeofday(&tv, NULL);
-  tm = fgaj__conf->utc ? gmtime(&tv.tv_sec) : localtime(&tv.tv_sec);
+  //struct timeval tv;
+  //struct tm *tm;
+  //gettimeofday(&tv, NULL);
+  struct timespec *ts =
+    flu_now();
+  struct tm *tm =
+    fgaj__conf->utc ? gmtime(&ts->tv_sec) : localtime(&ts->tv_sec);
 
   char *s = calloc(33, sizeof(char));
   strftime(s, 33, "%F %T.000000 %z", tm);
-  snprintf(s + 20, 7, "%06ld", tv.tv_usec);
+  snprintf(s + 20, 7, "%06ld", ts->tv_nsec / 1000);
   s[26] = ' ';
+
+  free(ts);
 
   return s;
 }

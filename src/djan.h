@@ -25,8 +25,8 @@
 
 // https://github.com/flon-io/djan
 
-#ifndef DJAN_H
-#define DJAN_H
+#ifndef FLON_DJAN_H
+#define FLON_DJAN_H
 
 #include <stdio.h>
 #include <stddef.h>
@@ -188,5 +188,5 @@ int fdja_pset(fdja_value *start, const char *path, ...);
  */
 int fdja_psetf(fdja_value *start, const char *path, ...);
 
-#endif // DJAN_H
+#endif // FLON_DJAN_H
 
