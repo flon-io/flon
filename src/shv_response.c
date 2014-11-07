@@ -151,7 +151,7 @@ static int pipe_file(char *path, FILE *dst)
   FILE *src = fopen(path, "r");
   if (src == NULL) return 1;
 
-  char buffer[SHV_BUFFER_SIZE];
+  char buffer[SHV_BUFFER_SIZE + 1];
   size_t rl, wl;
 
   while (1)
@@ -254,12 +254,13 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   now = flu_gets('u');
   //
   fgaj_i(
-    "c%p r%i %s %s %s %i c%.3fms r%.3fms",
+    "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
     eio, con->rqount,
     inet_ntoa(con->client->sin_addr),
     shv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
+    flu_list_get(con->res->headers, "content-length"),
     (now - con->startus) / 1000.0,
     (now - con->req->startus) / 1000.0);
 

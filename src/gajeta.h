@@ -129,6 +129,23 @@ void fgaj_log(
 #define fgaj_ll(level, subject, ...) \
   fgaj_log(level, subject, -1, NULL, __VA_ARGS__)
 
+//
+// sometimes one wants to log an error at the trace level...
+
+void fgaj_rlog(
+  char level, short err,
+  const char *file, int line, const char *func,
+  const char *format, ...);
+
+#define fgaj_tr(...) \
+  fgaj_rlog('t', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_dr(...) \
+  fgaj_rlog('d', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_ir(...) \
+  fgaj_rlog('i', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_wr(...) \
+  fgaj_rlog('w', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
 
 //
 // helper functions

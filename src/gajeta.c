@@ -333,3 +333,13 @@ void fgaj_log(
   va_end(ap);
 }
 
+void fgaj_rlog(
+  char level, short err,
+  const char *file, int line, const char *func,
+  const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  fgaj_do_log(level, file, line, func, format, ap, err);
+  va_end(ap);
+}
+

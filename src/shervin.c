@@ -34,6 +34,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
+
 #include <ev.h>
 
 #include "flutil.h"
@@ -46,13 +50,22 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   shv_con_free((shv_con *)eio->data);
 
   ev_io_stop(l, eio);
+  close(eio->fd);
+  //fgaj_d(reason, eio);
   free(eio);
-  fgaj_d("c%p closed by client", eio);
 }
 
 static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+
+  if (fcntl(eio->fd, F_SETFL, fcntl(eio->fd, F_GETFL) | O_NONBLOCK) == -1)
+  {
+    fgaj_tr("couldn't set nonblock (i%p fd %i)", eio, eio->fd);
+    shv_close(l, eio);
+    return;
+  }
+  //fgaj_t("eio->fd flags: %i", fcntl(eio->fd, F_GETFL));
 
   shv_con *con = (shv_con *)eio->data;
 
@@ -60,12 +73,19 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { fgaj_r("read error (fd %i)", eio->fd); return; }
-  if (r == 0) { shv_close(l, eio); return; }
+  fgaj_d("read: %li (i%p fd %i)", r, eio, eio->fd);
+
+  if (r < 0 && errno == EAGAIN) return;
+
+  else if (r <= 0) {
+    if (r < 0) fgaj_r("read error (i%p fd %i)", eio, eio->fd);
+    shv_close(l, eio);
+    return;
+  }
 
   buffer[r] = '\0';
 
-  fgaj_t("c%p r%i in >>>\n%s<<< %i\n", eio, con->rqount, buffer, r);
+  fgaj_t("i%p r%i in >>>\n%s<<< %i\n", eio, con->rqount, buffer, r);
 
   ssize_t i = -1;
   if (con->hend < 4) for (i = 0; i < r; ++i)
@@ -78,7 +98,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     ) ++con->hend; else con->hend = 0;
   }
 
-  fgaj_t("c%p r%i i%i, con->hend %i", eio, con->rqount, i, con->hend);
+  fgaj_t("i%p r%i i%i, con->hend %i", eio, con->rqount, i, con->hend);
 
   if (i < 0)
   {
@@ -110,7 +130,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     free(head);
 
     fgaj_i(
-      "c%p r%i %s %s %s",
+      "i%p r%i %s %s %s",
       eio, con->rqount,
       inet_ntoa(con->client->sin_addr),
       shv_char_to_method(con->req->method),
@@ -208,6 +228,8 @@ void shv_serve(int port, shv_route **routes)
   struct ev_loop *l = ev_default_loop(0);
 
   int sd = socket(PF_INET, SOCK_STREAM, 0);
+
+  fcntl(sd, F_SETFL, fcntl(sd, F_GETFL) | O_NONBLOCK);
 
   if (sd < 0) { fgaj_r("socket error"); exit(1); }
 
