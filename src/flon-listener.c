@@ -30,13 +30,13 @@
 #include <unistd.h>
 
 #include "flutil.h"
+#include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
 #include "fl_common.h"
 
 
-static int root_handler(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+static int root_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   res->status_code = 200;
 
@@ -60,7 +60,9 @@ int main(int argc, char *argv[])
 {
   // read options
 
+  int port = 1980;
   char *dir = NULL;
+
   short badarg = 0;
 
   int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
@@ -85,6 +87,8 @@ int main(int argc, char *argv[])
 
   flon_setup_logging("listener");
 
+  fgaj_i("-d %s", flu_canopath(dir));
+
   shv_route *routes[] =
   {
     shv_rp("/", root_handler, NULL),
@@ -93,6 +97,6 @@ int main(int argc, char *argv[])
 
   // serve
 
-  shv_serve(1980, routes);
+  shv_serve(port, routes);
 }
 
