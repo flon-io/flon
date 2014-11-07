@@ -161,6 +161,9 @@ shv_request *shv_parse_request_head(char *s)
       flu_list_get(req->headers, "host"),
       req->uri);
 
+  req->routing_d =
+    flu_list_malloc();
+
   //
   // over
 
@@ -178,9 +181,10 @@ ssize_t shv_request_content_length(shv_request *r)
 
 void shv_request_free(shv_request *r)
 {
-  if (r->uri != NULL) free(r->uri);
-  if (r->uri_d != NULL) flu_list_free_all(r->uri_d);
-  if (r->headers != NULL) flu_list_free_all(r->headers);
+  if (r->uri) free(r->uri);
+  if (r->uri_d) flu_list_free_all(r->uri_d);
+  if (r->headers) flu_list_free_all(r->headers);
+  if (r->routing_d) flu_list_free_all(r->routing_d);
   free(r);
 }
 

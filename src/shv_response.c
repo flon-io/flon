@@ -30,7 +30,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include <time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -121,16 +120,68 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
+static void shv_set_content_length(shv_con *con)
+{
+  char *s = flu_list_get(con->res->headers, "shv_content_length");
+
+  if (s)
+  {
+    if (flu_list_get(con->req->headers, "x-real-ip")) s = strdup("");
+    else s = strdup(s);
+  }
+  else
+  {
+    size_t r = 0;
+
+    for (flu_node *n = con->res->body->first; n; n = n->next)
+    {
+      r += strlen((char *)n->item);
+    }
+
+    s = flu_sprintf("%zu", r);
+  }
+
+  flu_list_set(con->res->headers, "content-length", s);
+}
+
+static int pipe_file(char *path, FILE *dst)
+{
+  int r = 0;
+
+  FILE *src = fopen(path, "r");
+  if (src == NULL) return 1;
+
+  char buffer[SHV_BUFFER_SIZE];
+  size_t rl, wl;
+
+  while (1)
+  {
+    rl = fread(buffer, sizeof(char), SHV_BUFFER_SIZE, src);
+    if (rl > 0)
+    {
+      wl = fwrite(buffer, sizeof(char), rl, dst);
+      if (wl < rl) fgaj_w("wrote %zu of %zu chars :-(", wl, rl);
+    }
+
+    if (rl < SHV_BUFFER_SIZE)
+    {
+      if (feof(src)) break;
+
+      fgaj_w("read only %zu of %zu chars, but not eof", rl, SHV_BUFFER_SIZE);
+      r = 1; break;
+    }
+  }
+
+  fclose(src);
+
+  return r;
+}
+
 void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
 
-  time_t tt; time(&tt);
-  struct tm *tm; tm = gmtime(&tt);
-  char *dt = asctime(tm); // TODO: upgrade to rfc1123
-  dt[strlen(dt) - 1] = '\0';
-  //
-  flu_list_set(con->res->headers, "date", strdup(dt));
+  flu_list_set(con->res->headers, "date", flu_tstamp(NULL, 1, 'r'));
 
   flu_list_set_last(
     con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
@@ -140,14 +191,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
 
-  size_t cl = 0;
-  for (flu_node *n = con->res->body->first; n; n = n->next)
-  {
-    cl += strlen((char *)n->item);
-  }
-  //
-  flu_list_set(
-    con->res->headers, "content-length", flu_sprintf("%zu", cl));
+  shv_set_content_length(con);
 
   long long now = flu_gets('u');
   //
@@ -160,36 +204,52 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
       (now - con->req->startus) / 1000.0,
       con->rqount));
 
-  flu_sbuffer *b = flu_sbuffer_malloc();
+  // write to eio->fd (if there is one)
 
-  flu_sbprintf(
-    b,
+  if (l == NULL) return; // only in spec/handle_spec.c
+
+  FILE *f = fdopen(eio->fd, "w");
+
+  if (f == NULL) { fgaj_r("couldn't open file back to client"); return; }
+
+  fprintf(
+    f,
     "HTTP/1.1 %i %s\r\n",
     con->res->status_code,
     shv_reason(con->res->status_code));
 
+  char *xsf = NULL;
+
   shv_lower_keys(con->res->headers);
   flu_list *ths = flu_list_dtrim(con->res->headers);
+  //
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
-    flu_sbprintf(b, "%s: %s\r\n", n->key, (char *)n->item);
+    //printf("* %s: %s\n", n->key, (char *)n->item);
+
+    if (strcmp(n->key, "shv_file") == 0) xsf = (char *)n->item;
+
+    if (strncmp(n->key, "shv_", 4) == 0) continue;
+
+    fprintf(f, "%s: %s\r\n", n->key, (char *)n->item);
   }
   flu_list_free(ths);
 
-  flu_sbprintf(b, "\r\n");
+  fputs("\r\n", f);
 
-  for (flu_node *n = con->res->body->first; n; n = n->next)
+  if (xsf)
   {
-    flu_sbputs(b, (char *)n->item);
+    if ( ! flu_list_get(con->req->headers, "x-real-ip")) pipe_file(xsf, f);
+  }
+  else
+  {
+    for (flu_node *n = con->res->body->first; n; n = n->next)
+    {
+      fputs((char *)n->item, f);
+    }
   }
 
-  flu_sbuffer_close(b);
-
-  if (l != NULL) send(eio->fd, b->string, b->len, 0);
-
-  flu_sbuffer_free(b);
-
-  if (l == NULL) return; // only in spec/handle_spec.c
+  fclose(f);
 
   now = flu_gets('u');
   //

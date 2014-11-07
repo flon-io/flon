@@ -32,7 +32,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
 
@@ -40,25 +44,22 @@
 //
 // guards
 
-int shv_filter_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_filter_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
 }
 
-int shv_any_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_any_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
 }
 
-int shv_path_guard(
-  shv_request *req, flu_dict *rod, shv_response *res, flu_dict *params)
+int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
-  if (path[0] != '/')
+  if (*path != '/')
   {
     char m = tolower(path[0]);
     if (tolower(path[1]) == 'u') m = 'u';
@@ -78,19 +79,31 @@ int shv_path_guard(
     if (slash == NULL) slash = strchr(path, '\0');
     if (rslash == NULL) rslash = strchr(rpath, '\0');
 
-    if (path[0] == ':')
+    if (*path == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
-      flu_list_set(rod, k, strndup(rpath, rslash - rpath));
+      flu_list_set(req->routing_d, k, strndup(rpath, rslash - rpath));
       free(k);
+    }
+    else if (strcmp(path, "**") == 0)
+    {
+      flu_list_set(req->routing_d, "**", strdup(rpath)); break;
     }
     else
     {
       if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
     }
 
-    if (slash[0] == '\0' && rslash[0] == '\0') break;
-    if (slash[0] == '\0' || rslash[0] == '\0') { success = 0; break; }
+    if (*slash == 0 && *rslash == 0) break;
+
+    if (*rslash == 0 && strcmp(slash, "/**") == 0)
+    {
+      flu_list_set(req->routing_d, "**", strdup("")); break;
+    }
+    if (*slash == 0 || *rslash == 0)
+    {
+      success = 0; break;
+    }
 
     path = slash + 1;
     rpath = rslash + 1;
@@ -99,6 +112,72 @@ int shv_path_guard(
   return success;
 }
 
+
 //
 // handlers
+
+static char *shv_determine_content_type(char *path)
+{
+  // TODO: utf-8? "text/html; charset=UTF-8"
+  // TODO: manage that with a conf file
+
+  char *suffix = strrchr(path, '.');
+  char *r = NULL;
+
+  if (suffix == NULL) r = "text/plain";
+  else if (strcmp(suffix, ".txt") == 0) r = "text/plain";
+  else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
+  else if (strcmp(suffix, ".json") == 0) r = "application/json";
+  else if (strcmp(suffix, ".css") == 0) r = "text/css";
+  else if (strcmp(suffix, ".html") == 0) r = "text/html";
+
+  return strdup(r);
+}
+
+int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
+{
+  char *p = flu_list_get(req->routing_d, "**");
+  if (p == NULL) return 0;
+
+  //fgaj_d("p: %s", p);
+
+  if (strstr(p, "..")) return 0;
+
+  char *r = flu_list_get(params, "root");
+  if (r == NULL) r = flu_list_get(params, "r");
+  if (r == NULL) return 0;
+
+  //fgaj_d("r: %s", r);
+
+  char *path = flu_sprintf("%s/%s", r, p);
+
+  fgaj_d("path: %s", flu_canopath(path));
+
+  struct stat sta;
+  if (stat(path, &sta) != 0) { free(path); return 0; }
+
+  if (S_ISDIR(sta.st_mode))
+  {
+    fgaj_d("we don't serve dirs %s", path); free(path); return 0;
+  }
+
+  res->status_code = 200;
+
+  char *h = flu_list_get(params, "header");
+  if (h == NULL) h = flu_list_get(params, "h");
+  if (h == NULL) h = strdup("X-Accel-Redirect");
+
+  flu_list_set(
+    res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
+
+  flu_list_set(
+    res->headers, "content-type", shv_determine_content_type(path));
+
+  flu_list_set(
+    res->headers, "shv_file", strdup(path));
+  flu_list_set(
+    res->headers, h, path);
+
+  return 1;
+}
 

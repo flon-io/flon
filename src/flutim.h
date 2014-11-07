@@ -64,8 +64,14 @@ long long flu_do_msleep(long long milliseconds);
  * 'u' --> "20141101.163401.000001"  // microseconds
  * 'n' --> "20141101.163401.000000001"  // nanoseconds
  *
+ * 'r' --> "Fri, 30 Oct 2014 16:34:01 UTC"
+ * 'g' --> "Fri, 30 Oct 2014 16:34:01 GMT"
+ *
  * If the tm arg is NULL, the function will grab the time thanks to
  * clock_gettime(CLOCK_REALTIME, &ts).
+ *
+ * Warning, 'g' and 'r' set the locale LC_TIME to en_US temporarily.
+ * Not thread-safe.
  */
 char *flu_tstamp(struct timespec *ts, int utc, char format);
 

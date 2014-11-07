@@ -40,8 +40,6 @@
 #include "gajeta.h"
 #include "shv_protected.h"
 
-#define SHV_BUFFER_SIZE 2048
-
 
 static void shv_close(struct ev_loop *l, struct ev_io *eio)
 {
@@ -62,7 +60,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
 
-  if (r < 0) { fgaj_r("read error"); return; }
+  if (r < 0) { fgaj_r("read error (fd %i)", eio->fd); return; }
   if (r == 0) { shv_close(l, eio); return; }
 
   buffer[r] = '\0';
@@ -148,7 +146,6 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
   con->res = shv_response_malloc(404);
 
-  flu_dict *rod = flu_list_malloc();
   int filtering = 0;
   int guarded = 0;
   int handled = 0;
@@ -159,29 +156,27 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break; // end reached
 
-    if (route->guard == shv_filter_guard) filtering = 1;
+    if ((void *)route->guard == (void *)shv_filter_guard) filtering = 1;
 
-    if (handled && !filtering) continue;
+    if (handled && ! filtering) continue;
 
-    if (route->guard && route->guard != shv_filter_guard)
+    if (route->guard && (void *)route->guard != (void *)shv_filter_guard)
     {
       filtering = 0;
 
       if (handled) continue;
 
-      guarded = route->guard(con->req, rod, con->res, route->params);
+      guarded = route->guard(con->req, con->res, route->params);
     }
 
     if ( ! (filtering || guarded)) continue;
 
     if (route->handler)
     {
-      int h = route->handler(con->req, rod, con->res, route->params);
+      int h = route->handler(con->req, con->res, route->params);
       if (filtering != 1 && guarded != -1) handled = h;
     }
   }
-
-  flu_list_free_all(rod);
 
   shv_respond(l, eio);
 }
