@@ -62,7 +62,11 @@ void fgaj_read_env()
   if (s) fgaj__conf->utc = (*s == '1' || tolower(*s) == 't');
 
   s = fgaj_getenv("FLON_LOG_HOST", "FGAJ_HOST");
-  if (s) fgaj__conf->host = s;
+  if (s)
+  {
+    if (fgaj__conf->host) free(fgaj__conf->host);
+    fgaj__conf->host = s;
+  }
 
   s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
   if (s) fgaj__conf->level = fgaj_parse_level(s);

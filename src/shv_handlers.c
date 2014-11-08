@@ -59,6 +59,8 @@ int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");
 
+  //printf("path >%s<\nrpath >%s<\n", path, rpath);
+
   if (*path != '/')
   {
     char m = tolower(path[0]);
@@ -91,6 +93,9 @@ int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params)
     }
     else
     {
+      //printf("s - p : %zu / rs - rp : %zu\n", slash - path, rslash - rpath);
+      //printf("p >%s<  rp >%s<\n", path, rpath);
+      if (slash - path != rslash - rpath) { success = 0; break; }
       if (strncmp(path, rpath, slash - path) != 0) { success = 0; break; }
     }
 
@@ -151,7 +156,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   char *path = flu_sprintf("%s/%s", r, p);
 
-  fgaj_d("path: %s", flu_canopath(path));
+  char *cp = flu_canopath(path); fgaj_d("path: %s", cp); free(cp);
 
   struct stat sta;
   if (stat(path, &sta) != 0) { free(path); return 0; }
@@ -165,7 +170,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   char *h = flu_list_get(params, "header");
   if (h == NULL) h = flu_list_get(params, "h");
-  if (h == NULL) h = strdup("X-Accel-Redirect");
+  if (h == NULL) h = "X-Accel-Redirect";
 
   flu_list_set(
     res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));

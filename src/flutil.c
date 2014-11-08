@@ -692,7 +692,46 @@ flu_list *flu_d(char *k0, void *v0, ...)
   flu_list *d = flu_vd(ap);
   va_end(ap);
 
+  if (d) flu_list_set(d, k0, v0);
+
+  return d;
+}
+
+flu_list *flu_vsd(va_list ap)
+{
+  flu_list *d = flu_list_malloc();
+
+  while (1)
+  {
+    char *kf = va_arg(ap, char *);
+    if (kf == NULL) break;
+    char *k = flu_svprintf(kf, ap);
+
+    char *vf = va_arg(ap, char *);
+    char *v = vf ? flu_svprintf(vf, ap) : NULL;
+
+    flu_list_set(d, k, v);
+
+    free(k);
+  }
+
+  return d;
+}
+
+flu_list *flu_sd(char *kf0, ...)
+{
+  va_list ap; va_start(ap, kf0);
+
+  char *k0 = flu_svprintf(kf0, ap);
+
+  char *vf0 = va_arg(ap, char *);
+  char *v0 = vf0 ? flu_svprintf(vf0, ap) : NULL;
+
+  flu_list *d = flu_vsd(ap);
+  va_end(ap);
+
   flu_list_set(d, k0, v0);
+  free(k0);
 
   return d;
 }

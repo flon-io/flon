@@ -112,6 +112,15 @@ static char *shv_reason(short status_code)
   return "(no reason-phrase)";
 }
 
+static char *shv_low_reason(short status_code)
+{
+  char *s = shv_reason(status_code);
+  char *r = calloc(strlen(s) + 1, sizeof(char));
+  for (char *rr = r; *s; ++rr, ++s) *rr = tolower(*s);
+
+  return r;
+}
+
 static void shv_lower_keys(flu_dict *d)
 {
   for (flu_node *n = d->first; n != NULL; n = n->next)
@@ -181,6 +190,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   shv_con *con = (shv_con *)eio->data;
 
+  // prepare headers
+
   flu_list_set(con->res->headers, "date", flu_tstamp(NULL, 1, 'r'));
 
   flu_list_set_last(
@@ -190,8 +201,6 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
-
-  shv_set_content_length(con);
 
   long long now = flu_gets('u');
   //
@@ -204,9 +213,23 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
       (now - con->req->startus) / 1000.0,
       con->rqount));
 
+  if (
+    con->res->body->size == 0 &&
+    con->res->status_code >= 400 &&
+    con->res->status_code < 600 &&
+    flu_list_get(con->res->headers, "shv_content_length") == NULL)
+  {
+    // set 4xx or 5xx reason as body
+    flu_list_add(con->res->body, shv_low_reason(con->res->status_code));
+  }
+
+  shv_set_content_length(con);
+
   // write to eio->fd (if there is one)
 
   if (l == NULL) return; // only in spec/handle_spec.c
+
+  // write headers
 
   FILE *f = fdopen(eio->fd, "w");
 
@@ -237,6 +260,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   fputs("\r\n", f);
 
+  // write body
+
   if (xsf)
   {
     if ( ! flu_list_get(con->req->headers, "x-real-ip")) pipe_file(xsf, f);
@@ -250,6 +275,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   }
 
   fclose(f);
+
+  // done
 
   now = flu_gets('u');
   //

@@ -90,7 +90,7 @@ flu_dict *shv_parse_uri(char *uri)
   fabr_tree *t = NULL;
 
   //printf("uri >%s<\n", uri);
-  //puts(fabr_tree_to_string_with_leaves(uri, r));
+  //puts(fabr_tree_to_string(r, uri, 1));
 
   flu_dict *d = flu_list_malloc();
 
@@ -103,6 +103,7 @@ flu_dict *shv_parse_uri(char *uri)
 
   t = fabr_tree_lookup(r, "path");
   flu_list_set(d, "_path", fabr_tree_string(uri, t));
+  //printf("_path >%s<\n", flu_list_get(d, "_path"));
 
   flu_list *l = fabr_tree_list_named(r, "quentry");
   for (flu_node *n = l->first; n != NULL; n = n->next)
@@ -133,8 +134,15 @@ flu_dict *shv_parse_host_and_path(char *host, char *path)
 {
   if (host == NULL) return shv_parse_uri(path);
 
-  char *s = flu_sprintf("%s%s", host, path);
+  char *s = NULL;
+
+  if (strncmp(host, "http://", 7) == 0 || strncmp(host, "https://", 8) == 0)
+    s = flu_sprintf("%s%s", host, path);
+  else
+    s = flu_sprintf("http://%s%s", host, path);
+
   flu_dict *d = shv_parse_uri(s);
+
   free(s);
 
   return d;

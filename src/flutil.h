@@ -305,6 +305,16 @@ flu_list *flu_vd(va_list ap);
  */
 flu_list *flu_d(char *k0, void *v0, ...);
 
+/* Used behind the scenes by flu_sd(). Composes a flu_list dict from the
+ * given va_list. Allows formatted keys and values.
+ */
+flu_list *flu_vsd(va_list ap);
+
+/* Like flu_d() but allows keys and values to be formatted (printf-style).
+ * Values must be strings. Disposed via flu_list_free_all().
+ */
+flu_list *flu_sd(char *k0, ...);
+
 
 //
 // str functions
