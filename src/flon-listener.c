@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
   flon_setup_logging("listener");
 
-  fgaj_i("-d %s", flu_canopath(dir));
+  char *cp = flu_canopath(dir); fgaj_i("-d %s", cp); free(cp);
 
   shv_route *routes[] =
   {
