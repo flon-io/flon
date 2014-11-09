@@ -224,22 +224,28 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
 void shv_serve(int port, shv_route **routes)
 {
+  int r;
+
   struct ev_io *eio = calloc(1, sizeof(struct ev_io));
   struct ev_loop *l = ev_default_loop(0);
 
   int sd = socket(PF_INET, SOCK_STREAM, 0);
-
-  fcntl(sd, F_SETFL, fcntl(sd, F_GETFL) | O_NONBLOCK);
-
   if (sd < 0) { fgaj_r("socket error"); exit(1); }
+
+  int v = 1; r = setsockopt(sd, SOL_SOCKET, SO_REUSEADDR, &v, sizeof(v));
+  if (r != 0) { fgaj_r("couldn't set SO_REUSEADDR"); exit(1); }
+
+  r = fcntl(sd, F_GETFL);
+  if (r == -1) { fgaj_r("couldn't read main socket flags"); exit(1); }
+
+  r = fcntl(sd, F_SETFL, r | O_NONBLOCK);
+  if (r != 0) { fgaj_r("couldn't set main socket to O_NONBLOCK"); exit(1); }
 
   struct sockaddr_in a;
   memset(&a, 0, sizeof(struct sockaddr_in));
   a.sin_family = AF_INET;
   a.sin_port = htons(port);
   a.sin_addr.s_addr = INADDR_ANY;
-
-  int r;
 
   r = bind(sd, (struct sockaddr *)&a, sizeof(struct sockaddr_in));
   if (r != 0) { fgaj_r("bind error"); exit(2); }
