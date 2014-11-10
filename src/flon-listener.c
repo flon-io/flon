@@ -37,14 +37,12 @@
 #include "fl_common.h"
 
 
-static int root_handler(shv_request *req, shv_response *res, flu_dict *params)
-{
-  res->status_code = 200;
-
-  flu_list_add(res->body, strdup("hello world"));
-
-  return 1;
-}
+//static int root_handler(shv_request *req, shv_response *res, flu_dict *params)
+//{
+//  res->status_code = 200;
+//  flu_list_add(res->body, strdup("hello world"));
+//  return 1;
+//}
 
 static void print_usage()
 {
@@ -78,7 +76,11 @@ int main(int argc, char *argv[])
 
   if (dir == NULL) dir = ".";
 
-  if (flon_configure(dir) != 0)
+  if (chdir(dir) != 0)
+  {
+    fprintf(stderr, "couldn't chdir to %s", dir); return 1;
+  }
+  if (flon_configure(".") != 0)
   {
     perror(
       flu_sprintf(
@@ -92,7 +94,7 @@ int main(int argc, char *argv[])
 
   shv_route *routes[] =
   {
-    shv_rp("/", root_handler, NULL),
+    shv_rp("/**", shv_dir_handler, "r", "var/www", NULL),
     NULL
   };
 
