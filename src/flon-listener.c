@@ -37,12 +37,17 @@
 #include "fl_common.h"
 
 
-//static int root_handler(shv_request *req, shv_response *res, flu_dict *params)
-//{
-//  res->status_code = 200;
-//  flu_list_add(res->body, strdup("hello world"));
-//  return 1;
-//}
+static int i_handler(shv_request *req, shv_response *res, flu_dict *params)
+{
+  res->status_code = 200;
+
+  flu_list_set(
+    res->headers, "content-type", strdup("application/json; charset=UTF-8"));
+
+  flu_list_add(res->body, strdup("{ \"nada\": 1 }"));
+
+  return 1;
+}
 
 static void print_usage()
 {
@@ -94,6 +99,7 @@ int main(int argc, char *argv[])
 
   shv_route *routes[] =
   {
+    shv_rp("/i", i_handler, NULL),
     shv_rp("/**", shv_dir_handler, "r", "var/www", NULL),
     NULL
   };
