@@ -1,1 +1,10 @@
 
+textarea#inField {
+  width: 200px;
+  height: 100px;
+  display: block;
+}
+input#inSubmit {
+  display: block;
+}
+

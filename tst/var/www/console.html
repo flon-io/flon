@@ -1,0 +1,48 @@
+
+<!DOCTYPE HTML>
+
+<html>
+  <head>
+    <title>flon</title>
+    <link href="css/flon.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <h1>flon</h1>
+
+    <h2>post to /i/in</h2>
+    <p>
+      <textarea id="inField"></textarea>
+      <input id="inSubmit" type="submit" />
+    </p>
+
+    <script>
+
+      function inOnError(x)
+      {
+        console.log(x);
+      }
+      function inOnLoad(x)
+      {
+        console.log(x);
+      }
+
+      function inSubmit()
+      {
+        var req = new XMLHttpRequest();
+        req.open('POST', './i/in', true);
+        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        req.onError = inOnError;
+        req.onLoad = inOnLoad;
+        // TODO: onDone and onError
+        req.send(document.getElementById("inField").value);
+      }
+
+      document.getElementById("inSubmit").addEventListener('click', inSubmit);
+
+      //document.addEventListener('DOMContentLoaded', function() {});
+
+    </script>
+  </body>
+</html>
+

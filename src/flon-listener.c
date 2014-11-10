@@ -50,6 +50,27 @@ static int respond(shv_response *res, fdja_value *val)
   return 1;
 }
 
+static int in_handler(shv_request *req, shv_response *res, flu_dict *params)
+{
+  // handle incoming message
+
+  if (req->body) flu_writeall("var/spool/dis/%s", "x.json", req->body);
+
+  // respond
+
+  fdja_value *r = fdja_v("{ _links: {} }");
+  fdja_value *l = fdja_l(r, "_links");
+
+  fdja_set(
+    l, "self",
+    fdja_v("{ href: \"%s\", method: POST }", shv_abs(0, req->uri_d)));
+  fdja_set(
+    l, "home",
+    fdja_v("{ href: \"%s\" }", shv_rel(0, req->uri_d, "..")));
+
+  return respond(res, r);
+}
+
 static int i_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   fdja_value *r = fdja_v("{ _links: {} }");
@@ -57,6 +78,9 @@ static int i_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   fdja_set(
     l, "self",
+    fdja_v("{ href: \"%s\" }", shv_abs(0, req->uri_d)));
+  fdja_set(
+    l, "home",
     fdja_v("{ href: \"%s\" }", shv_abs(0, req->uri_d)));
 
   fdja_set(
@@ -134,8 +158,9 @@ int main(int argc, char *argv[])
 
   shv_route *routes[] =
   {
-    shv_rp("/i", i_handler, NULL),
-    shv_rp("/**", shv_dir_handler, "r", "var/www", NULL),
+    shv_rp("GET /i", i_handler, NULL),
+    shv_rp("POST /i/in", in_handler, NULL),
+    shv_rp("GET /**", shv_dir_handler, "r", "var/www", NULL),
     NULL
   };
 
