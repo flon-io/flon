@@ -650,11 +650,11 @@ static flu_node *flu_list_getn(flu_list *l, const char *key)
   return NULL;
 }
 
-void *flu_list_get(flu_list *l, const char *key)
+void *flu_list_getd(flu_list *l, const char *key, void *def)
 {
   flu_node *n = flu_list_getn(l, key);
 
-  return n == NULL ? NULL : n->item;
+  return n ? n->item : def;
 }
 
 flu_list *flu_list_dtrim(flu_list *l)

@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "flutil.h"
 #include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -50,7 +51,7 @@ static char *shv_determine_content_type(char *path)
   else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
   else if (strcmp(suffix, ".json") == 0) r = "application/json";
   else if (strcmp(suffix, ".css") == 0) r = "text/css";
-  else if (strcmp(suffix, ".scss") == 0) r = "text/scss"; // ?
+  else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
   else if (strcmp(suffix, ".html") == 0) r = "text/html";
   else r = "text/plain";
 

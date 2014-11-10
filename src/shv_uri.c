@@ -34,8 +34,6 @@
 #include "aabro.h"
 #include "shv_protected.h"
 
-//#include "gajeta.h"
-
 
 fabr_parser *uri_parser = NULL;
 
@@ -105,6 +103,9 @@ flu_dict *shv_parse_uri(char *uri)
   flu_list_set(d, "_path", fabr_tree_string(uri, t));
   //printf("_path >%s<\n", flu_list_get(d, "_path"));
 
+  t = fabr_tree_lookup(r, "query");
+  if (t) flu_list_set(d, "_query", fabr_tree_string(uri, t));
+
   flu_list *l = fabr_tree_list_named(r, "quentry");
   for (flu_node *n = l->first; n != NULL; n = n->next)
   {
@@ -146,5 +147,59 @@ flu_dict *shv_parse_host_and_path(char *host, char *path)
   free(s);
 
   return d;
+}
+
+char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel)
+{
+  //for (flu_node *n = uri_d->first; n; n = n->next)
+  //  printf("      * %s: %s\n", n->key, (char *)n->item);
+
+  char *s = NULL;
+
+  char *scheme = flu_list_getd(uri_d, "_scheme", "http");
+  if (ssl) scheme = "https";
+
+  char *port = "";
+  s = flu_list_get(uri_d, "_port");
+  if (s) port = flu_sprintf(":%s", s);
+
+  char *frag = "";
+  s = flu_list_get(uri_d, "_fragment");
+  if (s) frag = flu_sprintf("#%s", s);
+
+  char *query = "";
+  s = flu_list_get(uri_d, "_query");
+  if (s) query = flu_sprintf("?%s", s);
+
+  char *path = strdup(flu_list_getd(uri_d, "_path", "/"));
+  if (rel && *rel == '/')
+  {
+    free(path);
+    path = strdup(rel);
+  }
+  else if (rel)
+  {
+    char *end = strrchr(path, '/');
+    if (strchr(end, '.')) *end = 0;
+    s = flu_canopath("%s/%s", path, rel);
+    free(path);
+    path = s;
+  }
+
+  s = flu_sprintf(
+    "%s://%s%s%s%s%s",
+    scheme,
+    flu_list_getd(uri_d, "_host", "127.0.0.1"),
+    port,
+    path,
+    query,
+    frag);
+
+  if (*port != 0) free(port);
+  if (*query != 0) free(query);
+  if (*frag != 0) free(frag);
+  free(path);
+
+  return s;
 }
 

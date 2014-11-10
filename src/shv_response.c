@@ -35,6 +35,7 @@
 #include <arpa/inet.h>
 #include <ev.h>
 
+#include "flutil.h"
 #include "flutim.h"
 #include "gajeta.h"
 #include "shervin.h"

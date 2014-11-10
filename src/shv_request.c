@@ -35,8 +35,6 @@
 #include "aabro.h"
 #include "shv_protected.h"
 
-//#include "gajeta.h"
-
 
 fabr_parser *request_parser = NULL;
 
