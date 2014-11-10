@@ -8,5 +8,7 @@ tmp/s
 tmp/[cixdnl]s
 tmp/spec_*.txt
 tst/bin
-tst/var
+tst/var/archive
+tst/var/log
+tst/var/spool
 
