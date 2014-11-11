@@ -9,6 +9,7 @@
 #include "djan.h"
 #include "shervin.h"
 #include "shv_protected.h"
+#include "fl_common.h"
 #include "fl_listener.h"
 
 
@@ -108,8 +109,13 @@ context "flon-listener"
         expect(exid ^== "NO_DOMAIN-u0-");
         expect(flu_fstat("var/spool/dis/exe_%s.json", exid) == 'f');
 
-        expect(fdja_lj(v, "_links.execution") ===F fdja_vj("xxx"));
-          // the answer contains a link to the new execution
+        expect(
+          fdja_lj(
+            v, "_links.http://flon\\.io/rels\\.html#execution"
+          ) ===F fdja_vj(
+            "\"http://x.flon.io/i/in/execution/%s\"", exid
+          ));
+            // the answer contains a link to the new execution
 
         // TODO: make sure the exid is present in the saved file
       }

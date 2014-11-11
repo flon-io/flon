@@ -101,7 +101,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     {
       fdja_set(r, "exid", fdja_s(i));
 
-      char *s = shv_rel(0, req->uri_d, "./execution/%s", exid);
+      char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
       fdja_set(l, FLON_RELS "#execution", fdja_s(s));
       free(s);
     }
