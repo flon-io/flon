@@ -1,0 +1,10 @@
+
+org.example: {
+  user0: { rights: "rw" }
+  user1: { rights: "r" }
+  user2: { rights: "w" }
+}
+org.example.sales: {
+  user1: { rights: "rw" }
+}
+
