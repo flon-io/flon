@@ -25,11 +25,12 @@
 
 // for specs
 
-#ifndef FL_DISPATCHER_H
-#define FL_DISPATCHER_H
+#ifndef FL_LISTENER_H
+#define FL_LISTENER_H
 
 
-short flon_dispatch(const char *path);
+int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params);
+int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params);
 
-#endif // FL_DISPATCHER_H
+#endif // FL_LISTENER_H
 
