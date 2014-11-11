@@ -918,3 +918,11 @@ long long flu_stoll(char *s, size_t l, int base)
   return r;
 }
 
+int flu_putf(char *s)
+{
+  int r = puts(s);
+  free(s);
+
+  return r;
+}
+
