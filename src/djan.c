@@ -235,7 +235,7 @@ static fabr_parser *fdja_path_parser = NULL;
 static void fdja_path_parser_init()
 {
   fabr_parser *index = fabr_n_rex("index", "-?[0-9]+");
-  fabr_parser *key = fabr_n_rex("key", "[^\n\r\t\\.]+");
+  fabr_parser *key = fabr_n_rex("key", "(\\\\.|[^\n\r\t\\.])+");
   fabr_parser *node = fabr_n_altg("node", index, key, NULL);
 
   fdja_path_parser =
@@ -951,6 +951,16 @@ fdja_value *fdja_value_at(fdja_value *v, long n)
   return NULL;
 }
 
+static void unslash(char *s)
+{
+  for (size_t i = 0, j = 0; ; ++i)
+  {
+    if (s[i] == '\\' && s[i + 1] == '.') { s[j++] = '.'; ++i; continue; }
+    s[j++] = s[i];
+    if (s[i] == 0) break;
+  }
+}
+
 fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
 {
   if (fdja_path_parser == NULL) fdja_path_parser_init();
@@ -959,7 +969,7 @@ fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
 
   //printf("p >%s<\n", p);
   //fabr_tree *tt = fabr_parse_f(p, 0, fdja_path_parser, 0);
-  //puts(fabr_tree_to_string(tt, p, 1));
+  //flu_putf(fabr_tree_to_string(tt, p, 1));
 
   fabr_tree *t = fabr_parse_all(p, 0, fdja_path_parser);
 
@@ -990,6 +1000,7 @@ fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap)
     }
     else // if (ltype == 'k')
     {
+      unslash(s);
       for (vv = vv->child; vv; vv = vv->sibling)
       {
         //printf("vv->key: %s, s: %s\n", vv->key, s);
