@@ -54,6 +54,12 @@ context "flon-listener"
 
   describe "flon_in_handler() /in"
   {
+    before each
+    {
+      int i = system("make -C .. ctst > /dev/null");
+      if (i != 0) printf("... the clean up command failed ...");
+    }
+
     it "accepts launch requests"
     it "accepts cancel requests"
   }
