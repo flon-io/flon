@@ -125,6 +125,15 @@ shv_request *shv_parse_request_head(char *s)
 
   t = fabr_tree_lookup(r, "request_uri");
   req->uri = fabr_tree_string(s, t);
+    //
+  while (1)
+  {
+    char *last = strrchr(req->uri, '/');
+    if (last && last != req->uri && *(last + 1) == 0) *last = 0;
+    else break;
+  }
+    //
+    // discard final slashes/
 
   // version
 
