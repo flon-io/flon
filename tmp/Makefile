@@ -1,6 +1,6 @@
 
 #CFLAGS=-I../src -g -Wall -O3 -lrt
-CFLAGS=-I../src -g -Wall -lrt
+CFLAGS=-I../src -g -Wall -lrt -lev
 LDLIBS=
 CC=c99
 VPATH=../src
@@ -57,6 +57,8 @@ xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i_*_spec.c
 	$(RODZO) ../spec/i_*_spec.c -o is.c
+ls.c: ../spec/l_*_spec.c
+	$(RODZO) ../spec/l_*_spec.c -o ls.c
 ns.c: ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
 	cp ../spec/n/n_helpers.[ch] .
@@ -65,6 +67,7 @@ cs: $(DEPS)
 ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
+ls: $(LDEPS)
 ns: $(NDEPS)
 
 sc: cs
@@ -79,6 +82,9 @@ sx: xs
 si: is
 	@echo "\n--- si --------------------------------------------------------\n"
 	time ./is
+sl: ls
+	@echo "\n--- sl --------------------------------------------------------\n"
+	time ./ls
 sn: ns invoker executor dispatcher
 	@echo "\n--- sn --------------------------------------------------------\n"
 	time ./ns
@@ -96,6 +102,9 @@ vsi: is
 	#valgrind ./is # an invoker may lose as much mem as he wants...
 	valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
+vsl: ls
+	valgrind --leak-check=full -v ./ls
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 vsn: ns
 	valgrind --leak-check=full -v ./ns
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
@@ -131,9 +140,9 @@ scope: flon-scope
 fflon: flon-flon
 	mv flon-flon ../tst/bin/
 
-spec: sc sd sx si sn
+spec: sc sd sx si sl sn
 s: spec
-vspec: vsc vsd vsx vsi vsn
+vspec: vsc vsd vsx vsi vsl vsn
 vs: vspec
 
 .PHONY: clean
