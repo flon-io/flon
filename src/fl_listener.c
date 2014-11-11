@@ -36,22 +36,57 @@
 #include "fl_ids.h"
 
 
-static int respond(shv_response *res, fdja_value *val)
+static int respond(shv_response *res, fdja_value *r)
 {
   flu_list_set(
     res->headers, "content-type", strdup("application/json; charset=UTF-8"));
 
-  flu_list_add(res->body, fdja_to_json(val));
+  // add FLON_RELS to #links
 
-  fdja_free(val);
+  for (fdja_value *v = fdja_l(r, "_links")->child; v; v = v->sibling)
+  {
+    if (*v->key != '#') continue;
+    char *s = flu_sprintf("%s%s", FLON_RELS, v->key);
+    free(v->key);
+    v->key = s;
+  }
+
+  flu_list_add(res->body, fdja_to_json(r));
+
+  fdja_free(r);
 
   return 1;
 }
 
+static void in_handle_launch(
+  shv_request *req, fdja_value *v, char *dom,
+  shv_response *res, fdja_value *r)
+{
+    char *i = flon_generate_exid(dom);
+      // TODO: fetch domain from body and/or domain[s].json
+
+    fdja_set(v, "exid", fdja_s(i));
+
+    if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
+    {
+      res->status_code = 500;
+      fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
+    }
+    else
+    {
+      fdja_set(r, "exid", fdja_s(i));
+
+      char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
+      fdja_pset(r, "_links.#execution", fdja_s(s));
+      free(s);
+    }
+
+    free(i);
+}
+
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
-  fdja_value *r = fdja_v("{ message: ok }");
-  fdja_value *l = fdja_set(r, "_links", fdja_v("{}"));
+  fdja_value *r = fdja_v("{ message: ok, _links: {} }");
 
   // handle incoming message
 
@@ -67,8 +102,10 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     goto _respond;
   }
 
-  char *dc = fdja_todc(v); puts(dc); free(dc);
+  flu_putf(fdja_todc(v));
 
+  char *dom = fdja_ls(v, "domain", NULL);
+  //
   fdja_value *exe = fdja_l(v, "execute");
   fdja_value *inv = fdja_l(v, "invoke");
   fdja_value *rec = fdja_l(v, "receive");
@@ -85,32 +122,9 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     goto _respond;
   }
 
-  if (exe && exe->type == 'a' && pl && exid == NULL && nid == NULL)
+  if (dom && exe && exe->type == 'a' && pl && exid == NULL && nid == NULL)
   {
-    // launch
-
-    char *i = flon_generate_exid("NO_DOMAIN");
-      // TODO: fetch domain from body and/or domain[s].json
-
-    fdja_set(v, "exid", fdja_s(i));
-
-    if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
-    {
-      res->status_code = 500;
-      fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
-    }
-    else
-    {
-      fdja_set(r, "exid", fdja_s(i));
-
-      char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
-      fdja_set(l, FLON_RELS "#execution", fdja_s(s));
-      free(s);
-    }
-
-    free(i);
-
-    goto _respond;
+    in_handle_launch(req, v, dom, res, r); goto _respond;
   }
 
   // no fit, reject...
@@ -126,11 +140,11 @@ _respond:
   char *s = NULL;
 
   s = shv_abs(0, req->uri_d);
-  fdja_set(l, "self", fdja_v("{ href: \"%s\", method: POST }", s));
+  fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\", method: POST }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "..");
-  fdja_set(l, "home", fdja_v("{ href: \"%s\" }", s));
+  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", s));
   free(s);
 
   return respond(res, r);
@@ -141,40 +155,39 @@ int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
   char *s = NULL;
 
   fdja_value *r = fdja_v("{ _links: {} }");
-  fdja_value *l = fdja_l(r, "_links");
 
   s = shv_abs(0, req->uri_d);
-  fdja_set(l, "self", fdja_v("{ href: \"%s\" }", s));
-  fdja_set(l, "home", fdja_v("{ href: \"%s\" }", s));
+  fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", s));
+  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "in");
-  fdja_set(
-    l, FLON_RELS "#in",
+  fdja_pset(
+    r, "_links.#in",
     fdja_v("{ href: \"%s\", method: POST }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "executions");
-  fdja_set(
-    l, FLON_RELS "#executions",
+  fdja_pset(
+    r, "_links.#executions",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "executions/{domain}");
-  fdja_set(
-    l, FLON_RELS "#domain-executions",
+  fdja_pset(
+    r, "_links.#domain-executions",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "executions/{exid}");
-  fdja_set(
-    l, FLON_RELS "#execution",
+  fdja_pset(
+    r, "_links.#execution",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
   s = shv_rel(0, req->uri_d, "metrics");
-  fdja_set(
-    l, FLON_RELS "#metrics",
+  fdja_pset(
+    r, "_links.#metrics",
     fdja_v("{ href: \"%s\" }", s));
   free(s);
 

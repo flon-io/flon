@@ -89,6 +89,7 @@ context "flon-listener"
           "\r\n");
         req->body = ""
           "{\n"
+            "domain: org.example\n"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
             "payload: {}\n"
           "}\n";
@@ -108,7 +109,7 @@ context "flon-listener"
 
         exid = fdja_ls(v, "exid", NULL);
 
-        expect(exid ^== "NO_DOMAIN-u0-");
+        expect(exid ^== "org.example-u0-");
         expect(flu_fstat("var/spool/dis/exe_%s.json", exid) == 'f');
 
         expect(
