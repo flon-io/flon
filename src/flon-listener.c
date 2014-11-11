@@ -105,6 +105,10 @@ static int i_handler(shv_request *req, shv_response *res, flu_dict *params)
       "{ href: \"%s\", templated: true }",
       shv_rel(0, req->uri_d, "executions/{exid}")));
 
+  fdja_set(
+    l, "http://flon.io/rels.html#metrics",
+    fdja_v("{ href: \"%s\" }", shv_rel(0, req->uri_d, "metrics")));
+
   return respond(res, r);
 }
 
