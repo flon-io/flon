@@ -47,7 +47,7 @@ static int respond(shv_response *res, fdja_value *val)
 
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
-  fdja_value *r = fdja_v("{}");
+  fdja_value *r = fdja_v("{ message: ok }");
 
   // handle incoming message
 
@@ -63,7 +63,51 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     goto _respond;
   }
 
-  puts(fdja_todc(v));
+  char *dc = fdja_todc(v); puts(dc); free(dc);
+
+  fdja_value *exe = fdja_l(v, "execute");
+  fdja_value *inv = fdja_l(v, "invoke");
+  fdja_value *rec = fdja_l(v, "receive");
+  //
+  fdja_value *pl = fdja_l(v, "payload");
+  //
+  fdja_value *exid = fdja_l(v, "exid");
+  fdja_value *nid = fdja_l(v, "nid");
+
+  if (pl && pl->type != 'o')
+  {
+    res->status_code = 400;
+    fdja_psetf(r, "message", "payload must be a json object");
+    goto _respond;
+  }
+
+  if (exe && exe->type == 'a' && pl && exid == NULL && nid == NULL)
+  {
+    // launch
+
+    char *i = flon_generate_exid("NO_DOMAIN");
+      // TODO: fetch domain from body and/or domain[s].json
+
+    if (flu_writeall("var/spool/dis/exe_%s.json", i, req->body) != 1)
+    {
+      res->status_code = 500;
+      fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
+    }
+    else
+    {
+      fdja_set(r, "exid", fdja_s(i));
+    }
+
+    free(i);
+
+    goto _respond;
+  }
+
+  // no fit, reject...
+
+  res->status_code = 400;
+  fdja_psetf(r, "message", "rejected");
+  goto _respond;
 
 _respond:
 

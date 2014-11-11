@@ -16,6 +16,7 @@ context "flon-listener"
   before all
   {
     chdir("../tst");
+    flon_configure(".");
   }
 
   before each
@@ -64,6 +65,12 @@ context "flon-listener"
     {
       int i = system("make -C .. ctst > /dev/null");
       if (i != 0) printf("... the clean up command failed ...");
+
+      char *exid = NULL;
+    }
+    after each
+    {
+      if (exid) free(exid);
     }
 
     context "launch"
@@ -84,6 +91,22 @@ context "flon-listener"
 
         expect(r i== 1);
         expect(res->status_code i== 200);
+
+        v = fdja_parse((char *)res->body->first->item);
+
+        expect(v != NULL);
+
+        v->sowner = 0; // the string is owned by the response
+
+        char *dc = fdja_todc(v); puts(dc); free(dc);
+
+        exid = fdja_ls(v, "exid", NULL);
+
+        expect(exid ^== "NO_DOMAIN-u0-");
+        expect(flu_fstat("var/spool/dis/exe_%s.json", exid) == 'f');
+
+        expect(fdja_lj(v, "_links.execution") ===F fdja_vj("xxx"));
+          // the answer contains a link to the new execution
       }
 
       it "rejects invalid launch requests"
