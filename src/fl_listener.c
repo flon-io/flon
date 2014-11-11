@@ -35,8 +35,6 @@
 
 static int respond(shv_response *res, fdja_value *val)
 {
-  res->status_code = 200;
-
   flu_list_set(
     res->headers, "content-type", strdup("application/json; charset=UTF-8"));
 
@@ -49,16 +47,31 @@ static int respond(shv_response *res, fdja_value *val)
 
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
+  fdja_value *r = fdja_v("{}");
+
   // handle incoming message
 
-  if (req->body) flu_writeall("var/spool/dis/%s", "x.json", req->body);
+  //if (req->body) flu_writeall("var/spool/dis/%s", "x.json", req->body);
 
-  // respond
+  fdja_value *v = fdja_parse(req->body);
+  if (v) v->sowner = 0; // since the string is owned by the req
+
+  if (v == NULL || v->type != 'o')
+  {
+    res->status_code = 400;
+    fdja_set(r, "message", fdja_s("not json"));
+    goto _respond;
+  }
+
+  puts(fdja_todc(v));
+
+_respond:
+
+  if (v) fdja_free(v);
 
   char *s = NULL;
 
-  fdja_value *r = fdja_v("{ _links: {} }");
-  fdja_value *l = fdja_l(r, "_links");
+  fdja_value *l = fdja_set(r, "_links", fdja_v("{}"));
 
   s = shv_abs(0, req->uri_d);
   fdja_set(l, "self", fdja_v("{ href: \"%s\", method: POST }", s));

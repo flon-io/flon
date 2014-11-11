@@ -13,6 +13,11 @@
 
 context "flon-listener"
 {
+  before all
+  {
+    chdir("../tst");
+  }
+
   before each
   {
     shv_request *req = NULL;
@@ -40,6 +45,7 @@ context "flon-listener"
       int r = flon_i_handler(req, res, NULL);
 
       expect(r i== 1);
+      expect(res->status_code i== 200);
 
       v = fdja_parse((char *)res->body->first->item);
 
@@ -60,8 +66,45 @@ context "flon-listener"
       if (i != 0) printf("... the clean up command failed ...");
     }
 
-    it "accepts launch requests"
-    it "accepts cancel requests"
+    context "launch"
+    {
+      it "accepts launch requests"
+      {
+        req = shv_parse_request_head(""
+          "POST /i/in HTTP/1.1\r\n"
+          "Host: x.flon.io\r\n"
+          "\r\n");
+        req->body = ""
+          "{\n"
+            "execute: [ invoke, { _0: stamp }, [] ]\n"
+            "payload: {}\n"
+          "}\n";
+
+        int r = flon_in_handler(req, res, NULL);
+
+        expect(r i== 1);
+        expect(res->status_code i== 200);
+      }
+
+      it "rejects invalid launch requests"
+      {
+        req = shv_parse_request_head(""
+          "POST /i/in HTTP/1.1\r\n"
+          "Host: x.flon.io\r\n"
+          "\r\n");
+        req->body = "NADA\n";
+
+        int r = flon_in_handler(req, res, NULL);
+
+        expect(r i== 1);
+        expect(res->status_code i== 400);
+      }
+    }
+
+    context "cancel"
+    {
+      it "accepts cancel requests"
+    }
   }
 }
 
