@@ -27,12 +27,14 @@ context "flon-listener"
     flu_dict *params = NULL;
     shv_response *res = shv_response_malloc(200);
     fdja_value *v = NULL;
+    fdja_value *v1 = NULL;
   }
   after each
   {
     if (req) shv_request_free(req);
     if (params) flu_list_free(params);
     if (v) fdja_free(v);
+    if (v1) fdja_free(v1);
     if (res) shv_response_free(res);
   }
 
@@ -117,7 +119,10 @@ context "flon-listener"
           ));
             // the answer contains a link to the new execution
 
-        // TODO: make sure the exid is present in the saved file
+        v1 = fdja_parse_f("var/spool/dis/exe_%s.json", exid);
+
+        expect(v1 != NULL);
+        expect(fdja_ls(v1, "exid", NULL) ===f exid);
       }
 
       it "rejects invalid launch requests"

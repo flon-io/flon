@@ -92,7 +92,9 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     char *i = flon_generate_exid("NO_DOMAIN");
       // TODO: fetch domain from body and/or domain[s].json
 
-    if (flu_writeall("var/spool/dis/exe_%s.json", i, req->body) != 1)
+    fdja_set(v, "exid", fdja_s(i));
+
+    if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
     {
       res->status_code = 500;
       fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
