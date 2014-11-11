@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <stdlib.h>
 #include <string.h>
 
 #include "djan.h"
@@ -41,6 +42,8 @@ static int respond(shv_response *res, fdja_value *val)
 
   flu_list_add(res->body, fdja_to_json(val));
 
+  fdja_free(val);
+
   return 1;
 }
 
@@ -52,56 +55,63 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   // respond
 
+  char *s = NULL;
+
   fdja_value *r = fdja_v("{ _links: {} }");
   fdja_value *l = fdja_l(r, "_links");
 
-  fdja_set(
-    l, "self",
-    fdja_v("{ href: \"%s\", method: POST }", shv_abs(0, req->uri_d)));
-  fdja_set(
-    l, "home",
-    fdja_v("{ href: \"%s\" }", shv_rel(0, req->uri_d, "..")));
+  s = shv_abs(0, req->uri_d);
+  fdja_set(l, "self", fdja_v("{ href: \"%s\", method: POST }", s));
+  free(s);
+
+  s = shv_rel(0, req->uri_d, "..");
+  fdja_set(l, "home", fdja_v("{ href: \"%s\" }", s));
+  free(s);
 
   return respond(res, r);
 }
 
 int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
+  char *s = NULL;
+
   fdja_value *r = fdja_v("{ _links: {} }");
   fdja_value *l = fdja_l(r, "_links");
 
-  fdja_set(
-    l, "self",
-    fdja_v("{ href: \"%s\" }", shv_abs(0, req->uri_d)));
-  fdja_set(
-    l, "home",
-    fdja_v("{ href: \"%s\" }", shv_abs(0, req->uri_d)));
+  s = shv_abs(0, req->uri_d);
+  fdja_set(l, "self", fdja_v("{ href: \"%s\" }", s));
+  fdja_set(l, "home", fdja_v("{ href: \"%s\" }", s));
+  free(s);
 
+  s = shv_rel(0, req->uri_d, "in");
   fdja_set(
     l, "http://flon.io/rels.html#in",
-    fdja_v(
-      "{ href: \"%s\", method: POST }",
-      shv_rel(0, req->uri_d, "in")));
+    fdja_v("{ href: \"%s\", method: POST }", s));
+  free(s);
 
+  s = shv_rel(0, req->uri_d, "executions");
   fdja_set(
     l, "http://flon.io/rels.html#executions",
-    fdja_v(
-      "{ href: \"%s\", templated: true }",
-      shv_rel(0, req->uri_d, "executions")));
+    fdja_v("{ href: \"%s\", templated: true }", s));
+  free(s);
+
+  s = shv_rel(0, req->uri_d, "executions/{domain}");
   fdja_set(
     l, "http://flon.io/rels.html#domain-executions",
-    fdja_v(
-      "{ href: \"%s\", templated: true }",
-      shv_rel(0, req->uri_d, "executions/{domain}")));
+    fdja_v("{ href: \"%s\", templated: true }", s));
+  free(s);
+
+  s = shv_rel(0, req->uri_d, "executions/{exid}");
   fdja_set(
     l, "http://flon.io/rels.html#execution",
-    fdja_v(
-      "{ href: \"%s\", templated: true }",
-      shv_rel(0, req->uri_d, "executions/{exid}")));
+    fdja_v("{ href: \"%s\", templated: true }", s));
+  free(s);
 
+  s = shv_rel(0, req->uri_d, "metrics");
   fdja_set(
     l, "http://flon.io/rels.html#metrics",
-    fdja_v("{ href: \"%s\" }", shv_rel(0, req->uri_d, "metrics")));
+    fdja_v("{ href: \"%s\" }", s));
+  free(s);
 
   return respond(res, r);
 }
