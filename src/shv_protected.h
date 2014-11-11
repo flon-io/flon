@@ -91,10 +91,10 @@ flu_dict *shv_parse_host_and_path(char *host, char *path);
 /* Renders the uri_d as an absolute URI. When ssl is set to 1, the
  * scheme will be "https://".
  */
-char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel);
+char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 
 #define shv_abs(ssl, uri_d) shv_absolute_uri(ssl, uri_d, NULL)
-#define shv_rel(ssl, uri_d, rel) shv_absolute_uri(ssl, uri_d, rel)
+#define shv_rel(ssl, uri_d, ...) shv_absolute_uri(ssl, uri_d, __VA_ARGS__)
 
 #endif // FLON_SHV_PROTECTED_H
 

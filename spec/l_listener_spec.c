@@ -5,6 +5,7 @@
 // Tue Nov 11 13:25:47 JST 2014
 //
 
+#include "flutil.h"
 #include "djan.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -54,6 +55,8 @@ context "flon-listener"
 
       v->sowner = 0; // the string is owned by the response
 
+      //flu_putf(fdja_todc(v));
+
       expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
         "{ href: \"http://x.flon.io/i\" }"));
     }
@@ -98,7 +101,7 @@ context "flon-listener"
 
         v->sowner = 0; // the string is owned by the response
 
-        char *dc = fdja_todc(v); puts(dc); free(dc);
+        flu_putf(fdja_todc(v));
 
         exid = fdja_ls(v, "exid", NULL);
 
@@ -107,6 +110,8 @@ context "flon-listener"
 
         expect(fdja_lj(v, "_links.execution") ===F fdja_vj("xxx"));
           // the answer contains a link to the new execution
+
+        // TODO: make sure the exid is present in the saved file
       }
 
       it "rejects invalid launch requests"
