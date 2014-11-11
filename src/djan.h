@@ -164,29 +164,35 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 char *fdja_lj(fdja_value *v, const char *path, ...);
 char *fdja_ld(fdja_value *v, const char *path, ...);
 
-int fdja_push(fdja_value *array, fdja_value *v);
+fdja_value *fdja_push(fdja_value *array, fdja_value *v);
 
 /* Sets a value in an object.
  * If the key is prefixed with \b (backslash b), the entry is placed
  * at the beginning of the object.
  * If the value is NULL, the keyed entry gets removed.
+ *
+ * Returns the value just set.
  */
-int fdja_set(fdja_value *object, const char *key, fdja_value *v);
+fdja_value *fdja_set(fdja_value *object, const char *key, fdja_value *v);
 
 int fdja_merge(fdja_value *dst, fdja_value *src);
 
 int fdja_splice(fdja_value *array, long long start, size_t count, ...);
 
 /* Last arg is a fdja_value *.
+ *
+ * Returns the value just set.
  */
-int fdja_pset(fdja_value *start, const char *path, ...);
+fdja_value *fdja_pset(fdja_value *start, const char *path, ...);
   // pset(v, "cars.-1", v1) to push in cars array
   // pset(v, "cars.%i", -1, v1) too
   // pset(v, "cars.1.\bkey", val) to place entry at beginning of object
 
 /* Last arguments are passed to fdja_v().
+ *
+ * Returns the value just set.
  */
-int fdja_psetf(fdja_value *start, const char *path, ...);
+fdja_value *fdja_psetf(fdja_value *start, const char *path, ...);
 
 #endif // FLON_DJAN_H
 

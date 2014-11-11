@@ -1104,20 +1104,20 @@ char *fdja_ld(fdja_value *v, const char *path, ...)
   return r ? fdja_to_djan(r, FDJA_F_ONELINE) : NULL;
 }
 
-int fdja_push(fdja_value *array, fdja_value *v)
+fdja_value *fdja_push(fdja_value *array, fdja_value *v)
 {
-  if (array->type != 'a') return 0;
+  if (array->type != 'a') return NULL;
 
   for (fdja_value **s = &array->child; ; s = &(*s)->sibling)
   {
     if (*s == NULL) { *s = v; break; }
   }
-  return 1;
+  return v;
 }
 
-int fdja_set(fdja_value *object, const char *key, fdja_value *val)
+fdja_value *fdja_set(fdja_value *object, const char *key, fdja_value *val)
 {
-  if (object->type != 'o') return 0;
+  if (object->type != 'o') return NULL;
 
   fdja_value *v = val;
 
@@ -1161,7 +1161,7 @@ int fdja_set(fdja_value *object, const char *key, fdja_value *val)
     object->child = val;
   }
 
-  return 1;
+  return val;
 }
 
 int fdja_merge(fdja_value *dst, fdja_value *src)
@@ -1248,9 +1248,16 @@ int fdja_splice(fdja_value *array, long long start, size_t count, ...)
   return 1;
 }
 
-int fdja_pset(fdja_value *start, const char *path, ...)
+static int is_a_number(char *s)
 {
-  int r = 0;
+  if (*s == '-') s = s + 1;
+  for (size_t i = 0; s[i]; ++i) if ( ! isdigit(s[i])) return 0;
+  return 1;
+}
+
+fdja_value *fdja_pset(fdja_value *start, const char *path, ...)
+{
+  fdja_value *r = NULL;
 
   va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);
@@ -1281,8 +1288,15 @@ int fdja_pset(fdja_value *start, const char *path, ...)
 
   if (target->type == 'a')
   {
-    if (strcmp(key, "]") == 0) r = fdja_push(target, v);
-    else r = fdja_splice(target, strtol(key, NULL, 10), 1, v, NULL);
+    if (strcmp(key, "]") == 0)
+    {
+      r = fdja_push(target, v);
+    }
+    else if (is_a_number(key))
+    {
+      fdja_splice(target, strtol(key, NULL, 10), 1, v, NULL);
+      r = v;
+    }
   }
 
 _over:
@@ -1292,7 +1306,7 @@ _over:
   return r;
 }
 
-int fdja_psetf(fdja_value *start, const char *path, ...)
+fdja_value *fdja_psetf(fdja_value *start, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);
@@ -1300,10 +1314,15 @@ int fdja_psetf(fdja_value *start, const char *path, ...)
   char *s = flu_svprintf(f, ap);
   va_end(ap);
 
-  fdja_value *v = fdja_parse(s);
-  int r = v ? fdja_pset(start, p, v) : 0;
+  fdja_value *r = NULL;
 
-  if (r == 0 && v != NULL) fdja_free(v);
+  fdja_value *v = fdja_parse(s);
+  if (v == NULL) goto _over;
+
+  r = fdja_pset(start, p, v);
+  if (r == NULL) fdja_free(v);
+
+_over:
 
   free(p);
 
