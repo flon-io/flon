@@ -31,6 +31,10 @@
 #include "shervin.h"
 
 
+int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params);
+
+int flon_auth_enticate(char *user, char *pass);
+
 int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params);
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params);
 
