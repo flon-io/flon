@@ -26,10 +26,12 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 #include "flutil.h"
+#include "tsifro.h"
 #include "fl_ids.h"
 #include "fl_common.h"
 
@@ -45,22 +47,35 @@ static void print_usage(short explain_dir)
   fprintf(stderr, "" "\n");
   fprintf(stderr, "Generates an exid." "\n");
   fprintf(stderr, "" "\n");
+  fprintf(stderr, "## password hashing" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  flon-flon [-d {dir}] -h {pass} -f {work_factor}" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "Hashes a password." "\n");
+  fprintf(stderr, "" "\n");
 }
 
 int main(int argc, char *argv[])
 {
   char *dir = NULL;
   char *domain = NULL;
+  char *pass = NULL;
+  char *wfactor = "9";
   short badarg = 0;
 
-  int opt; while ((opt = getopt(argc, argv, "d:i:")) != -1)
+  int opt; while ((opt = getopt(argc, argv, "d:i:h:f:")) != -1)
   {
     if (opt == 'd') dir = optarg;
     else if (opt == 'i') domain = optarg;
+    else if (opt == 'h') pass = optarg;
+    else if (opt == 'f') wfactor = optarg;
     else badarg = 1;
   }
 
-  if (badarg || domain == NULL) { print_usage(0); return 1; }
+  if (badarg || (domain == NULL && pass == NULL))
+  {
+    print_usage(0); return 1;
+  }
 
   if (dir == NULL)
   {
@@ -79,7 +94,17 @@ int main(int argc, char *argv[])
     fprintf(stderr, "couldn't read %s/etc/flon.json", dir); return 1;
   }
 
-  puts(flon_generate_exid(domain));
+  if (domain)
+  {
+    printf("%s\n", flon_generate_exid(domain));
+  }
+  else if (pass)
+  {
+    int work_factor = strtol(wfactor, NULL, 10);
+    char *salt = ftsi_generate_bc_salt(NULL, work_factor);
+    if (salt == NULL) return 1;
+    printf("%s\n", ftsi_bc_hash(pass, salt));
+  }
 
   return 0;
 }

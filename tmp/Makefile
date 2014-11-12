@@ -28,7 +28,10 @@ endif
 #dspec: s
 #	gdb ./s
 
-SHV_OS=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/sh*.c))
+SHV_OS=\
+  $(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/sh*.c))
+TSI_OS=\
+  $(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/crypt_*.c)) tsifro.o
 
 clean:
 	rm -f *.o
@@ -125,7 +128,7 @@ flon-listener: $(LDEPS)
       -lev -o flon-listener
 #
 flon-scope: $(DEPS)
-flon-flon: $(DEPS)
+flon-flon: $(DEPS) $(TSI_OS)
 
 executor: flon-executor
 	mv flon-executor ../tst/bin/
