@@ -25,8 +25,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#define FLON_RELS "http://flon.io/rels.html"
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -34,6 +32,9 @@
 #include "shervin.h"
 #include "shv_protected.h"
 #include "fl_ids.h"
+
+
+#define FLON_RELS "http://flon.io/rels.html"
 
 
 static int respond(shv_response *res, fdja_value *r)
