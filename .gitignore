@@ -11,4 +11,5 @@ tst/bin
 tst/var/archive
 tst/var/log
 tst/var/spool
+tst/var/run
 
