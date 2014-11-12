@@ -76,8 +76,8 @@ context "flon-dispatcher"
       s = flu_readall("var/log/%s/inv_%s-0_2.log", fep, exid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
-      expect(strstr(s, " invoked >ruby stamp.rb<") != NULL);
-      expect(strstr(s, " stamp.rb over.") != NULL);
+      expect(s >== " invoked >ruby stamp.rb<");
+      expect(s >== " stamp.rb over.");
 
       expect(flu_fstat("var/spool/dis/%s", name) == 0);
 
@@ -185,7 +185,7 @@ context "flon-dispatcher"
       //expect(flu_fstat("var/archive/%s/exe.log", fep) == 'f');
       s = flu_readall("var/archive/%s/exe.log", fep);
       expect(s != NULL);
-      expect(strstr(s, "reject node not found, ") != NULL);
+      expect(s >== "reject node not found, ");
       //free(s);
 
       // check that rcv_ got rejected (no execution going on)

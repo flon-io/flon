@@ -192,10 +192,10 @@ context "flon-executor"
 
       char *s = flu_readall("var/run/%s/msgs.log", fep);
       expect(s != NULL);
-      expect(strstr(s, "color:blue}") != NULL);
-      expect(strstr(s, "color:green}") != NULL);
-      expect(strstr(s, "\n") != NULL);
-      expect(strstr(s, exid) != NULL);
+      expect(s >== "color:blue}");
+      expect(s >== "color:green}");
+      expect(s >== "\n");
+      expect(s >== exid);
       free(s);
 
       // inject ret_ back, towards "green"
