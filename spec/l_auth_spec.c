@@ -5,6 +5,8 @@
 // Wed Nov 12 15:42:05 JST 2014
 //
 
+#include "shervin.h"
+#include "shv_protected.h"
 #include "fl_common.h"
 #include "fl_listener.h"
 
@@ -17,50 +19,73 @@ context "flon-listener auth"
     flon_configure(".");
   }
 
-  //before each
-  //{
-  //  shv_request *req = NULL;
-  //  flu_dict *params = NULL;
-  //  shv_response *res = shv_response_malloc(200);
-  //  fdja_value *v = NULL;
-  //  fdja_value *v1 = NULL;
-  //}
-  //after each
-  //{
-  //  if (req) shv_request_free(req);
-  //  if (params) flu_list_free(params);
-  //  if (v) fdja_free(v);
-  //  if (v1) fdja_free(v1);
-  //  if (res) shv_response_free(res);
-  //}
-
   describe "flon_auth_filter()"
   {
-    it "flips burgers"
+    before each
+    {
+      shv_request *req = NULL;
+      flu_dict *params = NULL;
+      shv_response *res = shv_response_malloc(200);
+      fdja_value *v = NULL;
+      fdja_value *v1 = NULL;
+    }
+    after each
+    {
+      if (req) shv_request_free(req);
+      if (params) flu_list_free(params);
+      if (v) fdja_free(v);
+      if (v1) fdja_free(v1);
+      if (res) shv_response_free(res);
+    }
 
-    //it "lists the resources available"
-    //{
-    //  req = shv_parse_request_head(""
-    //    "GET /i HTTP/1.1\r\n"
-    //    "Host: x.flon.io\r\n"
-    //    "\r\n");
+    it "returns 1 and 401 if auth fails (no authorization header)"
+    {
+      req = shv_parse_request_head(""
+        "GET /i HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n");
 
-    //  int r = flon_i_handler(req, res, NULL);
+      int r = flon_auth_filter(req, res, NULL);
 
-    //  expect(r i== 1);
-    //  expect(res->status_code i== 200);
+      expect(r i== 1);
 
-    //  v = fdja_parse((char *)res->body->first->item);
+      expect(res->status_code i== 401);
 
-    //  expect(v != NULL);
+      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+        "Basic realm=\"flon\"");
+    }
 
-    //  v->sowner = 0; // the string is owned by the response
+    it "returns 1 and 401 if auth fails (wrong credentials)"
+    {
+      req = shv_parse_request_head(""
+        "GET /i HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "Authorization: Basic nada\r\n"
+        "\r\n");
 
-    //  //flu_putf(fdja_todc(v));
+      int r = flon_auth_filter(req, res, NULL);
 
-    //  expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
-    //    "{ href: \"http://x.flon.io/i\" }"));
-    //}
+      expect(r i== 1);
+
+      expect(res->status_code i== 401);
+
+      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+        "Basic realm=\"flon\"");
+    }
+
+    it "returns 0 if auth succeeds"
+    {
+      req = shv_parse_request_head(""
+        "GET /i HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "Authorization: Basic xxxx\r\n"
+        "\r\n");
+
+      int r = flon_auth_filter(req, res, NULL);
+
+      expect(r i== 0);
+      expect(flu_list_get(req->routing_d, "_user") === "john");
+    }
   }
 
   describe "flon_auth_enticate()"

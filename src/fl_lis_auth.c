@@ -25,7 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
+#include <string.h>
 
 #include "gajeta.h"
 #include "djan.h"
@@ -66,5 +66,28 @@ int flon_auth_enticate(char *user, char *pass)
   int r = ftsi_bc_verify(pass, hash);
 
   return u ? r : 0;
+}
+
+int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params)
+{
+  // return 1 and say 401 not authorized if auth fails
+  // return 0 else
+
+  int r = 1;
+
+  char *auth = flu_list_get(req->headers, "authorization");
+  if (auth == NULL) goto _over;
+  //puts(auth);
+
+_over:
+
+  if (r == 1)
+  {
+    flu_list_set(
+      res->headers, "WWW-Authenticate", strdup("Basic realm=\"flon\""));
+    res->status_code = 401;
+  }
+
+  return r;
 }
 
