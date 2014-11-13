@@ -68,3 +68,26 @@ input#inSubmit {
   display: block;
 }
 
+.hidden {
+  display: none;
+}
+
+.panes {
+  width: 100%;
+  position: relative;
+}
+.left-pane {
+  display: inline-block;
+  position: absolute;
+  width: 45%;
+  left: 1em;
+}
+.right-pane {
+  display: inline-block;
+  width: 50%;
+  font-family: monospace;
+  position: absolute;
+  right: 1em;
+  top: 0.5em;
+}
+

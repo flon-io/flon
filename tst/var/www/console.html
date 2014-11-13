@@ -8,11 +8,61 @@
   </head>
 
   <body>
-    <h1>flon</h1>
 
-    <h2>post to /i/in</h2>
-    <p>
-      <textarea id="inField">
+    <div class="panes">
+
+      <div class="left-pane">
+
+        <h1>flon</h1>
+        <h2>post to /i/in</h2>
+        <p>
+          <textarea id="inField">
+          </textarea>
+          <input id="inSubmit" type="submit" />
+        </p>
+      </div>
+
+      <div class="right-pane">
+
+        <div id="log">
+        </div>
+      </div>
+    </div>
+
+    <script>
+
+      function inOnError(e)
+      {
+        console.log(e);
+      }
+      function inOnLoad(e)
+      {
+        console.log(e.target);
+        var elt = document.createElement('div');
+        elt.textContent = e.target.responseText;
+        document.getElementById('log').appendChild(elt);
+      }
+
+      function inSubmit()
+      {
+        var req = new XMLHttpRequest();
+        req.open('POST', './i/in', true);
+        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+        req.onerror = inOnError;
+        req.onload = inOnLoad;
+        req.send(document.getElementById("inField").value);
+      }
+
+      document.getElementById("inSubmit").addEventListener('click', inSubmit);
+
+      document.addEventListener('DOMContentLoaded', function() {
+
+        document.getElementById("inField").textContent =
+          document.getElementById("launchJson").textContent;
+      });
+    </script>
+
+    <div id="launchJson" class="hidden">
 {
   domain: org.example
   execute:
@@ -25,37 +75,7 @@
     hello: world
   }
 }
-      </textarea>
-      <input id="inSubmit" type="submit" />
-    </p>
-
-    <script>
-
-      function inOnError(x)
-      {
-        console.log(x);
-      }
-      function inOnLoad(x)
-      {
-        console.log(x);
-      }
-
-      function inSubmit()
-      {
-        var req = new XMLHttpRequest();
-        req.open('POST', './i/in', true);
-        req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-        req.onError = inOnError;
-        req.onLoad = inOnLoad;
-        // TODO: onDone and onError
-        req.send(document.getElementById("inField").value);
-      }
-
-      document.getElementById("inSubmit").addEventListener('click', inSubmit);
-
-      //document.addEventListener('DOMContentLoaded', function() {});
-
-    </script>
+    </div>
   </body>
 </html>
 
