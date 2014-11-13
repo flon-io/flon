@@ -30,6 +30,8 @@
 #ifndef FLON_FLU64_H
 #define FLON_FLU64_H
 
+#include <sys/types.h>
+
 
 void flu64_do_encode(char *in, size_t l, char *out);
 void flu64_do_decode(char *in, size_t l, char *out);

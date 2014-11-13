@@ -78,7 +78,7 @@ context "flon-listener auth"
       req = shv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "Authorization: Basic xxxx\r\n"
+        "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
       int r = flon_auth_filter(req, res, NULL);

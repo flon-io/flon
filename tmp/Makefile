@@ -50,7 +50,7 @@ DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) fl_invoker.o
 NDEPS=$(DEPS) n_helpers.o
-LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) fl_listener.o fl_lis_auth.o
+LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c

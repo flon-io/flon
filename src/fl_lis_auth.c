@@ -27,6 +27,7 @@
 
 #include <string.h>
 
+#include "flu64.h"
 #include "gajeta.h"
 #include "djan.h"
 #include "tsifro.h"
@@ -70,14 +71,23 @@ int flon_auth_enticate(char *user, char *pass)
 
 int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params)
 {
-  // return 1 and say 401 not authorized if auth fails
-  // return 0 else
-
   int r = 1;
+  char *user = NULL;
 
   char *auth = flu_list_get(req->headers, "authorization");
   if (auth == NULL) goto _over;
-  //puts(auth);
+
+  if (strncmp(auth, "Basic ", 6) != 0) goto _over;
+
+  user = flu64_decode(auth + 6, -1);
+  char *pass = strchr(user, ':');
+  if (pass == NULL) goto _over;
+
+  *pass = 0; pass = pass + 1;
+  if (flon_auth_enticate(user, pass) == 0) goto _over;
+
+  r = 0; // success
+  flu_list_set(req->routing_d, "_user", strdup(user));
 
 _over:
 
@@ -87,6 +97,8 @@ _over:
       res->headers, "WWW-Authenticate", strdup("Basic realm=\"flon\""));
     res->status_code = 401;
   }
+
+  free(user);
 
   return r;
 }
