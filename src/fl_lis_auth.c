@@ -75,6 +75,9 @@ int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params)
   int r = 1;
   char *user = NULL;
 
+  if (flu_list_get(req->uri_d, "logout")) goto _over;
+    // /?logout logs out...
+
   char *auth = flu_list_get(req->headers, "authorization");
   if (auth == NULL) goto _over;
 
