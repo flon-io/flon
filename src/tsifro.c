@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "ow-crypt.h"
 #include "tsifro.h"
@@ -77,16 +78,16 @@ char *ftsi_bc_hash(const char *s, const char *salt)
 
 int ftsi_bc_verify(const char *pass, const char *hash)
 {
-  char *h = ftsi_bc_hash(pass, hash);
+  char h[BC_HASHSIZE + 1];
+  strncpy(h, hash, BC_HASHSIZE + 1); // since strncpy pads with nulls
 
-  char *hh = calloc(BC_HASHSIZE + 1, sizeof(char));
-  if (h == NULL) h = hh;
+  char hh[BC_HASHSIZE + 1];
+  memset(hh, 0, BC_HASHSIZE + 1);
+
+  crypt_rn(pass, h, hh, BC_HASHSIZE);
 
   int r = 1;
-  for (size_t i = 0; i < BC_HASHSIZE; ++i) r = (h[i] == hash[i]) ? r : 0;
-
-  if (h != hh) free(hh);
-  free(h);
+  for (size_t i = 0; i < BC_HASHSIZE; ++i) { r = (h[i] == hh[i]) ? r : 0; }
 
   return r;
 }

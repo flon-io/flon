@@ -5,6 +5,7 @@
 // Wed Nov 12 15:42:05 JST 2014
 //
 
+#include "tsifro.h"
 #include "shervin.h"
 #include "shv_protected.h"
 #include "fl_common.h"
@@ -73,6 +74,24 @@ context "flon-listener auth"
         "Basic realm=\"flon\"");
     }
 
+    it "returns 1 and 401 if ?logout"
+    {
+      req = shv_parse_request_head(""
+        "GET /i?logout=1 HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "Authorization: Basic am9objp3eXZlcm4=\r\n"
+        "\r\n");
+
+      int r = flon_auth_filter(req, res, NULL);
+
+      expect(r i== 1);
+
+      expect(res->status_code i== 401);
+
+      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+        "Basic realm=\"flon\"");
+    }
+
     it "returns 0 if auth succeeds"
     {
       req = shv_parse_request_head(""
@@ -98,6 +117,15 @@ context "flon-listener auth"
     it "returns 0 else"
     {
       expect(flon_auth_enticate("john", "wivern") i== 0);
+    }
+
+    it "verifies 'wyvern'"
+    {
+      expect(
+        ftsi_bc_verify(
+          "wyvern",
+          "$2a$07$hi1ZGrPNfHAX/a5p0oTu0edFxY3aCZBK.NfIx9RrIEPWaiidMV8ty"
+        ) i== 1);
     }
   }
 }
