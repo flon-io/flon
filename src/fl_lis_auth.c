@@ -27,6 +27,44 @@
 
 //#include <stdlib.h>
 
-//#include "flutil.h"
+#include "gajeta.h"
+#include "djan.h"
+#include "tsifro.h"
 #include "fl_listener.h"
+
+
+// TODO: when receiving SIGHUP, reload passwd.json (and domain.json?)
+
+static fdja_value *passwd = NULL;
+
+static void load_passwd()
+{
+  passwd = fdja_parse_obj_f("etc/passwd.json");
+
+  if (passwd) return;
+
+  fgaj_r("couldn't load etc/passwd.json");
+}
+
+int flon_auth_enticate(char *user, char *pass)
+{
+  if (passwd == NULL) load_passwd();
+  if (passwd == NULL) { fgaj_e("passwd not loaded"); return 0; }
+
+  fdja_value *u = fdja_l(passwd, user);
+
+  char *hash = u ? fdja_ls(u, "pass", NULL) : NULL;
+  if (hash == NULL)
+  {
+    u = NULL;
+    hash = "$2a$08$3xtQyM06K85SCaL2u8EadeO8FwLd5M1xEb4/mtxRaArfx1MFB9/QK";
+      // dummy hash
+  }
+
+  // TODO: shouldn't the workfactor be set in the conf?
+
+  int r = ftsi_bc_verify(pass, hash);
+
+  return u ? r : 0;
+}
 

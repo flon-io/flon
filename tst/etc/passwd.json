@@ -2,4 +2,5 @@
 user0: { pass: xyz }
 user1: { pass: null }
 user2: { pass: abc }
+john: { pass: $2a$07$hi1ZGrPNfHAX/a5p0oTu0edFxY3aCZBK.NfIx9RrIEPWaiidMV8ty }
 
