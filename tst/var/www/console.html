@@ -12,7 +12,20 @@
 
     <h2>post to /i/in</h2>
     <p>
-      <textarea id="inField"></textarea>
+      <textarea id="inField">
+{
+  domain: org.example
+  execute:
+    [ sequence, {}, [
+      [ invoke, { _0: stamp, color: red }, [] ]
+      [ invoke, { _0: stamp, color: green }, [] ]
+      [ invoke, { _0: stamp, color: blue }, [] ]
+    ] ]
+  payload: {
+    hello: world
+  }
+}
+      </textarea>
       <input id="inSubmit" type="submit" />
     </p>
 

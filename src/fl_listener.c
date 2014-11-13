@@ -87,6 +87,7 @@ static void in_handle_launch(
 
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
+  res->status_code = 200;
   fdja_value *r = fdja_v("{ message: ok, _links: {} }");
 
   // handle incoming message
@@ -103,7 +104,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
     goto _respond;
   }
 
-  flu_putf(fdja_todc(v));
+  //flu_putf(fdja_todc(v));
 
   char *dom = fdja_ls(v, "domain", NULL);
   //
@@ -155,6 +156,7 @@ int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *s = NULL;
 
+  res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {} }");
 
   s = shv_abs(0, req->uri_d);

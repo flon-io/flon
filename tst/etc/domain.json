@@ -13,10 +13,11 @@ org.example: {
     user0: { rights: rw }
     user1: { rights: r }
     user2: { rights: r! }
+    john: { rights: rw }
   }
   sales: {
     _: {
-      user2
+      user2: { rights: r }
     }
   }
 }

@@ -25,7 +25,7 @@ context "flon-listener"
   {
     shv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(200);
+    shv_response *res = shv_response_malloc(404);
     fdja_value *v = NULL;
     fdja_value *v1 = NULL;
   }
@@ -105,7 +105,7 @@ context "flon-listener"
 
         v->sowner = 0; // the string is owned by the response
 
-        flu_putf(fdja_todc(v));
+        //flu_putf(fdja_todc(v));
 
         exid = fdja_ls(v, "exid", NULL);
 
