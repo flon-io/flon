@@ -128,7 +128,7 @@ flon-listener: $(LDEPS)
       -lev -o flon-listener
 #
 flon-scope: $(DEPS)
-flon-flon: $(DEPS) $(TSI_OS)
+flon-flon: $(DEPS) $(TSI_OS) flu64.o
 
 executor: flon-executor
 	mv flon-executor ../tst/bin/

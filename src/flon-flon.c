@@ -31,6 +31,7 @@
 #include <unistd.h>
 
 #include "flutil.h"
+#include "flu64.h"
 #include "tsifro.h"
 #include "fl_ids.h"
 #include "fl_common.h"
@@ -41,17 +42,23 @@ static void print_usage(short explain_dir)
   fprintf(stderr, "" "\n");
   fprintf(stderr, "# flon-flon" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "## exid generation" "\n");
+  fprintf(stderr, "  ## exid generation" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "  flon-flon [-d {dir}] -i {domain}" "\n");
+  fprintf(stderr, "    flon-flon [-d {dir}] -i {domain}" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "Generates an exid." "\n");
+  fprintf(stderr, "  Generates an exid." "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "## password hashing" "\n");
+  fprintf(stderr, "  ## password hashing" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "  flon-flon [-d {dir}] -h {pass} -f {work_factor}" "\n");
+  fprintf(stderr, "    flon-flon [-d {dir}] -h {pass} -f {work_factor}" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "Hashes a password." "\n");
+  fprintf(stderr, "  Hashes a password." "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  ## base64 encoding" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "    flon-flon [-d {dir}] -6 {text}" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  Encodes the given text as base64" "\n");
   fprintf(stderr, "" "\n");
 }
 
@@ -61,18 +68,20 @@ int main(int argc, char *argv[])
   char *domain = NULL;
   char *pass = NULL;
   char *wfactor = "9";
+  char *sixtext = NULL;
   short badarg = 0;
 
-  int opt; while ((opt = getopt(argc, argv, "d:i:h:f:")) != -1)
+  int opt; while ((opt = getopt(argc, argv, "d:i:h:f:6:")) != -1)
   {
     if (opt == 'd') dir = optarg;
     else if (opt == 'i') domain = optarg;
     else if (opt == 'h') pass = optarg;
     else if (opt == 'f') wfactor = optarg;
+    else if (opt == '6') sixtext = optarg;
     else badarg = 1;
   }
 
-  if (badarg || (domain == NULL && pass == NULL))
+  if (badarg || (domain == NULL && pass == NULL && sixtext == NULL))
   {
     print_usage(0); return 1;
   }
@@ -104,6 +113,10 @@ int main(int argc, char *argv[])
     char *salt = ftsi_generate_bc_salt(NULL, work_factor);
     if (salt == NULL) return 1;
     printf("%s\n", ftsi_bc_hash(pass, salt));
+  }
+  else if (sixtext)
+  {
+    printf("%s\n", flu64_encode(sixtext, -1));
   }
 
   return 0;
