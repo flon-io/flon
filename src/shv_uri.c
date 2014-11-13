@@ -112,9 +112,10 @@ flu_dict *shv_parse_uri(char *uri)
     t = fabr_tree_lookup((fabr_tree *)n->item, "key");
     char *k = fabr_tree_string(uri, t);
 
+    char *v = NULL; char *vv = NULL;
     t = fabr_tree_lookup((fabr_tree *)n->item, "val");
-    char *v = fabr_tree_string(uri, t);
-    char *vv = flu_urldecode(v, -1);
+    if (t) { v = fabr_tree_string(uri, t); vv = flu_urldecode(v, -1); }
+    else { vv = strdup(""); }
 
     flu_list_set(d, k, vv);
 
