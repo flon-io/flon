@@ -15,3 +15,10 @@ function byclass(cl)
   return a;
 }
 
+Date.prototype.to_s = function()
+{
+  return '' +
+    this.getFullYear() + '-' + this.getMonth() + '-' + this.getDate() + ' ' +
+    this.getHours() + ':' + this.getMinutes() + ':' + this.getSeconds();
+}
+
