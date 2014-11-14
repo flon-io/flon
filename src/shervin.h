@@ -51,6 +51,9 @@ typedef struct shv_request {
   flu_dict *routing_d; // used by guards to pass info to handlers
 } shv_request;
 
+char shv_method_to_char(char *s);
+char *shv_char_to_method(char c);
+
 // response
 
 typedef struct shv_response {
