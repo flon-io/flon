@@ -39,7 +39,7 @@ static void print_usage()
   fprintf(stderr, "" "\n");
   fprintf(stderr, "# flon-listener" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "  flon-listener [-d {dir}]" "\n");
+  fprintf(stderr, "  flon-listener [-d {dir}] [-p {port}]" "\n");
   fprintf(stderr, "" "\n");
   fprintf(stderr, "starts the flon-listener" "\n");
   fprintf(stderr, "" "\n");
@@ -49,14 +49,15 @@ int main(int argc, char *argv[])
 {
   // read options
 
-  int port = 1980;
+  int port = -1;
   char *dir = NULL;
 
   short badarg = 0;
 
-  int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
+  int opt; while ((opt = getopt(argc, argv, "d:p:")) != -1)
   {
     if (opt == 'd') dir = optarg;
+    else if (opt == 'p') port = strtol(optarg, NULL, 10);
     else badarg = 1;
   }
 
@@ -94,6 +95,8 @@ int main(int argc, char *argv[])
   };
 
   // serve
+
+  if (port < 0) port = 1980;
 
   shv_serve(port, routes);
 }
