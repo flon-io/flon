@@ -93,6 +93,7 @@ context "flon-listener"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
             "payload: {}\n"
           "}\n";
+        flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
         int r = flon_in_handler(req, res, NULL);
 
@@ -160,7 +161,7 @@ context "flon-listener"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
             "payload: {}\n"
           "}\n";
-        flu_list_set(req->routing_d, "_user", strdup("john"));
+        flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
         int r = flon_in_handler(req, res, NULL);
 

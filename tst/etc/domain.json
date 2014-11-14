@@ -1,6 +1,6 @@
 
 john: {
-  org.example.**: rw
+  org.example.**: rwl
 }
 steve: {
   org.example.**.sales: r
