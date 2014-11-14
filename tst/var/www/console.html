@@ -14,12 +14,25 @@
       <div class="left-pane">
 
         <h1>flon</h1>
-        <h2>post to /i/in</h2>
-        <p>
-          <textarea id="inField">
-          </textarea>
-          <input id="inSubmit" type="submit" />
-        </p>
+
+        <div class="tabs">
+          <div id="postFormTab" class="tab selected">post</div>
+          <div id="inspectorTab" class="tab">inspect</div>
+        </div>
+
+        <div id="postForm" class="sub-pane">
+          <h2>post to /i/in</h2>
+          <p>
+            <textarea id="inField">
+            </textarea>
+            <input id="inSubmit" type="submit" />
+          </p>
+        </div>
+
+        <div id="inspector" class="sub-pane">
+          <h2>inspect something</h2>
+          nothing
+        </div>
       </div>
 
       <div class="right-pane">
@@ -28,6 +41,8 @@
         </div>
       </div>
     </div>
+
+    <script src="js/flon.js"></script>
 
     <script>
 
@@ -53,12 +68,26 @@
         req.send(document.getElementById("inField").value);
       }
 
-      document.getElementById("inSubmit").addEventListener('click', inSubmit);
+      function onTabClick(e)
+      {
+        byclass("tab").forEach(function(e) { e.classList.remove('selected'); });
+        e.target.classList.add('selected');
+
+        byclass("sub-pane").forEach(function(e) { e.style.display = 'none' });
+        byid(e.target.id.slice(0, -3)).style.display = 'block';
+      }
 
       document.addEventListener('DOMContentLoaded', function() {
 
-        document.getElementById("inField").textContent =
-          document.getElementById("launchJson").textContent;
+        byid("inSubmit").addEventListener('click', inSubmit);
+
+        byclass("tab").forEach(function(e) {
+          console.log(e);
+          e.addEventListener('click', onTabClick);
+        });
+
+        byid("inField").textContent = byid("launchJson").textContent;
+        byid("postForm").style.display = 'block';
       });
     </script>
 
