@@ -1,24 +1,8 @@
 
-//org.example: {
-//  user0: { rights: "rw" }
-//  user1: { rights: "r" }
-//  user2: { rights: "w" }
-//}
-//org.example.sales: {
-//  user1: { rights: "rw" }
-//}
-
-org.example: {
-  _: {
-    user0: { rights: rw }
-    user1: { rights: r }
-    user2: { rights: r! }
-    john: { rights: rw }
-  }
-  sales: {
-    _: {
-      user2: { rights: r }
-    }
-  }
+john: {
+  org.example.**: rw
+}
+steve: {
+  org.example.**.sales: r
 }
 
