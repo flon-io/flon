@@ -36,8 +36,12 @@
 
 
 // TODO: when receiving SIGHUP, reload passwd.json (and domain.json?)
+//       OR keep track of mtime...
 
-static fdja_value *passwd = NULL;
+static fdja_value *passwd =
+  NULL;
+static char *dummy_hash =
+  "$2a$08$3xtQyM06K85SCaL2u8EadeO8FwLd5M1xEb4/mtxRaArfx1MFB9/QK";
 
 static void load_passwd()
 {
@@ -56,16 +60,13 @@ int flon_auth_enticate(char *user, char *pass)
   fdja_value *u = fdja_l(passwd, user);
 
   char *hash = u ? fdja_ls(u, "pass", NULL) : NULL;
-  if (hash == NULL)
-  {
-    u = NULL;
-    hash = "$2a$08$3xtQyM06K85SCaL2u8EadeO8FwLd5M1xEb4/mtxRaArfx1MFB9/QK";
-      // dummy hash
-  }
+  if (hash == NULL) { u = NULL; hash = dummy_hash; }
 
   // TODO: shouldn't the workfactor be set in the conf?
 
   int r = ftsi_bc_verify(pass, hash);
+
+  if (hash != dummy_hash) free(hash);
 
   return u ? r : 0;
 }

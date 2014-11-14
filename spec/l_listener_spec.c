@@ -62,6 +62,8 @@ context "flon-listener"
 
       expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
         "{ href: \"http://x.flon.io/i\" }"));
+
+      expect(fdja_l(v, "tstamp") != NULL);
     }
   }
 
@@ -122,6 +124,8 @@ context "flon-listener"
           ));
             // the answer contains a link to the new execution
 
+        expect(fdja_l(v, "tstamp") != NULL);
+
         v1 = fdja_parse_f("var/spool/dis/exe_%s.json", exid);
 
         expect(v1 != NULL);
@@ -140,6 +144,14 @@ context "flon-listener"
 
         expect(r i== 1);
         expect(res->status_code i== 400);
+
+        v = fdja_parse((char *)res->body->first->item);
+
+        expect(v != NULL);
+
+        v->sowner = 0; // the string is owned by the response
+
+        expect(fdja_l(v, "tstamp") != NULL);
       }
     }
 

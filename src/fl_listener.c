@@ -42,6 +42,8 @@ static int respond(shv_response *res, fdja_value *r)
   flu_list_set(
     res->headers, "content-type", strdup("application/json; charset=UTF-8"));
 
+  fdja_set(r, "tstamp", fdja_sym(flu_tstamp(NULL, 1, 's')));
+
   // add FLON_RELS to #links
 
   for (fdja_value *v = fdja_l(r, "_links")->child; v; v = v->sibling)
@@ -63,31 +65,33 @@ static void in_handle_launch(
   shv_request *req, fdja_value *v, char *dom,
   shv_response *res, fdja_value *r)
 {
-    char *i = flon_generate_exid(dom);
-      // TODO: fetch domain from body and/or domain[s].json
+  char *i = flon_generate_exid(dom);
+    // TODO: fetch domain from body and/or domain[s].json
 
-    fdja_set(v, "exid", fdja_s(i));
+  fdja_set(v, "exid", fdja_s(i));
 
-    if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
-    {
-      res->status_code = 500;
-      fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
-    }
-    else
-    {
-      fdja_set(r, "exid", fdja_s(i));
-      fdja_set(r, "message", fdja_s("launched"));
+  if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
+  {
+    res->status_code = 500;
+    fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
+  }
+  else
+  {
+    fdja_set(r, "exid", fdja_s(i));
+    fdja_set(r, "message", fdja_s("launched"));
 
-      char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
-      fdja_pset(r, "_links.#execution", fdja_s(s));
-      free(s);
-    }
+    char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
+    fdja_pset(r, "_links.#execution", fdja_s(s));
+    free(s);
+  }
 
-    free(i);
+  free(i);
 }
 
 int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
+  char *dom = NULL;
+
   res->status_code = 200;
   fdja_value *r = fdja_v("{ message: ok, _links: {} }");
 
@@ -107,7 +111,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   //flu_putf(fdja_todc(v));
 
-  char *dom = fdja_ls(v, "domain", NULL);
+  dom = fdja_ls(v, "domain", NULL);
   //
   fdja_value *exe = fdja_l(v, "execute");
   fdja_value *inv = fdja_l(v, "invoke");
@@ -138,6 +142,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 
 _respond:
 
+  free(dom);
   if (v) fdja_free(v);
 
   char *s = NULL;
