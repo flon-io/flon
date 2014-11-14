@@ -76,6 +76,7 @@ static void in_handle_launch(
     else
     {
       fdja_set(r, "exid", fdja_s(i));
+      fdja_set(r, "message", fdja_s("launched"));
 
       char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
       fdja_pset(r, "_links.#execution", fdja_s(s));

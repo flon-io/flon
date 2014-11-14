@@ -107,6 +107,8 @@ context "flon-listener"
 
         //flu_putf(fdja_todc(v));
 
+        expect(fdja_ls(v, "message", NULL) ===f "launched");
+
         exid = fdja_ls(v, "exid", NULL);
 
         expect(exid ^== "org.example-u0-");
