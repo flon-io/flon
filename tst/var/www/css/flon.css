@@ -71,14 +71,18 @@ table {
   font-size: 250%;
 }
 
-h1{
+h1 {
   font-size: 200%;
   margin: 0.5em 0;
 }
-h2{
+h2 {
   font-size: 150%;
   margin: 0.5em 0;
 }
+ul {
+  margin: 0.5em 1em;
+}
+
 textarea#inField {
   width: 600px;
   height: 210px;
