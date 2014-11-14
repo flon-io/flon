@@ -28,7 +28,7 @@ ctst:
 	rm -f tst/var/log/dispatcher.log
 
 lis:
-	make listener && ./tst/bin/flon-listener -d tst/
+	make clean listener && ./tst/bin/flon-listener -d tst/
 
 .PHONY: spec clean upgrade ctst lis
 

@@ -15,3 +15,14 @@ function byclass(cl)
   return a;
 }
 
+function tstamp()
+{
+  var d = new Date();
+
+  var f = function(i) { return (i < 10 ? '0' : '') + i; }
+
+  return '' +
+    d.getFullYear() + d.getMonth() + f(d.getDate()) + '.' +
+    f(d.getHours()) + f(d.getMinutes()) + f(d.getSeconds());
+}
+

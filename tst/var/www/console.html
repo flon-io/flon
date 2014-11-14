@@ -60,17 +60,42 @@
       function inOnError(e)
       {
         console.log(e);
+
+        var msg = {}
+        msg.tstamp = tstamp();
+        msg.code = 0;
+        msg.message = '' + e;
+
+        var html = postFailureTemplate(msg);
+
+        byid('log').children[0].insertAdjacentHTML('beforebegin', html);
       }
+
       function inOnLoad(e)
       {
-        var msg = JSON.parse(e.target.responseText);
+        var t = e.target;
+        var html = null;
 
-        msg.href = msg._links[RELS + '#execution'];
+        if (t.status === 200)
+        {
+          var msg = JSON.parse(e.target.responseText);
+          msg.code = e.target.status;
+          msg.href = msg._links[RELS + '#execution'];
 
-        console.log(msg);
-        var html = postAnswerTemplate(msg);
-        var log = byid('log');
-        log.children[0].insertAdjacentHTML('beforebegin', html);
+          html = postSuccessTemplate(msg);
+        }
+        else
+        {
+          var msg = {}
+          msg.tstamp = tstamp();
+          msg.code = t.status;
+          msg.message = t.responseText;
+
+          html = postFailureTemplate(msg);
+        }
+
+        //console.log(msg);
+        byid('log').children[0].insertAdjacentHTML('beforebegin', html);
       }
 
       function inSubmit()
@@ -93,6 +118,7 @@
       }
 
       var postAnswerTemplate = null;
+      var postFailureTemplate = null;
 
       document.addEventListener('DOMContentLoaded', function() {
 
@@ -105,8 +131,10 @@
         byid("inField").textContent = byid("launchJson").textContent;
         byid("postForm").style.display = 'block';
 
-        postAnswerTemplate =
-          Handlebars.compile(byid("postAnswerTemplate").innerHTML);
+        postSuccessTemplate =
+          Handlebars.compile(byid("postSuccessTemplate").innerHTML);
+        postFailureTemplate =
+          Handlebars.compile(byid("postFailureTemplate").innerHTML);
       });
     </script>
 
@@ -125,11 +153,17 @@
 }
     </div>
 
-    <div id="postAnswerTemplate" class="hidden">
+    <div id="postSuccessTemplate" class="hidden">
       <div>
         {{ tstamp }} -
         {{ message }} -
         <a href="#" xhref="{{ href }}">{{ exid }}</a></div>
+    </div>
+    <div id="postFailureTemplate" class="hidden">
+      <div>
+        {{ tstamp }} -
+        {{ code }} -
+        {{ message }}
     </div>
   </body>
 </html>
