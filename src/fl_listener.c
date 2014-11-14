@@ -65,8 +65,15 @@ static void in_handle_launch(
   shv_request *req, fdja_value *v, char *dom,
   shv_response *res, fdja_value *r)
 {
+  if ( ! flon_may_launch(req, dom))
+  {
+    res->status_code = 403;
+    fdja_set(r, "message", fdja_s("not authorized to launch in that domain"));
+
+    return;
+  }
+
   char *i = flon_generate_exid(dom);
-    // TODO: fetch domain from body and/or domain[s].json
 
   fdja_set(v, "exid", fdja_s(i));
 

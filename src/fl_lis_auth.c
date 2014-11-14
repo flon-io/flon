@@ -38,24 +38,40 @@
 // TODO: when receiving SIGHUP, reload passwd.json (and domain.json?)
 //       OR keep track of mtime...
 
-static fdja_value *passwd =
-  NULL;
+static fdja_value *passwd = NULL;
+static fdja_value *domain = NULL;
+
 static char *dummy_hash =
   "$2a$08$3xtQyM06K85SCaL2u8EadeO8FwLd5M1xEb4/mtxRaArfx1MFB9/QK";
 
-static void load_passwd()
+
+static int load_passwd()
 {
+  if (passwd) return 1;
+
   passwd = fdja_parse_obj_f("etc/passwd.json");
 
-  if (passwd) return;
+  if (passwd) return 1;
 
   fgaj_r("couldn't load etc/passwd.json");
+  return 0;
+}
+
+static int load_domain()
+{
+  if (domain) return 1;
+
+  domain = fdja_parse_obj_f("etc/domain.json");
+
+  if (domain) return 1;
+
+  fgaj_r("couldn't load etc/domain.json");
+  return 0;
 }
 
 int flon_auth_enticate(char *user, char *pass)
 {
-  if (passwd == NULL) load_passwd();
-  if (passwd == NULL) { fgaj_e("passwd not loaded"); return 0; }
+  if ( ! load_passwd()) return 0;
 
   fdja_value *u = fdja_l(passwd, user);
 
@@ -106,5 +122,75 @@ _over:
   free(user);
 
   return r;
+}
+
+int flon_dom_matches(const char *dom, const char *pat)
+{
+  int r = 0;
+
+  flu_list *d = flu_split(dom, ".");
+  flu_list *p = flu_split(pat, ".");
+
+  flu_node *dn = d->first;
+
+  //printf("--- d>%s< vs p>%s<\n", dom, pat);
+
+  for (flu_node *pn = p->first; pn; pn = pn->next)
+  {
+    if (dn == NULL)
+    {
+      if (strcmp(pn->item, "**") == 0 && pn->next == NULL) r = 1;
+      break;
+    }
+
+    char *ds = dn->item; char *ps = pn->item;
+
+    //printf("d>%s< vs p>%s<\n", ds, ps);
+
+    if (strcmp(ps, "*") == 0)
+    {
+      dn = dn->next;
+    }
+    else if (strcmp(ps, "**") == 0)
+    {
+      if (pn->next == NULL) { r = 1; break; }
+      char *stop = pn->next->item;
+      while (dn->next && strcmp(dn->item, stop) != 0) dn = dn->next;
+    }
+    else if (strcmp(ds, ps) != 0)
+    {
+      break;
+    }
+    else
+    {
+      dn = dn->next;
+    }
+
+    if (pn->next == NULL && dn == NULL) r = 1;
+  }
+
+  flu_list_free_all(d);
+  flu_list_free_all(p);
+
+  return r;
+}
+
+static int flon_may(fdja_value *doms, char *dom, char right)
+{
+  return 1;
+}
+
+int flon_may_launch(shv_request *req, char *dom)
+{
+  if ( ! load_domain()) return 0;
+
+  char *u = flu_list_get(req->routing_d, "_user");
+  if (u == NULL) return 0;
+
+  fdja_value *doms = fdja_lookup(domain, u);
+  if (doms == NULL) return 0;
+
+  flu_putf(fdja_todc(doms));
+  return flon_may(doms, dom, 'l');
 }
 

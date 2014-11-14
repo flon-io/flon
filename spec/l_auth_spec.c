@@ -128,5 +128,26 @@ context "flon-listener auth"
         ) i== 1);
     }
   }
+
+  describe "flon_dom_matches()"
+  {
+    it "returns 1 if the domain matches the pattern"
+    {
+      expect(flon_dom_matches("org.exa", "org.exa.**") i== 1);
+      expect(flon_dom_matches("org.exa.a", "org.exa.*") i== 1);
+      expect(flon_dom_matches("org.exa.a", "org.exa.**") i== 1);
+      expect(flon_dom_matches("org.exa.b", "org.exa.**.b") i== 1);
+      expect(flon_dom_matches("org.exa.a.b", "org.exa.**.b") i== 1);
+      expect(flon_dom_matches("org.exa.a.a.b", "org.exa.**.b") i== 1);
+      expect(flon_dom_matches("o.e.a.a.b.c", "o.e.**.b.*") i== 1);
+    }
+
+    it "returns 0 when it doesn't match"
+    {
+      expect(flon_dom_matches("org.exa.a", "org.exa") i== 0);
+      expect(flon_dom_matches("org.exa.a.b", "org.exa.**.c") i== 0);
+      expect(flon_dom_matches("o.e.a.a.b", "o.e.**.b.*") i== 0);
+    }
+  }
 }
 

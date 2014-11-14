@@ -53,11 +53,9 @@ context "flon-listener"
       expect(res->status_code i== 200);
 
       v = fdja_parse((char *)res->body->first->item);
+      if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
-
-      v->sowner = 0; // the string is owned by the response
-
       //flu_putf(fdja_todc(v));
 
       expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
@@ -102,11 +100,9 @@ context "flon-listener"
         expect(res->status_code i== 200);
 
         v = fdja_parse((char *)res->body->first->item);
+        if (v) v->sowner = 0; // the string is owned by the response
 
         expect(v != NULL);
-
-        v->sowner = 0; // the string is owned by the response
-
         //flu_putf(fdja_todc(v));
 
         expect(fdja_ls(v, "message", NULL) ===f "launched");
@@ -146,12 +142,30 @@ context "flon-listener"
         expect(res->status_code i== 400);
 
         v = fdja_parse((char *)res->body->first->item);
+        if (v) v->sowner = 0; // the string is owned by the response
 
         expect(v != NULL);
-
-        v->sowner = 0; // the string is owned by the response
-
         expect(fdja_l(v, "tstamp") != NULL);
+      }
+
+      it "rejects launch requests for unauthorized domains"
+      {
+        req = shv_parse_request_head(""
+          "POST /i/in HTTP/1.1\r\n"
+          "Host: x.flon.io\r\n"
+          "\r\n");
+        req->body = ""
+          "{\n"
+            "domain: org.sample\n"
+            "execute: [ invoke, { _0: stamp }, [] ]\n"
+            "payload: {}\n"
+          "}\n";
+        flu_list_set(req->routing_d, "_user", strdup("john"));
+
+        int r = flon_in_handler(req, res, NULL);
+
+        expect(r i== 1);
+        expect(res->status_code i== 403);
       }
     }
 
