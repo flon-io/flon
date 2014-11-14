@@ -58,7 +58,6 @@
       {
         var msg = JSON.parse(e.target.responseText);
 
-        msg.date = (new Date()).to_s();
         msg.href = msg._links[RELS + '#execution'];
 
         console.log(msg);
@@ -121,7 +120,7 @@
 
     <div id="postAnswerTemplate" class="hidden">
       <div>
-        {{ date }} -
+        {{ tstamp }} -
         {{ message }} -
         <a href="#" xhref="{{ href }}">{{ exid }}</a></div>
     </div>
