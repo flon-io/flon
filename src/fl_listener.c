@@ -39,7 +39,7 @@
 #define FLON_RELS "http://flon.io/rels.html"
 
 
-static int respond(shv_response *res, fdja_value *r)
+static int respond(shv_request *req, shv_response *res, fdja_value *r)
 {
   flu_list_set(
     res->headers, "content-type", strdup("application/json; charset=UTF-8"));
@@ -55,6 +55,21 @@ static int respond(shv_response *res, fdja_value *r)
     free(v->key);
     v->key = s;
   }
+
+  // add home and self links
+
+  char *uri = shv_abs(0, req->uri_d);
+  fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", uri));
+  if (req->method != 'g') {
+    fdja_psetf(r, "_links.self.method", shv_char_to_method(req->method));
+  }
+
+  // TODO: make it more serious
+  char *i = strstr(uri, "/i/");
+  if (i) *(i + 2) = 0;
+  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", uri));
+
+  free(uri);
 
   flu_list_add(res->body, fdja_to_json(r));
 
@@ -154,17 +169,7 @@ _respond:
   free(dom);
   if (v) fdja_free(v);
 
-  char *s = NULL;
-
-  s = shv_abs(0, req->uri_d);
-  fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\", method: POST }", s));
-  free(s);
-
-  s = shv_rel(0, req->uri_d, "..");
-  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", s));
-  free(s);
-
-  return respond(res, r);
+  return respond(req, res, r);
 }
 
 //
@@ -199,15 +204,10 @@ int flon_metrics_handler(
 
 int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
-  char *s = NULL;
-
   res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {} }");
 
-  s = shv_abs(0, req->uri_d);
-  fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", s));
-  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", s));
-  free(s);
+  char *s = NULL;
 
   s = shv_rel(0, req->uri_d, "in");
   fdja_pset(
@@ -239,6 +239,6 @@ int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
     fdja_v("{ href: \"%s\" }", s));
   free(s);
 
-  return respond(res, r);
+  return respond(req, res, r);
 }
 

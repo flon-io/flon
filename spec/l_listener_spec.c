@@ -60,6 +60,8 @@ context "flon-listener"
 
       expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
         "{ href: \"http://x.flon.io/i\" }"));
+      expect(fdja_lj(v, "_links.home") ===F fdja_vj(""
+        "{ href: \"http://x.flon.io/i\" }"));
 
       expect(fdja_l(v, "tstamp") != NULL);
     }
@@ -129,6 +131,30 @@ context "flon-listener"
         expect(fdja_ls(v1, "exid", NULL) ===f exid);
       }
 
+      it "links to self and home"
+      {
+        req = shv_parse_request_head(""
+          "POST /i/in HTTP/1.1\r\n"
+          "Host: x.flon.io\r\n"
+          "\r\n");
+        req->body = "NADA\n";
+
+        int r = flon_in_handler(req, res, NULL);
+
+        expect(r i== 1);
+
+        v = fdja_parse((char *)res->body->first->item);
+        if (v) v->sowner = 0; // the string is owned by the response
+
+        expect(v != NULL);
+        expect(fdja_l(v, "tstamp") != NULL);
+
+        expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
+          "{ href: \"http://x.flon.io/i/in\", method: POST }"));
+        expect(fdja_lj(v, "_links.home") ===F fdja_vj(""
+          "{ href: \"http://x.flon.io/i\" }"));
+      }
+
       it "rejects invalid launch requests"
       {
         req = shv_parse_request_head(""
@@ -141,12 +167,6 @@ context "flon-listener"
 
         expect(r i== 1);
         expect(res->status_code i== 400);
-
-        v = fdja_parse((char *)res->body->first->item);
-        if (v) v->sowner = 0; // the string is owned by the response
-
-        expect(v != NULL);
-        expect(fdja_l(v, "tstamp") != NULL);
       }
 
       it "rejects launch requests for unauthorized domains"
