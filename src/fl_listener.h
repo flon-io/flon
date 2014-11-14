@@ -38,8 +38,19 @@ int flon_dom_matches(const char *dom, const char *pat);
 
 int flon_may_launch(shv_request *req, char *dom);
 
-int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params);
-int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params);
+int flon_i_handler( // /i
+  shv_request *req, shv_response *res, flu_dict *params);
+
+int flon_in_handler( // /i/in
+  shv_request *req, shv_response *res, flu_dict *params);
+
+int flon_executions_handler( // /i/executions
+  shv_request *req, shv_response *res, flu_dict *params);
+int flon_execution_handler( // /i/executions/:domain or /:exid
+  shv_request *req, shv_response *res, flu_dict *params);
+
+int flon_metrics_handler( // /i/metrics
+  shv_request *req, shv_response *res, flu_dict *params);
 
 #endif // FL_LISTENER_H
 

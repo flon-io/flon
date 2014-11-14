@@ -167,6 +167,36 @@ _respond:
   return respond(res, r);
 }
 
+//
+// /i/executions
+
+int flon_executions_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  return 1;
+}
+
+//
+// /i/executions/:domain or /:exid
+
+int flon_execution_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  return 1;
+}
+
+//
+// /i/metrics
+
+int flon_metrics_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  return 1;
+}
+
+//
+// /i
+
 int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
 {
   char *s = NULL;
