@@ -1,0 +1,5 @@
+
+# null
+
+invoke: "cat > /dev/null"
+
