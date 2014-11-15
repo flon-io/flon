@@ -306,3 +306,10 @@ char *fdol_expand(const char *s, fdol_lookup *func, void *data)
   return r;
 }
 
+char *fdol_dlup(const char *path, void *data)
+{
+  char *r = flu_list_get(data, path);
+
+  return r ? strdup(r) : NULL;
+}
+

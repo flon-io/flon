@@ -33,7 +33,15 @@
 
 typedef char *fdol_lookup(const char *path, void *data);
 
+/* Given a string, a lookup function and some data understood by that
+ * function, expands the $(...) in the string and returns a new string.
+ */
 char *fdol_expand(const char *s, fdol_lookup *func, void *data);
+
+/* Expects a flu_dict in its data argument. Returns the looked up
+ * char * value (or NULL).
+ */
+char *fdol_dlup(const char *path, void *data);
 
 #endif // FLON_DOLLAR_H
 

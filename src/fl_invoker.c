@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <dollar.h>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -36,16 +37,6 @@
 #include "djan.h"
 #include "fl_common.h"
 #include "fl_invoker.h"
-
-
-// TODO: move that back to dollar as a "standard extension"...
-//
-static char *fd_lookup(const char *path, void *data)
-{
-  //printf("      lookup: >%s<\n", path);
-  char *r = flu_list_get(data, path);
-  return r ? strdup(r) : NULL;
-}
 
 
 int flon_invoke(const char *path)
@@ -114,7 +105,7 @@ int flon_invoke(const char *path)
   if (strstr(cmd, "$("))
   {
     flu_dict *d = flu_d("exid", exid, "nid", nid, NULL);
-    char *cmd1 = fdol_expand(cmd, fd_lookup, d);
+    char *cmd1 = fdol_expand(cmd, fdol_dlup, d);
     flu_list_free(d);
     char *o = cmd;
     cmd = cmd1;
