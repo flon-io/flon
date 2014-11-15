@@ -13,6 +13,7 @@ upgrade:
 	cp -v ../flutil/src/*.[ch] src/
 	cp -v ../mnemo/src/*.[ch] src/
 	cp -v ../tsifro/src/*.[ch] src/
+	cp -v ../dollar/src/dollar.[ch] src/
 	rm src/todjan.c # no
 
 ctst:
