@@ -57,8 +57,10 @@ static void print_usage(short explain_dir)
   fprintf(stderr, "  ## base64 encoding" "\n");
   fprintf(stderr, "" "\n");
   fprintf(stderr, "    flon-flon [-d {dir}] -6 {text}" "\n");
+  fprintf(stderr, "    flon-flon [-d {dir}] -4 {text}" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "  Encodes the given text as base64" "\n");
+  fprintf(stderr, "  Encodes a text to base 64 (-6) or ");
+  fprintf(stderr, "decodes some base64 (-4)" "\n");
   fprintf(stderr, "" "\n");
 }
 
@@ -68,23 +70,26 @@ int main(int argc, char *argv[])
   char *domain = NULL;
   char *pass = NULL;
   char *wfactor = "9";
-  char *sixtext = NULL;
+  char *t6 = NULL;
+  char *t4 = NULL;
   short badarg = 0;
 
-  int opt; while ((opt = getopt(argc, argv, "d:i:h:f:6:")) != -1)
+  int opt; while ((opt = getopt(argc, argv, "d:i:h:f:6:4:")) != -1)
   {
     if (opt == 'd') dir = optarg;
     else if (opt == 'i') domain = optarg;
     else if (opt == 'h') pass = optarg;
     else if (opt == 'f') wfactor = optarg;
-    else if (opt == '6') sixtext = optarg;
+    else if (opt == '6') t6 = optarg;
+    else if (opt == '4') t4 = optarg;
     else badarg = 1;
   }
 
-  if (badarg || (domain == NULL && pass == NULL && sixtext == NULL))
-  {
-    print_usage(0); return 1;
-  }
+  if (
+    badarg ||
+    (domain == NULL && pass == NULL && t6 == NULL && t4 == NULL)
+  )
+  { print_usage(0); return 1; }
 
   if (dir == NULL)
   {
@@ -114,9 +119,13 @@ int main(int argc, char *argv[])
     if (salt == NULL) return 1;
     printf("%s\n", ftsi_bc_hash(pass, salt));
   }
-  else if (sixtext)
+  else if (t6)
   {
-    printf("%s\n", flu64_encode(sixtext, -1));
+    printf("%s\n", flu64_encode(t6, -1));
+  }
+  else if (t4)
+  {
+    printf("%s\n", flu64_decode(t4, -1));
   }
 
   return 0;
