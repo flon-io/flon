@@ -32,8 +32,16 @@
 
 int main(int argc, char *argv[])
 {
+  for (size_t i = 0; i < argc; ++i)
+  {
+    fprintf(stderr, "%zu: \"%s\"\n", i, argv[i]);
+  }
+  fputs("", stderr);
+
   char *in = flu_freadall(stdin);
-  fputs(in, stderr);
+
+  fprintf(stderr, "stdin: %s\n", in);
+
   return 0;
 }
 

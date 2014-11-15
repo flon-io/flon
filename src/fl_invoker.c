@@ -38,6 +38,16 @@
 #include "fl_invoker.h"
 
 
+// TODO: move that back to dollar as a "standard extension"...
+//
+static char *fd_lookup(const char *path, void *data)
+{
+  //printf("      lookup: >%s<\n", path);
+  char *r = flu_list_get(data, path);
+  return r ? strdup(r) : NULL;
+}
+
+
 int flon_invoke(const char *path)
 {
   fdja_value *inv = fdja_parse_obj_f(path);
@@ -92,6 +102,18 @@ int flon_invoke(const char *path)
     fgaj_e("no 'invoke' key in invoker conf at %s/flon.json", invoker_path);
     return 1;
   }
+
+  if (strstr(cmd, "$("))
+  {
+    flu_dict *d =
+      flu_d("exid", exid, "nid", nid, "path", path, NULL);
+    char *cmd1 = fdol_expand(cmd, fd_lookup, d);
+    flu_list_free(d);
+    char *o = cmd;
+    cmd = cmd1;
+    free(o);
+  }
+
   fgaj_i("invoking >%s<", cmd);
 
   int pds[2];
