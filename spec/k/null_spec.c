@@ -61,8 +61,9 @@ context "invoker: null"
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) == 0);
-        // the null participant nuked it
+      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) == 'f');
+        // it's still here, it's the dispatcher's work to nuke it,
+        // but since there is no answer...
 
       expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 0);
         // the null participant nuked it
