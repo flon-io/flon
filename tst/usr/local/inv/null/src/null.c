@@ -33,27 +33,18 @@
 
 int main(int argc, char *argv[])
 {
+  char *e = NULL;
+  char *n = NULL;
+  //
+  int opt; while ((opt = getopt(argc, argv, "e:n:")) != -1)
+  {
+    if (opt == 'e') e = optarg;
+    else if (opt == 'n') n = optarg;
+  }
+
   fgaj_conf_get()->out = stderr;
 
-  char *ret = NULL;
-  //short badarg = 0;
-
-  int opt; while ((opt = getopt(argc, argv, "r:")) != -1)
-  {
-    if (opt == 'r') ret = optarg;
-    //else badarg = 1;
-  }
-  //fprintf(stderr, "ret: %s\n", ret);
-
-  close(STDOUT_FILENO);
-
-  if (unlink(ret) != 0)
-  {
-    fgaj_r("couldn't unlink %s", ret);
-    return 1;
-  }
-
-  fgaj_i("unlinked %s", ret);
+  fgaj_i("seen %s %s", e, n);
 
   return 0;
 }

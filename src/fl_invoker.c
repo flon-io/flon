@@ -96,7 +96,14 @@ int flon_invoke(const char *path)
     return 1;
   }
 
-  char *cmd = fdja_lookup_string(inv_conf, "invoke", NULL);
+  char *cmd = fdja_ls(inv_conf, "invoke", NULL);
+
+  char *out = fdja_ls(inv_conf, "out", NULL);
+  if (out && strcmp(out, "discard") == 0)
+  {
+    free(ret); ret = strdup("/dev/null");
+  }
+  free(out);
 
   if (cmd == NULL)
   {
@@ -106,8 +113,7 @@ int flon_invoke(const char *path)
 
   if (strstr(cmd, "$("))
   {
-    flu_dict *d =
-      flu_d("exid", exid, "nid", nid, "inv", path, "ret", ret, NULL);
+    flu_dict *d = flu_d("exid", exid, "nid", nid, NULL);
     char *cmd1 = fdol_expand(cmd, fd_lookup, d);
     flu_list_free(d);
     char *o = cmd;

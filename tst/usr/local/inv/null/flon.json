@@ -1,6 +1,6 @@
 
 # null
 
-#invoke: "bin/null --exid $(exid) --nid $(nid) --inv $(inv) --ret $(ret)"
-invoke: "bin/null -r $(ret)"
+invoke: "bin/null -e $(exid) -n $(nid)"
+out: discard
 
