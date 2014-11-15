@@ -38,6 +38,17 @@
 #include "fl_dispatcher.h"
 
 
+static void print_usage()
+{
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "# flon-dispatcher" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  flon-dispatcher [-d {dir}]" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "starts the flon-dispatcher" "\n");
+  fprintf(stderr, "" "\n");
+}
+
 static size_t scan_dir()
 {
   fgaj_d(".");
@@ -94,17 +105,31 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 
 int main(int argc, char *argv[])
 {
-  // change dir
+  // read options
 
   char *d = ".";
-  if (argc > 1) d = argv[1];
+  short badarg = 0;
+
+  int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
+  {
+    if (opt == 'd') d = optarg;
+    else badarg = 1;
+  }
+
+  if (badarg) { print_usage(); return 1; }
+
+  // change dir
 
   if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
   char *cp = flu_canopath(d); fgaj_i("changed dir to %s", cp); free(cp);
 
   // load configuration
 
-  flon_configure(".");
+  if (flon_configure(".") != 0)
+  {
+    fgaj_r("couldn't read %s/etc/flon.json, cannot start", flu_canopath(d));
+    return 1;
+  }
 
   // set up logging
 
