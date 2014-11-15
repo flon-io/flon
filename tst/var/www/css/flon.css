@@ -103,12 +103,12 @@ input#inSubmit {
 .left-pane {
   display: inline-block;
   position: absolute;
-  width: 45%;
+  width: 59%;
   left: 1em;
 }
 .right-pane {
   display: inline-block;
-  width: 50%;
+  width: 38%;
   font-family: monospace;
   position: absolute;
   right: 1em;
@@ -139,3 +139,9 @@ input#inSubmit {
   border-bottom: 1px solid white;
   top: 1px;
 }
+
+#inspFrame {
+  width: 100%;
+  height: 500px;
+}
+

@@ -6,14 +6,23 @@ function byid(id)
   return document.getElementById(id);
 }
 
-function byclass(cl)
+function toarray(htmlcol)
 {
   var a = [];
-  var elts = document.getElementsByClassName(cl);
-  for (var i = 0; ; i++) { var e = elts[i]; if ( ! e) break; a.push(e); }
+  for (var i = 0; ; i++) { var e = htmlcol[i]; if ( ! e) break; a.push(e); }
 
   return a;
 }
+
+function byx(func, args)
+{
+  var from = document; var x = args[0];
+  if (args.length > 1) { from = x; x = args[1]; }
+
+  return toarray(from[func](x));
+}
+function byclass() { return byx('getElementsByClassName', arguments); }
+function bytag() { return byx('getElementsByTagName', arguments); }
 
 function tstamp()
 {
