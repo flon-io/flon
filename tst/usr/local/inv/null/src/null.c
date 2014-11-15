@@ -27,12 +27,14 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <errno.h>
-#include <string.h>
+
+#include "gajeta.h"
 
 
 int main(int argc, char *argv[])
 {
+  fgaj_conf_get()->out = stderr;
+
   char *ret = NULL;
   //short badarg = 0;
 
@@ -47,12 +49,11 @@ int main(int argc, char *argv[])
 
   if (unlink(ret) != 0)
   {
-    fprintf(stderr, __FILE__ " invoker couldn't unlink %s\n", ret);
-    fprintf(stderr, __FILE__ " %s\n", strerror(errno));
+    fgaj_r("couldn't unlink %s", ret);
     return 1;
   }
 
-  fprintf(stderr, __FILE__ " invoker unlinked %s\n", ret);
+  fgaj_i("unlinked %s", ret);
 
   return 0;
 }
