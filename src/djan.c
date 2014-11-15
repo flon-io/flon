@@ -1127,13 +1127,17 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v)
   return v;
 }
 
-fdja_value *fdja_set(fdja_value *object, const char *key, fdja_value *val)
+fdja_value *fdja_set(fdja_value *object, const char *key, ...)
 {
   if (object->type != 'o') return NULL;
 
+  va_list ap; va_start(ap, key);
+  char *k = flu_svprintf(key, ap); char *ok = k;
+  fdja_value *val = va_arg(ap, fdja_value *);
+  va_end(ap);
+
   fdja_value *v = val;
 
-  char *k = (char *)key;
   short start = (val != NULL && *k == '\b');
 
   if (*k == '\b') k = k + 1;
@@ -1172,6 +1176,8 @@ fdja_value *fdja_set(fdja_value *object, const char *key, fdja_value *val)
     val->sibling = object->child;
     object->child = val;
   }
+
+  free(ok); // free 'original key'
 
   return val;
 }
@@ -1318,7 +1324,7 @@ _over:
   return r;
 }
 
-fdja_value *fdja_psetf(fdja_value *start, const char *path, ...)
+fdja_value *fdja_psetv(fdja_value *start, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);

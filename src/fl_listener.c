@@ -61,7 +61,7 @@ static int respond(shv_request *req, shv_response *res, fdja_value *r)
   char *uri = shv_abs(0, req->uri_d);
   fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", uri));
   if (req->method != 'g') {
-    fdja_psetf(r, "_links.self.method", shv_char_to_method(req->method));
+    fdja_psetv(r, "_links.self.method", shv_char_to_method(req->method));
   }
 
   // TODO: make it more serious
@@ -149,7 +149,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
   if (pl && pl->type != 'o')
   {
     res->status_code = 400;
-    fdja_psetf(r, "message", "payload must be a json object");
+    fdja_psetv(r, "message", "payload must be a json object");
     goto _respond;
   }
 
@@ -161,7 +161,7 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
   // no fit, reject...
 
   res->status_code = 400;
-  fdja_psetf(r, "message", "rejected");
+  fdja_psetv(r, "message", "rejected");
   goto _respond;
 
 _respond:
