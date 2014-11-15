@@ -4,8 +4,6 @@ LDLIBS=
 CC=c99
 VPATH=../src
 
-null: flutil.o
-
 n: null
 	cp null ../bin/
 

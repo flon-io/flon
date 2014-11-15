@@ -26,21 +26,33 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdio.h>
-
-#include "flutil.h"
+#include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 
 int main(int argc, char *argv[])
 {
-  for (size_t i = 0; i < argc; ++i)
+  char *ret = NULL;
+  //short badarg = 0;
+
+  int opt; while ((opt = getopt(argc, argv, "r:")) != -1)
   {
-    fprintf(stderr, "%zu: \"%s\"\n", i, argv[i]);
+    if (opt == 'r') ret = optarg;
+    //else badarg = 1;
   }
-  fputs("", stderr);
+  //fprintf(stderr, "ret: %s\n", ret);
 
-  char *in = flu_freadall(stdin);
+  close(STDOUT_FILENO);
 
-  fprintf(stderr, "stdin: %s\n", in);
+  if (unlink(ret) != 0)
+  {
+    fprintf(stderr, __FILE__ " invoker couldn't unlink %s\n", ret);
+    fprintf(stderr, __FILE__ " %s\n", strerror(errno));
+    return 1;
+  }
+
+  fprintf(stderr, __FILE__ " invoker unlinked %s\n", ret);
 
   return 0;
 }

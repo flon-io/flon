@@ -79,6 +79,7 @@ int flon_invoke(const char *path)
   }
 
   char *invoker_path = flu_sprintf("usr/local/inv/%s", invoked);
+  char *ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
 
   char cwd[1024 + 1]; getcwd(cwd, 1024);
   fgaj_i("cwd: %s", cwd);
@@ -106,7 +107,7 @@ int flon_invoke(const char *path)
   if (strstr(cmd, "$("))
   {
     flu_dict *d =
-      flu_d("exid", exid, "nid", nid, "path", path, NULL);
+      flu_d("exid", exid, "nid", nid, "inv", path, "ret", ret, NULL);
     char *cmd1 = fdol_expand(cmd, fd_lookup, d);
     flu_list_free(d);
     char *o = cmd;
@@ -146,11 +147,9 @@ int flon_invoke(const char *path)
       return 127;
     }
 
-    char *out = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
-
-    if (freopen(out, "w", stdout) == NULL)
+    if (freopen(ret, "w", stdout) == NULL)
     {
-      fgaj_r("failed to reopen child stdout to %s", out);
+      fgaj_r("failed to reopen child stdout to %s", ret);
       return 127;
     }
 
@@ -193,6 +192,7 @@ int flon_invoke(const char *path)
   free(invoker_path);
   free(cmd);
   free(invoked);
+  free(ret);
 
   // exit
 
