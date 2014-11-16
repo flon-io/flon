@@ -38,6 +38,28 @@
 #include "fl_common.h"
 #include "fl_invoker.h"
 
+typedef struct { char *exid; char *nid; fdja_value *payload; } lup;
+
+static char *lookup(void *data, const char *path)
+{
+  lup *lu = (lup *)data;
+
+  if (strcmp(path, "exid") == 0) return strdup(lu->exid);
+  if (strcmp(path, "nid") == 0) return strdup(lu->nid);
+
+  if (strncmp(path, "pl.", 3) == 0)
+    return fdja_ls(lu->payload, path + 3, NULL);
+  if (strncmp(path, "payload.", 8) == 0)
+    return fdja_ls(lu->payload, path + 8, NULL);
+
+  return NULL;
+}
+
+static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
+{
+  lup lu = { exid, nid, payload };
+  return fdol_expand(cmd, &lu, lookup);
+}
 
 int flon_invoke(const char *path)
 {
@@ -104,12 +126,15 @@ int flon_invoke(const char *path)
 
   if (strstr(cmd, "$("))
   {
-    flu_dict *d = flu_d("exid", exid, "nid", nid, NULL);
-    char *cmd1 = fdol_expand(cmd, d, fdol_dlup);
-    flu_list_free(d);
-    char *o = cmd;
+    //flu_dict *d = flu_d("exid", exid, "nid", nid, NULL);
+    //char *cmd1 = fdol_expand(cmd, d, fdol_dlup);
+    //flu_list_free(d);
+    //char *o = cmd;
+    //cmd = cmd1;
+    //free(o);
+    char *cmd1 = expand(cmd, exid, nid, payload);
+    free(cmd);
     cmd = cmd1;
-    free(o);
   }
 
   fgaj_i("invoking >%s<", cmd);
