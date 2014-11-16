@@ -2,7 +2,7 @@
 //
 // specifying flon invokers
 //
-// Sat Nov 15 17:50:46 JST 2014
+// Mon Nov 17 06:00:25 JST 2014
 //
 
 #include "gajeta.h"
@@ -11,7 +11,7 @@
 #include "fl_invoker.h"
 
 
-context "invoker: null"
+context "invoker: mirror"
 {
   before each
   {
@@ -26,25 +26,29 @@ context "invoker: null"
     char *exid = NULL;
     char *nid = NULL;
     char *path = NULL;
+
+    fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
     //free(nid); // no, it's not on the heap
     free(path);
+
+    if (v) fdja_free(v);
   }
 
-  describe "null"
+  describe "mirror"
   {
-    it "swallows any workitem"
+    it "repeats its command line args in its output"
     {
-      exid = flon_generate_exid("itest-null-0");
+      exid = flon_generate_exid("itest-mirror-0");
       nid = "0_1";
       path = flu_sprintf("var/spool/inv/inv_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
-        "invoke: [ null, {}, [] ]\n"
+        "invoke: [ mirror, {}, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"
@@ -63,10 +67,17 @@ context "invoker: null"
 
       expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) c== 'f');
         // it's still here, it's the dispatcher's work to nuke it,
-        // but since there is no answer...
 
-      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 0);
+      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
         // the null participant nuked it
+
+      v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+
+      expect(v != NULL);
+
+      //flu_putf(fdja_todc(v));
+      expect(fdja_ls(v, "-e", NULL) ===f exid);
+      expect(fdja_ls(v, "-n", NULL) ===f nid);
     }
   }
 }

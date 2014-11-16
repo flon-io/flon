@@ -1,0 +1,5 @@
+
+# mirror
+
+invoke: "bin/mirror -e $(exid) -n $(nid)"
+

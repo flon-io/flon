@@ -1,0 +1,5 @@
+
+bin/mirror
+tmp/mirror
+tmp/*.o
+
