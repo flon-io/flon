@@ -1,7 +1,7 @@
 
 # null
 
-#invoke: "bin/null -e $(exid) -n $(nid)"
-invoke: "bin/null -e $(exid) -n $(nid) -h $(pl.hello)"
+invoke: "bin/null -e $(exid) -n $(nid)"
+#invoke: "bin/null -e $(exid) -n $(nid) -h $(pl.hello)"
 out: discard
 

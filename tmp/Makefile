@@ -49,7 +49,6 @@ DEPS=\
 DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) dollar.o fl_invoker.o
-KDEPS=$(IDEPS)
 NDEPS=$(DEPS) n_helpers.o
 LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
@@ -59,10 +58,8 @@ ds.c: ../spec/d_*_spec.c
 	$(RODZO) ../spec/d_*_spec.c -o ds.c
 xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
-is.c: ../spec/i_*_spec.c
-	$(RODZO) ../spec/i_*_spec.c -o is.c
-ks.c: ../spec/k/*_spec.c
-	$(RODZO) ../spec/k/*_spec.c -o ks.c
+is.c: ../spec/i/*_spec.c
+	$(RODZO) ../spec/i/*_spec.c -o is.c
 ls.c: ../spec/l_*_spec.c
 	$(RODZO) ../spec/l_*_spec.c -o ls.c
 ns.c: ../spec/n/*_spec.c
@@ -73,7 +70,6 @@ cs: $(DEPS)
 ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
-ks: $(KDEPS)
 ls: $(LDEPS)
 ns: $(NDEPS)
 
@@ -89,9 +85,6 @@ sx: xs
 si: is
 	@echo "\n--- si --------------------------------------------------------\n"
 	time ./is
-sk: ks
-	@echo "\n--- sk --------------------------------------------------------\n"
-	time ./ks
 sl: ls
 	@echo "\n--- sl --------------------------------------------------------\n"
 	time ./ls
@@ -112,10 +105,6 @@ vsi: is
 	#valgrind ./is # an invoker may lose as much mem as he wants...
 	valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
-vsk: ks
-	#valgrind ./ks # an invoker may lose as much mem as he wants...
-	valgrind --leak-check=full -v ./ks
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./ks
 vsl: ls
 	valgrind --leak-check=full -v ./ls
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
@@ -154,9 +143,9 @@ scope: flon-scope
 fflon: flon-flon
 	mv flon-flon ../tst/bin/
 
-spec: sc sd sx si sk sl sn
+spec: sc sd sx si sl sn
 s: spec
-vspec: vsc vsd vsx vsi vsk vsl vsn
+vspec: vsc vsd vsx vsi vsl vsn
 vs: vspec
 
 .PHONY: clean
