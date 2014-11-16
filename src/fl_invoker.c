@@ -105,7 +105,7 @@ int flon_invoke(const char *path)
   if (strstr(cmd, "$("))
   {
     flu_dict *d = flu_d("exid", exid, "nid", nid, NULL);
-    char *cmd1 = fdol_expand(cmd, fdol_dlup, d);
+    char *cmd1 = fdol_expand(cmd, d, fdol_dlup);
     flu_list_free(d);
     char *o = cmd;
     cmd = cmd1;

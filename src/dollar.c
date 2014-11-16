@@ -194,7 +194,7 @@ static char *call(char *s, char *f)
   return strdup(s);
 }
 
-static char *eval(const char *s, fdol_lookup *func, void *data)
+static char *eval(const char *s, void *data, fdol_lookup *func)
 {
   fabr_tree *t = fabr_parse_all(s, 0, fdol_pipe_parser);
 
@@ -203,7 +203,7 @@ static char *eval(const char *s, fdol_lookup *func, void *data)
   //puts(fabr_tree_to_string(t, s, 1));
 
   char *ss = fabr_tree_string(s, t->child);
-  char *r = func(ss, data);
+  char *r = func(data, ss);
   free(ss);
 
   if (t->child->sibling->child)
@@ -221,7 +221,7 @@ static char *eval(const char *s, fdol_lookup *func, void *data)
         if (r == NULL)
         {
           if (*ss == '\'') r = strdup(ss + 1);
-          else r = func(ss, data);
+          else r = func(data, ss);
         }
       }
       else // (mode == 'c')
@@ -252,7 +252,7 @@ static char *unescape(char *s)
   return r;
 }
 
-static char *expand(const char *s, fabr_tree *t, fdol_lookup *func, void *data)
+static char *expand(const char *s, fabr_tree *t, void *data, fdol_lookup *func)
 {
   //puts(fabr_tree_to_string(t, s, 1));
 
@@ -263,8 +263,8 @@ static char *expand(const char *s, fabr_tree *t, fdol_lookup *func, void *data)
 
   if (*t->name == 'd')
   {
-    char *d = expand(s, t->child->sibling, func, data);
-    char *dd = eval(d, func, data);
+    char *d = expand(s, t->child->sibling, data, func);
+    char *dd = eval(d, data, func);
     free(d);
     return dd;
   }
@@ -276,14 +276,14 @@ static char *expand(const char *s, fabr_tree *t, fdol_lookup *func, void *data)
   for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
   {
     fabr_tree *cc = c->child;
-    char *r = expand(s, cc, func, data);
+    char *r = expand(s, cc, data, func);
     if (r) { flu_sbputs(b, r); free(r); }
   }
 
   return flu_sbuffer_to_string(b);
 }
 
-char *fdol_expand(const char *s, fdol_lookup *func, void *data)
+char *fdol_expand(const char *s, void *data, fdol_lookup *func)
 {
   if (strchr(s, '$') == NULL) return strdup(s);
 
@@ -300,13 +300,13 @@ char *fdol_expand(const char *s, fdol_lookup *func, void *data)
 
   fabr_tree *t = fabr_parse_all(s, 0, fdol_parser);
   //puts(fabr_tree_to_string(t, s, 1));
-  char *r = expand(s, t, func, data);
+  char *r = expand(s, t, data, func);
   fabr_tree_free(t);
 
   return r;
 }
 
-char *fdol_dlup(const char *path, void *data)
+char *fdol_dlup(void *data, const char *path)
 {
   char *r = flu_list_get(data, path);
 

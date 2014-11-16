@@ -28,20 +28,18 @@
 #ifndef FLON_DOLLAR_H
 #define FLON_DOLLAR_H
 
-//#include <stdio.h>
 
-
-typedef char *fdol_lookup(const char *path, void *data);
+typedef char *fdol_lookup(void *data, const char *path);
 
 /* Given a string, a lookup function and some data understood by that
  * function, expands the $(...) in the string and returns a new string.
  */
-char *fdol_expand(const char *s, fdol_lookup *func, void *data);
+char *fdol_expand(const char *s, void *data, fdol_lookup *func);
 
 /* Expects a flu_dict in its data argument. Returns the looked up
  * char * value (or NULL).
  */
-char *fdol_dlup(const char *path, void *data);
+char *fdol_dlup(void *data, const char *path);
 
 #endif // FLON_DOLLAR_H
 
