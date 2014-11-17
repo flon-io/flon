@@ -28,8 +28,18 @@ ctst:
 	rm -f tst/var/run/*.pid
 	rm -f tst/var/log/dispatcher.log
 
+dis:
+	make clean dispatcher && \
+    ./tst/bin/flon-dispatcher -d tst/
+vdis:
+	make clean dispatcher && \
+    valgrind --leak-check=full -v ./tst/bin/flon-dispatcher -d tst/
 lis:
-	make clean listener && ./tst/bin/flon-listener -d tst/
+	make clean listener && \
+    ./tst/bin/flon-listener -d tst/
+vlis:
+	make clean listener && \
+    valgrind --leak-check=full -v ./tst/bin/flon-listener -d tst/
 
-.PHONY: spec clean upgrade ctst lis
+.PHONY: spec clean upgrade ctst dis vdis lis vlis
 

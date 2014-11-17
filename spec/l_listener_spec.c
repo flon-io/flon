@@ -61,7 +61,7 @@ context "flon-listener"
       expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
         "{ href: \"http://x.flon.io/i\" }"));
       expect(fdja_lj(v, "_links.home") ===F fdja_vj(""
-        "{ href: \"http://x.flon.io/i\" }"));
+        "{ href: \"http://x.flon.io/i/\" }"));
 
       expect(fdja_l(v, "tstamp") != NULL);
     }
@@ -119,7 +119,7 @@ context "flon-listener"
           fdja_lj(
             v, "_links.http://flon\\.io/rels\\.html#execution"
           ) ===F fdja_vj(
-            "\"http://x.flon.io/i/in/execution/%s\"", exid
+            "\"http://x.flon.io/i/execution/%s\"", exid
           ));
             // the answer contains a link to the new execution
 
@@ -152,7 +152,7 @@ context "flon-listener"
         expect(fdja_lj(v, "_links.self") ===F fdja_vj(""
           "{ href: \"http://x.flon.io/i/in\", method: POST }"));
         expect(fdja_lj(v, "_links.home") ===F fdja_vj(""
-          "{ href: \"http://x.flon.io/i\" }"));
+          "{ href: \"http://x.flon.io/i/\" }"));
       }
 
       it "rejects invalid launch requests"

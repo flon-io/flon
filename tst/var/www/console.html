@@ -24,6 +24,7 @@
 
         <div class="tabs">
           <div id="postFormTab" class="tab selected">post</div>
+          <div id="executionsTab" class="tab">executions</div>
           <div id="inspectorTab" class="tab">inspect</div>
         </div>
 
@@ -34,6 +35,12 @@
             </textarea>
             <input id="inSubmit" type="submit" />
           </p>
+        </div>
+
+        <div id="executions" class="sub-pane">
+          <h2>executions</h2>
+          <input id="executionsRefresh" type="submit" value="refresh" />
+          <div id="executionList"></div>
         </div>
 
         <div id="inspector" class="sub-pane">
@@ -72,7 +79,7 @@
         e.addEventListener('click', xhrefClick);
       }
 
-      function inOnError(e)
+      function onError(e)
       {
         console.log(e);
 
@@ -93,8 +100,8 @@
 
         if (t.status === 200)
         {
-          var msg = JSON.parse(e.target.responseText);
-          msg.code = e.target.status;
+          var msg = JSON.parse(t.responseText);
+          msg.code = t.status;
           msg.href = msg._links[RELS + '#execution'];
 
           html = postSuccessTemplate(msg);
@@ -119,9 +126,33 @@
         var req = new XMLHttpRequest();
         req.open('POST', './i/in', true);
         req.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
-        req.onerror = inOnError;
+        req.onerror = onError;
         req.onload = inOnLoad;
         req.send(document.getElementById("inField").value);
+      }
+
+      function refreshOnLoad(e)
+      {
+        //console.log(e.target.responseText);
+        var j = JSON.parse(e.target.responseText);
+        var list = byid("executionList");
+        j._embedded.executions.forEach(function(e)
+        {
+          var el = document.createElement('div');
+          el.innerHTML = executionEntryTemplate(e);
+          list.appendChild(el);
+        });
+        bytag(list, 'a').forEach(enableXhref);
+      }
+
+      function refreshExecutions()
+      {
+        byid("executionList").innerHTML = '';
+        var req = new XMLHttpRequest();
+        req.open('GET', './i/executions', true);
+        req.onerror = onError;
+        req.onload = refreshOnLoad;
+        req.send();
       }
 
       function onTabClick(e)
@@ -135,22 +166,27 @@
 
       var postAnswerTemplate = null;
       var postFailureTemplate = null;
+      var executionEntryTemplate = null;
 
       document.addEventListener('DOMContentLoaded', function() {
-
-        byid("inSubmit").addEventListener('click', inSubmit);
 
         byclass("tab").forEach(function(e) {
           e.addEventListener('click', onTabClick);
         });
 
+        byid("inSubmit").addEventListener('click', inSubmit);
+        byid("executionsRefresh").addEventListener('click', refreshExecutions);
+
         byid("inField").textContent = byid("launchJson").textContent;
         byid("postForm").style.display = 'block';
+
 
         postSuccessTemplate =
           Handlebars.compile(byid("postSuccessTemplate").innerHTML);
         postFailureTemplate =
           Handlebars.compile(byid("postFailureTemplate").innerHTML);
+        executionEntryTemplate =
+          Handlebars.compile(byid("executionEntryTemplate").innerHTML);
       });
     </script>
 
@@ -174,13 +210,20 @@
       <div>
         {{ tstamp }} -
         {{ message }} -
-        <a href="#" xhref="{{ href }}">{{ exid }}</a></div>
+        <a href="#" xhref="{{ href }}">{{ exid }}</a>
+      </div>
     </div>
     <div id="postFailureTemplate" class="hidden">
       <div>
         {{ tstamp }} -
         {{ code }} -
         {{ message }}
+      </div>
+    </div>
+    <div id="executionEntryTemplate" class="hidden">
+      <div>
+        <a href="#" xhref="{{ _links.self.href }}">{{ exid }}</a>
+      </div>
     </div>
   </body>
 </html>

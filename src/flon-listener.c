@@ -89,8 +89,9 @@ int main(int argc, char *argv[])
 
     shv_rp("GET /i", flon_i_handler, NULL),
     shv_rp("POST /i/in", flon_in_handler, NULL),
-    shv_rp("GET /i/executions", flon_executions_handler, NULL),
-    shv_rp("GET /i/executions/:id", flon_execution_handler, NULL),
+    shv_rp("GET /i/executions", flon_exes_handler, NULL),
+    shv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
+    shv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
     shv_rp("GET /i/metrics", flon_metrics_handler, NULL),
     shv_rp("GET /**", shv_dir_handler, "r", "var/www", NULL),
 

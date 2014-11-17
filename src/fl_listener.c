@@ -27,8 +27,10 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 #include "flutim.h"
+#include "gajeta.h"
 #include "djan.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -38,6 +40,33 @@
 
 #define FLON_RELS "http://flon.io/rels.html"
 
+static void expand_rels(fdja_value *doc)
+{
+  // add FLON_RELS to #links
+
+  for (fdja_value *v = fdja_l(doc, "_links")->child; v; v = v->sibling)
+  {
+    if (*v->key != '#') continue;
+    char *s = flu_sprintf("%s%s", FLON_RELS, v->key);
+    free(v->key);
+    v->key = s;
+  }
+}
+
+static char *link(shv_request *req, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  va_end(ap);
+
+  char *uri = shv_abs(0, req->uri_d);
+  char *i = strstr(uri, "/i/");
+  if (i) *(i + 2) = 0;
+  char *r = flu_sprintf("%s/%s", uri, p);
+  free(uri);
+
+  return r;
+}
 
 static int respond(shv_request *req, shv_response *res, fdja_value *r)
 {
@@ -46,15 +75,7 @@ static int respond(shv_request *req, shv_response *res, fdja_value *r)
 
   fdja_set(r, "tstamp", fdja_sym(flu_tstamp(NULL, 1, 's')));
 
-  // add FLON_RELS to #links
-
-  for (fdja_value *v = fdja_l(r, "_links")->child; v; v = v->sibling)
-  {
-    if (*v->key != '#') continue;
-    char *s = flu_sprintf("%s%s", FLON_RELS, v->key);
-    free(v->key);
-    v->key = s;
-  }
+  expand_rels(r);
 
   // add home and self links
 
@@ -63,13 +84,11 @@ static int respond(shv_request *req, shv_response *res, fdja_value *r)
   if (req->method != 'g') {
     fdja_psetv(r, "_links.self.method", shv_char_to_method(req->method));
   }
-
-  // TODO: make it more serious
-  char *i = strstr(uri, "/i/");
-  if (i) *(i + 2) = 0;
-  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", uri));
-
   free(uri);
+
+  char *home = link(req, "");
+  fdja_pset(r, "_links.home", fdja_v("{ href: \"%s\" }", home));
+  free(home);
 
   flu_list_add(res->body, fdja_to_json(r));
 
@@ -104,7 +123,7 @@ static void in_handle_launch(
     fdja_set(r, "exid", fdja_s(i));
     fdja_set(r, "message", fdja_s("launched"));
 
-    char *s = shv_rel(0, req->uri_d, "./execution/%s", i);
+    char *s = link(req, "execution/%s", i);
     fdja_pset(r, "_links.#execution", fdja_s(s));
     free(s);
   }
@@ -175,16 +194,109 @@ _respond:
 //
 // /i/executions
 
-int flon_executions_handler(
+// TODO ?archived=true or ?archived=1 or =yes
+
+static void add_execution_dirs(flu_list *l, char *path, char *dom)
+{
+  char *d0 = flu_sprintf("%s/%s", path, dom);
+  DIR *dir0 = opendir(d0);
+  struct dirent *ep0; while ((ep0 = readdir(dir0)) != NULL)
+  {
+    if (*ep0->d_name == '.' || ep0->d_type != 4) continue;
+    char *d1 = flu_sprintf("%s/%s", d0, ep0->d_name);
+    DIR *dir1 = opendir(d1);
+    struct dirent *ep1; while ((ep1 = readdir(dir1)) != NULL)
+    {
+      if (*ep1->d_name == '.' || ep1->d_type != 4) continue;
+      char *d2 = flu_sprintf("%s/%s", d1, ep1->d_name);
+      flu_list_add(l, d2);
+    }
+    closedir(dir1);
+    free(d1);
+  }
+  closedir(dir0);
+  free(d0);
+}
+
+static flu_list *list_executions(shv_request *req, char *path)
+{
+  flu_list *r = flu_list_malloc();
+
+  DIR *dir = opendir(path);
+
+  struct dirent *ep; while ((ep = readdir(dir)) != NULL)
+  {
+    if (*ep->d_name == '.' || ep->d_type != 4) continue;
+
+    if (flon_may_read(req, ep->d_name))
+    {
+      add_execution_dirs(r, path, ep->d_name);
+    }
+  }
+
+  closedir(dir);
+
+  return r;
+}
+
+static fdja_value *embed(shv_request *req, const char *path)
+{
+  fdja_value *r = fdja_v("{ _links: {} }");
+
+  char *exid = strrchr(path, '/');
+  if (exid == NULL) return r;
+  exid = exid + 1;
+
+  fdja_psetv(r, "exid", exid);
+
+  fdja_psetv(
+    r, "_links.self",
+    "{ href: \"%s\" }", link(req, "executions/%s", exid));
+  fdja_psetv(
+    r, "_links.#log",
+    "{ href: \"%s\" }", link(req, "executions/%s/log", exid));
+  fdja_psetv(
+    r, "_links.#msg-log",
+    "{ href: \"%s\" }", link(req, "executions/%s/msg-log", exid));
+
+  expand_rels(r);
+
+  return r;
+}
+
+int flon_exes_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  res->status_code = 200;
+  fdja_value *r = fdja_v("{ _links: {}, _embedded: { executions: [] } }");
+
+  // list running executions
+
+  flu_list *l = list_executions(req, "var/run");
+
+  for (flu_node *n = l->first; n; n = n->next)
+  {
+    fdja_pset(r, "_embedded.executions.]", embed(req, (char *)n->item));
+  }
+
+  // return result
+
+  return respond(req, res, r);
+}
+
+//
+// /i/executions/:domain or /:exid
+
+int flon_exe_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
 }
 
 //
-// /i/executions/:domain or /:exid
+// /i/executions/:exid/log /msg-log /msgs
 
-int flon_execution_handler(
+int flon_exe_sub_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
   return 1;
@@ -209,31 +321,31 @@ int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   char *s = NULL;
 
-  s = shv_rel(0, req->uri_d, "in");
+  s = link(req, "in");
   fdja_pset(
     r, "_links.#in",
     fdja_v("{ href: \"%s\", method: POST }", s));
   free(s);
 
-  s = shv_rel(0, req->uri_d, "executions");
+  s = link(req, "executions");
   fdja_pset(
     r, "_links.#executions",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
-  s = shv_rel(0, req->uri_d, "executions/{domain}");
+  s = link(req, "executions/{domain}");
   fdja_pset(
     r, "_links.#domain-executions",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
-  s = shv_rel(0, req->uri_d, "executions/{exid}");
+  s = link(req, "executions/{exid}");
   fdja_pset(
     r, "_links.#execution",
     fdja_v("{ href: \"%s\", templated: true }", s));
   free(s);
 
-  s = shv_rel(0, req->uri_d, "metrics");
+  s = link(req, "metrics");
   fdja_pset(
     r, "_links.#metrics",
     fdja_v("{ href: \"%s\" }", s));

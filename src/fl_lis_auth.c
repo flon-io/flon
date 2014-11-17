@@ -175,20 +175,7 @@ int flon_dom_matches(const char *dom, const char *pat)
   return r;
 }
 
-static int flon_may(fdja_value *doms, char *dom, char right)
-{
-  for (fdja_value *c = doms->child; c; c = c->sibling)
-  {
-    if ( ! flon_dom_matches(dom, c->key)) continue;
-    char *s = fdja_to_string(c);
-    char *r = strchr(s, right);
-    free(s);
-    if (r) return 1;
-  }
-  return 0;
-}
-
-int flon_may_launch(shv_request *req, char *dom)
+static int flon_may(shv_request *req, char *dom, char right)
 {
   if ( ! load_domain()) return 0;
 
@@ -198,6 +185,25 @@ int flon_may_launch(shv_request *req, char *dom)
   fdja_value *doms = fdja_lookup(domain, u);
   if (doms == NULL) return 0;
 
-  return flon_may(doms, dom, 'l');
+  for (fdja_value *c = doms->child; c; c = c->sibling)
+  {
+    if ( ! flon_dom_matches(dom, c->key)) continue;
+    char *s = fdja_to_string(c);
+    char *r = strchr(s, right);
+    free(s);
+    if (r) return 1;
+  }
+
+  return 0;
+}
+
+int flon_may_read(shv_request *req, char *dom)
+{
+  return flon_may(req, dom, 'r');
+}
+
+int flon_may_launch(shv_request *req, char *dom)
+{
+  return flon_may(req, dom, 'l');
 }
 
