@@ -258,6 +258,9 @@ static fdja_value *embed(shv_request *req, const char *path)
   fdja_psetv(
     r, "_links.#msg-log",
     "{ href: \"%s\" }", link(req, "executions/%s/msg-log", exid));
+  fdja_psetv(
+    r, "_links.#msgs",
+    "{ href: \"%s\" }", link(req, "executions/%s/msgs", exid));
 
   expand_rels(r);
 

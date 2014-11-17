@@ -131,15 +131,29 @@
         req.send(document.getElementById("inField").value);
       }
 
+      function shortcutify(doc)
+      {
+        var ls = {};
+        for (var k in doc._links)
+        {
+          var m = k.match(/#(.+)$/);
+          if ( ! m) continue;
+          ls[m[1].replace("-", "_")] = doc._links[k];
+        }
+        for (var k in ls) doc._links[k] = ls[k];
+      }
+
       function refreshOnLoad(e)
       {
         //console.log(e.target.responseText);
         var j = JSON.parse(e.target.responseText);
         var list = byid("executionList");
-        j._embedded.executions.forEach(function(e)
+        j._embedded.executions.forEach(function(exe)
         {
+          console.log(JSON.stringify(exe._links));
+          shortcutify(exe);
           var el = document.createElement('div');
-          el.innerHTML = executionEntryTemplate(e);
+          el.innerHTML = executionEntryTemplate(exe);
           list.appendChild(el);
         });
         bytag(list, 'a').forEach(enableXhref);
@@ -180,13 +194,14 @@
         byid("inField").textContent = byid("launchJson").textContent;
         byid("postForm").style.display = 'block';
 
-
         postSuccessTemplate =
           Handlebars.compile(byid("postSuccessTemplate").innerHTML);
         postFailureTemplate =
           Handlebars.compile(byid("postFailureTemplate").innerHTML);
         executionEntryTemplate =
           Handlebars.compile(byid("executionEntryTemplate").innerHTML);
+
+        byid("executionsRefresh").click();
       });
     </script>
 
@@ -221,8 +236,12 @@
       </div>
     </div>
     <div id="executionEntryTemplate" class="hidden">
-      <div>
-        <a href="#" xhref="{{ _links.self.href }}">{{ exid }}</a>
+      <div class="execution-entry">
+        <span class="exid">{{ exid }}</span>
+        <a href="#" xhref="{{ _links.self.href }}">state</a>
+        <a href="{{ _links.log.href }}" target="_blank">log</a>
+        <a href="{{ _links.msg_log.href }}" target="_blank">msg log</a>
+        <a href="#" xhref="{{ _links.msgs.href }}">msgs</a>
       </div>
     </div>
   </body>
