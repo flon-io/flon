@@ -1,5 +1,5 @@
 
 # mirror
 
-invoke: "bin/mirror -e $(exid) -n $(nid)"
+invoke: "bin/mirror -e $(exid) -n $(nid) -x $(pl.danger0) -y $(pl.danger1)"
 

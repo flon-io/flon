@@ -28,6 +28,20 @@
 #include <stdio.h>
 
 
+static char *escape(char *s)
+{
+  size_t l = strlen(s);
+  char *r = calloc(l * 2 + 1, sizeof(char));
+
+  for (size_t i = 0, j = 0; i < l; ++i)
+  {
+    if (s[i] == '"') r[j++] = '\\';
+    r[j++] = s[i];
+  }
+
+  return r;
+}
+
 int main(int argc, char *argv[])
 {
   printf("{");
@@ -37,7 +51,7 @@ int main(int argc, char *argv[])
   {
     if (k == NULL) { k = argv[i]; continue; }
 
-    printf("\"%s\": \"%s\",", k, argv[i]);
+    printf("\"%s\": \"%s\",", k, escape(argv[i]));
     k = NULL;
   }
   // yes, it's hand-rolled json.

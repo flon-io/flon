@@ -36,6 +36,12 @@ typedef char *fdol_lookup(void *data, const char *path);
  */
 char *fdol_expand(const char *s, void *data, fdol_lookup *func);
 
+/* Like fdol_expand() but makes sure that every expansion at the first
+ * level is wrapped in double quotes.
+ * Useful when preparing command invocations.
+ */
+char *fdol_quote_expand(const char *s, void *data, fdol_lookup *func);
+
 /* Expects a flu_dict in its data argument. Returns the looked up
  * char * value (or NULL).
  */

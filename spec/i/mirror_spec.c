@@ -53,6 +53,8 @@ context "invoker: mirror"
         "nid: %s\n"
         "payload: {\n"
           "hello: world\n"
+          "danger0: \"; xrm ../nada0\"\n"
+          "danger1: \"\\\"; xrm ../nada1\"\n"
         "}\n",
         exid, nid
       );
@@ -78,6 +80,8 @@ context "invoker: mirror"
       //flu_putf(fdja_todc(v));
       expect(fdja_ls(v, "-e", NULL) ===f exid);
       expect(fdja_ls(v, "-n", NULL) ===f nid);
+      expect(fdja_ls(v, "-x", NULL) ===f "; xrm ../nada0");
+      expect(fdja_ls(v, "-y", NULL) ===f "\"; xrm ../nada1");
     }
   }
 }

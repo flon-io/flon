@@ -57,7 +57,7 @@ static char *lookup(void *data, const char *path)
 
 static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
 {
-  return fdol_expand(cmd, &(lup){ exid, nid, payload }, lookup);
+  return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
 }
 
 int flon_invoke(const char *path)
