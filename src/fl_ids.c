@@ -152,20 +152,16 @@ fdja_value *flon_parse_nid(const char *s)
   return r;
 }
 
-char *flon_exid_path(const char *s)
+char *flon_nid_path(fdja_value *nid)
 {
+  if (nid == NULL) return NULL;
+
   char *r = NULL;
-  fdja_value *i = NULL;
-  char *exid = NULL;
-  char *domain = NULL;
 
-  i = flon_parse_nid(s);
-  if (i == NULL) goto _over;
+  char *exid = fdja_ls(nid, "exid", NULL);
+  char *domain = fdja_ls(nid, "domain", NULL);
 
-  exid = fdja_ls(i, "exid", NULL);
-  domain = fdja_ls(i, "domain", NULL);
-
-  if (exid == NULL) goto _over;
+  if (exid == NULL || domain == NULL) goto _over;
 
   char *dot = strrchr(exid, '.') + 1;
 
@@ -173,9 +169,19 @@ char *flon_exid_path(const char *s)
 
 _over:
 
-  if (i) fdja_free(i);
-  if (exid) free(exid);
-  if (domain) free(domain);
+  free(exid);
+  free(domain);
+
+  return r;
+}
+
+char *flon_exid_path(const char *s)
+{
+  fdja_value *n = flon_parse_nid(s);
+  if (n == NULL) return NULL;
+
+  char *r = flon_nid_path(n);
+  fdja_free(n);
 
   return r;
 }

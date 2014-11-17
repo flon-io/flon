@@ -44,6 +44,8 @@ static void expand_rels(fdja_value *doc)
 {
   // add FLON_RELS to #links
 
+  if (fdja_l(doc, "_links") == NULL) fdja_set(doc, "_links", fdja_v("{}"));
+
   for (fdja_value *v = fdja_l(doc, "_links")->child; v; v = v->sibling)
   {
     if (*v->key != '#') continue;
@@ -239,9 +241,10 @@ static flu_list *list_executions(shv_request *req, char *path)
   return r;
 }
 
-static fdja_value *embed(shv_request *req, const char *path)
+static fdja_value *embed_exe(shv_request *req, const char *path, fdja_value *r)
 {
-  fdja_value *r = fdja_v("{ _links: {} }");
+  if (r == NULL) r = fdja_v("{}");
+  if (fdja_l(r, "_links") == NULL) fdja_set(r, "_links", fdja_v("{}"));
 
   char *exid = strrchr(path, '/');
   if (exid == NULL) return r;
@@ -279,7 +282,8 @@ int flon_exes_handler(
 
   for (flu_node *n = l->first; n; n = n->next)
   {
-    fdja_pset(r, "_embedded.executions.]", embed(req, (char *)n->item));
+    fdja_pset(
+      r, "_embedded.executions.]", embed_exe(req, (char *)n->item, NULL));
   }
 
   // return result
@@ -290,10 +294,44 @@ int flon_exes_handler(
 //
 // /i/executions/:domain or /:exid
 
+static int exe_handler_dom(
+  shv_request *req, shv_response *res, const char *dom)
+{
+  //res->status_code = 200;
+
+  return 1;
+}
+
+static int exe_handler_exid(
+  shv_request *req, shv_response *res, fdja_value *nid)
+{
+  char *path = flon_nid_path(nid);
+  char *run = flu_sprintf("var/run/%s/run.json", path);
+  fdja_value *r = fdja_parse_f(run);
+
+  if (r == NULL) { fgaj_r("couldn't read %s", run); goto _over; }
+
+  res->status_code = 200;
+  embed_exe(req, path, r);
+
+_over:
+
+  free(path);
+  free(run);
+
+  if (res->status_code == 200) respond(req, res, r);
+  return 1; // goes 404
+}
+
 int flon_exe_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
-  return 1;
+  char *id = flu_list_get(req->routing_d, "id");
+  fdja_value *vid = flon_parse_nid(id);
+
+  return vid ?
+    exe_handler_exid(req, res, vid) :
+    exe_handler_dom(req, res, id);
 }
 
 //
