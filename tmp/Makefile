@@ -96,7 +96,8 @@ vsi: is
 	valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
 vsl: ls
-	valgrind --leak-check=full -v ./ls
+	#valgrind --leak-check=full -v ./ls
+	valgrind --leak-check=full -v --num-callers=50 ./ls
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 vsn: ns
 	valgrind --leak-check=full -v ./ns
