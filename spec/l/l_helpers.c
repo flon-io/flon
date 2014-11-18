@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "flutil.h"
+#include "fl_ids.h"
 #include "fl_dispatcher.h"
 #include "l_helpers.h"
 

@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 #include "gajeta.h"
+#include "fl_ids.h"
 #include "l_helpers.h"
 
 
@@ -96,6 +97,36 @@ context "flon-listener (vs executions)"
       fdja_free(i1);
       free(href1);
     }
+  }
+
+  describe "flon_exe_handler() /executions/:domain"
+  {
+    it "lists the executions in a domain"
+  }
+
+  describe "flon_exe_handler() /executions/:exid"
+  {
+    it "details an execution"
+  }
+
+  describe "flon_exe_sub_handler() /executions/:exid/log"
+  {
+    it "serves the exe.log"
+  }
+
+  describe "flon_exe_sub_handler() /executions/:exid/msg-log"
+  {
+    it "serves the msgs.log"
+  }
+
+  describe "flon_exe_sub_handler() /executions/:exid/msgs"
+  {
+    it "lists the msgs in processed/"
+  }
+
+  describe "flon_exe_msg_handler() /executions/:exid/msgs/:mid"
+  {
+    it "details a processed msg"
   }
 }
 
