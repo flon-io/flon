@@ -38,7 +38,8 @@ NDEPS=$(DEPS) n_helpers.o
 #
 LDEPS=\
   $(DEPS) $(SHV_OS) $(TSI_OS) \
-  flu64.o fl_listener.o fl_lis_auth.o l_helpers.o
+  flu64.o fl_listener.o fl_lis_auth.o \
+  fl_dispatcher.o l_helpers.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c

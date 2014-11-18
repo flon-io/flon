@@ -7,12 +7,7 @@
 
 #include <stdlib.h>
 
-//#include "flutil.h"
-//#include "djan.h"
-//#include "shervin.h"
-//#include "shv_protected.h"
-//#include "fl_common.h"
-//#include "fl_listener.h"
+#include "l_helpers.h"
 
 
 context "flon-listener (vs executions)"
@@ -22,26 +17,12 @@ context "flon-listener (vs executions)"
     chdir("../tst");
     flon_configure(".");
 
-//    exid = flon_generate_exid("dtest.inv");
-//    name = flu_sprintf("exe_%s.json", exid);
-//
-//    int r = flu_writeall(
-//      name,
-//      "{"
-//        "execute: [ invoke { _0: null } [] ]\n"
-//        "exid: %s\n"
-//        "payload: {\n"
-//          "hello: listener\n"
-//        "}\n"
-//      "}", exid
-//    );
-//    if (r != 1) { perror("failed to write exe_ file"); exit(1); }
-//
-//    r = flon_dispatch(name);
-//    if (r != 2) { perror("failed to dispatch exe_ file"); exit(2); }
-//
-//    free(exid);
-//    free(name);
+    hlp_clean_tst();
+
+    hlp_start_execution("org.example");
+    hlp_start_execution("org.example.a");
+    hlp_start_execution("org.sample.b");
+    sleep(1);
   }
 
   before each
@@ -50,25 +31,24 @@ context "flon-listener (vs executions)"
     flu_dict *params = NULL;
     shv_response *res = shv_response_malloc(404);
     fdja_value *v = NULL;
-    fdja_value *v1 = NULL;
-    char *exid = NULL;
-
-    int i = system("make -C .. ctst > /dev/null");
-    if (i != 0) printf("... the clean up command failed ...");
+    //fdja_value *v1 = NULL;
   }
+
   after each
   {
     if (req) shv_request_free(req);
     if (params) flu_list_free(params);
     if (v) fdja_free(v);
-    if (v1) fdja_free(v1);
+    //if (v1) fdja_free(v1);
     if (res) shv_response_free(res);
-    free(exid);
   }
 
   describe "flon_exes_handler() /executions"
   {
     it "lists executions (in readable domains)"
+    {
+      system("tree var/run/");
+    }
 //    {
 //      req = shv_parse_request_head(""
 //        "POST /i/in HTTP/1.1\r\n"

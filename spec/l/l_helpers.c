@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include "flutil.h"
+#include "fl_dispatcher.h"
 #include "l_helpers.h"
 
 
@@ -21,5 +22,35 @@ void llog(char *format, ...)
   vprintf(fo, ap);
   free(fo);
   va_end(ap);
+}
+
+void hlp_clean_tst()
+{
+  int i = system("make -C .. ctst > /dev/null");
+  if (i != 0) printf("... the clean up command failed ...");
+}
+
+void hlp_start_execution(char *domain)
+{
+  char *exid = flon_generate_exid(domain);
+  char *name = flu_sprintf("exe_%s.json", exid);
+
+  int r = flu_writeall(
+    "var/spool/dis/%s", name,
+    "{"
+      "execute: [ invoke { _0: null } [] ]\n"
+      "exid: %s\n"
+      "payload: {\n"
+        "hello: %s\n"
+      "}\n"
+    "}", exid, domain
+  );
+  if (r != 1) { perror("failed to write exe_ file"); exit(1); }
+
+  r = flon_dispatch(name);
+  if (r != 2) { perror("failed to dispatch exe_ file"); exit(2); }
+
+  free(exid);
+  free(name);
 }
 

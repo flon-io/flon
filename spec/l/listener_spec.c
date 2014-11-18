@@ -11,6 +11,7 @@
 #include "shv_protected.h"
 #include "fl_common.h"
 #include "fl_listener.h"
+#include "l_helpers.h"
 
 
 context "flon-listener"
@@ -71,8 +72,7 @@ context "flon-listener"
   {
     before each
     {
-      int i = system("make -C .. ctst > /dev/null");
-      if (i != 0) printf("... the clean up command failed ...");
+      hlp_clean_tst();
 
       char *exid = NULL;
     }

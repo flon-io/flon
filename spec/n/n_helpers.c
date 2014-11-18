@@ -1,6 +1,6 @@
 
 //
-// helpers for n_ specs
+// helpers for n/ specs
 //
 // Fri Oct 24 12:53:40 JST 2014
 //
