@@ -119,7 +119,7 @@ context "flon-listener"
           fdja_lj(
             v, "_links.http://flon\\.io/rels\\.html#execution"
           ) ===F fdja_vj(
-            "\"http://x.flon.io/i/execution/%s\"", exid
+            "\"http://x.flon.io/i/executions/%s\"", exid
           ));
             // the answer contains a link to the new execution
 

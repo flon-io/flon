@@ -298,6 +298,7 @@ int flon_exes_handler(
 static int exe_handler_dom(
   shv_request *req, shv_response *res, const char *dom)
 {
+  //if ( ! flon_may_read(req, dom)) return 0;
   //res->status_code = 200;
 
   return 1;
@@ -306,6 +307,8 @@ static int exe_handler_dom(
 static int exe_handler_exid(
   shv_request *req, shv_response *res, fdja_value *nid)
 {
+  if ( ! flon_may_read(req, fdja_ls(nid, "domain", NULL))) return 0;
+
   char *path = flon_nid_path(nid);
   char *run = flu_sprintf("var/run/%s/run.json", path);
   fdja_value *r = fdja_parse_f(run);
@@ -391,7 +394,7 @@ int flon_exe_sub_handler(
   char *exid = flu_list_get(req->routing_d, "id");
   char *sub = flu_list_get(req->routing_d, "sub");
 
-  // TODO: check if user may read this execution's domain
+  if ( ! flon_may_read(req, exid)) return 0;
 
   return strcmp(sub, "msgs") == 0 ?
     sub_handler_msgs(req, res, params, exid, sub) :
@@ -407,7 +410,7 @@ int flon_exe_msg_handler(
   char *exid = flu_list_get(req->routing_d, "id");
   char *id = flu_list_get(req->routing_d, "mid");
 
-  // TODO: check if user may read this execution's domain
+  if ( ! flon_may_read(req, exid)) return 0;
 
   char *path = flon_exid_path(exid);
   char *fpath = flu_path("var/run/%s/processed/%s", path, id);

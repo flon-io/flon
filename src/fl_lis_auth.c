@@ -177,6 +177,8 @@ int flon_dom_matches(const char *dom, const char *pat)
 
 static int flon_may(shv_request *req, char *dom, char right)
 {
+  if (dom == NULL) return 0;
+
   if ( ! load_domain()) return 0;
 
   char *u = flu_list_get(req->routing_d, "_user");
@@ -185,16 +187,24 @@ static int flon_may(shv_request *req, char *dom, char right)
   fdja_value *doms = fdja_lookup(domain, u);
   if (doms == NULL) return 0;
 
+  int result = 0;
+
+  char *d = strdup(dom); char *dash = strchr(d, '-'); if (dash) *dash = 0;
+
   for (fdja_value *c = doms->child; c; c = c->sibling)
   {
-    if ( ! flon_dom_matches(dom, c->key)) continue;
+    if ( ! flon_dom_matches(d, c->key)) continue;
     char *s = fdja_to_string(c);
     char *r = strchr(s, right);
     free(s);
-    if (r) return 1;
+    if (r) { result = 1; goto _over; }
   }
 
-  return 0;
+_over:
+
+  free(d);
+
+  return result;
 }
 
 int flon_may_read(shv_request *req, char *dom)
