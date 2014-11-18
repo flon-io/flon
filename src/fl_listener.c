@@ -329,6 +329,9 @@ int flon_exe_handler(
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
 
+  // TODO: check if user may read this execution's domain
+  // TODO: check if user may read this domain
+
   return vid ?
     exe_handler_exid(req, res, vid) :
     exe_handler_dom(req, res, id);
@@ -337,24 +340,72 @@ int flon_exe_handler(
 //
 // /i/executions/:exid/log /msg-log /msgs
 
-int flon_exe_sub_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+static int sub_handler_msgs(
+  shv_request *req, shv_response *res, flu_dict *params, char *exid, char *sub)
 {
-  char *id = flu_list_get(req->routing_d, "id");
-  char *sub = flu_list_get(req->routing_d, "sub");
+  char *path = flon_exid_path(exid);
+  char *d = flu_path("var/run/%s/processed", path);
 
-  if (strcmp(sub, "msgs") == 0) return 1;
+  DIR *dir = opendir(d);
 
-  char *path = flon_exid_path(id);
+  if (dir == NULL) { fgaj_r("couldn't read %s", d); free(d); return 0; }
+
+  res->status_code = 200;
+  fdja_value *r = fdja_v("{ _links: {}, _embedded: { msgs: [] } }");
+
+  struct dirent *ep; while ((ep = readdir(dir)) != NULL)
+  {
+    fgaj_i("ep: >%s< %i", ep->d_name, ep->d_type);
+    if (*ep->d_name == '.' || ep->d_type != 8) continue;
+
+    char *href = shv_rel(0, req->uri_d, ep->d_name);
+    fdja_psetv(
+      r, "_embedded.msgs.]", "{ _links: { self: { href: \"%s\" } } }", href);
+    free(href);
+  }
+
+  closedir(dir);
+
+  return respond(req, res, r);
+}
+
+static int sub_handler_log(
+  shv_request *req, shv_response *res, flu_dict *params, char *exid, char *sub)
+{
+  char *path = flon_exid_path(exid);
 
   char *file = "exe.log";
   if (strcmp(sub, "msg-log") == 0) file = "msgs.log";
 
-  char *fpath = flu_sprintf("var/run/%s/%s", path, file);
+  char *fpath = flu_path("var/run/%s/%s", path, file);
   ssize_t s = shv_serve_file(res, params, fpath);
   free(fpath);
 
-  return s < 1 ? 0 : 1;
+  return s > 0;
+}
+
+int flon_exe_sub_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  char *exid = flu_list_get(req->routing_d, "id");
+  char *sub = flu_list_get(req->routing_d, "sub");
+
+  // TODO: check if user may read this execution's domain
+
+  return strcmp(sub, "msgs") == 0 ?
+    sub_handler_msgs(req, res, params, exid, sub) :
+    sub_handler_log(req, res, params, exid, sub);
+}
+
+//
+// /i/executions/:exid/msgs/:mid
+
+int flon_exe_msg_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  // TODO: check if user may read this execution's domain
+
+  return 1;
 }
 
 //
