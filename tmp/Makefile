@@ -10,24 +10,6 @@ ifeq ($(RODZO),)
   RODZO=../../rodzo/bin/rodzo
 endif
 
-#NAMES=$(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/*.c))
-#  # since wildcard doesn't care about VPATH...
-#
-#s.c: ../spec/*_spec.c
-#	$(RODZO) ../spec -o s.c
-#
-#s: $(NAMES)
-#
-#spec: s
-#	time ./s
-#
-#vspec: s
-#	valgrind --leak-check=full -v ./s
-#	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./s
-#
-#dspec: s
-#	gdb ./s
-
 SHV_OS=\
   $(patsubst $(VPATH)/%.c, ./%.o, $(wildcard $(VPATH)/sh*.c))
 TSI_OS=\
@@ -39,18 +21,24 @@ clean:
 	rm -f *.c
 	rm -f [cdxnil]s
 	rm -f n_helpers.[ch]
+	rm -f l_helpers.[ch]
 
 n_helpers.o: n_helpers.c
+l_helpers.o: l_helpers.c
 
 DEPS=\
   flutil.o flutim.o \
   gajeta.o aabro.o djan.o mnemo.o \
   fl_common.o fl_ids.o fl_tools.o
+#
 DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) dollar.o fl_invoker.o
 NDEPS=$(DEPS) n_helpers.o
-LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
+#
+LDEPS=\
+  $(DEPS) $(SHV_OS) $(TSI_OS) \
+  flu64.o fl_listener.o fl_lis_auth.o l_helpers.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
@@ -60,8 +48,9 @@ xs.c: ../spec/x_*_spec.c
 	$(RODZO) ../spec/x_*_spec.c -o xs.c
 is.c: ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
-ls.c: ../spec/l_*_spec.c
-	$(RODZO) ../spec/l_*_spec.c -o ls.c
+ls.c: ../spec/l/*_spec.c
+	$(RODZO) ../spec/l/*_spec.c -o ls.c
+	cp ../spec/l/l_helpers.[ch] .
 ns.c: ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
 	cp ../spec/n/n_helpers.[ch] .
