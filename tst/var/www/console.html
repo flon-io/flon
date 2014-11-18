@@ -65,23 +65,24 @@
 
       var RELS = "http://flon.io/rels.html";
 
-      function xhrefClick(e)
+      function jsonClick(e)
       {
-        var xhref = e.target.getAttribute('xhref');
-        byid('inspFrame').setAttribute('src', xhref);
+        e.preventDefault();
+        var href = e.target.getAttribute('href');
+        byid('inspFrame').setAttribute('src', href);
         byid('inspectorTab').click();
       }
 
-      function enableXhref(e)
+      function enableJsonClick(e)
       {
-        if ( ! e.getAttribute('xhref')) return;
-        e.removeEventListener('click', xhrefClick);
-        e.addEventListener('click', xhrefClick);
+        if ( ! e.classList.contains('j')) return;
+        e.removeEventListener('click', jsonClick);
+        e.addEventListener('click', jsonClick);
       }
 
       function onError(e)
       {
-        console.log(e);
+        //console.log(e);
 
         var msg = {}
         msg.tstamp = tstamp();
@@ -118,7 +119,7 @@
 
         //console.log(msg);
         byid('log').children[0].insertAdjacentHTML('beforebegin', html);
-        bytag(byid('log'), 'a').forEach(enableXhref);
+        bytag(byid('log'), 'a').forEach(enableJsonClick);
       }
 
       function inSubmit()
@@ -150,13 +151,13 @@
         var list = byid("executionList");
         j._embedded.executions.forEach(function(exe)
         {
-          console.log(JSON.stringify(exe._links));
+          //console.log(JSON.stringify(exe._links));
           shortcutify(exe);
           var el = document.createElement('div');
           el.innerHTML = executionEntryTemplate(exe);
           list.appendChild(el);
         });
-        bytag(list, 'a').forEach(enableXhref);
+        bytag(list, 'a').forEach(enableJsonClick);
       }
 
       function refreshExecutions()
@@ -225,7 +226,7 @@
       <div>
         {{ tstamp }} -
         {{ message }} -
-        <a href="#" xhref="{{ href }}">{{ exid }}</a>
+        <a class="j" href="{{ href }}">{{ exid }}</a>
       </div>
     </div>
     <div id="postFailureTemplate" class="hidden">
@@ -238,10 +239,10 @@
     <div id="executionEntryTemplate" class="hidden">
       <div class="execution-entry">
         <span class="exid">{{ exid }}</span>
-        <a href="#" xhref="{{ _links.self.href }}">state</a>
+        <a class="j" href="{{ _links.self.href }}">state</a>
         <a href="{{ _links.log.href }}" target="_blank">log</a>
         <a href="{{ _links.msg_log.href }}" target="_blank">msg log</a>
-        <a href="#" xhref="{{ _links.msgs.href }}">msgs</a>
+        <a class="j" href="{{ _links.msgs.href }}">msgs</a>
       </div>
     </div>
   </body>
