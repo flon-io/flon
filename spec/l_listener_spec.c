@@ -78,7 +78,7 @@ context "flon-listener"
     }
     after each
     {
-      if (exid) free(exid);
+      free(exid);
     }
 
     context "launch"
