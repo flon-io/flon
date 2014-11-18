@@ -126,7 +126,7 @@ static void in_handle_launch(
     fdja_set(r, "exid", fdja_s(i));
     fdja_set(r, "message", fdja_s("launched"));
 
-    char *s = link(req, "execution/%s", i);
+    char *s = link(req, "executions/%s", i);
     fdja_pset(r, "_links.#execution", fdja_s(s));
     free(s);
   }
@@ -356,7 +356,7 @@ static int sub_handler_msgs(
 
   struct dirent *ep; while ((ep = readdir(dir)) != NULL)
   {
-    fgaj_i("ep: >%s< %i", ep->d_name, ep->d_type);
+    //fgaj_i("ep: >%s< %i", ep->d_name, ep->d_type);
     if (*ep->d_name == '.' || ep->d_type != 8) continue;
 
     char *href = shv_rel(0, req->uri_d, ep->d_name);
@@ -404,9 +404,17 @@ int flon_exe_sub_handler(
 int flon_exe_msg_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
+  char *exid = flu_list_get(req->routing_d, "id");
+  char *id = flu_list_get(req->routing_d, "mid");
+
   // TODO: check if user may read this execution's domain
 
-  return 1;
+  char *path = flon_exid_path(exid);
+  char *fpath = flu_path("var/run/%s/processed/%s", path, id);
+
+  ssize_t s = shv_serve_file(res, params, fpath);
+
+  return s > 0;
 }
 
 //
