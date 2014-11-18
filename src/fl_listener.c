@@ -144,10 +144,8 @@ int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   // handle incoming message
 
-  //if (req->body) flu_writeall("var/spool/dis/%s", "x.json", req->body);
-
   fdja_value *v = NULL;
-  if (req->body) fdja_parse(req->body);
+  if (req->body) v = fdja_parse(req->body);
   if (v) v->sowner = 0; // since the string is owned by the req
 
   if (v == NULL || v->type != 'o')

@@ -85,11 +85,11 @@ context "flon-listener"
     {
       it "accepts launch requests"
       {
-        req = shv_parse_request_head(""
+        req = shv_parse_request_head(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
-        req->body = ""
+        req->body =
           "{\n"
             "domain: org.example\n"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
@@ -98,6 +98,8 @@ context "flon-listener"
         flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
         int r = flon_in_handler(req, res, NULL);
+
+        //puts((char *)res->body->first->item);
 
         expect(r i== 1);
         expect(res->status_code i== 200);
@@ -117,7 +119,7 @@ context "flon-listener"
 
         expect(
           fdja_lj(
-            v, "_links.http://flon\\.io/rels\\.html#execution"
+            v, "_links.http://flon\\.io/rels\\.html#execution.href"
           ) ===F fdja_vj(
             "\"http://x.flon.io/i/executions/%s\"", exid
           ));
