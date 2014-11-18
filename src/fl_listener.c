@@ -66,6 +66,7 @@ static char *link(shv_request *req, const char *path, ...)
   if (i) *(i + 2) = 0;
   char *r = flu_sprintf("%s/%s", uri, p);
   free(uri);
+  free(p);
 
   return r;
 }
