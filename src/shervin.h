@@ -89,6 +89,10 @@ int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params);
 
 // handlers
 
+/* Used by shv_dir_handler(), public since it could get useful on its own.
+ */
+ssize_t shv_serve_file(shv_response *res, flu_dict *params, const char *path);
+
 int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params);
 
 // serving

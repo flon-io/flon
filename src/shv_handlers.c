@@ -38,7 +38,7 @@
 #include "shv_protected.h"
 
 
-static char *shv_determine_content_type(char *path)
+static char *shv_determine_content_type(const char *path)
 {
   // TODO: utf-8? "text/html; charset=UTF-8"
   // TODO: manage that with a conf file
@@ -58,58 +58,11 @@ static char *shv_determine_content_type(char *path)
   return strdup(r);
 }
 
-char *shv_look_for_index(char *path, flu_dict *params, struct stat *sta)
+ssize_t shv_serve_file(shv_response *res, flu_dict *params, const char *path)
 {
-  size_t l = strlen(path); if (path[l - 1] == '/') path[l - 1] = 0;
-
-  char *i = flu_list_get(params, "index");
-  if (i == NULL) i = "index.html";
-  flu_list *is = flu_split(i, ",");
-
-  char *r = NULL;
-
-  for (flu_node *n = is->first; n; n = n->next)
-  {
-    char *rr = flu_sprintf("%s/%s", path, (char *)n->item);
-    int x = stat(rr, sta);
-    if (x == 0 && S_ISREG(sta->st_mode)) { r = rr; break; }
-    free(rr);
-  }
-
-  flu_list_free_all(is);
-
-  return r;
-}
-
-int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
-{
-  char *p = flu_list_get(req->routing_d, "**");
-  if (p == NULL) return 0;
-
-  //fgaj_d("p: %s", p);
-
-  if (strstr(p, "..")) return 0;
-
-  char *r = flu_list_get(params, "root");
-  if (r == NULL) r = flu_list_get(params, "r");
-  if (r == NULL) return 0;
-
-  //fgaj_d("r: %s", r);
-
-  char *path = flu_sprintf("%s/%s", r, p);
-
   struct stat sta;
-  if (stat(path, &sta) != 0) { free(path); return 0; }
-
-  if (S_ISDIR(sta.st_mode))
-  {
-    char *p2 = shv_look_for_index(path, params, &sta);
-
-    if (p2) { free(path); path = p2; }
-    else { fgaj_d("we don't serve dirs %s", path); free(path); return 0; }
-  }
-
-  char *cp = flu_canopath(path); fgaj_d("path: %s", cp); free(cp);
+  if (stat(path, &sta) != 0) return -1;
+  if (S_ISDIR(sta.st_mode)) return 0;
 
   res->status_code = 200;
 
@@ -126,8 +79,49 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
   flu_list_set(
     res->headers, "shv_file", strdup(path));
   flu_list_set(
-    res->headers, h, path);
+    res->headers, h, strdup(path));
 
-  return 1;
+  return sta.st_size;
+}
+
+int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
+{
+  char *p = flu_list_get(req->routing_d, "**");
+  if (p == NULL) return 0;
+
+  //fgaj_d("p: %s", p);
+
+  if (strstr(p, "..")) return 0;
+
+  char *r = flu_list_get(params, "root");
+  if (r == NULL) r = flu_list_get(params, "r");
+  if (r == NULL) return 0;
+  //printf("r: %s\n", r);
+
+  char *path = flu_path("%s/%s", r, p);
+
+  ssize_t s = shv_serve_file(res, params, path);
+
+  if (s < 0) { free(path); return 0; }
+
+  if (s == 0)
+  {
+    char *i = flu_list_getd(params, "index", "index.html");
+    flu_list *is = flu_split(i, ",");
+
+    for (flu_node *n = is->first; n; n = n->next)
+    {
+      char *p = flu_path("%s/%s", path, (char *)n->item);
+      s = shv_serve_file(res, params, p);
+      free(p);
+      if (s > 0) break;
+    }
+
+    flu_list_free_all(is);
+  }
+
+  free(path);
+
+  return s < 1 ? 0 : 1;
 }
 

@@ -140,6 +140,10 @@ int flu_writeall(const char *path, ...);
  */
 int flu_unlink(const char *path, ...);
 
+/* Composes a path.
+ */
+char *flu_path(const char *path, ...);
+
 /* It canonicalizes a path, like realpath().
  * Unlike realpath(), it doesn't care if the path points to nowhere.
  */
