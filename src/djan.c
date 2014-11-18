@@ -410,7 +410,7 @@ fdja_value *fdja_parse_f(const char *path, ...)
   return v;
 }
 
-fdja_value *fdja_v(char *format, ...)
+fdja_value *fdja_v(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *s = flu_svprintf(format, ap);
@@ -419,7 +419,7 @@ fdja_value *fdja_v(char *format, ...)
   return fdja_parse(s);
 }
 
-char *fdja_vj(char *format, ...)
+char *fdja_vj(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *s = flu_svprintf(format, ap);
@@ -437,7 +437,7 @@ char *fdja_vj(char *format, ...)
   return r;
 }
 
-fdja_value *fdja_s(char *format, ...)
+fdja_value *fdja_s(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *s = flu_svprintf(format, ap);
@@ -637,7 +637,7 @@ fdja_value *fdja_parse_obj_f(const char *path, ...)
   return v;
 }
 
-fdja_value *fdja_c(char *format, ...)
+fdja_value *fdja_c(const char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *s = flu_svprintf(format, ap);
