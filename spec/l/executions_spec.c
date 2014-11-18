@@ -87,12 +87,14 @@ context "flon-listener (vs executions)"
       //flu_putf(fdja_todc(i0));
       expect(fdja_ls(i0, "domain", NULL) ===f "org.example.a");
       fdja_free(i0);
+      free(href0);
 
       fdja_value *i1 = flon_parse_nid(href1);
       expect(i1 != NULL);
       //flu_putf(fdja_todc(i1));
       expect(fdja_ls(i1, "domain", NULL) ===f "org.example");
       fdja_free(i1);
+      free(href1);
     }
   }
 }
