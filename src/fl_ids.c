@@ -126,7 +126,11 @@ fdja_value *flon_parse_nid(const char *s)
   //printf("s >%s<\n", s);
   //puts(fabr_tree_to_string(dt, s, 1));
 
-  fabr_tree *t = fabr_parse_all(s, 0, flon_nid_parser);
+  char *ss = (char *)s;
+  char *slash = strrchr(ss, '/');
+  if (slash) ss = slash + 1;
+
+  fabr_tree *t = fabr_parse_all(ss, 0, flon_nid_parser);
   if (t->result != 1) { fabr_tree_free(t); return NULL; }
 
   fdja_value *r = fdja_v("{}");
@@ -141,11 +145,13 @@ fdja_value *flon_parse_nid(const char *s)
     fabr_tree *tt = fabr_tree_lookup(t, k);
     if (tt)
     {
-      char *v  = fabr_tree_string(s, tt);
+      char *v  = fabr_tree_string(ss, tt);
       fdja_set(r, k, fdja_s(v));
       free(v);
     }
   }
+
+  if (slash) fdja_set(r, "uri", fdja_s(s));
 
   fabr_tree_free(t);
 

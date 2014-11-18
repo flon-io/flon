@@ -87,6 +87,23 @@ context "fl_id"
         " nid: 0_1_2-ff, node: 0_1_2, counter: ff }");
     }
 
+    it "parses from uris"
+    {
+      v = flon_parse_nid(
+        "http://x.flon.io/i/executions/org.nada-u0-20141118.1201.latsakocheba");
+
+      expect(fdja_tod(v) ===f ""
+        "{"
+        " exid: org.nada-u0-20141118.1201.latsakocheba,"
+        " domain: org.nada,"
+        " feu: u0,"
+        " tid: 20141118.1201.latsakocheba,"
+        " uri: "
+          "\"http://x.flon.io/i/executions/"
+          "org.nada-u0-20141118.1201.latsakocheba\" "
+        "}");
+    }
+
     it "returns NULL if it cannot parse"
     {
       expect(flon_parse_nid("/") == NULL);
