@@ -340,9 +340,6 @@ int flon_exe_handler(
 int flon_exe_sub_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
-  // TODO: leverage x-accel-redirect
-  //       make it easier to use (in shervin itself)
-
   char *id = flu_list_get(req->routing_d, "id");
   char *sub = flu_list_get(req->routing_d, "sub");
 
@@ -354,15 +351,10 @@ int flon_exe_sub_handler(
   if (strcmp(sub, "msg-log") == 0) file = "msgs.log";
 
   char *fpath = flu_sprintf("var/run/%s/%s", path, file);
+  ssize_t s = shv_serve_file(res, params, fpath);
+  free(fpath);
 
-  char *s = flu_readall(fpath);
-
-  flu_list_add(res->body, s);
-
-  flu_list_set(
-    res->headers, "content-type", strdup("text/plain; charset=UTF-8"));
-
-  return 1;
+  return s < 1 ? 0 : 1;
 }
 
 //
