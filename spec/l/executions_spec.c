@@ -38,6 +38,7 @@ context "flon-listener (vs executions)"
 
   before each
   {
+    char *exid = NULL;
     shv_request *req = NULL;
     flu_dict *params = NULL;
     shv_response *res = shv_response_malloc(404);
@@ -47,6 +48,7 @@ context "flon-listener (vs executions)"
 
   after each
   {
+    free(exid);
     if (req) shv_request_free(req);
     if (params) flu_list_free(params);
     if (v) fdja_free(v);
@@ -108,8 +110,8 @@ context "flon-listener (vs executions)"
   {
     it "details an execution"
     {
-      char *exid = hlp_lookup_exid("john", "org.example", 0);
-      //printf("exid: %s\n", exid);
+      exid = hlp_lookup_exid("john", "org.example", 0);
+      printf("exid: %s\n", exid);
 
       req = shv_parse_request_head_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
@@ -121,8 +123,6 @@ context "flon-listener (vs executions)"
       int r = flon_exe_handler(req, res, NULL);
 
       expect(r i== 1);
-
-      //puts((char *)res->body->first->item);
 
       v = fdja_parse((char *)res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response

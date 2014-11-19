@@ -211,8 +211,7 @@ static void add_execution_dirs(flu_list *l, const char *path, const char *dom)
     struct dirent *ep1; while ((ep1 = readdir(dir1)) != NULL)
     {
       if (*ep1->d_name == '.' || ep1->d_type != 4) continue;
-      char *d2 = flu_sprintf("%s/%s", d1, ep1->d_name);
-      flu_list_add(l, d2);
+      flu_list_add(l, flu_sprintf("%s/%s", d1, ep1->d_name));
     }
     closedir(dir1);
     free(d1);
@@ -304,21 +303,27 @@ static int exe_handler_dom(
 static int exe_handler_exid(
   shv_request *req, shv_response *res, fdja_value *nid)
 {
-  if ( ! flon_may_r('r', req, fdja_ls(nid, "domain", NULL))) return 0;
+  char *dom = fdja_ls(nid, "domain", NULL);
+  char *path = NULL;
 
-  char *path = flon_nid_path(nid);
-  char *run = flu_sprintf("var/run/%s/run.json", path);
-  fdja_value *r = fdja_parse_f(run);
+  if ( ! flon_may_r('r', req, dom)) goto _over;
 
-  if (r == NULL) { fgaj_r("couldn't read %s", run); goto _over; }
+  path = flon_nid_path(nid);
+
+  fdja_value *r = fdja_parse_f("var/run/%s/run.json", path);
+
+  if (r == NULL) {
+    fgaj_r("couldn't read var/run/%s/run.json", path);
+    goto _over;
+  }
 
   res->status_code = 200;
   embed_exe(req, path, r);
 
 _over:
 
+  free(dom);
   free(path);
-  free(run);
 
   if (res->status_code == 200) respond(req, res, r);
   return 1; // goes 404
@@ -330,9 +335,13 @@ int flon_exe_handler(
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
 
-  return vid ?
-    exe_handler_exid(req, res, vid) :
-    exe_handler_dom(req, res, id);
+  if (vid == NULL) return exe_handler_dom(req, res, id);
+
+  int r = exe_handler_exid(req, res, vid);
+
+  fdja_free(vid);
+
+  return r;
 }
 
 //

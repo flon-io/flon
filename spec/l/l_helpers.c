@@ -69,12 +69,9 @@ char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
     char *s = n->item;
     char *a = strrchr(s, '/') + 1;
     char *b = strchr(a, '-');
-    char *d = strndup(a, b - a);
-    if (strcmp(d, dom) == 0) r = a;
-    free(d);
-    if (r) break;
+    if (strncmp(dom, a, b - a) == 0) { r = strdup(a); break; }
   }
-  flu_list_free(l);
+  flu_list_free_all(l);
 
   return r;
 }
