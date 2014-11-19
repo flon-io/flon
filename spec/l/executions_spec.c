@@ -241,14 +241,13 @@ context "flon-listener (vs executions)"
 
       expect(fdja_size(fdja_l(v, "_embedded.msgs")) zu== 1);
 
-      char *fn = flu_sprintf(
-        "http://x.flon.io/i/executions/%s/msgs/exe_%s.json", exid, exid);
+      char *fn = flu_sprintf("http://x.flon.io/i/msgs/exe_%s.json", exid);
 
       expect(fdja_ls(v, "_embedded.msgs.0._links.self.href", NULL) $===F fn);
     }
   }
 
-  describe "flon_exe_msg_handler() /executions/:exid/msgs/:mid"
+  describe "flon_msg_handler() /msgs/:id"
   {
     it "details a processed msg"
     {
@@ -256,15 +255,15 @@ context "flon-listener (vs executions)"
       char *mid = flu_sprintf("exe_%s.json", exid);
 
       req = shv_parse_request_head_f(
-        "GET /i/executions/%s/msgs/%s HTTP/1.1\r\n"
+        "GET /i/msgs/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
-        exid, mid);
-      shv_do_route("GET /i/executions/:id/msgs/:mid", req);
+        mid);
+      shv_do_route("GET /i/msgs/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_msg_handler(req, res, params);
+      int r = flon_msg_handler(req, res, params);
 
       expect(r i== 1);
 

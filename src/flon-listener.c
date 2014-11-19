@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
     shv_rp("GET /i/executions", flon_exes_handler, NULL),
     shv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
     shv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
-    shv_rp("GET /i/executions/:id/msgs/:mid", flon_exe_msg_handler, NULL),
+    shv_rp("GET /i/msgs/:id", flon_msg_handler, NULL),
     shv_rp("GET /i/metrics", flon_metrics_handler, NULL),
     shv_rp("GET /**", shv_dir_handler, "r", "var/www", NULL),
 

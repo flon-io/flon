@@ -366,10 +366,17 @@ static int sub_handler_msgs(
     //fgaj_i("ep: >%s< %i", ep->d_name, ep->d_type);
     if (*ep->d_name == '.' || ep->d_type != 8) continue;
 
-    char *href = shv_rel(0, req->uri_d, ep->d_name);
+    //char *href = shv_rel(0, req->uri_d, ep->d_name);
+    //fdja_psetv(
+    //  r, "_embedded.msgs.]", "{ _links: { self: { href: \"%s\" } } }", href);
+    //free(href);
+
     fdja_psetv(
-      r, "_embedded.msgs.]", "{ _links: { self: { href: \"%s\" } } }", href);
-    free(href);
+      r, "_embedded.msgs.]",
+      "{ _links: {} }");
+    fdja_pset(
+      r, "_embedded.msgs.-1._links.self",
+      link(req, 'g', "msgs/%s", ep->d_name));
   }
 
   closedir(dir);
@@ -407,14 +414,15 @@ int flon_exe_sub_handler(
 }
 
 //
-// /i/executions/:exid/msgs/:mid
+// /i/msgs/:id
 
-int flon_exe_msg_handler(
+int flon_msg_handler(
   shv_request *req, shv_response *res, flu_dict *params)
 {
-  char *exid = flu_list_get(req->routing_d, "id");
-  char *id = flu_list_get(req->routing_d, "mid");
+  char *id = flu_list_get(req->routing_d, "id");
+  char *exid = flon_parse_exid(id);
 
+  if (exid == NULL) return 0;
   if ( ! flon_may_r('r', req, exid)) return 0;
 
   char *path = flon_exid_path(exid);
@@ -424,6 +432,7 @@ int flon_exe_msg_handler(
 
   free(path);
   free(fpath);
+  free(exid);
 
   return s > 0;
 }
