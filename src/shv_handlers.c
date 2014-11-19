@@ -58,11 +58,16 @@ static char *shv_determine_content_type(const char *path)
   return strdup(r);
 }
 
-ssize_t shv_serve_file(shv_response *res, flu_dict *params, const char *path)
+ssize_t shv_serve_file(
+  shv_response *res, flu_dict *params, const char *path, ...)
 {
+  va_list ap; va_start(ap, path);
+  char *pa = flu_vpath(path, ap);
+  va_end(ap);
+
   struct stat sta;
-  if (stat(path, &sta) != 0) return -1;
-  if (S_ISDIR(sta.st_mode)) return 0;
+  if (stat(pa, &sta) != 0) { free(pa); return -1; }
+  if (S_ISDIR(sta.st_mode)) { free(pa); return 0; }
 
   res->status_code = 200;
 
@@ -74,12 +79,12 @@ ssize_t shv_serve_file(shv_response *res, flu_dict *params, const char *path)
     res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
 
   flu_list_set(
-    res->headers, "content-type", shv_determine_content_type(path));
+    res->headers, "content-type", shv_determine_content_type(pa));
 
   flu_list_set(
-    res->headers, "shv_file", strdup(path));
+    res->headers, "shv_file", strdup(pa));
   flu_list_set(
-    res->headers, h, strdup(path));
+    res->headers, h, pa);
 
   return sta.st_size;
 }

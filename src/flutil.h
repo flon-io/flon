@@ -140,6 +140,10 @@ int flu_writeall(const char *path, ...);
  */
 int flu_unlink(const char *path, ...);
 
+/* Composes a path
+ */
+char *flu_vpath(const char *path, va_list ap);
+
 /* Composes a path.
  */
 char *flu_path(const char *path, ...);

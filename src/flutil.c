@@ -323,15 +323,15 @@ int flu_unlink(const char *path, ...)
   return r;
 }
 
-static char *flu_simplify_path(char *s)
+static char *flu_simplify_path(const char *s)
 {
   char *r = calloc(strlen(s) + 1, sizeof(char));
   char *rr = r;
 
-  char *a = s;
+  char *a = (char *)s;
   char *b = NULL;
 
-  if (*s == '/') { *r = '/'; rr = r + 1; a = s + 1; }
+  if (*s == '/') { *r = '/'; rr = r + 1; a = (char *)s + 1; }
 
   while (1)
   {
@@ -366,14 +366,20 @@ static char *flu_simplify_path(char *s)
   return r;
 }
 
+char *flu_vpath(const char *path, va_list ap)
+{
+  char *s = flu_svprintf(path, ap);
+  char *r = flu_simplify_path(s);
+  free(s);
+
+  return r;
+}
+
 char *flu_path(const char *path, ...)
 {
   va_list ap; va_start(ap, path);
-  char *s = flu_svprintf(path, ap);
+  char *r = flu_vpath(path, ap);
   va_end(ap);
-
-  char *r = flu_simplify_path(s);
-  free(s);
 
   return r;
 }
