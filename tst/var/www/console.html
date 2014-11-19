@@ -87,7 +87,7 @@
         var msg = {}
         msg.tstamp = tstamp();
         msg.code = 0;
-        msg.message = '' + e;
+        msg.message = 'error (connection refused)';
 
         var html = postFailureTemplate(msg);
 
@@ -103,7 +103,7 @@
         {
           var msg = JSON.parse(t.responseText);
           msg.code = t.status;
-          msg.href = msg._links[RELS + '#execution'];
+          msg.href = msg._links[RELS + '#execution'].href;
 
           html = postSuccessTemplate(msg);
         }
