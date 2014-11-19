@@ -76,3 +76,19 @@ char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
   return r;
 }
 
+char *hlp_pline(const char *cmd, ...) // flu_pline() and flu_plines() soon?
+{
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  char *s = NULL; size_t l = 0;
+
+  FILE *f = popen(c, "r");
+  if (f) { getline(&s, &l, f); fclose(f); }
+
+  free(c);
+
+  if (s) s[strlen(s) - 1] = 0;
+
+  return s;
+}
+

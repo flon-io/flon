@@ -11,3 +11,5 @@ void hlp_start_execution();
 
 char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well);
 
+char *hlp_pline(const char *cmd, ...);
+
