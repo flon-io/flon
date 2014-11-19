@@ -163,10 +163,13 @@ context "flon-listener (vs executions)"
 
       char *f = flu_list_get(res->headers, "shv_file");
       expect(flu_fstat(f) == 'f');
+      expect(f $=== "/exe.log");
 
       char *s = flu_readall(f);
+      //puts("---8<---");
       //puts(s);
-      expect(strstr(s, "double_fork pointed executor") != NULL);
+      //puts("--->8---");
+      expect(s >== "double_fork pointed executor");
 
       free(s);
     }
@@ -175,6 +178,40 @@ context "flon-listener (vs executions)"
   describe "flon_exe_sub_handler() /executions/:exid/msg-log"
   {
     it "serves the msgs.log"
+    {
+      exid = hlp_lookup_exid("john", "org.example.a", 0);
+      //printf("exid: %s\n", exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n", exid);
+      shv_do_route("GET /i/executions/:id/:sub", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_sub_handler(req, res, params);
+
+      expect(r i== 1);
+      expect(res->status_code i== 200);
+
+      //for (flu_node *n = res->headers->first; n; n = n->next)
+      //  printf("* %s: '%s'\n", n->key, (char *)n->item);
+
+      expect(flu_list_get(res->headers, "content-type") === "text/plain");
+
+      char *f = flu_list_get(res->headers, "shv_file");
+      expect(flu_fstat(f) == 'f');
+      expect(f $=== "/msgs.log");
+
+      char *s = flu_readall(f);
+      //puts("---8<---");
+      //puts(s);
+      //puts("--->8---");
+      expect(s >== ",execute:[invoke,{_0:null},[]],");
+
+      free(s);
+    }
   }
 
   describe "flon_exe_sub_handler() /executions/:exid/msgs"
