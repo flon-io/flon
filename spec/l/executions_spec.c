@@ -217,6 +217,35 @@ context "flon-listener (vs executions)"
   describe "flon_exe_sub_handler() /executions/:exid/msgs"
   {
     it "lists the msgs in processed/"
+    {
+      exid = hlp_lookup_exid("john", "org.example", 0);
+      //printf("exid: %s\n", exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/msgs HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n", exid);
+      shv_do_route("GET /i/executions/:id/:sub", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_sub_handler(req, res, params);
+
+      expect(r i== 1);
+
+      v = fdja_parse((char *)res->body->first->item);
+      if (v) v->sowner = 0; // the string is owned by the response
+
+      expect(v != NULL);
+      flu_putf(fdja_todc(v));
+
+      expect(fdja_size(fdja_l(v, "_embedded.msgs")) zu== 1);
+
+      char *fn = flu_sprintf(
+        "http://x.flon.io/i/executions/%s/msgs/exe_%s.json", exid, exid);
+
+      expect(fdja_ls(v, "_embedded.msgs.0._links.self.href", NULL) $===F fn);
+    }
   }
 
   describe "flon_exe_msg_handler() /executions/:exid/msgs/:mid"
