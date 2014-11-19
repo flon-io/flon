@@ -53,7 +53,7 @@ int flon_exe_handler( // /i/executions/:domain or /:exid
   shv_request *req, shv_response *res, flu_dict *params);
 int flon_exe_sub_handler( // /i/executions/:exid/log or /msg-log or /msgs
   shv_request *req, shv_response *res, flu_dict *params);
-int flon_exe_msg_handler( // /i/executions/:exid/msgs/:mid
+int flon_msg_handler( // /i/executions/:exid/msgs/:mid
   shv_request *req, shv_response *res, flu_dict *params);
 
 int flon_metrics_handler( // /i/metrics
