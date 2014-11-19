@@ -125,6 +125,27 @@ context "fl_id"
     }
   }
 
+  describe "flon_parse_exid()"
+  {
+    it "extracts an exid from a string"
+    {
+      expect(flon_parse_exid("0_1_2-ff") == NULL);
+
+      expect(
+        flon_parse_exid(
+          "xtest.pn-u0-20141021.0803.chatsidiseba-0_1_2-ff") ===f ""
+        "xtest.pn-u0-20141021.0803.chatsidiseba");
+      expect(
+        flon_parse_exid(
+          "http://x.flon.io/i/executions/org.nada-u0-20141118.1201.latsakocheba") ===f ""
+        "org.nada-u0-20141118.1201.latsakocheba");
+      expect(
+        flon_parse_exid(
+          "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json") ===f ""
+        "xtest.pn-u0-20141021.0803.kurukuru");
+    }
+  }
+
   describe "flon_exid_path()"
   {
     it "returns the path to the given exid / nid"

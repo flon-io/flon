@@ -158,6 +158,16 @@ fdja_value *flon_parse_nid(const char *s)
   return r;
 }
 
+char *flon_parse_exid(const char *s)
+{
+  fdja_value *v = flon_parse_nid(s);
+  if (v == NULL) return NULL;
+  char *r = fdja_ls(v, "exid", NULL);
+  fdja_free(v);
+
+  return r;
+}
+
 char *flon_nid_path(fdja_value *nid)
 {
   if (nid == NULL) return NULL;
