@@ -34,12 +34,8 @@ DEPS=\
 DDEPS=$(DEPS) fl_dispatcher.o
 XDEPS=$(DEPS) fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) dollar.o fl_invoker.o
-NDEPS=$(DEPS) n_helpers.o
 #
-LDEPS=\
-  $(DEPS) $(SHV_OS) $(TSI_OS) \
-  flu64.o fl_listener.o fl_lis_auth.o \
-  fl_dispatcher.o l_helpers.o
+LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
 cs.c: ../spec/c_*_spec.c
 	$(RODZO) ../spec/c_*_spec.c -o cs.c
@@ -60,8 +56,8 @@ cs: $(DEPS)
 ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
-ls: $(LDEPS)
-ns: $(NDEPS)
+ls: $(LDEPS) fl_dispatcher.o l_helpers.o
+ns: $(DEPS) n_helpers.o
 
 sc: cs
 	@echo "\n--- sc --------------------------------------------------------\n"
