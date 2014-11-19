@@ -384,9 +384,9 @@ static int sub_handler_log(
   char *file = "exe.log";
   if (strcmp(sub, "msg-log") == 0) file = "msgs.log";
 
-  char *fpath = flu_path("var/run/%s/%s", path, file);
-  ssize_t s = shv_serve_file(res, params, fpath);
-  free(fpath);
+  ssize_t s = shv_serve_file(res, params, "var/run/%s/%s", path, file);
+
+  free(path);
 
   return s > 0;
 }
