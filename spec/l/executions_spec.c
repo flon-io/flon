@@ -237,7 +237,7 @@ context "flon-listener (vs executions)"
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
-      flu_putf(fdja_todc(v));
+      //flu_putf(fdja_todc(v));
 
       expect(fdja_size(fdja_l(v, "_embedded.msgs")) zu== 1);
 

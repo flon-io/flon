@@ -350,8 +350,9 @@ int flon_exe_handler(
 static int sub_handler_msgs(
   shv_request *req, shv_response *res, flu_dict *params, char *exid, char *sub)
 {
-  char *path = flon_exid_path(exid);
-  char *d = flu_path("var/run/%s/processed", path);
+  char *pa = flon_exid_path(exid);
+  char *d = flu_path("var/run/%s/processed", pa);
+  free(pa);
 
   DIR *dir = opendir(d);
 
@@ -372,6 +373,7 @@ static int sub_handler_msgs(
   }
 
   closedir(dir);
+  free(d);
 
   return respond(req, res, r);
 }
