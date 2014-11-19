@@ -422,6 +422,9 @@ int flon_exe_msg_handler(
 
   ssize_t s = shv_serve_file(res, params, fpath);
 
+  free(path);
+  free(fpath);
+
   return s > 0;
 }
 

@@ -251,6 +251,42 @@ context "flon-listener (vs executions)"
   describe "flon_exe_msg_handler() /executions/:exid/msgs/:mid"
   {
     it "details a processed msg"
+    {
+      exid = hlp_lookup_exid("john", "org.example", 0);
+      char *mid = flu_sprintf("exe_%s.json", exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/msgs/%s HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        exid, mid);
+      shv_do_route("GET /i/executions/:id/msgs/:mid", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_msg_handler(req, res, params);
+
+      expect(r i== 1);
+
+      //for (flu_node *n = res->headers->first; n; n = n->next)
+      //  printf("* %s: '%s'\n", n->key, (char *)n->item);
+
+      expect(flu_list_get(res->headers, "content-type") === ""
+        //"application/json; charset=utf-8"); // TODO
+        "application/json");
+
+      char *f = flu_list_get(res->headers, "shv_file");
+      expect(flu_fstat(f) == 'f');
+      expect(f $=== mid);
+
+      v = fdja_parse_f(f);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_lj(v, "execute") ===F fdja_vj(""
+        "[ invoke, { _0: \"null\" }, [] ]"));
+
+      free(mid);
+    }
   }
 }
 
