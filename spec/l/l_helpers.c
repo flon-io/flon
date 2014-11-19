@@ -8,11 +8,13 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include "flutil.h"
 #include "fl_ids.h"
 #include "fl_dispatcher.h"
+#include "fl_listener.h"
 #include "l_helpers.h"
 
 
@@ -53,5 +55,27 @@ void hlp_start_execution(char *domain)
 
   free(exid);
   free(name);
+}
+
+char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
+{
+  // TODO: use archived_as_well
+
+  char *r = NULL;
+
+  flu_list *l = flon_list_executions(user, "var/run");
+  for (flu_node *n = l->first; n; n = n->next)
+  {
+    char *s = n->item;
+    char *a = strrchr(s, '/') + 1;
+    char *b = strchr(a, '-');
+    char *d = strndup(a, b - a);
+    if (strcmp(d, dom) == 0) r = a;
+    free(d);
+    if (r) break;
+  }
+  flu_list_free(l);
+
+  return r;
 }
 

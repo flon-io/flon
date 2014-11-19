@@ -175,16 +175,14 @@ int flon_dom_matches(const char *dom, const char *pat)
   return r;
 }
 
-static int flon_may(shv_request *req, char *dom, char right)
+int flon_may(char right, const char *user, const char *dom)
 {
+  if (user == NULL) return 0;
   if (dom == NULL) return 0;
 
   if ( ! load_domain()) return 0;
 
-  char *u = flu_list_get(req->routing_d, "_user");
-  if (u == NULL) return 0;
-
-  fdja_value *doms = fdja_lookup(domain, u);
+  fdja_value *doms = fdja_lookup(domain, user);
   if (doms == NULL) return 0;
 
   int result = 0;
@@ -207,13 +205,8 @@ _over:
   return result;
 }
 
-int flon_may_read(shv_request *req, char *dom)
+int flon_may_r(char right, shv_request *req, const char *dom)
 {
-  return flon_may(req, dom, 'r');
-}
-
-int flon_may_launch(shv_request *req, char *dom)
-{
-  return flon_may(req, dom, 'l');
+  return flon_may(right, flu_list_get(req->routing_d, "_user"), dom);
 }
 

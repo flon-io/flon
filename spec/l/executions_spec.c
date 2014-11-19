@@ -59,7 +59,7 @@ context "flon-listener (vs executions)"
     it "lists executions (in readable domains)"
     {
 
-      req = shv_parse_request_head(""
+      req = shv_parse_request_head(
         "GET /i/executions HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
@@ -75,7 +75,7 @@ context "flon-listener (vs executions)"
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
-      flu_putf(fdja_todc(v));
+      //flu_putf(fdja_todc(v));
 
       fdja_value *exes = fdja_l(v, "_embedded.executions");
       expect(fdja_size(exes) zu== 2);
@@ -107,6 +107,33 @@ context "flon-listener (vs executions)"
   describe "flon_exe_handler() /executions/:exid"
   {
     it "details an execution"
+    {
+      char *exid = hlp_lookup_exid("john", "org.example", 0);
+      //printf("exid: %s\n", exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n", exid);
+      shv_do_route("GET /i/executions/:id", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+
+      int r = flon_exe_handler(req, res, NULL);
+
+      expect(r i== 1);
+
+      //puts((char *)res->body->first->item);
+
+      v = fdja_parse((char *)res->body->first->item);
+      if (v) v->sowner = 0; // the string is owned by the response
+
+      expect(v != NULL);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_ls(v, "exid", NULL) ===f exid);
+      expect(fdja_ls(v, "nodes.0.t", NULL) ===f "invoke");
+      expect(fdja_ls(v, "_links.self.href", NULL) $===f exid);
+    }
   }
 
   describe "flon_exe_sub_handler() /executions/:exid/log"

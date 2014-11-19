@@ -107,7 +107,7 @@ static void in_handle_launch(
   shv_request *req, fdja_value *v, char *dom,
   shv_response *res, fdja_value *r)
 {
-  if ( ! flon_may_launch(req, dom))
+  if ( ! flon_may_r('l', req, dom))
   {
     res->status_code = 403;
     fdja_set(r, "message", fdja_s("not authorized to launch in that domain"));
@@ -199,7 +199,7 @@ _respond:
 
 // TODO ?archived=true or ?archived=1 or =yes
 
-static void add_execution_dirs(flu_list *l, char *path, char *dom)
+static void add_execution_dirs(flu_list *l, const char *path, const char *dom)
 {
   char *d0 = flu_sprintf("%s/%s", path, dom);
   DIR *dir0 = opendir(d0);
@@ -221,7 +221,7 @@ static void add_execution_dirs(flu_list *l, char *path, char *dom)
   free(d0);
 }
 
-static flu_list *list_executions(shv_request *req, char *path)
+flu_list *flon_list_executions(const char *user, const char *path)
 {
   flu_list *r = flu_list_malloc();
 
@@ -231,7 +231,7 @@ static flu_list *list_executions(shv_request *req, char *path)
   {
     if (*ep->d_name == '.' || ep->d_type != 4) continue;
 
-    if (flon_may_read(req, ep->d_name))
+    if (flon_may('r', user, ep->d_name))
     {
       add_execution_dirs(r, path, ep->d_name);
     }
@@ -271,7 +271,8 @@ int flon_exes_handler(
 
   // list running executions
 
-  flu_list *l = list_executions(req, "var/run");
+  flu_list *l =
+    flon_list_executions(flu_list_get(req->routing_d, "_user"), "var/run");
 
   for (flu_node *n = l->first; n; n = n->next)
   {
@@ -303,7 +304,7 @@ static int exe_handler_dom(
 static int exe_handler_exid(
   shv_request *req, shv_response *res, fdja_value *nid)
 {
-  if ( ! flon_may_read(req, fdja_ls(nid, "domain", NULL))) return 0;
+  if ( ! flon_may_r('r', req, fdja_ls(nid, "domain", NULL))) return 0;
 
   char *path = flon_nid_path(nid);
   char *run = flu_sprintf("var/run/%s/run.json", path);
@@ -328,9 +329,6 @@ int flon_exe_handler(
 {
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
-
-  // TODO: check if user may read this execution's domain
-  // TODO: check if user may read this domain
 
   return vid ?
     exe_handler_exid(req, res, vid) :
@@ -390,7 +388,7 @@ int flon_exe_sub_handler(
   char *exid = flu_list_get(req->routing_d, "id");
   char *sub = flu_list_get(req->routing_d, "sub");
 
-  if ( ! flon_may_read(req, exid)) return 0;
+  if ( ! flon_may_r('r', req, exid)) return 0;
 
   return strcmp(sub, "msgs") == 0 ?
     sub_handler_msgs(req, res, params, exid, sub) :
@@ -406,7 +404,7 @@ int flon_exe_msg_handler(
   char *exid = flu_list_get(req->routing_d, "id");
   char *id = flu_list_get(req->routing_d, "mid");
 
-  if ( ! flon_may_read(req, exid)) return 0;
+  if ( ! flon_may_r('r', req, exid)) return 0;
 
   char *path = flon_exid_path(exid);
   char *fpath = flu_path("var/run/%s/processed/%s", path, id);
