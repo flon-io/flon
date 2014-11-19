@@ -196,3 +196,31 @@ void shv_request_free(shv_request *r)
   free(r);
 }
 
+
+//
+// spec helpers (the specs of the projects using shervin)
+
+shv_request *shv_parse_request_head_f(const char *s, ...)
+{
+  va_list ap; va_start(ap, s);
+  char *ss = flu_svprintf(s, ap);
+  va_end(ap);
+
+  shv_request *r = shv_parse_request_head(ss);
+  free(ss);
+
+  return r;
+}
+
+int shv_do_route(char *path, shv_request *req)
+{
+  flu_dict *params = flu_list_malloc();
+  flu_list_set(params, "path", path);
+
+  int r = shv_path_guard(req, NULL, params);
+
+  flu_list_free(params);
+
+  return r;
+}
+
