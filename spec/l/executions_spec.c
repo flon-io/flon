@@ -116,7 +116,8 @@ context "flon-listener (vs executions)"
       req = shv_parse_request_head_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n", exid);
+        "\r\n",
+        exid);
       shv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
@@ -134,6 +135,28 @@ context "flon-listener (vs executions)"
       expect(fdja_ls(v, "nodes.0.t", NULL) ===f "invoke");
       expect(fdja_ls(v, "_links.self.href", NULL) $===f exid);
     }
+
+    it "doesn't detail off-limits domain executions"
+    {
+      char *fn =
+        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+      expect(fn $=== ".json");
+      exid = flon_parse_exid(fn);
+      free(fn);
+      //puts(exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        exid);
+      shv_do_route("GET /i/executions/:id", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+
+      int r = flon_exe_handler(req, res, NULL);
+
+      expect(r i== 0);
+    }
   }
 
   describe "flon_exe_sub_handler() /executions/:exid/log"
@@ -146,7 +169,8 @@ context "flon-listener (vs executions)"
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n", exid);
+        "\r\n",
+        exid);
       shv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
@@ -173,6 +197,29 @@ context "flon-listener (vs executions)"
 
       free(s);
     }
+
+    it "doesn't serve the exe.log from an off-limits domain execution"
+    {
+      char *fn =
+        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+      expect(fn $=== ".json");
+      exid = flon_parse_exid(fn);
+      free(fn);
+      //puts(exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/log HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        exid);
+      shv_do_route("GET /i/executions/:id/:sub", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_sub_handler(req, res, params);
+
+      expect(r i== 0);
+    }
   }
 
   describe "flon_exe_sub_handler() /executions/:exid/msg-log"
@@ -185,7 +232,8 @@ context "flon-listener (vs executions)"
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n", exid);
+        "\r\n",
+        exid);
       shv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
@@ -211,6 +259,29 @@ context "flon-listener (vs executions)"
       expect(s >== ",execute:[invoke,{_0:null},[]],");
 
       free(s);
+    }
+
+    it "doesn't serve the msgs.log from an off-limit domain execution"
+    {
+      char *fn =
+        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+      expect(fn $=== ".json");
+      exid = flon_parse_exid(fn);
+      free(fn);
+      //puts(exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        exid);
+      shv_do_route("GET /i/executions/:id/:sub", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_sub_handler(req, res, params);
+
+      expect(r i== 0);
     }
   }
 

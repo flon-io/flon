@@ -297,7 +297,7 @@ static int exe_handler_dom(
   //if ( ! flon_may_read(req, dom)) return 0;
   //res->status_code = 200;
 
-  return 1;
+  return 0;
 }
 
 static int exe_handler_exid(
@@ -325,8 +325,8 @@ _over:
   free(dom);
   free(path);
 
-  if (res->status_code == 200) respond(req, res, r);
-  return 1; // goes 404
+  if (res->status_code == 200) return respond(req, res, r);
+  return 0; // goes 404
 }
 
 int flon_exe_handler(
