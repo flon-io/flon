@@ -286,6 +286,30 @@ context "flon-listener (vs executions)"
 
       free(mid);
     }
+
+    it "doesn't serve msgs from unreadable domains"
+    {
+      char *mid =
+        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+
+      puts(mid);
+      expect(mid $=== ".json");
+
+      req = shv_parse_request_head_f(
+        "GET /i/msgs/%s HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        mid);
+      shv_do_route("GET /i/msgs/:id", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_msg_handler(req, res, params);
+
+      expect(r i== 0);
+
+      free(mid);
+    }
   }
 }
 

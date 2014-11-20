@@ -423,7 +423,7 @@ int flon_msg_handler(
   char *exid = flon_parse_exid(id);
 
   if (exid == NULL) return 0;
-  if ( ! flon_may_r('r', req, exid)) return 0;
+  if ( ! flon_may_r('r', req, exid)) { free(exid); return 0; }
 
   char *path = flon_exid_path(exid);
   char *fpath = flu_path("var/run/%s/processed/%s", path, id);
