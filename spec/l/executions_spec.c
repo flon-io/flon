@@ -224,7 +224,8 @@ context "flon-listener (vs executions)"
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/msgs HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n", exid);
+        "\r\n",
+        exid);
       shv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
@@ -244,6 +245,29 @@ context "flon-listener (vs executions)"
       char *fn = flu_sprintf("http://x.flon.io/i/msgs/exe_%s.json", exid);
 
       expect(fdja_ls(v, "_embedded.msgs.0._links.self.href", NULL) $===F fn);
+    }
+
+    it "doesn't list msgs from an execution in an off-limits domain"
+    {
+      char *fn =
+        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+      expect(fn $=== ".json");
+      exid = flon_parse_exid(fn);
+      free(fn);
+      //puts(exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/%s/msgs HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n",
+        exid);
+      shv_do_route("GET /i/executions/:id/:sub", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      params = flu_list_malloc();
+
+      int r = flon_exe_sub_handler(req, res, params);
+
+      expect(r i== 0);
     }
   }
 
@@ -287,12 +311,12 @@ context "flon-listener (vs executions)"
       free(mid);
     }
 
-    it "doesn't serve msgs from unreadable domains"
+    it "doesn't serve msgs from off-limits domains"
     {
       char *mid =
         hlp_pline("find var/ -name processed | grep sample | xargs ls");
 
-      puts(mid);
+      //puts(mid);
       expect(mid $=== ".json");
 
       req = shv_parse_request_head_f(
