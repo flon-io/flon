@@ -922,17 +922,6 @@ char *flu_strdup(char *s)
   return r;
 }
 
-int flu_system(const char *cmd, ...)
-{
-  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
-
-  int r = system(c);
-
-  free(c);
-
-  return r;
-}
-
 long long flu_stoll(char *s, size_t l, int base)
 {
   char *ss = strndup(s, l);
@@ -949,5 +938,46 @@ int flu_putf(char *s)
   free(s);
 
   return r;
+}
+
+int flu_system(const char *cmd, ...)
+{
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  int r = system(c);
+
+  free(c);
+
+  return r;
+}
+
+char *flu_plines(const char *cmd, ...)
+{
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  FILE *f = popen(c, "r"); if (f == NULL) { free(c); return NULL; }
+
+  char *s = flu_freadall(f);
+  fclose(f);
+  free(c);
+
+  return s;
+}
+
+char *flu_pline(const char *cmd, ...)
+{
+  va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
+
+  char *s = NULL; size_t l = 0;
+
+  FILE *f = popen(c, "r"); if (f == NULL) { free(c); return NULL; }
+
+  getline(&s, &l, f);
+
+  fclose(f);
+  free(c);
+  if (s) s[strlen(s) - 1] = 0;
+
+  return s;
 }
 

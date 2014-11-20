@@ -364,7 +364,7 @@ context "flon-listener (vs executions)"
     it "doesn't serve msgs from off-limits domains"
     {
       char *mid =
-        hlp_pline("find var/ -name processed | grep sample | xargs ls");
+        flu_pline("find var/ -name processed | grep sample | xargs ls");
 
       //puts(mid);
       expect(mid $=== ".json");

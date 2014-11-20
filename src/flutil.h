@@ -396,6 +396,14 @@ char *flu_strdup(char *s);
  */
 int flu_system(const char *format, ...);
 
+/* Popens a cmd and returns the result as a string.
+ */
+char *flu_plines(const char *cmd, ...);
+
+/* Popens a cmd and returns the result's first line as a string.
+ */
+char *flu_pline(const char *cmd, ...);
+
 /* Like strtoll(3), but accepts a length.
  * Returns 0 when in doubt.
  */
