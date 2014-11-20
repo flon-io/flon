@@ -103,6 +103,52 @@ context "flon-listener (vs executions)"
   describe "flon_exe_handler() /executions/:domain"
   {
     it "lists the executions in a domain"
+    {
+      exid = hlp_lookup_exid("john", "org.example.a", 0);
+      //printf("exid: %s\n", exid);
+
+      req = shv_parse_request_head_f(
+        "GET /i/executions/org.example.a HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n");
+      shv_do_route("GET /i/executions/:id", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+
+      int r = flon_exe_handler(req, res, NULL);
+
+      expect(r i== 1);
+
+      v = fdja_parse((char *)res->body->first->item);
+      if (v) v->sowner = 0; // the string is owned by the response
+
+      expect(v != NULL);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_size(fdja_l(v, "_embedded.executions")) zu== 1);
+      expect(fdja_ls(v, "_embedded.executions.0.exid", NULL) ===f exid);
+    }
+
+    it "doesn't list executions in an off-limits domain"
+    {
+      req = shv_parse_request_head_f(
+        "GET /i/executions/org.sample HTTP/1.1\r\n"
+        "Host: x.flon.io\r\n"
+        "\r\n");
+      shv_do_route("GET /i/executions/:id", req);
+      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+
+      int r = flon_exe_handler(req, res, NULL);
+
+      expect(r i== 1);
+
+      v = fdja_parse((char *)res->body->first->item);
+      if (v) v->sowner = 0; // the string is owned by the response
+
+      expect(v != NULL);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_size(fdja_l(v, "_embedded.executions")) zu== 0);
+    }
   }
 
   describe "flon_exe_handler() /executions/:exid"

@@ -65,7 +65,7 @@ char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
 
   if (user)
   {
-    flu_list *l = flon_list_executions(user, "var/run");
+    flu_list *l = flon_list_executions(user, "var/run", NULL);
     for (flu_node *n = l->first; n; n = n->next)
     {
       char *s = n->item;

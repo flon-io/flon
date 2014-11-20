@@ -175,6 +175,13 @@ int flon_dom_matches(const char *dom, const char *pat)
   return r;
 }
 
+int flon_is_subdomain(const char *root, const char *dom)
+{
+  size_t l = strlen(root);
+  if (strncmp(root, dom, l) != 0) return 0;
+  return dom[l] == '\0' || dom[l] == '.';
+}
+
 int flon_may(char right, const char *user, const char *dom)
 {
   if (user == NULL) return 0;

@@ -35,11 +35,13 @@ int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params);
 int flon_auth_enticate(char *user, char *pass);
 
 int flon_dom_matches(const char *dom, const char *pat);
+int flon_is_subdomain(const char *root, const char *dom);
 
 int flon_may(char right, const char *user, const char *dom);
 int flon_may_r(char right, shv_request *req, const char *dom);
 
-flu_list *flon_list_executions(const char *user, const char *path);
+flu_list *flon_list_executions(
+  const char *user, const char *path, const char *dom);
 
 int flon_i_handler( // /i
   shv_request *req, shv_response *res, flu_dict *params);

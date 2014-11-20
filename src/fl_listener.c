@@ -220,7 +220,8 @@ static void add_execution_dirs(flu_list *l, const char *path, const char *dom)
   free(d0);
 }
 
-flu_list *flon_list_executions(const char *user, const char *path)
+flu_list *flon_list_executions(
+  const char *user, const char *path, const char *dom)
 {
   flu_list *r = flu_list_malloc();
 
@@ -229,6 +230,8 @@ flu_list *flon_list_executions(const char *user, const char *path)
   struct dirent *ep; while ((ep = readdir(dir)) != NULL)
   {
     if (*ep->d_name == '.' || ep->d_type != 4) continue;
+
+    if (dom && ! flon_is_subdomain(dom, ep->d_name)) continue;
 
     if (flon_may('r', user, ep->d_name))
     {
@@ -262,8 +265,8 @@ static fdja_value *embed_exe(shv_request *req, const char *path, fdja_value *r)
   return r;
 }
 
-int flon_exes_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+static int list_exes(
+  shv_request *req, shv_response *res, flu_dict *params, const char *dom)
 {
   res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {}, _embedded: { executions: [] } }");
@@ -271,7 +274,8 @@ int flon_exes_handler(
   // list running executions
 
   flu_list *l =
-    flon_list_executions(flu_list_get(req->routing_d, "_user"), "var/run");
+    flon_list_executions(
+      flu_list_get(req->routing_d, "_user"), "var/run", dom);
 
   for (flu_node *n = l->first; n; n = n->next)
   {
@@ -288,16 +292,22 @@ int flon_exes_handler(
   return result;
 }
 
+int flon_exes_handler(
+  shv_request *req, shv_response *res, flu_dict *params)
+{
+  return list_exes(req, res, params, NULL);
+}
+
 //
 // /i/executions/:domain or /:exid
 
 static int exe_handler_dom(
-  shv_request *req, shv_response *res, const char *dom)
+  shv_request *req, shv_response *res, flu_dict *params, const char *dom)
 {
-  //if ( ! flon_may_read(req, dom)) return 0;
-  //res->status_code = 200;
+  //if ( ! flon_may_r('r', req, dom)) return 0;
+    // the user might be allowed to see some subdomain of dom, so let it go
 
-  return 0;
+  return list_exes(req, res, params, dom);
 }
 
 static int exe_handler_exid(
@@ -335,7 +345,7 @@ int flon_exe_handler(
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
 
-  if (vid == NULL) return exe_handler_dom(req, res, id);
+  if (vid == NULL) return exe_handler_dom(req, res, params, id);
 
   int r = exe_handler_exid(req, res, vid);
 
@@ -365,11 +375,6 @@ static int sub_handler_msgs(
   {
     //fgaj_i("ep: >%s< %i", ep->d_name, ep->d_type);
     if (*ep->d_name == '.' || ep->d_type != 8) continue;
-
-    //char *href = shv_rel(0, req->uri_d, ep->d_name);
-    //fdja_psetv(
-    //  r, "_embedded.msgs.]", "{ _links: { self: { href: \"%s\" } } }", href);
-    //free(href);
 
     fdja_psetv(
       r, "_embedded.msgs.]",
