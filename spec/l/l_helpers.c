@@ -63,15 +63,24 @@ char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
 
   char *r = NULL;
 
-  flu_list *l = flon_list_executions(user, "var/run");
-  for (flu_node *n = l->first; n; n = n->next)
+  if (user)
   {
-    char *s = n->item;
-    char *a = strrchr(s, '/') + 1;
-    char *b = strchr(a, '-');
-    if (strncmp(dom, a, b - a) == 0) { r = strdup(a); break; }
+    flu_list *l = flon_list_executions(user, "var/run");
+    for (flu_node *n = l->first; n; n = n->next)
+    {
+      char *s = n->item;
+      char *a = strrchr(s, '/') + 1;
+      char *b = strchr(a, '-');
+      if (strncmp(dom, a, b - a) == 0) { r = strdup(a); break; }
+    }
+    flu_list_free_all(l);
   }
-  flu_list_free_all(l);
+  else
+  {
+    char *fn = hlp_pline("find var/ -name processed | grep %s | xargs ls", dom);
+    r = flon_parse_exid(fn);
+    free(fn);
+  }
 
   return r;
 }

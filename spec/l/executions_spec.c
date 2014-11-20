@@ -60,7 +60,6 @@ context "flon-listener (vs executions)"
   {
     it "lists executions (in readable domains)"
     {
-
       req = shv_parse_request_head(
         "GET /i/executions HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
@@ -138,12 +137,7 @@ context "flon-listener (vs executions)"
 
     it "doesn't detail off-limits domain executions"
     {
-      char *fn =
-        hlp_pline("find var/ -name processed | grep sample | xargs ls");
-      expect(fn $=== ".json");
-      exid = flon_parse_exid(fn);
-      free(fn);
-      //puts(exid);
+      exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
       req = shv_parse_request_head_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
@@ -200,12 +194,7 @@ context "flon-listener (vs executions)"
 
     it "doesn't serve the exe.log from an off-limits domain execution"
     {
-      char *fn =
-        hlp_pline("find var/ -name processed | grep sample | xargs ls");
-      expect(fn $=== ".json");
-      exid = flon_parse_exid(fn);
-      free(fn);
-      //puts(exid);
+      exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/log HTTP/1.1\r\n"
@@ -263,12 +252,7 @@ context "flon-listener (vs executions)"
 
     it "doesn't serve the msgs.log from an off-limit domain execution"
     {
-      char *fn =
-        hlp_pline("find var/ -name processed | grep sample | xargs ls");
-      expect(fn $=== ".json");
-      exid = flon_parse_exid(fn);
-      free(fn);
-      //puts(exid);
+      exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
@@ -320,12 +304,7 @@ context "flon-listener (vs executions)"
 
     it "doesn't list msgs from an execution in an off-limits domain"
     {
-      char *fn =
-        hlp_pline("find var/ -name processed | grep sample | xargs ls");
-      expect(fn $=== ".json");
-      exid = flon_parse_exid(fn);
-      free(fn);
-      //puts(exid);
+      exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
       req = shv_parse_request_head_f(
         "GET /i/executions/%s/msgs HTTP/1.1\r\n"
