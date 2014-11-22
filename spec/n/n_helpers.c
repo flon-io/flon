@@ -41,9 +41,38 @@ int logtoterm()
   return s && strstr(s, "term");
 }
 
+static void dispatcher_stop()
+{
+  if (dispatcher_pid < 1) return;
+
+  if (kill(dispatcher_pid, SIGTERM) == 0)
+  {
+    int status; waitpid(dispatcher_pid, &status, 0);
+    //if (logtoterm())
+    //{
+    nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
+    //}
+  }
+  //else if (logtoterm())
+  else
+  {
+    nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
+  }
+
+  dispatcher_pid = -1;
+
+  //sleep(1);
+}
+
 void dispatcher_start()
 {
   if (dispatcher_pid > 0) return;
+
+  if (atexit(dispatcher_stop) != 0)
+  {
+    puts("couldn't register dispatcher_stop() from atexit()");
+    exit(1);
+  }
 
   dispatcher_pid = fork();
 
@@ -78,33 +107,12 @@ void dispatcher_start()
   }
   else
   {
-    if (logtoterm()) nlog("dispatcher started pid: %i...", dispatcher_pid);
+    //if (logtoterm()) nlog("dispatcher started pid: %i...", dispatcher_pid);
+    nlog("dispatcher started pid: %i...", dispatcher_pid);
 
     //sleep(1);
-    flu_do_msleep(777);
+    flu_do_msleep(210);
   }
-}
-
-void dispatcher_stop()
-{
-  if (dispatcher_pid < 1) return;
-
-  if (kill(dispatcher_pid, SIGTERM) == 0)
-  {
-    int status; waitpid(dispatcher_pid, &status, 0);
-    if (logtoterm())
-    {
-      nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
-    }
-  }
-  else if (logtoterm())
-  {
-    nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
-  }
-
-  dispatcher_pid = -1;
-
-  //sleep(1);
 }
 
 void launch(char *exid, char *flow, char *payload)

@@ -20,10 +20,6 @@ context "instruction:"
 
     dispatcher_start();
   }
-  after all
-  {
-    dispatcher_stop();
-  }
 
   before each
   {
