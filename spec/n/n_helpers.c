@@ -77,9 +77,8 @@ void dispatcher_start()
   {
     if (logtoterm()) nlog("dispatcher started pid: %i...", dispatcher_pid);
 
-    sleep(1);
-      // seems necessary, else the ev io watch doesn't seem to get in
-      // TODO: replace with flu_do_msleep(500) or something like that
+    //sleep(1);
+    flu_do_msleep(735);
   }
 }
 
