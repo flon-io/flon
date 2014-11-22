@@ -23,7 +23,7 @@
 #include "n_helpers.h"
 
 
-void nlog(char *format, ...)
+static void nlog(char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *fo = flu_sprintf("[1;30m.:n:. %s[0;0m\n", format);
@@ -35,13 +35,13 @@ void nlog(char *format, ...)
 char *dispatcher_path = "../tst/bin/flon-dispatcher";
 pid_t dispatcher_pid = -1;
 
-int logtoterm()
+static int logtoterm()
 {
   char *s = getenv("FLONLOG");
   return s && strstr(s, "term");
 }
 
-static void dispatcher_stop()
+static void hlp_dispatcher_stop()
 {
   if (dispatcher_pid < 1) return;
 
@@ -64,11 +64,11 @@ static void dispatcher_stop()
   //sleep(1);
 }
 
-void dispatcher_start()
+void hlp_dispatcher_start()
 {
   if (dispatcher_pid > 0) return;
 
-  if (atexit(dispatcher_stop) != 0)
+  if (atexit(hlp_dispatcher_stop) != 0)
   {
     puts("couldn't register dispatcher_stop() from atexit()");
     exit(1);
@@ -118,7 +118,7 @@ void dispatcher_start()
   }
 }
 
-void launch(char *exid, char *flow, char *payload)
+void hlp_launch(char *exid, char *flow, char *payload)
 {
   char *fep = flon_exid_path(exid);
 
@@ -147,7 +147,7 @@ void launch(char *exid, char *flow, char *payload)
   free(fep);
 }
 
-fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
+fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec)
 {
   char *fep = flon_exid_path(exid);
   if (nid == NULL) nid = "0";

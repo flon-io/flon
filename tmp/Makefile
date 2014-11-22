@@ -20,10 +20,10 @@ clean:
 	rm -f *.so
 	rm -f *.c
 	rm -f [cdxnil]s
-	rm -f n_helpers.[ch]
+	rm -f feu_helpers.[ch]
 	rm -f l_helpers.[ch]
 
-n_helpers.o: n_helpers.c
+feu_helpers.o: feu_helpers.c
 l_helpers.o: l_helpers.c
 
 DEPS=\
@@ -50,14 +50,14 @@ ls.c: ../spec/l/*_spec.c
 	cp ../spec/l/l_helpers.[ch] .
 ns.c: ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
-	cp ../spec/n/n_helpers.[ch] .
+	cp ../spec/feu_helpers.[ch] .
 
 cs: $(DEPS)
 ds: $(DDEPS)
 xs: $(XDEPS)
 is: $(IDEPS)
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o
-ns: $(DEPS) n_helpers.o
+ns: $(DEPS) feu_helpers.o
 
 sc: cs
 	@echo "\n--- sc --------------------------------------------------------\n"

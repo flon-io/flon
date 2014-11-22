@@ -1,0 +1,16 @@
+
+//
+// helpers for feu specs
+// (specs that run a dispatcher)
+//
+// Fri Oct 24 12:53:40 JST 2014
+//
+
+#include "djan.h"
+
+
+void hlp_dispatcher_start();
+
+void hlp_launch(char *exid, char *flow, char *payload);
+fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec);
+

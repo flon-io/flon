@@ -6,14 +6,14 @@
 //
 
 #include "fl_ids.h"
-#include "n_helpers.h"
+#include "feu_helpers.h"
 
 
 context "instruction:"
 {
   before all
   {
-    dispatcher_start();
+    hlp_dispatcher_start();
   }
 
   before each
@@ -33,7 +33,7 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.sequence.2t");
 
-      launch(
+      hlp_launch(
         exid,
         "sequence\n"
         "  trace a\n"
@@ -41,7 +41,7 @@ context "instruction:"
         "",
         "{ hello: world }");
 
-      result = ewait(exid, 'r', "0", 10);
+      result = hlp_wait(exid, 'r', "0", 10);
 
       expect(result != NULL);
 
@@ -59,13 +59,13 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.sequence.0t");
 
-      launch(
+      hlp_launch(
         exid,
         "sequence\n"
         "",
         "{ hello: emptiness }");
 
-      result = ewait(exid, 'r', "0", 10);
+      result = hlp_wait(exid, 'r', "0", 10);
 
       //flon_prettyprint(exid);
 

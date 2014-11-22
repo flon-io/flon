@@ -6,14 +6,14 @@
 //
 
 #include "fl_ids.h"
-#include "n_helpers.h"
+#include "feu_helpers.h"
 
 
 context "instruction:"
 {
   before all
   {
-    dispatcher_start();
+    hlp_dispatcher_start();
   }
 
   before each
@@ -33,13 +33,13 @@ context "instruction:"
     {
       exid = flon_generate_exid("n.invoke.main");
 
-      launch(
+      hlp_launch(
         exid,
         "invoke stamp\n"
         "",
         "{ hello: invoke }");
 
-      result = ewait(exid, 'r', "0", 10);
+      result = hlp_wait(exid, 'r', "0", 10);
 
       //flon_prettyprint(exid);
 
