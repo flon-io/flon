@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_common.h"
 #include "n_helpers.h"
 
 
@@ -14,9 +13,6 @@ context "instruction:"
 {
   before all
   {
-    chdir("../tst");
-    flon_configure(".");
-
     dispatcher_start();
   }
 

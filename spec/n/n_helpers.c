@@ -74,6 +74,9 @@ void dispatcher_start()
     exit(1);
   }
 
+  chdir("../tst");
+  flon_configure(".");
+
   dispatcher_pid = fork();
 
   if (dispatcher_pid == 0)
