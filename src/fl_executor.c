@@ -275,8 +275,7 @@ static void load_execution(const char *exid)
 
   if (execution == NULL)
   {
-    execution = fdja_v(
-      "{ exid: \"%s\", nodes: {}, errors: {} }", exid);
+    execution = fdja_v("{ exid: \"%s\", nodes: {} }", exid);
   }
 
   msgs = flu_list_malloc();

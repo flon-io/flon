@@ -280,7 +280,6 @@ context "flon-executor"
       //puts(fdja_todc(v));
 
       expect(fdja_lj(v, "nodes", NULL) ===F fdja_vj("{}"));
-      expect(fdja_lj(v, "errors", NULL) ===F fdja_vj("{}"));
 
       fdja_free(v);
     }
