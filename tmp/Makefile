@@ -51,6 +51,9 @@ ls.c: ../spec/l/*_spec.c
 ns.c: ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
 	cp ../spec/feu_helpers.[ch] .
+zs.c: ../spec/z/*_spec.c
+	$(RODZO) ../spec/z/*_spec.c -o zs.c
+	cp ../spec/feu_helpers.[ch] .
 
 cs: $(DEPS)
 ds: $(DDEPS)
@@ -58,6 +61,7 @@ xs: $(XDEPS)
 is: $(IDEPS)
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o
 ns: $(DEPS) feu_helpers.o
+zs: $(DEPS) feu_helpers.o
 
 sc: cs
 	@echo "\n--- sc --------------------------------------------------------\n"
@@ -77,6 +81,9 @@ sl: ls
 sn: ns invoker executor dispatcher
 	@echo "\n--- sn --------------------------------------------------------\n"
 	time ./ns
+sz: zs invoker executor dispatcher
+	@echo "\n--- sz --------------------------------------------------------\n"
+	time ./zs
 
 vsc: cs
 	valgrind --leak-check=full -v ./cs
@@ -97,6 +104,9 @@ vsl: ls
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 vsn: ns
 	valgrind --leak-check=full -v ./ns
+	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
+vsz: zs
+	valgrind --leak-check=full -v ./zs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 
 ssi: is
@@ -130,9 +140,9 @@ scope: flon-scope
 fflon: flon-flon
 	mv flon-flon ../tst/bin/
 
-spec: sc sd sx si sl sn
+spec: sc sd sx si sl sn sz
 s: spec
-vspec: vsc vsd vsx vsi vsl vsn
+vspec: vsc vsd vsx vsi vsl vsn vsz
 vs: vspec
 
 .PHONY: clean
