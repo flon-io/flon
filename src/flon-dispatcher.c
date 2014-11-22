@@ -155,6 +155,10 @@ int main(int argc, char *argv[])
   //ev_periodic_init (&epe, spool_cb, 0., .5, 0);
   //ev_periodic_start (l, &epe);
 
+  //ev_timer eti;
+  //ev_timer_init(&eti, do_something_when_loop_ready_cb, 0., 0.);
+  //ev_timer_start(l, &eti);
+
   // loop
 
   //fgaj_i("about to ev_loop...");

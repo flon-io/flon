@@ -59,10 +59,13 @@ void dispatcher_start()
     }
     else
     {
-      freopen("var/log/dispatcher.log", "a", stdout);
-      fflush(stdout);
-      freopen("var/log/dispatcher.log", "a", stderr);
-      fflush(stderr);
+      if ( ! logtoterm())
+      {
+        freopen("var/log/dispatcher.log", "a", stdout);
+        fflush(stdout);
+        freopen("var/log/dispatcher.log", "a", stderr);
+        fflush(stderr);
+      }
 
       execl(
         dispatcher_path, "n_flon-dispatcher",
@@ -78,7 +81,7 @@ void dispatcher_start()
     if (logtoterm()) nlog("dispatcher started pid: %i...", dispatcher_pid);
 
     //sleep(1);
-    flu_do_msleep(735);
+    flu_do_msleep(777);
   }
 }
 
@@ -132,7 +135,6 @@ void launch(char *exid, char *flow, char *payload)
   fdja_free(v);
   free(fep);
 }
-
 
 fdja_value *ewait(char *exid, char action, char *nid, int maxsec)
 {
