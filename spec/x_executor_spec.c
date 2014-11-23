@@ -184,9 +184,9 @@ context "flon-executor"
       //puts(fdja_todc(v));
 
       expect(fdja_lj(v, "nodes.0_0.nid", NULL) ===f "\"0_0\"");
-      expect(fdja_lj(v, "nodes.0_0.p", NULL) ===f "\"0\"");
-      expect(fdja_lj(v, "nodes.0_0.t", NULL) ===f "\"invoke\"");
-      expect(fdja_lj(v, "nodes.0_0.c", NULL) ^==f "\"20");
+      expect(fdja_lj(v, "nodes.0_0.parent", NULL) ===f "\"0\"");
+      expect(fdja_lj(v, "nodes.0_0.inst", NULL) ===f "\"invoke\"");
+      expect(fdja_lj(v, "nodes.0_0.created", NULL) ^==f "\"20");
 
       fdja_free(v);
 
@@ -240,9 +240,9 @@ context "flon-executor"
       //puts(fdja_to_pretty_djan(v));
 
       expect(fdja_lj(v, "nodes.0_1.nid", NULL) ===f "\"0_1\"");
-      expect(fdja_lj(v, "nodes.0_1.p", NULL) ===f "\"0\"");
-      expect(fdja_lj(v, "nodes.0_1.t", NULL) ===f "\"invoke\"");
-      expect(fdja_lj(v, "nodes.0_1.c", NULL) ^==f "\"20");
+      expect(fdja_lj(v, "nodes.0_1.parent", NULL) ===f "\"0\"");
+      expect(fdja_lj(v, "nodes.0_1.inst", NULL) ===f "\"invoke\"");
+      expect(fdja_lj(v, "nodes.0_1.created", NULL) ^==f "\"20");
 
       fdja_free(v);
 

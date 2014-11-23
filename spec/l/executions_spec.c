@@ -177,7 +177,7 @@ context "flon-listener (vs executions)"
       //flu_putf(fdja_todc(v));
 
       expect(fdja_ls(v, "exid", NULL) ===f exid);
-      expect(fdja_ls(v, "nodes.0.t", NULL) ===f "invoke");
+      expect(fdja_ls(v, "nodes.0.inst", NULL) ===f "invoke");
       expect(fdja_ls(v, "_links.self.href", NULL) $===f exid);
     }
 

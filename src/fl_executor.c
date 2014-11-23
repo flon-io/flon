@@ -98,10 +98,12 @@ static fdja_value *create_node(
   const char *instruction,
   fdja_value *tree)
 {
-  fdja_value *node = fdja_v("{ nid: '%s', t: %s }", nid, instruction);
+  fdja_value *node = fdja_v("{ nid: '%s', inst: %s }", nid, instruction);
 
-  fdja_set(node, "c", fdja_sym(flu_tstamp(NULL, 1, 'u')));
-  fdja_set(node, "p", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
+  fdja_set(
+    node, "created", fdja_sym(flu_tstamp(NULL, 1, 'u')));
+  fdja_set(
+    node, "parent", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
 
   if (tree && strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
 
@@ -208,7 +210,7 @@ static void handle(fdja_value *msg)
       }
       else
       {
-        char *tsp = fdja_ls(node, "c", NULL);
+        char *tsp = fdja_ls(node, "created", NULL);
         //fgaj_d("tsp: %s", tsp);
         struct timespec *tsc = flu_parse_tstamp(tsp, 1);
         struct timespec *delta = flu_tdiff(NULL, tsc);
