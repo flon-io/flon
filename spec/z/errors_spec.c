@@ -6,6 +6,7 @@
 //
 
 #include "fl_ids.h"
+#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -40,21 +41,18 @@ context "flon and errors"
         "{ hello: unknown }");
 
       result = hlp_wait(exid, 'r', "0", 3);
+        // TODO: wait for "error" event
 
-      //flon_prettyprint(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
-
       puts(fdja_todc(result));
 
-      //expect(fdja_ls(result, "receive", NULL) ===f "1");
-      //expect(fdja_ls(result, "nid", NULL) ===f "0");
-      //expect(fdja_ls(result, "from", NULL) ===f "0");
+      fdja_value *v = hlp_read_run_json(exid);
+      //puts(fdja_todc(v));
 
-      //fdja_value *pl = fdja_l(result, "payload");
-
-      //expect(fdja_tod(pl) ===f ""
-      //  "{ hello: trace, trace: [ a ] }");
+      expect(fdja_ls(v, "nodes.0.status", NULL) ===f "error");
+      fdja_free(v);
     }
   }
 }
