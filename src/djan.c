@@ -911,6 +911,11 @@ char *fdja_to_string(fdja_value *v)
   return fdja_string(v);
 }
 
+char *fdja_src(fdja_value *v)
+{
+  return v->source + v->soff;
+}
+
 long long fdja_to_int(fdja_value *v)
 {
   if (v->type == 't') return 1;

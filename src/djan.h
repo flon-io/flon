@@ -109,27 +109,27 @@ char *fdja_f_todc(const char *path, ...);
 
 //char *fdja_to_radial(fdja_value *v);
 
-/*
- * Frees the fdja_value resources. If the fdja_value has children, they
+/* Frees the fdja_value resources. If the fdja_value has children, they
  * will be freed as well.
  */
 void fdja_value_free(fdja_value *v);
 #define fdja_free(v) fdja_value_free(v)
 
-/*
- * Returns a copy of the string representation of the fdja_value.
+/* Returns a copy of the string representation of the fdja_value.
  */
 char *fdja_string(fdja_value *v);
 
-/*
- * Returns a copy of the string representation *content* of the fdja_value.
+/* Returns a copy of the string representation *content* of the fdja_value.
  * Mostly like fdja_string(), but for strings returns what's inside of the
  * surrounding double or single quotes.
  */
 char *fdja_str(fdja_value *v);
 
-/*
- * Returns the string value behind the fdja_value. For a string fdja_value,
+/* Returns a pointer to the value start position in the source string.
+ */
+char *fdja_src(fdja_value *v);
+
+/* Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.
  */

@@ -51,7 +51,7 @@ long long flu_msleep(long long milliseconds);
 
 /* Sleeps for a given amount of milliseconds.
  * If interrupted, sleeps again until the required milliseconds have all been
- * slept through. Returns the how many milliseconds it actually slept.
+ * slept through. Returns the the count of milliseconds it actually slept.
  */
 long long flu_do_msleep(long long milliseconds);
 
@@ -66,6 +66,8 @@ long long flu_do_msleep(long long milliseconds);
  *
  * 'r' --> "Fri, 30 Oct 2014 16:34:01 UTC"
  * 'g' --> "Fri, 30 Oct 2014 16:34:01 GMT"
+ *
+ * '2' --> "Fri, 30 Oct 2014 16:34:01 +0000" // rfc-822
  *
  * If the tm arg is NULL, the function will grab the time thanks to
  * clock_gettime(CLOCK_REALTIME, &ts).

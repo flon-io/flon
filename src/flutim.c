@@ -130,11 +130,12 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     return r;
   }
 
-  if (format == 'r' || format == 'g')
+  if (format == 'r' || format == 'g' || format == '2')
   {
     char *loc = strdup(setlocale(LC_TIME, NULL)); setlocale(LC_TIME, "en_US");
     //
-    strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
+    if (format == '2') strftime(r, 32, "%a, %d %b %Y %T %z", tm);
+    else strftime(r, 32, "%a, %d %b %Y %T UTC", tm);
     //
     setlocale(LC_TIME, loc); free(loc);
 
