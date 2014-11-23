@@ -192,3 +192,12 @@ fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec)
   return r;
 }
 
+fdja_value *hlp_read_run_json(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+  fdja_value *v = fdja_parse_f("var/run/%s/run.json", fep);
+  free(fep);
+
+  return v;
+}
+

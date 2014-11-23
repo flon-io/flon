@@ -180,9 +180,10 @@ static void handle(fdja_value *msg)
   fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
-  if (inst == NULL) goto _over;
+  //if (inst == NULL) goto _over;
 
-  char r = inst(node, msg);
+  char r = '?'; // error
+  if (inst) r = inst(node, msg);
 
   fgaj_i("%c_%s --> %c", a, instruction, r);
 

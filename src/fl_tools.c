@@ -39,7 +39,7 @@
 #include "fl_tools.h"
 
 
-void flon_prettyprint(const char *exid)
+void flon_pp_execution(const char *exid)
 {
   char *fep = flon_exid_path(exid);
 
@@ -53,6 +53,9 @@ void flon_prettyprint(const char *exid)
   free(fep);
 
   printf("\n# %s/\n", path);
+
+  puts("\n## tree\n#");
+  flu_system("tree %s", path);
 
   puts("\n## execution log\n#");
   printf("[0;32m"); fflush(stdout);

@@ -27,7 +27,7 @@
 #define FL_TOOLS_H
 
 
-void flon_prettyprint(const char *exid);
+void flon_pp_execution(const char *exid);
 
 #endif // FL_TOOLS_H
 

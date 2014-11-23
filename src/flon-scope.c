@@ -124,7 +124,7 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  flon_prettyprint(exid);
+  flon_pp_execution(exid);
 
   return 0;
 }
