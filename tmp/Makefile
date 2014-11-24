@@ -75,7 +75,7 @@ sx: xs
 si: is
 	@echo "\n--- si --------------------------------------------------------\n"
 	time ./is
-sl: ls
+sl: ls invoker executor dispatcher
 	@echo "\n--- sl --------------------------------------------------------\n"
 	time ./ls
 sn: ns invoker executor dispatcher

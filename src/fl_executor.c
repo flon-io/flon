@@ -69,7 +69,7 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
   if (fname == NULL)
   {
     fgaj_w("cannot reject msg without 'fname' key");
-    char *s  = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
+    char *s = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
     return;
   }
 
@@ -83,7 +83,7 @@ void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 {
   fgaj_i("%s %s from %s", type, nid, from_nid);
 
-  fdja_value *msg = fdja_v("{ %s: 1, nid: '%s' }", type, nid);
+  fdja_value *msg = fdja_v("{ point: %s, nid: '%s' }", type, nid);
 
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
   fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
@@ -147,24 +147,29 @@ static void do_log(fdja_value *msg)
 
 static void handle(fdja_value *msg)
 {
-  //fgaj_i("%s", fdja_tod(msg));
+  fgaj_i("%s", fdja_tod(msg));
+  //flu_putf(fdja_to_djan(msg, 0));
 
   char *nid = NULL;
   char *parent_nid = NULL;
-  fdja_value *action = NULL;
+  //fdja_value *action = NULL;
   fdja_value *tree = NULL;
   char *instruction = NULL;
   fdja_value *node = NULL;
 
-  char a = 'x'; action = fdja_l(msg, "execute");
-  if (action == NULL) { a = 'r'; action = fdja_l(msg, "receive"); }
+  fdja_value *point = fdja_l(msg, "point");
+  char *spoint = point ? fdja_src(point) : '?'; if (*spoint == '"') ++spoint;
 
-  //fgaj_i("a: %c", a);
+  char a = 'x';
+  if (*spoint == 'r') a = 'r'; // receive
+
+  fgaj_i("a: %c", a);
 
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);
 
-  if (a == 'x') { tree = action; }
+  //if (a == 'x') { tree = action; }
+  tree = fdja_l(msg, "tree");
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
   if (tree == NULL) { reject("node not found", NULL, msg); goto _over; }
 
@@ -201,6 +206,8 @@ static void handle(fdja_value *msg)
     {
       char *parent_nid = flon_node_parent_nid(nid);
       //if ( ! parent_nid) parent_nid = strdup("0");
+
+      fgaj_i("parent_nid: %s", parent_nid);
 
       if (parent_nid)
       {
@@ -396,11 +403,12 @@ static void execute()
       if (j == NULL) break;
 
       //fgaj_i(fdja_tod(j));
+      fgaj_i(fdja_to_djan(j, 0));
 
-      if (fdja_lookup(j, "execute") || fdja_lookup(j, "receive"))
+      if (fdja_l(j, "point"))
         handle(j);
       else
-        reject("no 'execute' or 'receive' key", NULL, j);
+        reject("no 'point' key", NULL, j);
 
       fdja_free(j);
     }

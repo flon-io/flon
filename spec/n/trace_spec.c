@@ -47,7 +47,7 @@ context "instruction:"
 
       //puts(fdja_todc(result));
 
-      expect(fdja_ls(result, "receive", NULL) ===f "1");
+      expect(fdja_ls(result, "point", NULL) ===f "receive");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
       expect(fdja_ls(result, "from", NULL) ===f "0");
 

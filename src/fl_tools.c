@@ -50,12 +50,14 @@ void flon_pp_execution(const char *exid)
     path = flu_sprintf("var/archive/%s", fep);
   }
 
-  free(fep);
-
   printf("\n# %s/\n", path);
 
-  puts("\n## tree\n#");
+  puts("\n## trees\n#");
   flu_system("tree %s", path);
+  flu_system("tree var/spool/");
+  flu_system("tree var/log/%s", fep);
+
+  free(fep);
 
   puts("\n## execution log\n#");
   printf("[0;32m"); fflush(stdout);

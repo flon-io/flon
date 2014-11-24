@@ -132,7 +132,8 @@ void hlp_launch(char *exid, char *flow, char *payload)
 
   fdja_value *v = fdja_v("{ exid: %s }", exid);
 
-  fdja_set(v, "execute", fl);
+  fdja_psetv(v, "point", "execute");
+  fdja_set(v, "tree", fl);
   fdja_set(v, "payload", pl);
 
   int i = fdja_to_json_f(v, "var/spool/dis/exe_%s.json", exid);
@@ -166,15 +167,18 @@ fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec)
     *(strrchr(s, '}') + 1) = '\0';
     char *lf = strrchr(s, '\n');
     char *ss = strdup(lf ? lf + 1 : s);
-    //puts(ss);
+    //printf("hlp_wait() ? %s", ss);
     fdja_value *v = fdja_parse(ss);
     free(s);
 
-    char a = fdja_lookup(v, "receive") ? 'r' : 'x';
+    fdja_value *point = fdja_l(v, "point");
+    char a = '?'; if (point) a = *fdja_src(point) == 'r' ? 'r' : 'x';
     if (action != a) { fdja_free(v); continue; }
 
     char *n = fdja_lsd(v, "nid", "0");
     if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }
+
+    //printf("hlp_wait() YES %s", ss);
 
     free(n);
 
@@ -199,5 +203,12 @@ fdja_value *hlp_read_run_json(char *exid)
   free(fep);
 
   return v;
+}
+
+void hlp_cat_inv_log(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+  flu_system("find var/log/%s -name \"*.log\" | xargs tail -n +1", fep);
+  free(fep);
 }
 

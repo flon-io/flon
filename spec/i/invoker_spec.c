@@ -36,7 +36,8 @@ context "flon-invoker"
 
       flu_writeall(
         path,
-        "invoke: [ stamp, {}, [] ]\n"
+        "point: invoke\n"
+        "tree: [ stamp, {}, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"

@@ -48,7 +48,8 @@ context "invoker: mirror"
 
       flu_writeall(
         path,
-        "invoke: [ mirror, {}, [] ]\n"
+        "point: invoke\n"
+        "tree: [ mirror, {}, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"

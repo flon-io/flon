@@ -166,13 +166,9 @@ static int executor_not_running(const char *exid)
 
 static short dispatch(const char *fname, fdja_value *j)
 {
-  //puts(fdja_to_pretty_djan(j));
+  //flu_putf(fdja_todc(j));
 
-  if (
-    fdja_l(j, "execute") == NULL &&
-    fdja_l(j, "receive") == NULL &&
-    fdja_l(j, "invoke") == NULL
-  ) return -1;
+  if (fdja_l(j, "point") == NULL) return -1;
 
   int r = 2; // 'dispatched' for now
 
@@ -244,11 +240,15 @@ static short receive_ret(const char *fname)
 
   j = fdja_parse_f("var/spool/dis/%s", fname);
 
+  //flu_putf(fdja_todc(j));
+
   if (j == NULL) { r = 1; goto _over; }
     // the file's mtime will get examined
 
-  fdja_set(i, "receive", fdja_v("1"));
+  fdja_psetv(i, "point", "receive");
   fdja_set(i, "payload", j);
+
+  //flu_putf(fdja_todc(i));
 
   int rr = fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4);
   if (rr != 1) { r = -1; goto _over; }

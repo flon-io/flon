@@ -291,7 +291,7 @@ context "flon-listener (vs executions)"
       //puts("---8<---");
       //puts(s);
       //puts("--->8---");
-      expect(s >== ",execute:[invoke,{_0:null},[]],");
+      expect(s >== ",point:execute,tree:[invoke,{_0:null},[]],");
 
       free(s);
     }
@@ -401,7 +401,9 @@ context "flon-listener (vs executions)"
       v = fdja_parse_f(f);
       //flu_putf(fdja_todc(v));
 
-      expect(fdja_lj(v, "execute") ===F fdja_vj(""
+      expect(fdja_ls(v, "point", NULL) ===f ""
+        "execute");
+      expect(fdja_lj(v, "tree") ===F fdja_vj(""
         "[ invoke, { _0: \"null\" }, [] ]"));
 
       free(mid);

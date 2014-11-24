@@ -44,7 +44,8 @@ context "invoker: null"
 
       flu_writeall(
         path,
-        "invoke: [ null, {}, [] ]\n"
+        "point: invoke\n"
+        "tree: [ null, {}, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"

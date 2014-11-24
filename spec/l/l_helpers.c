@@ -41,7 +41,8 @@ void hlp_start_execution(char *domain)
   int r = flu_writeall(
     "var/spool/dis/%s", name,
     "{"
-      "execute: [ invoke { _0: \"null\" } [] ]\n"
+      "point: execute\n"
+      "tree: [ invoke { _0: \"null\" } [] ]\n"
       "exid: %s\n"
       "payload: {\n"
         "hello: %s\n"

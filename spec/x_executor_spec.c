@@ -45,7 +45,8 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
         "{"
-          "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "point: execute\n"
+          "tree: [ invoke, { _0: stamp, color: blue }, [] ]\n"
           "exid: %s\n"
           "payload: {\n"
             "hello: world\n"
@@ -94,7 +95,8 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
         "{"
-          "execute: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "point: execute\n"
+          "tree: [ invoke, { _0: stamp, color: blue }, [] ]\n"
           "exid: %s\n"
           "payload: {\n"
             "hello: world\n"
@@ -116,7 +118,7 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/rcv_%s-0.json", exid,
         "{"
-          "receive: 1\n"
+          "point: receive\n"
           "exid: %s\n"
           "nid: 0\n"
           "payload: {\n"
@@ -146,14 +148,15 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
         "{"
-          "execute:\n"
+          "point: execute\n"
+          "tree:\n"
           "  [ sequence, {}, [\n"
           "    [ invoke, { _0: stamp, color: blue }, [] ]\n"
           "    [ invoke, { _0: stamp, color: green }, [] ]\n"
           "  ] ]\n"
           "exid: %s\n"
           "payload: {\n"
-            "hello: world\n"
+            "hello: xtest.pn\n"
           "}\n"
         "}",
         exid
@@ -165,16 +168,20 @@ context "flon-executor"
 
       expect(r == 0);
 
+      //flon_pp_execution(exid);
+
       expect(flu_fstat("var/spool/dis/inv_%s-0_0.json", exid) == 'f');
 
       //puts(flu_readall("var/spool/dis/inv_%s-0.0.json", exid));
 
       v = fdja_parse_f("var/spool/dis/inv_%s-0_0.json", exid);
 
-      expect(fdja_to_json(fdja_l(v, "invoke", NULL)) ===F fdja_vj(""
+      expect(fdja_ls(v, "point", NULL) ===f ""
+        "invoke");
+      expect(fdja_to_json(fdja_l(v, "tree", NULL)) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: blue }, [] ]"));
       expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
-        "{ hello: world, args: { _0: stamp, color: blue } }"));
+        "{ hello: xtest.pn, args: { _0: stamp, color: blue } }"));
 
       fdja_free(v);
 
@@ -205,7 +212,7 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/ret_%s-0_0.json", exid,
         "{"
-          "receive: 1\n"
+          "point: receive\n"
           "exid: %s\n"
           "nid: 0_0\n"
           "payload: {\n"
@@ -227,7 +234,9 @@ context "flon-executor"
       v = fdja_parse_f("var/spool/dis/inv_%s-0_1.json", exid);
       //puts(fdja_todc(v));
 
-      expect(fdja_lj(v, "invoke", NULL) ===F fdja_vj(""
+      expect(fdja_ls(v, "point", NULL) ===f ""
+        "invoke");
+      expect(fdja_lj(v, "tree", NULL) ===F fdja_vj(""
         "[ invoke, { _0: stamp, color: green }, [] ]"));
       expect(fdja_lj(v, "payload", NULL) ===F fdja_vj(""
         "{ hello: chuugoku, args: { _0: stamp, color: green } }"));
@@ -253,7 +262,7 @@ context "flon-executor"
       flu_writeall(
         "var/spool/exe/ret_%s-0_1.json", exid,
         "{"
-          "receive: 1\n"
+          "point: receive\n"
           "exid: %s\n"
           "nid: 0_1\n"
           "payload: {\n"

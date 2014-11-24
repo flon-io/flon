@@ -52,7 +52,8 @@ context "flon-dispatcher"
       int r = flu_writeall(
         "var/spool/dis/inv_%s-0_2.json", exid,
         "{"
-          "invoke: [ stamp, {}, [] ]\n"
+          "point: invoke\n"
+          "tree: [ stamp, {}, [] ]\n"
           "exid: %s\n"
           "nid: 0_2\n"
           "payload: {\n"
@@ -69,7 +70,7 @@ context "flon-dispatcher"
 
       fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
       expect(v != NULL);
-      //puts(fdja_to_pretty_djan(v));
+      //flu_putf(fdja_todc(v));
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
 
@@ -141,7 +142,8 @@ context "flon-dispatcher"
       r = flu_writeall(
         "var/spool/inv/inv_%s-0_7-f.json", exid,
         "{"
-          "invoke: [ stamp, {}, [] ]\n"
+          "point: invoke\n"
+          "tree: [ stamp, {}, [] ]\n"
           "exid: %s\n"
           "nid: 0_7-f\n"
           "payload: {\n"
@@ -155,7 +157,6 @@ context "flon-dispatcher"
         "var/spool/dis/ret_%s-0_7-f.json", exid,
         "{"
           "hello: dtest.rir\n"
-          "return: true\n"
         "}"
       );
       expect(r i== 1);
@@ -182,11 +183,10 @@ context "flon-dispatcher"
 
       sleep(1);
 
-      //expect(flu_fstat("var/archive/%s/exe.log", fep) == 'f');
       s = flu_readall("var/archive/%s/exe.log", fep);
+      //printf("exe.log >>>\n%s\n<<<\n", s);
       expect(s != NULL);
       expect(s >== "reject node not found, ");
-      //free(s);
 
       // check that rcv_ got rejected (no execution going on)
 
@@ -202,7 +202,8 @@ context "flon-dispatcher"
 //      r = flu_writeall(
 //        "var/spool/dis/exe_%s.json", exid,
 //        "{"
-//          "execute:"
+//          "point: execute\n"
+//          "tree:"
 //            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
 //          "exid: %s\n"
 //          "payload: {\n"
@@ -228,7 +229,8 @@ context "flon-dispatcher"
       r = flu_writeall(
         "var/spool/dis/exe_%s.json", exid,
         "{"
-          "execute:"
+          "point: execute\n"
+          "tree:"
             "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
           "exid: %s\n"
           "payload: {\n"
