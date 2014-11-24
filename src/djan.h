@@ -129,6 +129,10 @@ char *fdja_str(fdja_value *v);
  */
 char *fdja_src(fdja_value *v);
 
+/* Like fdja_src(), but skips the initial " or ' if present.
+ */
+char *fdja_srk(fdja_value *v);
+
 /* Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.

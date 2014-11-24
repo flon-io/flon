@@ -158,7 +158,7 @@ static void handle(fdja_value *msg)
   fdja_value *node = NULL;
 
   fdja_value *point = fdja_l(msg, "point");
-  char *spoint = point ? fdja_src(point) : '?'; if (*spoint == '"') ++spoint;
+  char *spoint = point ? fdja_srk(point) : '?';
 
   char a = 'x';
   if (*spoint == 'r') a = 'r'; // receive

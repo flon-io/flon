@@ -916,6 +916,14 @@ char *fdja_src(fdja_value *v)
   return v->source + v->soff;
 }
 
+char *fdja_srk(fdja_value *v)
+{
+  if (v->type == 's' || v->type == 'q')
+    return v->source + v->soff + 1;
+
+  return v->source + v->soff;
+}
+
 long long fdja_to_int(fdja_value *v)
 {
   if (v->type == 't') return 1;
