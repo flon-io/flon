@@ -395,17 +395,33 @@ fdja_value *fdja_dparse(char *input)
   return fdja_parse(strdup(input));
 }
 
-fdja_value *fdja_parse_f(const char *path, ...)
+static fdja_value *fdja_do_parse(
+  FILE *f, const char *path, va_list ap, char mode)
 {
-  va_list ap; va_start(ap, path);
-  char *s = flu_vreadall(path, ap);
-  va_end(ap);
+  char *s = f ? flu_freadall(f) : flu_vreadall(path, ap);
 
   if (s == NULL) return NULL;
 
-  fdja_value *v = fdja_parse(s);
+  fdja_value *v = NULL;
+  if (mode == 'o') v = fdja_parse_obj(s);
+  else if (mode == 'r') v = fdja_parse_radial(s);
+  else v = fdja_parse(s);
 
   if (v == NULL) free(s);
+
+  return v;
+}
+
+fdja_value *fdja_fparse(FILE *f)
+{
+  return fdja_do_parse(f, NULL, NULL, 'j');
+}
+
+fdja_value *fdja_parse_f(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *v = fdja_do_parse(NULL, path, ap, 'j');
+  va_end(ap);
 
   return v;
 }
@@ -580,17 +596,16 @@ fdja_value *fdja_dparse_radial(char *input)
   return fdja_parse_radial(strdup(input));
 }
 
+fdja_value *fdja_fparse_radial(FILE *f)
+{
+  return fdja_do_parse(f, NULL, NULL, 'r');
+}
+
 fdja_value *fdja_parse_radial_f(const char *path, ...)
 {
   va_list ap; va_start(ap, path);
-  char *s = flu_vreadall(path, ap);
+  fdja_value *v = fdja_do_parse(NULL, path, ap, 'r');
   va_end(ap);
-
-  if (s == NULL) return NULL;
-
-  fdja_value *v = fdja_parse_radial(s);
-
-  if (v == NULL) free(s);
 
   return v;
 }
@@ -622,17 +637,16 @@ fdja_value *fdja_dparse_obj(char *input)
   return fdja_parse_obj(strdup(input));
 }
 
+fdja_value *fdja_fparse_obj(FILE *f)
+{
+  return fdja_do_parse(f, NULL, NULL, 'o');
+}
+
 fdja_value *fdja_parse_obj_f(const char *path, ...)
 {
   va_list ap; va_start(ap, path);
-  char *s = flu_vreadall(path, ap);
+  fdja_value *v = fdja_do_parse(NULL, path, ap, 'o');
   va_end(ap);
-
-  if (s == NULL) return NULL;
-
-  fdja_value *v = fdja_parse_obj(s);
-
-  if (v == NULL) free(s);
 
   return v;
 }

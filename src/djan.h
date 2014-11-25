@@ -54,6 +54,7 @@ typedef struct fdja_value {
 
 fdja_value *fdja_parse(char *input);
 fdja_value *fdja_dparse(char *input);
+fdja_value *fdja_fparse(FILE *f);
 fdja_value *fdja_parse_f(const char *path, ...);
 
 fdja_value *fdja_v(const char *format, ...);
@@ -70,10 +71,12 @@ fdja_value *fdja_sym(char *s);
 
 fdja_value *fdja_parse_radial(char *input);
 fdja_value *fdja_dparse_radial(char *input);
+fdja_value *fdja_fparse_radial(FILE *f);
 fdja_value *fdja_parse_radial_f(const char *path, ...);
 
 fdja_value *fdja_parse_obj(char *input);
 fdja_value *fdja_dparse_obj(char *input);
+fdja_value *fdja_fparse_obj(FILE *f);
 fdja_value *fdja_parse_obj_f(const char *path, ...);
 
 /* Parses a 'conf' object (surrounding {} optional).
