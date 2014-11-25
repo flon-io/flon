@@ -24,7 +24,7 @@ context "flon and errors"
   }
   after each
   {
-    if (exid) free(exid);
+    free(exid);
     if (result) fdja_free(result);
   }
 
@@ -42,15 +42,15 @@ context "flon and errors"
 
       result = hlp_wait(exid, "failed", "0", 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      puts(fdja_todc(result));
+      //puts(fdja_todc(result));
 
       fdja_value *v = hlp_read_run_json(exid);
       //puts(fdja_todc(v));
 
-      expect(fdja_ls(v, "nodes.0.status", NULL) ===f "error");
+      expect(fdja_ls(v, "nodes.0.status", NULL) ===f "failed");
       fdja_free(v);
     }
   }

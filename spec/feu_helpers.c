@@ -159,7 +159,6 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 
   for (size_t i = 0; i < maxsec * 10; ++i) // approx...
   {
-    printf("pre-sleep\n");
     flu_msleep(100);
 
     //printf("."); fflush(stdout);
@@ -175,8 +174,10 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
     char *ss = strdup(lf ? lf + 1 : s);
     //printf("hlp_wait() ? %s", ss);
     fdja_value *v = fdja_parse(ss);
-    printf("v: %p\n", v);
     free(s);
+    free(path);
+
+    if (v == NULL) continue;
 
     fdja_value *point = fdja_l(v, "point");
     //printf("action: >%s<, src >%s<\n", action, fdja_src(point));

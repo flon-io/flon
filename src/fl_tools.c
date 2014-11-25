@@ -84,7 +84,7 @@ void flon_pp_execution(const char *exid)
       if (v)
       {
         v->sowner = 0;
-        char *s = fdja_todc(v); puts(s); free(s);
+        flu_putf(fdja_todc(v));
         fdja_free(v); }
       else { puts(line); }
     }
@@ -96,7 +96,7 @@ void flon_pp_execution(const char *exid)
   puts("\n## run.json\n#");
   fdja_value *v = fdja_parse_f("%s/run.json", path);
   if (v) {
-    char *s = fdja_todc(v); puts(s); free(s);
+    flu_putf(fdja_todc(v));
     fdja_free(v);
   }
   else

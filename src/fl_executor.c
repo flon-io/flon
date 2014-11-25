@@ -244,7 +244,7 @@ static void handle_order(char order, fdja_value *msg)
   }
   else // error, 'r' or '?'
   {
-    // TODO: set node status to "failed"
+    fdja_set(node, "status", fdja_v("failed"));
     flon_queue_msg("failed", nid, parent_nid, fdja_l(msg, "payload", NULL));
   }
 
@@ -261,7 +261,7 @@ _over:
 static void handle_event(char event, fdja_value *msg)
 {
   //printf("event: '%c'\n", event);
-  flu_putf(fdja_todc(msg));
+  //flu_putf(fdja_todc(msg));
 
   do_log(msg);
 }
