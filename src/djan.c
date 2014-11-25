@@ -61,6 +61,8 @@ static fdja_value *fdja_value_malloc(
 
 void fdja_value_free(fdja_value *v)
 {
+  if (v == NULL) return; // like free()
+
   if (v->key != NULL) free(v->key);
   if (v->sowner == 1 && v->source != NULL) free(v->source);
 
