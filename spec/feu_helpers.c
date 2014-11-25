@@ -148,8 +148,10 @@ void hlp_launch(char *exid, char *flow, char *payload)
   free(fep);
 }
 
-fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec)
+fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 {
+  size_t la = strlen(action);
+
   char *fep = flon_exid_path(exid);
   if (nid == NULL) nid = "0";
 
@@ -157,23 +159,28 @@ fdja_value *hlp_wait(char *exid, char action, char *nid, int maxsec)
 
   for (size_t i = 0; i < maxsec * 10; ++i) // approx...
   {
+    printf("pre-sleep\n");
     flu_msleep(100);
 
     //printf("."); fflush(stdout);
 
-    if (flu_fstat("var/archive/%s/msgs.log", fep) != 'f') continue;
+    char *path = flu_sprintf("var/archive/%s/msgs.log", fep);
+    if (flu_fstat(path) != 'f') { free(path); path = NULL; }
+    if ( ! path) path = flu_sprintf("var/run/%s/msgs.log", fep);
+    if (flu_fstat(path) != 'f') { free(path); continue; }
 
-    char *s = flu_readall("var/archive/%s/msgs.log", fep);
+    char *s = flu_readall(path);
     *(strrchr(s, '}') + 1) = '\0';
     char *lf = strrchr(s, '\n');
     char *ss = strdup(lf ? lf + 1 : s);
     //printf("hlp_wait() ? %s", ss);
     fdja_value *v = fdja_parse(ss);
+    printf("v: %p\n", v);
     free(s);
 
     fdja_value *point = fdja_l(v, "point");
-    char a = '?'; if (point) a = *fdja_src(point) == 'r' ? 'r' : 'x';
-    if (action != a) { fdja_free(v); continue; }
+    //printf("action: >%s<, src >%s<\n", action, fdja_src(point));
+    if (strncmp(action, fdja_src(point), la) != 0) { fdja_free(v); continue; }
 
     char *n = fdja_lsd(v, "nid", "0");
     if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }

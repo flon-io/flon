@@ -39,7 +39,7 @@ context "instruction:"
 //        "",
 //        "{}");
 //
-//      result = hlp_wait(exid, 'r', "0", 3);
+//      result = hlp_wait(exid, "receive", "0", 3);
 //
 //      //flon_prettyprint(exid);
 //

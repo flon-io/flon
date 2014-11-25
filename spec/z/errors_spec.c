@@ -40,8 +40,7 @@ context "flon and errors"
         "",
         "{ hello: unknown }");
 
-      result = hlp_wait(exid, 'r', "0", 3);
-        // TODO: wait for "error" event
+      result = hlp_wait(exid, "failed", "0", 3);
 
       flon_pp_execution(exid);
 

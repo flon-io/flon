@@ -42,7 +42,7 @@ context "instruction:"
         "",
         "{ hello: world }");
 
-      result = hlp_wait(exid, 'r', "0", 2);
+      result = hlp_wait(exid, "receive", "0", 2);
 
       //flon_pp_execution(exid);
 
@@ -70,7 +70,7 @@ context "instruction:"
         "",
         "{ hello: emptiness }");
 
-      result = hlp_wait(exid, 'r', "0", 10);
+      result = hlp_wait(exid, "receive", "0", 10);
 
       //flon_prettyprint(exid);
 

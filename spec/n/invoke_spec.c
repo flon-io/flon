@@ -40,7 +40,7 @@ context "instruction:"
         "",
         "{ hello: invoke }");
 
-      result = hlp_wait(exid, 'r', "0", 2);
+      result = hlp_wait(exid, "receive", "0", 2);
 
       //flon_pp_execution(exid);
       //hlp_cat_inv_log(exid);

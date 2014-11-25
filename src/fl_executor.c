@@ -83,7 +83,10 @@ void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
 {
   fgaj_i("%s %s from %s", type, nid, from_nid);
 
-  fdja_value *msg = fdja_v("{ point: %s, nid: '%s' }", type, nid);
+  fdja_value *msg = fdja_v("{ point: %s }", type);
+
+  if (nid) fdja_set(msg, "nid", fdja_s(nid));
+  else fdja_set(msg, "nid", fdja_v("null"));
 
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
   fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
@@ -145,7 +148,7 @@ static void do_log(fdja_value *msg)
   fflush(msgs_log);
 }
 
-static void handle(fdja_value *msg)
+static void handle_order(char order, fdja_value *msg)
 {
   //fgaj_i("%s", fdja_tod(msg));
   //flu_putf(fdja_todc(msg));
@@ -158,10 +161,12 @@ static void handle(fdja_value *msg)
   fdja_value *node = NULL;
 
   fdja_value *point = fdja_l(msg, "point");
-  char *spoint = point ? fdja_srk(point) : "?";
+  char *spoint = point ? fdja_srk(point) : "";
 
-  char a = 'x';
+  char a = '?';
   if (*spoint == 'r') a = 'r'; // receive
+  else if (*spoint == 'e') a = 'x'; // execute
+  else return; // failed, launched, terminated...
 
   fgaj_i("a: %c", a);
 
@@ -196,6 +201,7 @@ static void handle(fdja_value *msg)
 
   // v, k, r
 
+
   if (r == 'v') // over
   {
     if (a == 'x')
@@ -204,16 +210,15 @@ static void handle(fdja_value *msg)
     }
     else // (a == 'r')
     {
-      char *parent_nid = flon_node_parent_nid(nid);
-      //if ( ! parent_nid) parent_nid = strdup("0");
+      free(parent_nid);
+      parent_nid = flon_node_parent_nid(nid);
 
-      fgaj_i("parent_nid: %s", parent_nid);
+      //fgaj_i("parent_nid: %s", parent_nid);
 
       if (parent_nid)
       {
         flon_queue_msg(
           "receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
-        free(parent_nid);
       }
       else
       {
@@ -237,10 +242,10 @@ static void handle(fdja_value *msg)
   {
     // TODO
   }
-  else // error, 'r'?
+  else // error, 'r' or '?'
   {
-    // TODO
-    fgaj_w("ERROR!!!!!!!!!!!!!!!!!!!!!!!");
+    // TODO: set node status to "failed"
+    flon_queue_msg("failed", nid, parent_nid, fdja_l(msg, "payload", NULL));
   }
 
   move_to_processed(msg);
@@ -248,9 +253,17 @@ static void handle(fdja_value *msg)
 
 _over:
 
-  if (nid) free(nid);
-  if (parent_nid) free(parent_nid);
-  if (instruction) free(instruction);
+  free(nid);
+  free(parent_nid);
+  free(instruction);
+}
+
+static void handle_event(char event, fdja_value *msg)
+{
+  //printf("event: '%c'\n", event);
+  flu_putf(fdja_todc(msg));
+
+  do_log(msg);
 }
 
 static void load_execution(const char *exid)
@@ -406,8 +419,13 @@ static void execute()
       //fgaj_i(fdja_tod(j));
       //fgaj_i(fdja_to_djan(j, 0));
 
-      if (fdja_l(j, "point"))
-        handle(j);
+      fdja_value *point = fdja_l(j, "point");
+      char p = point ? *fdja_srk(point) : 0;
+
+      if (p == 'e' || p == 'r') // execute or receive
+        handle_order(p, j);
+      else if (p)
+        handle_event(p, j);
       else
         reject("no 'point' key", NULL, j);
 
