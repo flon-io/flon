@@ -45,5 +45,8 @@ int flon_conf_is(const char *key, const char *val);
 
 char *flon_conf_uid();
 
+fdja_value *flon_try_parse(char mode, const char *path, ...);
+int flon_lock_write(fdja_value *v, const char *path, ...);
+
 #endif // FL_COMMON_H
 

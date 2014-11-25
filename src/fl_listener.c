@@ -35,6 +35,7 @@
 #include "shervin.h"
 #include "shv_protected.h"
 #include "fl_ids.h"
+#include "fl_common.h"
 #include "fl_listener.h"
 
 
@@ -119,7 +120,7 @@ static void in_handle_launch(
 
   fdja_set(v, "exid", fdja_s(i));
 
-  if (fdja_to_json_f(v, "var/spool/dis/exe_%s.json", i) != 1)
+  if (flon_lock_write(v, "var/spool/dis/exe_%s.json", i) != 1)
   {
     res->status_code = 500;
     fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));

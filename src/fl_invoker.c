@@ -31,6 +31,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/file.h>
 
 #include "flutil.h"
 #include "gajeta.h"
@@ -71,7 +72,7 @@ int flon_invoke(const char *path)
     fgaj_r("couldn't read inv msg at %s", path); return 1;
   }
 
-  fgaj_d("inv_: %s", fdja_to_djan(inv, 0));
+  //fgaj_d("inv_: %s", fdja_to_djan(inv, 0));
 
   fdja_value *invocation = fdja_lookup(inv, "tree");
 
@@ -169,6 +170,11 @@ int flon_invoke(const char *path)
       fgaj_r("failed to reopen child stdout to %s", ret);
       return 127;
     }
+    if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
+    {
+      fgaj_r("couldn't lock %s", ret);
+      return 127;
+    }
 
     if (chdir(invoker_path) != 0)
     {
@@ -179,6 +185,8 @@ int flon_invoke(const char *path)
     fflush(stderr);
 
     r = execl("/bin/sh", "", "-c", cmd, NULL);
+
+    // excl has returned... fail zone...
 
     fgaj_r("execl failed (%i)", r);
 

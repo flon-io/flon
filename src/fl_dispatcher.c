@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -238,9 +239,10 @@ static short receive_ret(const char *fname)
   if (i == NULL) { r = -1; goto _over; }
     // TODO: move that check upstream
 
-  j = fdja_parse_f("var/spool/dis/%s", fname);
+  j = flon_try_parse('o', "var/spool/dis/%s", fname);
 
   //flu_putf(fdja_todc(j));
+  //if (j == NULL) fgaj_i("NULL: %s", fname);
 
   if (j == NULL) { r = 1; goto _over; }
     // the file's mtime will get examined
@@ -250,6 +252,8 @@ static short receive_ret(const char *fname)
 
   //flu_putf(fdja_todc(i));
 
+    // no need to lock file when writing, since we're in the reader...
+    //
   int rr = fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4);
   if (rr != 1) { r = -1; goto _over; }
 
@@ -284,7 +288,7 @@ _over:
 //
 short flon_dispatch(const char *fname)
 {
-  fgaj_i(fname);
+  //fgaj_i(fname);
 
   int r = 1;
   fdja_value *msg = NULL;
@@ -299,9 +303,9 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "rcv_", 4) != 0
   ) { r = -1; goto _over; }
 
-  msg = fdja_parse_f("var/spool/dis/%s", fname);
+  msg = flon_try_parse('o', "var/spool/dis/%s", fname);
 
-  if (msg == NULL) { r = 1; goto _over; }
+  if (msg == NULL) { r = (errno == 0) ? -1 : 1; goto _over; }
 
   // TODO reroute?
 
@@ -337,7 +341,7 @@ _over:
 
   if (msg) fdja_value_free(msg);
 
-  fgaj_d("r: %i", r);
+  //fgaj_d("r: %i", r);
 
   return r;
 }

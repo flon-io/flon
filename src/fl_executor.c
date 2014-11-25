@@ -147,8 +147,8 @@ static void do_log(fdja_value *msg)
 
 static void handle(fdja_value *msg)
 {
-  fgaj_i("%s", fdja_tod(msg));
-  //flu_putf(fdja_to_djan(msg, 0));
+  //fgaj_i("%s", fdja_tod(msg));
+  //flu_putf(fdja_todc(msg));
 
   char *nid = NULL;
   char *parent_nid = NULL;
@@ -158,7 +158,7 @@ static void handle(fdja_value *msg)
   fdja_value *node = NULL;
 
   fdja_value *point = fdja_l(msg, "point");
-  char *spoint = point ? fdja_srk(point) : '?';
+  char *spoint = point ? fdja_srk(point) : "?";
 
   char a = 'x';
   if (*spoint == 'r') a = 'r'; // receive
@@ -237,9 +237,10 @@ static void handle(fdja_value *msg)
   {
     // TODO
   }
-  else // error
+  else // error, 'r'?
   {
     // TODO
+    fgaj_w("ERROR!!!!!!!!!!!!!!!!!!!!!!!");
   }
 
   move_to_processed(msg);
@@ -403,7 +404,7 @@ static void execute()
       if (j == NULL) break;
 
       //fgaj_i(fdja_tod(j));
-      fgaj_i(fdja_to_djan(j, 0));
+      //fgaj_i(fdja_to_djan(j, 0));
 
       if (fdja_l(j, "point"))
         handle(j);

@@ -70,12 +70,12 @@ fdja_value *flon_node_tree_c(const char *nid)
 char *flon_node_parent_nid(const char *nid)
 {
   fdja_value *node = flon_node(nid);
-  if (node) fgaj_d("for: %s", fdja_to_djan(node, 0));
+  //if (node) fgaj_d("for: %s", fdja_to_djan(node, 0));
   if (node == NULL) return NULL;
 
   fdja_value *pnid = fdja_l(node, "parent");
   if (pnid && pnid->type == '0') return NULL;
-  if (pnid) return fdja_string(pnid);
+  if (pnid) return fdja_to_string(pnid);
 
   fdja_value *v = flon_parse_nid(nid);
   if (v == NULL) return NULL;

@@ -25,9 +25,11 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <errno.h>
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 
 #include "flutil.h"
 #include "djan.h"
@@ -162,5 +164,59 @@ void flon_setup_logging(const char *context)
   //      NO, use fgaj_cong_get()->x = y;
 
   fgaj_conf_get()->out = stderr;
+}
+
+fdja_value *flon_try_parse(char mode, const char *path, ...)
+{
+  errno = 0;
+
+  va_list ap; va_start(ap, path);
+  char *fname = flu_svprintf(path, ap);
+  va_end(ap);
+
+  fdja_value *r = NULL;
+
+  FILE *f = fopen(fname, "r");
+
+  if (f == NULL) goto _over;
+  if (flock(fileno(f), LOCK_NB | LOCK_EX) != 0) goto _over;
+
+  if (mode == 'o') r = fdja_fparse_obj(f);
+  else if (mode == 'r') r = fdja_fparse_radial(f);
+  else r = fdja_fparse(f);
+
+_over:
+
+  //perror("flon_try_parse()");
+
+  fclose(f);
+  free(fname);
+
+  return r;
+}
+
+int flon_lock_write(fdja_value *v, const char *path, ...)
+{
+  int r = 0; // failed, for now
+
+  va_list ap; va_start(ap, path);
+  char *fname = flu_svprintf(path, ap);
+  va_end(ap);
+
+  FILE *f = fopen(fname, "w");
+
+  if (f == NULL) goto _over;
+  if (flock(fileno(f), LOCK_NB | LOCK_EX) != 0) goto _over;
+
+  fdja_to_j(f, v, 0);
+
+  r = 1; // success
+
+_over:
+
+  fclose(f);
+  free(fname);
+
+  return r;
 }
 

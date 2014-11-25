@@ -51,7 +51,7 @@ static void print_usage()
 
 static size_t scan_dir()
 {
-  fgaj_d(".");
+  //fgaj_d(".");
 
   size_t dispatched = 0;
 
@@ -76,16 +76,6 @@ static size_t scan_dir()
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
-  //fgaj_i(".");
-
-  //scan_dir();
-  //flu_do_msleep(200);
-  //scan_dir();
-  //flu_do_msleep(850);
-  //scan_dir();
-    //
-    // delta: 3s179 for a sequence of 3 stamps
-
   size_t count = 0;
   long long start = flu_gets('s');
   int sleep = 0;

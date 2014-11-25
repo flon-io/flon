@@ -32,6 +32,7 @@
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"
+#include "fl_common.h"
 #include "fl_executor.h"
 
 
@@ -72,22 +73,28 @@ static ssize_t child_count(fdja_value *node)
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
 {
+  char r = 'k'; // for now, ok
+
+  char *exid = execution_id;
   char *nid = fdja_ls(node, "nid", NULL);
 
-  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", execution_id, nid);
+  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
   fdja_psetv(inv, "point", "invoke");
   fdja_set(inv, "tree", fdja_lc(exe, "tree"));
   fdja_set(inv, "payload", fdja_lc(exe, "payload"));
 
   fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
 
-  fdja_to_json_f(inv, "var/spool/dis/inv_%s-%s.json", execution_id, nid);
-  fgaj_i("wrote inv file to var/spool/dis/inv_%s-%s.json", execution_id, nid);
+  if (flon_lock_write(inv, "var/spool/dis/inv_%s-%s.json", exid, nid) != 1)
+  {
+    fgaj_r("failed writing to var/spool/dis/inv_%s-%s.json", exid, nid);
+    r = 'r';
+  }
 
   fdja_free(inv);
   free(nid);
 
-  return 'k'; // ok
+  return r;
 }
 
 static char rcv_invoke(fdja_value *node, fdja_value *rcv)
@@ -101,7 +108,8 @@ static char rcv_invoke(fdja_value *node, fdja_value *rcv)
 
 static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 {
-  char r = 'k'; // ok
+  char r = 'k'; // ok, for now
+
   char *nid = fdja_ls(node, "nid", NULL);
   char *from = fdja_ls(rcv, "from", NULL);
 
