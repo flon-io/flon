@@ -142,6 +142,10 @@ char *fdja_srk(fdja_value *v);
  */
 char *fdja_to_string(fdja_value *v);
 
+/* Returns a string representation of the value.
+ */
+char *fdja_value_to_s(fdja_value *v);
+
 long long fdja_to_int(fdja_value *v);
 long double fdja_to_double(fdja_value *v);
 

@@ -940,6 +940,26 @@ char *fdja_srk(fdja_value *v)
   return v->source + v->soff;
 }
 
+char *fdja_value_to_s(fdja_value *v)
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbputc(b, '(');
+  if (v->key) flu_sbprintf(b, "\"%s\": ", v->key);
+  flu_sbprintf(b, "'%c' ", v->type);
+  flu_sbprintf(b, "%so ", v->sowner ? "" : "!");
+  flu_sbprintf(b, "o%zu ", v->soff);
+  flu_sbprintf(b, "l%zu ", v->slen);
+  flu_sbprintf(b, "s%p ", v->sibling);
+  flu_sbprintf(b, "c%p ", v->child);
+  char *s = strndup(v->source + v->soff, v->slen < 40 ? v->slen : 40);
+  flu_sbprintf(b, ">%s<", s);
+  free(s);
+  flu_sbputc(b, ')');
+
+  return flu_sbuffer_to_string(b);
+}
+
 long long fdja_to_int(fdja_value *v)
 {
   if (v->type == 't') return 1;
