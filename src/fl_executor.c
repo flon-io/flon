@@ -209,13 +209,7 @@ static void handle_order(char order, fdja_value *msg)
   //
   // perform instruction
 
-  fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
-
-  flon_instruction *inst = flon_instruction_lookup(a, instruction);
-
-  char r = '?'; if (inst) r = inst(node, msg);
-
-  fgaj_i("%c_%s --> %c", a, instruction, r);
+  char r = flon_call_instruction(a, instruction, node, msg);
 
   //
   // v, k, r, handle instruction result

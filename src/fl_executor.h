@@ -53,7 +53,8 @@ typedef char flon_instruction(fdja_value *, fdja_value *);
   // 'v' over, reply to parent
   // 'r' error
 
-flon_instruction *flon_instruction_lookup(char dir, const char *name);
+char flon_call_instruction(
+  char dir, const char *name, fdja_value *node, fdja_value *msg);
 
 
 //

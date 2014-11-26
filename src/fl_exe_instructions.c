@@ -69,6 +69,13 @@ static ssize_t child_count(fdja_value *node)
   return fdja_size(cs);
 }
 
+// ... some defaults
+
+static char rcv_(fdja_value *node, fdja_value *rcv)
+{
+  return 'v'; // over
+}
+
 // *** INVOKE
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
@@ -97,12 +104,12 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   return r;
 }
 
-static char rcv_invoke(fdja_value *node, fdja_value *rcv)
-{
-  // TODO enventually remove payload.args?
-
-  return 'v'; // over
-}
+//static char rcv_invoke(fdja_value *node, fdja_value *rcv)
+//{
+//  // TODO enventually remove payload.args?
+//
+//  return 'v'; // over
+//}
 
 // *** SEQUENCE
 
@@ -148,8 +155,15 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
   return 'v'; // over
 }
 
-static char rcv_trace(fdja_value *node, fdja_value *exe)
+// *** SET
+
+static char exe_set(fdja_value *node, fdja_value *exe)
 {
+  //if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
+  //fdja_value *trace = fdja_l(pl, "trace");
+  //fdja_push(trace, fdja_lc(exe, "tree.1._0"));
+  //fdja_value *pl = fdja_l(exe, "payload");
+
   return 'v'; // over
 }
 
@@ -162,26 +176,36 @@ typedef struct {
 } flon_ni;
 
 static flon_ni *instructions[] = {
-  &(flon_ni){ "invoke", exe_invoke, rcv_invoke },
+  &(flon_ni){ "invoke", exe_invoke, rcv_ },
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence },
-  &(flon_ni){ "trace", exe_trace, rcv_trace },
+  &(flon_ni){ "trace", exe_trace, rcv_ },
+  &(flon_ni){ "set", exe_set, rcv_ },
   NULL
 };
 
-// function lookup
+// call instruction
 
-flon_instruction *flon_instruction_lookup(char dir, const char *name)
+char flon_call_instruction(
+  char dir, const char *name, fdja_value *node, fdja_value *msg)
 {
-  for (size_t i = 0; instructions[i] != NULL; ++i)
+  fgaj_d("dir: %c, inst: %s", dir, name);
+
+  flon_instruction *i = NULL;
+
+  for (size_t j = 0; ; ++j)
   {
-    flon_ni *ni = instructions[i];
-    if (strcmp(ni->name, name) == 0) return dir == 'r' ? ni->rcv : ni->exe;
+    flon_ni *ni = instructions[j];
+
+    if (ni == NULL) break;
+    if (strcmp(ni->name, name) != 0) continue;
+
+    i = (dir == 'r') ? ni->rcv : ni->exe;
+    break;
   }
 
-  fgaj_e(
-    "don't know how to %s \"%s\"",
-    dir == 'r' ? "receive" : "execute", name);
+  //fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
+  //fgaj_i("%c_%s --> %c", a, instruction, r);
 
-  return NULL;
+  return i ? i(node, msg) : '?';
 }
 
