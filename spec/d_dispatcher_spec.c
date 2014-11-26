@@ -61,10 +61,10 @@ context "flon-dispatcher"
           "}\n"
         "}", exid
       );
-      expect(r == 1);
+      expect(r i== 1);
 
       r = flon_dispatch(name);
-      expect(r == 2);
+      expect(r i== 2);
 
       sleep(1);
 
@@ -94,10 +94,10 @@ context "flon-dispatcher"
       path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(path, "NADA");
-      expect(r == 1);
+      expect(r i== 1);
 
       r = flon_dispatch(name);
-      expect(r == 1);
+      expect(r i== 1);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", exid);
       expect(s === "NADA");

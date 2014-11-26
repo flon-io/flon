@@ -335,11 +335,13 @@ _over:
 
       // TODO: make those 2 thresholds configurable (flu_parse_t())
     }
+
+    free(path);
   }
 
   if (r == -1) r = reject(fname);
 
-  if (msg) fdja_value_free(msg);
+  fdja_free(msg);
 
   //fgaj_d("r: %i", r);
 

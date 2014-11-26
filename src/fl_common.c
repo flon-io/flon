@@ -189,7 +189,7 @@ _over:
 
   //perror("flon_try_parse()");
 
-  fclose(f);
+  if (f) fclose(f);
   free(fname);
 
   return r;
