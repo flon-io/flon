@@ -258,7 +258,6 @@ static void handle_order(char order, fdja_value *msg)
   }
   else // error, 'r' or '?'
   {
-    fdja_set(node, "status", fdja_v("failed"));
     flon_queue_msg("failed", nid, parent_nid, payload);
   }
 

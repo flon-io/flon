@@ -21,11 +21,13 @@ context "flon and errors"
   {
     char *exid = NULL;
     fdja_value *result = NULL;
+    fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
-    if (result) fdja_free(result);
+    fdja_free(result);
+    fdja_free(v);
   }
 
   describe "an execution with an unknown instruction"
@@ -47,11 +49,13 @@ context "flon and errors"
       expect(result != NULL);
       //puts(fdja_todc(result));
 
-      fdja_value *v = hlp_read_run_json(exid);
-      //puts(fdja_todc(v));
+      v = hlp_read_run_json(exid);
+      //flu_putf(fdja_todc(v));
 
-      expect(fdja_ls(v, "nodes.0.status", NULL) ===f "failed");
-      fdja_free(v);
+      expect(fdja_ls(v, "nodes.0.status", NULL) ===f ""
+        "failed");
+      expect(fdja_ls(v, "nodes.0.note", NULL) ===f ""
+        "unknown instruction 'nada'");
     }
   }
 }

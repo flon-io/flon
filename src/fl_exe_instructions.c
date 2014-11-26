@@ -185,6 +185,15 @@ static flon_ni *instructions[] = {
 
 // call instruction
 
+static char unknown_instruction(
+  char dir, const char *name, fdja_value *node, fdja_value *msg)
+{
+  fdja_set(node, "status", fdja_s("failed"));
+  fdja_set(node, "note", fdja_s("unknown instruction '%s'", name));
+
+  return '?';
+}
+
 char flon_call_instruction(
   char dir, const char *name, fdja_value *node, fdja_value *msg)
 {
@@ -203,9 +212,12 @@ char flon_call_instruction(
     break;
   }
 
-  //fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
-  //fgaj_i("%c_%s --> %c", a, instruction, r);
+  if (i == NULL) return unknown_instruction(dir, name, node, msg);
 
-  return i ? i(node, msg) : '?';
+  char r = i(node, msg);
+
+  // TODO: handle other kind of errors
+
+  return r;
 }
 
