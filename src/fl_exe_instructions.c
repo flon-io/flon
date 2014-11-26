@@ -55,12 +55,12 @@ static fdja_value *tree(fdja_value *node)
   return r;
 }
 
-//static fdja_value *payload(fdja_value *exe, int clone)
-//{
-//  fdja_value *pl = fdja_l(exe, "payload");
-//  if (pl == NULL) return NULL;
-//  return clone ? fdja_clone(pl) : pl;
-//}
+static fdja_value *payload(fdja_value *msg, int clone)
+{
+  fdja_value *pl = fdja_l(msg, "payload");
+  if (pl == NULL) return NULL;
+  return clone ? fdja_clone(pl) : pl;
+}
 
 static ssize_t child_count(fdja_value *node)
 {
@@ -92,7 +92,7 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
   fdja_psetv(inv, "point", "invoke");
   fdja_set(inv, "tree", fdja_lc(exe, "tree"));
-  fdja_set(inv, "payload", fdja_lc(exe, "payload"));
+  fdja_set(inv, "payload", payload(exe, 1));
 
   fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
 
@@ -129,7 +129,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
   fdja_value *t = next ? flon_node_tree(next) : NULL;
 
   if (t)
-    flon_queue_msg("execute", next, nid, fdja_l(rcv, "payload", NULL));
+    flon_queue_msg("execute", next, nid, payload(rcv, 0));
   else
     r = 'v'; // over
 
@@ -151,7 +151,7 @@ static char exe_sequence(fdja_value *node, fdja_value *exe)
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
-  fdja_value *pl = fdja_l(exe, "payload");
+  fdja_value *pl = payload(exe, 0);
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
   fdja_push(trace, fdja_lc(exe, "tree.1._0"));
@@ -166,7 +166,7 @@ static char exe_set(fdja_value *node, fdja_value *exe)
   //if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   //fdja_value *trace = fdja_l(pl, "trace");
   //fdja_push(trace, fdja_lc(exe, "tree.1._0"));
-  //fdja_value *pl = fdja_l(exe, "payload");
+  //fdja_value *pl = payload(exe, 0);
 
   return 'v'; // over
 }
