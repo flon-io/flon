@@ -101,7 +101,8 @@ static fdja_value *create_node(
   const char *instruction,
   fdja_value *tree)
 {
-  fdja_value *node = fdja_v("{ nid: '%s', inst: %s }", nid, instruction);
+  fdja_value *node = fdja_v("{ inst: %s }", instruction);
+  fdja_set(node, "nid", fdja_s(nid));
 
   fdja_set(
     node, "created", fdja_sym(flu_tstamp(NULL, 1, 'u')));
@@ -113,6 +114,11 @@ static fdja_value *create_node(
   fdja_pset(execution, "nodes.%s", nid, node);
 
   //puts(fdja_todc(execution));
+
+  if (parent_nid == NULL && strcmp(nid, "0") == 0)
+  {
+    flon_queue_msg("launched", nid, NULL, NULL);
+  }
 
   return node;
 }
@@ -155,7 +161,6 @@ static void handle_order(char order, fdja_value *msg)
 
   char *nid = NULL;
   char *parent_nid = NULL;
-  //fdja_value *action = NULL;
   fdja_value *tree = NULL;
   char *instruction = NULL;
   fdja_value *node = NULL;
@@ -173,7 +178,6 @@ static void handle_order(char order, fdja_value *msg)
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);
 
-  //if (a == 'x') { tree = action; }
   tree = fdja_l(msg, "tree");
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
   if (tree == NULL) { reject("node not found", NULL, msg); goto _over; }
@@ -192,15 +196,12 @@ static void handle_order(char order, fdja_value *msg)
   fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
 
   flon_instruction *inst = flon_instruction_lookup(a, instruction);
-  //if (inst == NULL) goto _over;
 
-  char r = '?'; // error
-  if (inst) r = inst(node, msg);
+  char r = '?'; if (inst) r = inst(node, msg);
 
   fgaj_i("%c_%s --> %c", a, instruction, r);
 
   // v, k, r
-
 
   if (r == 'v') // over
   {

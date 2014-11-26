@@ -148,6 +148,50 @@ void hlp_launch(char *exid, char *flow, char *payload)
   free(fep);
 }
 
+static fdja_value *scan(char *s, char *action, char *nid)
+{
+  fdja_value *r = NULL;
+  char *ss = NULL;
+  char *n = NULL;
+
+  size_t la = strlen(action);
+
+  *(strrchr(s, '}') + 1) = '\0';
+  char *lf = strrchr(s, '\n');
+  ss = strdup(lf ? lf + 1 : s);
+
+  //printf("scan() >%s<\n", ss);
+
+  fdja_value *v = fdja_parse(ss);
+
+  if (v == NULL) goto _prev;
+
+  fdja_value *point = fdja_l(v, "point");
+  if (strncmp(action, fdja_src(point), la) != 0) goto _prev;
+
+  if (nid)
+  {
+    n = fdja_lsd(v, "nid", "0");
+    if (n && strcmp(n, nid) != 0) goto _prev;
+  }
+
+  r = v;
+
+_prev: // because we read from the end line to the first line
+
+  free(n);
+
+  if (r) return r;
+
+  fdja_free(v);
+  if (v == NULL) free(ss);
+
+  if (lf == NULL) return NULL;
+
+  *lf = 0;
+  return scan(s, action, nid);
+}
+
 fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 {
   size_t la = strlen(action);
@@ -161,40 +205,17 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
   {
     flu_msleep(100);
 
-    //printf("."); fflush(stdout);
-
     char *path = flu_sprintf("var/archive/%s/msgs.log", fep);
     if (flu_fstat(path) != 'f') { free(path); path = NULL; }
     if ( ! path) path = flu_sprintf("var/run/%s/msgs.log", fep);
     if (flu_fstat(path) != 'f') { free(path); continue; }
 
     char *s = flu_readall(path);
-    *(strrchr(s, '}') + 1) = '\0';
-    char *lf = strrchr(s, '\n');
-    char *ss = strdup(lf ? lf + 1 : s);
-    //printf("hlp_wait() ? %s", ss);
-    fdja_value *v = fdja_parse(ss);
+    r = scan(s, action, nid);
     free(s);
     free(path);
 
-    if (v == NULL) continue;
-
-    fdja_value *point = fdja_l(v, "point");
-    //printf("action: >%s<, src >%s<\n", action, fdja_src(point));
-    if (strncmp(action, fdja_src(point), la) != 0) { fdja_free(v); continue; }
-
-    char *n = fdja_lsd(v, "nid", "0");
-    if (n && strcmp(n, nid) != 0) { if (n) free(n); continue; }
-
-    //printf("hlp_wait() YES %s", ss);
-
-    free(n);
-
-    //puts(""); fflush(stdout);
-
-    r = v;
-
-    break;
+    if (r) break;
   }
 
   free(fep);
