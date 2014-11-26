@@ -98,14 +98,14 @@ vsi: is
 	#valgrind ./is # an invoker may lose as much mem as he wants...
 	valgrind --leak-check=full -v ./is
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
-vsl: ls
+vsl: ls invoker executor dispatcher
 	#valgrind --leak-check=full -v ./ls
 	valgrind --leak-check=full -v --num-callers=50 ./ls
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
-vsn: ns
+vsn: ns invoker executor dispatcher
 	valgrind --leak-check=full -v ./ns
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
-vsz: zs
+vsz: zs invoker executor dispatcher
 	valgrind --leak-check=full -v ./zs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
 
