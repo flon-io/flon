@@ -194,8 +194,6 @@ _prev: // because we read from the end line to the first line
 
 fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 {
-  size_t la = strlen(action);
-
   char *fep = flon_exid_path(exid);
   if (nid == NULL) nid = "0";
 
