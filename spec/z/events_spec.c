@@ -11,7 +11,7 @@
 #include "feu_helpers.h"
 
 
-context "flon and errors"
+context "flon and events"
 {
   before all
   {
@@ -26,7 +26,7 @@ context "flon and errors"
   after each
   {
     free(exid);
-    if (result) fdja_free(result);
+    fdja_free(result);
   }
 
   describe "an execution"
