@@ -161,23 +161,25 @@ context "fl_id"
     }
   }
 
-  describe "flon_stamp()"
-  {
-    it "time-stamps the given object"
-    {
-      fdja_value *v = fdja_v("{ question: \"what time is it?\" }");
-
-      flon_stamp(v, "seen");
-
-      //puts(fdja_todc(v));
-      expect(fdja_ls(v, "question", NULL) ===f "what time is it?");
-      expect(fdja_l(v, "seen") != NULL);
-      expect(fdja_l(v, "seen.u") != NULL);
-      expect(fdja_l(v, "seen.l") != NULL);
-
-      fdja_free(v);
-    }
-  }
+  // in the fridge for now
+  //
+//  describe "flon_stamp()"
+//  {
+//    it "time-stamps the given object"
+//    {
+//      fdja_value *v = fdja_v("{ question: \"what time is it?\" }");
+//
+//      flon_stamp(v, "seen");
+//
+//      //puts(fdja_todc(v));
+//      expect(fdja_ls(v, "question", NULL) ===f "what time is it?");
+//      expect(fdja_l(v, "seen") != NULL);
+//      expect(fdja_l(v, "seen.u") != NULL);
+//      expect(fdja_l(v, "seen.l") != NULL);
+//
+//      fdja_free(v);
+//    }
+//  }
 
   describe "flon_nid_depth()"
   {

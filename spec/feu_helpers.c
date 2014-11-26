@@ -158,9 +158,9 @@ static fdja_value *scan(char *s, char *action, char *nid)
 
   *(strrchr(s, '}') + 1) = '\0';
   char *lf = strrchr(s, '\n');
-  ss = strdup(lf ? lf + 1 : s);
+  ss = strdup(strchr(lf ? lf : s, '{'));
 
-  //printf("scan() >%s<\n", ss);
+  //printf("scan() >>%s<\n", ss);
 
   fdja_value *v = fdja_parse(ss);
 

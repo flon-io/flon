@@ -147,11 +147,18 @@ static void do_log(fdja_value *msg)
 {
   if (msgs_log == NULL) return;
 
-  flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
+  //flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
 
+  char *now = fgaj_now();
+
+  fputs(now, msgs_log);
+  fputc(' ', msgs_log);
   fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
   fputc('\n', msgs_log);
+
   fflush(msgs_log);
+
+  free(now);
 }
 
 static void handle_order(char order, fdja_value *msg)

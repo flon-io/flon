@@ -291,7 +291,7 @@ context "flon-listener (vs executions)"
       //puts("---8<---");
       //puts(s);
       //puts("--->8---");
-      expect(s >== ",point:execute,tree:[invoke,{_0:null},[]],");
+      expect(s >== "{point:execute,tree:[invoke,{_0:null},[]],");
 
       free(s);
     }
