@@ -79,7 +79,8 @@ static void reject(const char *reason, const char *fname, fdja_value *j)
   if (own_fname) free((char *)fname);
 }
 
-void flon_queue_msg(char *type, char *nid, char *from_nid, fdja_value *payload)
+void flon_queue_msg(
+  const char *type, const char *nid, const char *from_nid, fdja_value *payload)
 {
   fgaj_i("%s %s from %s", type, nid, from_nid);
 
@@ -210,23 +211,22 @@ static void handle_order(char order, fdja_value *msg)
 
   // v, k, r
 
+  fdja_value *payload = fdja_l(msg, "payload");
+
   if (r == 'v') // over
   {
     if (a == 'x')
     {
-      flon_queue_msg("receive", nid, nid, fdja_l(msg, "payload", NULL));
+      flon_queue_msg("receive", nid, nid, payload);
     }
     else // (a == 'r')
     {
       free(parent_nid);
       parent_nid = flon_node_parent_nid(nid);
 
-      //fgaj_i("parent_nid: %s", parent_nid);
-
       if (parent_nid)
       {
-        flon_queue_msg(
-          "receive", parent_nid, nid, fdja_l(msg, "payload", NULL));
+        flon_queue_msg("receive", parent_nid, nid, payload);
       }
       else
       {
@@ -241,6 +241,11 @@ static void handle_order(char order, fdja_value *msg)
         free(tsc);
         free(tsp);
           // TODO: package most of that into a flu_ method
+
+        if (strcmp(nid, "0") == 0)
+          flon_queue_msg("terminated", nid, NULL, payload);
+        else
+          flon_queue_msg("ceased", nid, NULL, payload);
       }
 
       fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
@@ -253,7 +258,7 @@ static void handle_order(char order, fdja_value *msg)
   else // error, 'r' or '?'
   {
     fdja_set(node, "status", fdja_v("failed"));
-    flon_queue_msg("failed", nid, parent_nid, fdja_l(msg, "payload", NULL));
+    flon_queue_msg("failed", nid, parent_nid, payload);
   }
 
   move_to_processed(msg);

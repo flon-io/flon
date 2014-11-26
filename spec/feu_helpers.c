@@ -211,6 +211,7 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
     if (flu_fstat(path) != 'f') { free(path); continue; }
 
     char *s = flu_readall(path);
+    //printf("hlp_wait() -------------------------------------- -\n");
     r = scan(s, action, nid);
     free(s);
     free(path);

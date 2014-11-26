@@ -5,6 +5,7 @@
 // Tue Nov 25 21:43:41 JST 2014
 //
 
+#include "flutil.h"
 #include "fl_ids.h"
 #include "fl_tools.h"
 #include "feu_helpers.h"
@@ -45,7 +46,7 @@ context "flon and errors"
       //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      flu_putf(fdja_todc(result));
     }
 
     it "emits a 'terminated' event when it stops" // OR 'ceased' ?????????
@@ -63,7 +64,12 @@ context "flon and errors"
       //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ls(result, "point", NULL) ===f ""
+        "terminated");
+      expect(fdja_lj(result, "payload") ===F fdja_vj(""
+        "{ hello: terminated, trace: [ x ] }"));
     }
   }
 }
