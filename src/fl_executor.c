@@ -116,11 +116,6 @@ static fdja_value *create_node(
 
   //puts(fdja_todc(execution));
 
-  if (parent_nid == NULL && strcmp(nid, "0") == 0)
-  {
-    flon_queue_msg("launched", nid, NULL, NULL);
-  }
-
   return node;
 }
 
@@ -192,14 +187,27 @@ static void handle_order(char order, fdja_value *msg)
 
   instruction = fdja_ls(tree, "0", NULL);
 
+  fdja_value *payload = fdja_l(msg, "payload");
+
   //fgaj_i("%c _ %s", a, instruction);
 
   if (a == 'x')
+  {
     node = create_node(nid, parent_nid, instruction, tree);
-  else // a == 'r'
-    node = fdja_l(execution, "nodes.%s", nid);
+    fdja_set(msg, "tree", fdja_clone(tree));
 
-  if (a == 'x') fdja_set(msg, "tree", fdja_clone(tree));
+    if (parent_nid == NULL && strcmp(nid, "0") == 0)
+    {
+      flon_queue_msg("launched", nid, NULL, payload);
+    }
+  }
+  else // a == 'r'
+  {
+    node = fdja_l(execution, "nodes.%s", nid);
+  }
+
+  //
+  // perform instruction
 
   fgaj_d("%-*s%s %c %s", flon_nid_depth(nid) * 2, "", nid, a, instruction);
 
@@ -209,9 +217,8 @@ static void handle_order(char order, fdja_value *msg)
 
   fgaj_i("%c_%s --> %c", a, instruction, r);
 
-  // v, k, r
-
-  fdja_value *payload = fdja_l(msg, "payload");
+  //
+  // v, k, r, handle instruction result
 
   if (r == 'v') // over
   {

@@ -46,7 +46,12 @@ context "flon and errors"
       //flon_pp_execution(exid);
 
       expect(result != NULL);
-      flu_putf(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ls(result, "point", NULL) ===f ""
+        "launched");
+      expect(fdja_lj(result, "payload") ===F fdja_vj(""
+        "{ hello: launched }"));
     }
 
     it "emits a 'terminated' event when it stops" // OR 'ceased' ?????????
@@ -55,7 +60,7 @@ context "flon and errors"
 
       hlp_launch(
         exid,
-        "trace x\n"
+        "trace y\n"
         "",
         "{ hello: terminated }");
 
@@ -69,7 +74,7 @@ context "flon and errors"
       expect(fdja_ls(result, "point", NULL) ===f ""
         "terminated");
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ hello: terminated, trace: [ x ] }"));
+        "{ hello: terminated, trace: [ y ] }"));
     }
   }
 }
