@@ -25,16 +25,10 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <time.h>
 #include <stdlib.h>
-//#include <string.h>
-//#include <sys/time.h>
+#include <string.h>
 
 #include "flutil.h"
-//#include "mnemo.h"
-//#include "aabro.h"
-//#include "djan.h"
-//#include "fl_common.h"
 #include "fl_ids.h"
 #include "fl_tools.h"
 
@@ -80,7 +74,9 @@ void flon_pp_execution(const char *exid)
 
     while (getline(&line, &len, f) != -1)
     {
-      v = fdja_parse(line);
+      char *br = strchr(line, '{');
+      fwrite(line, sizeof(char), br - line, stdout);
+      v = fdja_parse(br);
       if (v)
       {
         v->sowner = 0;
