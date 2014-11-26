@@ -45,17 +45,14 @@ void flon_queue_msg(
 //
 // instructions
 
-typedef char flon_instruction(fdja_value *, fdja_value *);
-  //
-  // return codes:
-  //
-  // 'k' ok
-  // 'v' over, reply to parent
-  // 'r' error
-
 char flon_call_instruction(
   char dir, const char *name, fdja_value *node, fdja_value *msg);
-
+    //
+    // return codes:
+    //
+    // 'k' ok
+    // 'v' over, reply to parent
+    // 'r' error
 
 //
 // nodes

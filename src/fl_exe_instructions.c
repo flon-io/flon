@@ -38,6 +38,10 @@
 
 // TODO: include parsable documentation on top of each "instruction"
 
+// declarations
+
+typedef char flon_instruction(fdja_value *, fdja_value *);
+
 // helpers
 
 static fdja_value *tree(fdja_value *node)
@@ -216,7 +220,7 @@ char flon_call_instruction(
 
   char r = i(node, msg);
 
-  // TODO: handle other kind of errors
+  // TODO: handle other kinds of errors
 
   return r;
 }
