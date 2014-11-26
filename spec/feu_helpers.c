@@ -154,9 +154,10 @@ static fdja_value *scan(char *s, char *action, char *nid)
   char *ss = NULL;
   char *n = NULL;
 
-  size_t la = strlen(action);
+  char *br = strrchr(s, '}');
+  if (br == NULL) return NULL;
 
-  *(strrchr(s, '}') + 1) = '\0';
+  *(br + 1) = 0;
   char *lf = strrchr(s, '\n');
   ss = strdup(strchr(lf ? lf : s, '{'));
 
@@ -166,6 +167,7 @@ static fdja_value *scan(char *s, char *action, char *nid)
 
   if (v == NULL) goto _prev;
 
+  size_t la = strlen(action);
   fdja_value *point = fdja_l(v, "point");
   if (strncmp(action, fdja_src(point), la) != 0) goto _prev;
 
