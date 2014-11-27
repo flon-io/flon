@@ -11,7 +11,7 @@
 #include "feu_helpers.h"
 
 
-context "flon and $(dollar)"
+context "flon and $(dollar):"
 {
   before all
   {
