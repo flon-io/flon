@@ -68,66 +68,62 @@ ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
 
 sc: cs
-	@echo "\n--- sc --common------------------------------------------------\n"
+	@echo "\n--- make sc --common-------------------------------------------\n"
 	time ./cs
 sd: ds invoker executor
-	@echo "\n--- sd --dispatcher--------------------------------------------\n"
+	@echo "\n--- make sd --dispatcher---------------------------------------\n"
 	time ./ds
 sx: xs
-	@echo "\n--- sx --executor----------------------------------------------\n"
+	@echo "\n--- make sx --executor-----------------------------------------\n"
 	time ./xs
 si: is
-	@echo "\n--- si --invoker-----------------------------------------------\n"
+	@echo "\n--- make si --invoker------------------------------------------\n"
 	time ./is
 sl: ls invoker executor dispatcher
-	@echo "\n--- sl --listener----------------------------------------------\n"
+	@echo "\n--- make sl --listener-----------------------------------------\n"
 	time ./ls
 sn: ns invoker executor dispatcher
-	@echo "\n--- sn --instructions------------------------------------------\n"
+	@echo "\n--- make sn --instructions-------------------------------------\n"
 	time ./ns
 sz: zs invoker executor dispatcher
-	@echo "\n--- sz --a-to-z------------------------------------------------\n"
+	@echo "\n--- make sz --a-to-z-------------------------------------------\n"
 	time ./zs
 
 sum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst
-	@echo "\n--- sc --common------------------------------------------------"
-	./cs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sd --dispatcher--------------------------------------------"
-	./ds 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sx --executor----------------------------------------------"
-	./xs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- si --invoker-----------------------------------------------"
-	./is 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sl --listener----------------------------------------------"
-	./ls 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sn --instructions------------------------------------------"
-	./ns 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sz --a-to-z------------------------------------------------"
-	./zs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sc --common-------------------------------------------"
+	@./cs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sd --dispatcher---------------------------------------"
+	@./ds 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sx --executor-----------------------------------------"
+	@./xs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make si --invoker------------------------------------------"
+	@./is 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sl --listener-----------------------------------------"
+	@./ls 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sn --instructions-------------------------------------"
+	@./ns 2>&1 | . ./spec_filter.sh
+	@echo "\n--- make sz --a-to-z-------------------------------------------"
+	@./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
-tsum:
-	time -p $(MAKE) sum
 
 vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst
-	@echo "\n--- sc --common------------------------------------------------"
+	@echo "\n--- make vsc --common------------------------------------------"
 	$(VAL) ./cs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sd --dispatcher--------------------------------------------"
+	@echo "\n--- make vsd --dispatcher--------------------------------------"
 	$(VAL) ./ds 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sx --executor----------------------------------------------"
+	@echo "\n--- make vsx --executor----------------------------------------"
 	$(VAL) ./xs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- si --invoker-----------------------------------------------"
+	@echo "\n--- make vsi --invoker-----------------------------------------"
 	$(VAL) ./is 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sl --listener----------------------------------------------"
+	@echo "\n--- make vsl --listener----------------------------------------"
 	$(VAL) ./ls 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sn --instructions------------------------------------------"
+	@echo "\n--- make vsn --instructions------------------------------------"
 	$(VAL) ./ns 2>&1 | . ./spec_filter.sh
-	@echo "\n--- sz --a-to-z------------------------------------------------"
+	@echo "\n--- make vsz --a-to-z------------------------------------------"
 	$(VAL) ./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
-tvsum:
-	time -p $(MAKE) vsum
 
 vsc: cs
 	$(VAL) ./cs
@@ -175,8 +171,10 @@ scope: flon-scope
 fflon: flon-flon
 	mv flon-flon ../tst/bin/
 
-spec: tsum
-vspec: tvsum
+spec:
+	time -p $(MAKE) sum
+vspec:
+	time -p $(MAKE) vsum
 
 .PHONY: clean
 
