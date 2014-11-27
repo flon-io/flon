@@ -78,6 +78,9 @@ context "instruction:"
       expect(fdja_lj(result, "payload.args1") ===F fdja_vj(""
         "{ _0: copyargs, _1: [ sr, lh, em ], swiss: sr, luft: lh }"));
     }
+
+    it "sets the node as 'failed' if the invoker doesn't exist"
+      // TODO: don't hurry with this one...
   }
 }
 
