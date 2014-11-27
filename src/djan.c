@@ -1396,3 +1396,16 @@ _over:
   return r;
 }
 
+void fdja_replace(fdja_value *old, fdja_value *new)
+{
+  old->type = new->type;
+
+  if (old->sowner) free(old->source);
+  old->source = new->source;
+  old->sowner = new->sowner; new->sowner = 0;
+  old->soff = new->soff;
+  old->slen = new->slen;
+
+  fdja_free(new);
+}
+

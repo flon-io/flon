@@ -207,5 +207,12 @@ fdja_value *fdja_pset(fdja_value *start, const char *path, ...);
  */
 fdja_value *fdja_psetv(fdja_value *start, const char *path, ...);
 
+/* Empties old and replaces its content with the content of new.
+ * The key and the child/sibling links of old are preserved.
+ *
+ * New gets discarded (freed) in the end.
+ */
+void fdja_replace(fdja_value *old, fdja_value *new);
+
 #endif // FLON_DJAN_H
 
