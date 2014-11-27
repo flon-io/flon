@@ -37,11 +37,11 @@ void flon_pp_execution(const char *exid)
 {
   char *fep = flon_exid_path(exid);
 
-  char *path = flu_sprintf("var/run/%s", fep);
+  char *path = flu_sprintf("var/archive/%s", fep);
   if (flu_fstat(path) == '\0')
   {
     free(path);
-    path = flu_sprintf("var/archive/%s", fep);
+    path = flu_sprintf("var/run/%s", fep);
   }
 
   printf("\n# %s/\n", path);
