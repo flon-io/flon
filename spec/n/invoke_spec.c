@@ -55,6 +55,8 @@ context "instruction:"
 
       expect(fdja_ls(result, "payload.hello", NULL) ===f "invoke");
       expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
+
+      expect(fdja_l(result, "payload.args") == NULL);
     }
 
     it "expands its arguments"
@@ -74,6 +76,8 @@ context "instruction:"
 
       expect(result != NULL);
       puts(fdja_todc(result));
+
+      expect(fdja_l(result, "payload.args") == NULL);
 
       expect(fdja_lj(result, "payload.args1") ===F fdja_vj(""
         "{ _0: copyargs, _1: [ sr, lh, em ], swiss: sr, luft: lh }"));

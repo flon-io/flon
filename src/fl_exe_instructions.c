@@ -192,12 +192,12 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   return r;
 }
 
-//static char rcv_invoke(fdja_value *node, fdja_value *rcv)
-//{
-//  // TODO enventually remove payload.args?
-//
-//  return 'v'; // over
-//}
+static char rcv_invoke(fdja_value *node, fdja_value *rcv)
+{
+  fdja_pset(rcv, "payload.args", NULL);
+
+  return 'v'; // over
+}
 
 
 //
@@ -286,7 +286,7 @@ typedef struct {
 } flon_ni;
 
 static flon_ni *instructions[] = {
-  &(flon_ni){ "invoke", exe_invoke, rcv_ },
+  &(flon_ni){ "invoke", exe_invoke, rcv_invoke },
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence },
   &(flon_ni){ "trace", exe_trace, rcv_ },
   &(flon_ni){ "set", exe_set, rcv_ },
