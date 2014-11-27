@@ -47,9 +47,9 @@ void flon_pp_execution(const char *exid)
   printf("\n# %s/\n", path);
 
   puts("\n## trees\n#");
-  flu_system("tree %s", path);
-  flu_system("tree var/spool/");
-  flu_system("tree var/log/%s", fep);
+  flu_system("tree -h %s", path);
+  flu_system("tree -h var/spool/ -P *%s*", exid);
+  flu_system("tree -h var/log/%s", fep);
 
   free(fep);
 

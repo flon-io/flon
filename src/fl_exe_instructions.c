@@ -126,7 +126,12 @@ static void expand(
     if (strstr(s, "$("))
     {
       char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
-      fdja_replace(v, fdja_v(ss));
+
+      fdja_value *vv = fdja_v(ss);
+      if (vv == NULL) vv = fdja_s(ss);
+
+      fdja_replace(v, vv);
+
       free(ss);
     }
     free(s);

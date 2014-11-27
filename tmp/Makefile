@@ -130,7 +130,7 @@ vsc: cs
 vsd: ds executor invoker
 	$(VAL) ./ds
 vsx: xs
-	$(VAL) ./xs
+	$(VAL) --num-callers=50 ./xs
 vsi: is
 	$(VAL) ./is
 vsl: ls invoker executor dispatcher

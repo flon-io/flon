@@ -43,7 +43,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 2);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
