@@ -25,8 +25,8 @@ context "instruction:"
   }
   after each
   {
-    if (exid) free(exid);
-    if (result) fdja_free(result);
+    free(exid);
+    fdja_free(result);
   }
 
   describe "invoke"
@@ -65,17 +65,17 @@ context "instruction:"
 
       hlp_launch(
         exid,
-        "invoke copyargs $(air), swiss: $(air.1), luft: $(air.2)\n"
+        "invoke copyargs $(air), swiss: $(air.0), luft: $(air.1)\n"
         "",
         "{ air: [ sr, lh, em ] }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
       //flu_putf(hlp_last_msg(exid));
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      puts(fdja_todc(result));
+      //puts(fdja_todc(result));
 
       expect(fdja_l(result, "payload.args") == NULL);
 

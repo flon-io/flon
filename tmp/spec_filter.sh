@@ -20,5 +20,7 @@ while read LINE; do
   echo $LINE | grep -E "[1-9][0-9]* failures" || :
   echo $LINE | grep -E "^make spec L=[0-9]+" || :
   echo $LINE | grep -E "definitely lost: [1-9][0-9]* bytes" || :
+
+  echo $LINE | grep -E -i "segmentation fault" || :
 done
 

@@ -126,7 +126,7 @@ static void expand(
     if (strstr(s, "$("))
     {
       char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
-      fdja_replace(v, fdja_s(ss));
+      fdja_replace(v, fdja_v(ss));
       free(ss);
     }
     free(s);
@@ -178,7 +178,9 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   fdja_set(inv, "tree", fdja_lc(exe, "tree"));
   fdja_set(inv, "payload", payload(exe, 1));
 
-  fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
+  fdja_value *args = fdja_lc(exe, "tree.1");
+  expand(args, node, exe);
+  fdja_pset(inv, "payload.args", args);
 
   if (flon_lock_write(inv, "var/spool/dis/inv_%s-%s.json", exid, nid) != 1)
   {
