@@ -55,7 +55,14 @@ void flon_pp_execution(const char *exid)
 
   puts("\n## execution log\n#");
   printf("[0;32m"); fflush(stdout);
-  flu_system("cat %s/exe.log", path);
+  flu_system(
+    "cat %s/exe.log", path);
+  printf("[0;0m");
+
+  puts("\n## invocation log\n#");
+  printf("[0;32m"); fflush(stdout);
+  flu_system(
+    "find var/log/%s -name \"inv_%s-*.log\" | xargs tail -n +1", fep, exid);
   printf("[0;0m");
 
   puts("\n## msgs log\n#");
