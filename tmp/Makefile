@@ -5,6 +5,10 @@ LDLIBS=
 CC=c99
 VPATH=../src
 
+VAL=valgrind --leak-check=full -v
+#VAL=valgrind --leak-check=full -v --num-callers=50
+#VAL=valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v
+
 RODZO=$(shell which rodzo)
 ifeq ($(RODZO),)
   RODZO=../../rodzo/bin/rodzo
@@ -105,29 +109,41 @@ sum: cs ds is ls ns xs zs invoker executor dispatcher
 tsum:
 	time -p $(MAKE) sum
 
+VPAT="( examples|definitely lost: [1-9][0-9]* bytes)"
+vsum: cs ds is ls ns xs zs invoker executor dispatcher
+	$(MAKE) -C .. ctst
+	@echo "\n--- sc --------------------------------------------------------"
+	$(VAL) ./cs 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sd --------------------------------------------------------"
+	$(VAL) ./ds 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sx --------------------------------------------------------"
+	$(VAL) ./xs 2>&1 | grep -E $(VPAT)
+	@echo "\n--- si --------------------------------------------------------"
+	$(VAL) ./is 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sl --------------------------------------------------------"
+	$(VAL) ./ls 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sn --------------------------------------------------------"
+	$(VAL) ./ns 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sz --------------------------------------------------------"
+	$(VAL) ./zs 2>&1 | grep -E $(VPAT)
+	@echo ""
+tvsum:
+	time -p $(MAKE) vsum
+
 vsc: cs
-	valgrind --leak-check=full -v ./cs
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
+	$(VAL) ./cs
 vsd: ds executor invoker
-	valgrind --leak-check=full -v ./ds
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
+	$(VAL) ./ds
 vsx: xs
-	valgrind --leak-check=full -v ./xs
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
+	$(VAL) ./xs
 vsi: is
-	#valgrind ./is # an invoker may lose as much mem as he wants...
-	valgrind --leak-check=full -v ./is
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./is
+	$(VAL) ./is
 vsl: ls invoker executor dispatcher
-	#valgrind --leak-check=full -v ./ls
-	valgrind --leak-check=full -v --num-callers=50 ./ls
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
+	$(VAL) --num-callers=50 ./ls
 vsn: ns invoker executor dispatcher
-	valgrind --leak-check=full -v ./ns
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
+	$(VAL) ./ns
 vsz: zs invoker executor dispatcher
-	valgrind --leak-check=full -v ./zs
-	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./xs
+	$(VAL) ./zs
 
 ssi: is
 	strace -r ./is
