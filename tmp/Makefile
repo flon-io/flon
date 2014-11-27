@@ -37,12 +37,12 @@ IDEPS=$(DEPS) dollar.o fl_invoker.o
 #
 LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
-cs.c: ../spec/c_*_spec.c
-	$(RODZO) ../spec/c_*_spec.c -o cs.c
-ds.c: ../spec/d_*_spec.c
-	$(RODZO) ../spec/d_*_spec.c -o ds.c
-xs.c: ../spec/x_*_spec.c
-	$(RODZO) ../spec/x_*_spec.c -o xs.c
+cs.c: ../spec/c/*_spec.c
+	$(RODZO) ../spec/c/*_spec.c -o cs.c
+ds.c: ../spec/d/*_spec.c
+	$(RODZO) ../spec/d/*_spec.c -o ds.c
+xs.c: ../spec/x/*_spec.c
+	$(RODZO) ../spec/x/*_spec.c -o xs.c
 is.c: ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
 ls.c: ../spec/l/*_spec.c
