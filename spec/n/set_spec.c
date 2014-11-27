@@ -42,10 +42,10 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 1);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      flu_putf(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
         "{ hello: set, a: 1 }"));
@@ -63,14 +63,16 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 1);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      flu_putf(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
         "{ hello: set, a: 2 }"));
     }
+
+    it "sets via an expanded key"
 
     it "sets a variable"
   }

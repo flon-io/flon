@@ -85,17 +85,17 @@ static ssize_t child_count(fdja_value *node, fdja_value *msg)
   return fdja_size(cs);
 }
 
-//static char extract_prefix(const char *path)
-//{
-//  if (strncmp(path, "f.", 2) == 0) return 'f';
-//  if (strncmp(path, "v.", 2) == 0) return 'v';
-//  if (strncmp(path, "fld.", 4) == 0) return 'f';
-//  if (strncmp(path, "var.", 4) == 0) return 'v';
-//  if (strncmp(path, "field.", 4) == 0) return 'f';
-//  if (strncmp(path, "variable.", 9) == 0) return 'v';
-//  //return *path; // no worky...
-//  return 'F'; // default
-//}
+static char extract_prefix(const char *path)
+{
+  if (strncmp(path, "f.", 2) == 0) return 'f';
+  if (strncmp(path, "v.", 2) == 0) return 'v';
+  if (strncmp(path, "fld.", 4) == 0) return 'f';
+  if (strncmp(path, "var.", 4) == 0) return 'v';
+  if (strncmp(path, "field.", 4) == 0) return 'f';
+  if (strncmp(path, "variable.", 9) == 0) return 'v';
+  //return *path; // no worky...
+  return 'F'; // default
+}
 
 typedef struct { fdja_value *node; fdja_value *msg; } lup;
 
@@ -138,13 +138,16 @@ static void expand(
   //else // do not expand
 }
 
+static fdja_value *attributes(
+  fdja_value *node, fdja_value *msg)
+{
+  return fdja_l(tree(node, msg), "1");
+}
+
 static fdja_value *attribute(
   const char *name, fdja_value *node, fdja_value *msg)
 {
-  fdja_value *t = tree(node, msg);
-  fdja_value *atts = fdja_l(t, "1");
-  fdja_value *att = fdja_lc(atts, name);
-
+  fdja_value *att = fdja_lc(attributes(node, msg), name);
   expand(att, node, msg);
 
   return att;
@@ -252,10 +255,22 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
 
 static char exe_set(fdja_value *node, fdja_value *exe)
 {
-  //if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
-  //fdja_value *trace = fdja_l(pl, "trace");
-  //fdja_push(trace, fdja_lc(exe, "tree.1._0"));
-  //fdja_value *pl = payload(exe, 0);
+  fdja_value *pl = payload(exe, 0);
+
+  for (fdja_value *a = attributes(node, exe)->child; a; a = a->sibling)
+  {
+    fdja_value *a1 = fdja_clone(a); a1->key = strdup(a->key);
+    expand(a1, node, exe);
+
+    char *key = a1->key;
+    char k = extract_prefix(key);
+    if (k == 'f' || k == 'v') key = strchr(key, '.') + 1;
+
+    //fgaj_d("key: >%s<", key);
+
+    if (k == 'f' || k == 'F') fdja_pset(pl, key, a1);
+    //else if (k == 'v') // TODO
+  }
 
   return 'v'; // over
 }
