@@ -114,7 +114,7 @@ void hlp_dispatcher_start()
     nlog("dispatcher started pid: %i...", dispatcher_pid);
 
     //sleep(1);
-    flu_do_msleep(210);
+    flu_do_msleep(700);
   }
 }
 
