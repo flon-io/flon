@@ -149,6 +149,8 @@ int main(int argc, char *argv[])
   //ev_timer_init(&eti, do_something_when_loop_ready_cb, 0., 0.);
   //ev_timer_start(l, &eti);
 
+  // TODO: SIGHUP to reload timers?
+
   // loop
 
   //fgaj_i("about to ev_loop...");
