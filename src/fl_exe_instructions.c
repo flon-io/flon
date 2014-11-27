@@ -31,6 +31,7 @@
 #include "flutil.h"
 #include "djan.h"
 #include "gajeta.h"
+#include "dollar.h"
 #include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_executor.h"
@@ -38,18 +39,29 @@
 
 // TODO: include parsable documentation on top of each "instruction"
 
+
+//
 // declarations
 
 typedef char flon_instruction(fdja_value *, fdja_value *);
 
+
+//
 // helpers
 
-static fdja_value *tree(fdja_value *node)
+static fdja_value *tree(fdja_value *node, fdja_value *msg)
 {
+  fdja_value *r =  NULL;
+
+  if (msg) r = fdja_l(msg, "tree");
+
+  if (r) return r;
+
   char *nid = fdja_ls(node, "nid", NULL);
   if (nid == NULL) return NULL;
 
-  fdja_value *r = flon_node_tree(nid);
+  r = flon_node_tree(nid);
+
   free(nid);
 
   return r;
@@ -62,9 +74,9 @@ static fdja_value *payload(fdja_value *msg, int clone)
   return clone ? fdja_clone(pl) : pl;
 }
 
-static ssize_t child_count(fdja_value *node)
+static ssize_t child_count(fdja_value *node, fdja_value *msg)
 {
-  fdja_value *t = tree(node);
+  fdja_value *t = tree(node, msg);
   if (t == NULL) return -1;
 
   fdja_value *cs = fdja_lookup(t, "2");
@@ -73,6 +85,72 @@ static ssize_t child_count(fdja_value *node)
   return fdja_size(cs);
 }
 
+//static char extract_prefix(const char *path)
+//{
+//  if (strncmp(path, "f.", 2) == 0) return 'f';
+//  if (strncmp(path, "v.", 2) == 0) return 'v';
+//  if (strncmp(path, "fld.", 4) == 0) return 'f';
+//  if (strncmp(path, "var.", 4) == 0) return 'v';
+//  if (strncmp(path, "field.", 4) == 0) return 'f';
+//  if (strncmp(path, "variable.", 9) == 0) return 'v';
+//  //return *path; // no worky...
+//  return 'F'; // default
+//}
+
+typedef struct { fdja_value *node; fdja_value *msg; } lup;
+
+static char *lookup(void *data, const char *path)
+{
+  lup *lu = data;
+
+  fdja_value *pl = payload(lu->msg, 0);
+  fdja_value *v = fdja_l(pl, path);
+
+  if (v == NULL) return strdup("");
+  return fdja_to_string(v);
+}
+
+static void expand(
+  fdja_value *v, fdja_value *node, fdja_value *msg)
+{
+  if (v->key && strstr(v->key, "$("))
+  {
+    char *k = v->key;
+    v->key = fdol_expand(k, &(lup){ node, msg }, lookup);
+    free(k);
+  }
+
+  if (v->type == 's' || v->type == 'q' || v->type == 'y')
+  {
+    char *s = fdja_to_string(v);
+    if (strstr(s, "$("))
+    {
+      char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
+      fdja_replace(v, fdja_s(ss));
+    }
+    free(s);
+  }
+  else if (v->type == 'o' || v->type == 'a')
+  {
+    for (fdja_value *c = v->child; c; c = c->sibling) expand(c, node, msg);
+  }
+  //else // do not expand
+}
+
+static fdja_value *attribute(
+  const char *name, fdja_value *node, fdja_value *msg)
+{
+  fdja_value *t = tree(node, msg);
+  fdja_value *atts = fdja_l(t, "1");
+  fdja_value *att = fdja_lc(atts, name);
+
+  expand(att, node, msg);
+
+  return att;
+}
+
+
+//
 // ... some defaults
 
 static char rcv_(fdja_value *node, fdja_value *rcv)
@@ -80,6 +158,8 @@ static char rcv_(fdja_value *node, fdja_value *rcv)
   return 'v'; // over
 }
 
+
+//
 // *** INVOKE
 
 static char exe_invoke(fdja_value *node, fdja_value *exe)
@@ -115,6 +195,8 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
 //  return 'v'; // over
 //}
 
+
+//
 // *** SEQUENCE
 
 static char rcv_sequence(fdja_value *node, fdja_value *rcv)
@@ -142,23 +224,29 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
 static char exe_sequence(fdja_value *node, fdja_value *exe)
 {
-  //fgaj_d("cc: %zu", child_count(node));
-  if (child_count(node) < 1) return 'v';
+  if (child_count(node, exe) < 1) return 'v';
   return rcv_sequence(node, exe);
 }
 
+
+//
 // *** TRACE
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
   fdja_value *pl = payload(exe, 0);
+
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
-  fdja_push(trace, fdja_lc(exe, "tree.1._0"));
+
+  //fdja_push(trace, fdja_lc(exe, "tree.1._0"));
+  fdja_push(trace, attribute("_0", node, exe));
 
   return 'v'; // over
 }
 
+
+//
 // *** SET
 
 static char exe_set(fdja_value *node, fdja_value *exe)
@@ -171,6 +259,8 @@ static char exe_set(fdja_value *node, fdja_value *exe)
   return 'v'; // over
 }
 
+
+//
 // function table
 
 typedef struct {
@@ -187,6 +277,8 @@ static flon_ni *instructions[] = {
   NULL
 };
 
+
+//
 // call instruction
 
 static char unknown_instruction(

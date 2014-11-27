@@ -195,7 +195,7 @@ static int ptime(char *s, struct tm *tm)
 
 struct timespec *flu_parse_tstamp(char *s, int utc)
 {
-  struct tm tm = {};
+  struct tm tm;
   char *subseconds = NULL;
 
   if (strchr(s, '-'))
