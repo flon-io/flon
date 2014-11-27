@@ -5,6 +5,7 @@
 // Thu Oct 30 12:39:39 JST 2014
 //
 
+#include "flutil.h"
 #include "fl_ids.h"
 #include "fl_tools.h"
 #include "feu_helpers.h"
@@ -66,7 +67,10 @@ context "instruction:"
         "",
         "{ air: [ sr, lh, em ] }");
 
-      result = hlp_wait(exid, "terminated", NULL, 2);
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flu_putf(hlp_last_msg(exid));
+      flon_pp_execution(exid);
 
       expect(result != NULL);
       puts(fdja_todc(result));

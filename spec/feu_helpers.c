@@ -226,6 +226,20 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
   return r;
 }
 
+static char *find_path(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+
+  char *path = flu_sprintf("var/archive/%s", fep);
+  if (flu_fstat(path) == 'd') { free(fep); return path; }
+
+  free(path);
+  path = flu_sprintf("var/run/%s", fep);
+  if (flu_fstat(path) == 'd') { free(fep); return path; }
+
+  return NULL;
+}
+
 fdja_value *hlp_read_run_json(char *exid)
 {
   char *fep = flon_exid_path(exid);
@@ -240,5 +254,14 @@ void hlp_cat_inv_log(char *exid)
   char *fep = flon_exid_path(exid);
   flu_system("find var/log/%s -name \"*.log\" | xargs tail -n +1", fep);
   free(fep);
+}
+
+char *hlp_last_msg(char *exid)
+{
+  char *path = find_path(exid);
+  char *s = flu_pline("tail -1 %s/msgs.log", path);
+  free(path);
+
+  return s;
 }
 
