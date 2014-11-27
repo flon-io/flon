@@ -2,5 +2,5 @@
 # stamp
 
 invoke: "ruby stamp.rb"
-#invoke: "ruby stamp.rb -x ${task.x.y.z}"
+#invoke: "ruby stamp.rb -x $(pl.x.y.z)"
 
