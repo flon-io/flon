@@ -1406,6 +1406,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   old->soff = new->soff;
   old->slen = new->slen;
 
+  fdja_free(old->child); old->child = new->child; new->child = NULL;
+
   fdja_free(new);
 }
 
