@@ -8,6 +8,7 @@
 #include "flutil.h"
 #include "gajeta.h"
 #include "fl_ids.h"
+#include "fl_tools.h"
 #include "fl_common.h"
 #include "fl_executor.h"
 
@@ -57,7 +58,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
       expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
@@ -107,7 +108,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       //puts(flu_readall("var/run/%s.json", exid));
 
@@ -130,7 +131,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       expect(flu_fstat("var/spool/exe/%s-0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/rcv_%s-0.json", exid) == 0);
@@ -166,7 +167,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       //flon_pp_execution(exid);
 
@@ -224,7 +225,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
@@ -274,7 +275,7 @@ context "flon-executor"
 
       r = flon_execute(exid);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
@@ -291,6 +292,35 @@ context "flon-executor"
       expect(fdja_lj(v, "nodes", NULL) ===F fdja_vj("{}"));
 
       fdja_free(v);
+    }
+
+    it "expands dollar notation"
+    {
+      exid = flon_generate_exid("xtest.i");
+      fep = flon_exid_path(exid);
+
+      flu_writeall(
+        "var/spool/exe/exe_%s.json", exid,
+        "{"
+          "point: execute\n"
+          "tree: [ trace, { _0: \"hello $(recipient)\" }, [] ]\n"
+          "exid: %s\n"
+          "payload: {\n"
+            "recipient: world\n"
+          "}\n"
+        "}",
+        exid
+      );
+
+      r = flon_execute(exid);
+
+      expect(r i== 0);
+
+      //flon_pp_execution(exid);
+
+      char *s = flu_pline("tail -1 var/archive/%s/msgs.log", fep);
+
+      expect(s >===f ",trace:[\"hello world\"]");
     }
   }
 }

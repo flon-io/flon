@@ -127,6 +127,7 @@ static void expand(
     {
       char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
       fdja_replace(v, fdja_s(ss));
+      free(ss);
     }
     free(s);
   }
