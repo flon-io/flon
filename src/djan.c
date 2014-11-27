@@ -434,7 +434,11 @@ fdja_value *fdja_v(const char *format, ...)
   char *s = flu_svprintf(format, ap);
   va_end(ap);
 
-  return fdja_parse(s);
+  fdja_value *r = fdja_parse(s);
+
+  if (r == NULL) free(s);
+
+  return r;
 }
 
 char *fdja_vj(const char *format, ...)
