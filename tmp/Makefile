@@ -85,6 +85,26 @@ sz: zs invoker executor dispatcher
 	@echo "\n--- sz --------------------------------------------------------\n"
 	time ./zs
 
+sum: cs ds is ls ns xs zs invoker executor dispatcher
+	$(MAKE) -C .. ctst
+	@echo "\n--- sc --------------------------------------------------------"
+	./cs 2>&1 | grep " examples"
+	@echo "\n--- sd --------------------------------------------------------"
+	./ds 2>&1 | grep " examples"
+	@echo "\n--- sx --------------------------------------------------------"
+	./xs 2>&1 | grep " examples"
+	@echo "\n--- si --------------------------------------------------------"
+	./is 2>&1 | grep " examples"
+	@echo "\n--- sl --------------------------------------------------------"
+	./ls 2>&1 | grep " examples"
+	@echo "\n--- sn --------------------------------------------------------"
+	./ns 2>&1 | grep " examples"
+	@echo "\n--- sz --------------------------------------------------------"
+	./zs 2>&1 | grep " examples"
+	@echo ""
+tsum:
+	time -p $(MAKE) sum
+
 vsc: cs
 	valgrind --leak-check=full -v ./cs
 	#valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v ./cs
