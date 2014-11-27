@@ -46,7 +46,6 @@ context "instruction:"
       //hlp_cat_inv_log(exid);
 
       expect(result != NULL);
-
       //puts(fdja_todc(result));
 
       expect(fdja_ls(result, "point", NULL) ===f "receive");
@@ -55,6 +54,25 @@ context "instruction:"
 
       expect(fdja_ls(result, "payload.hello", NULL) ===f "invoke");
       expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
+    }
+
+    it "expands its arguments"
+    {
+      exid = flon_generate_exid("n.invoke.expand");
+
+      hlp_launch(
+        exid,
+        "invoke copyargs $(air), swiss: $(air.1), luft: $(air.2)\n"
+        "",
+        "{ air: [ sr, lh, em ] }");
+
+      result = hlp_wait(exid, "terminated", NULL, 2);
+
+      expect(result != NULL);
+      puts(fdja_todc(result));
+
+      expect(fdja_lj(result, "payload.args1") ===F fdja_vj(""
+        "{ _0: copyargs, _1: [ sr, lh, em ], swiss: sr, luft: lh }"));
     }
   }
 }
