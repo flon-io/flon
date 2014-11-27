@@ -68,64 +68,63 @@ ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
 
 sc: cs
-	@echo "\n--- sc --------------------------------------------------------\n"
+	@echo "\n--- sc --common------------------------------------------------\n"
 	time ./cs
 sd: ds invoker executor
-	@echo "\n--- sd --------------------------------------------------------\n"
+	@echo "\n--- sd --dispatcher--------------------------------------------\n"
 	time ./ds
 sx: xs
-	@echo "\n--- sx --------------------------------------------------------\n"
+	@echo "\n--- sx --executor----------------------------------------------\n"
 	time ./xs
 si: is
-	@echo "\n--- si --------------------------------------------------------\n"
+	@echo "\n--- si --invoker-----------------------------------------------\n"
 	time ./is
 sl: ls invoker executor dispatcher
-	@echo "\n--- sl --------------------------------------------------------\n"
+	@echo "\n--- sl --listener----------------------------------------------\n"
 	time ./ls
 sn: ns invoker executor dispatcher
-	@echo "\n--- sn --------------------------------------------------------\n"
+	@echo "\n--- sn --instructions------------------------------------------\n"
 	time ./ns
 sz: zs invoker executor dispatcher
-	@echo "\n--- sz --------------------------------------------------------\n"
+	@echo "\n--- sz --a-to-z------------------------------------------------\n"
 	time ./zs
 
 sum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst
-	@echo "\n--- sc --------------------------------------------------------"
-	./cs 2>&1 | grep " examples"
-	@echo "\n--- sd --------------------------------------------------------"
-	./ds 2>&1 | grep " examples"
-	@echo "\n--- sx --------------------------------------------------------"
-	./xs 2>&1 | grep " examples"
-	@echo "\n--- si --------------------------------------------------------"
-	./is 2>&1 | grep " examples"
-	@echo "\n--- sl --------------------------------------------------------"
-	./ls 2>&1 | grep " examples"
-	@echo "\n--- sn --------------------------------------------------------"
-	./ns 2>&1 | grep " examples"
-	@echo "\n--- sz --------------------------------------------------------"
-	./zs 2>&1 | grep " examples"
+	@echo "\n--- sc --common------------------------------------------------"
+	./cs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sd --dispatcher--------------------------------------------"
+	./ds 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sx --executor----------------------------------------------"
+	./xs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- si --invoker-----------------------------------------------"
+	./is 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sl --listener----------------------------------------------"
+	./ls 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sn --instructions------------------------------------------"
+	./ns 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sz --a-to-z------------------------------------------------"
+	./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
 tsum:
 	time -p $(MAKE) sum
 
-VPAT="( examples|definitely lost: [1-9][0-9]* bytes)"
 vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst
-	@echo "\n--- sc --------------------------------------------------------"
-	$(VAL) ./cs 2>&1 | grep -E $(VPAT)
-	@echo "\n--- sd --------------------------------------------------------"
-	$(VAL) ./ds 2>&1 | grep -E $(VPAT)
-	@echo "\n--- sx --------------------------------------------------------"
-	$(VAL) ./xs 2>&1 | grep -E $(VPAT)
-	@echo "\n--- si --------------------------------------------------------"
-	$(VAL) ./is 2>&1 | grep -E $(VPAT)
-	@echo "\n--- sl --------------------------------------------------------"
-	$(VAL) ./ls 2>&1 | grep -E $(VPAT)
-	@echo "\n--- sn --------------------------------------------------------"
-	$(VAL) ./ns 2>&1 | grep -E $(VPAT)
-	@echo "\n--- sz --------------------------------------------------------"
-	$(VAL) ./zs 2>&1 | grep -E $(VPAT)
+	@echo "\n--- sc --common------------------------------------------------"
+	$(VAL) ./cs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sd --dispatcher--------------------------------------------"
+	$(VAL) ./ds 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sx --executor----------------------------------------------"
+	$(VAL) ./xs 2>&1 | . ./spec_filter.sh
+	@echo "\n--- si --invoker-----------------------------------------------"
+	$(VAL) ./is 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sl --listener----------------------------------------------"
+	$(VAL) ./ls 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sn --instructions------------------------------------------"
+	$(VAL) ./ns 2>&1 | . ./spec_filter.sh
+	@echo "\n--- sz --a-to-z------------------------------------------------"
+	$(VAL) ./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
 tvsum:
 	time -p $(MAKE) vsum
@@ -176,10 +175,8 @@ scope: flon-scope
 fflon: flon-flon
 	mv flon-flon ../tst/bin/
 
-spec: sc sd sx si sl sn sz
-s: spec
-vspec: vsc vsd vsx vsi vsl vsn vsz
-vs: vspec
+spec: tsum
+vspec: tvsum
 
 .PHONY: clean
 
