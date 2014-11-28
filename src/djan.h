@@ -96,7 +96,8 @@ enum // flags for fdja_to_djan()
 {
   FDJA_F_COLOR    = 1 << 0, // colour output
   FDJA_F_ONELINE  = 1 << 1, // result will come in one line
-  FDJA_F_COMPACT  = 1 << 2  // outputs [1,2,3] instead of [ 1, 2, 3 ]
+  FDJA_F_COMPACT  = 1 << 2, // outputs [1,2,3] instead of [ 1, 2, 3 ]
+  FDJA_F_OBJ      = 1 << 3  // do not output {} for top object
 };
   // compact implies oneline...
 
@@ -187,6 +188,12 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v);
  * Returns the value just set.
  */
 fdja_value *fdja_set(fdja_value *object, const char *key, ...);
+
+/* Like fdja_set() but assumes keys are in alphabetical order. Will thus
+ * insert its entry right before the first key that is "bigger" than the
+ * inserted key.
+ */
+fdja_value *fdja_oset(fdja_value *object, const char *key, ...);
 
 int fdja_merge(fdja_value *dst, fdja_value *src);
 

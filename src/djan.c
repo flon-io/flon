@@ -780,13 +780,14 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
   char *clearc = cl ? "[0;0m" : "";
 
   char *indent = flu_sprintf("%*s", (ol ? 0 : depth) * 2, "");
+
   char *s = NULL;
 
   fputs(indent, f);
 
   // key (if there is one)
 
-  if (v->key && depth > 0)
+  if (v->key && (depth > 0 || flags & FDJA_F_OBJ))
   {
     fputs(keyc, f);
 
@@ -817,10 +818,12 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
   }
   else if (v->type == 'a' || v->type == 'o')
   {
+    short br = ! (v->type == 'o' && depth == 0 && flags & FDJA_F_OBJ);
+
     if (ol)
     {
       fputs(infrac, f);
-      if (v->type == 'a') fputc('[', f); else fputc('{', f);
+      if (v->type == 'a') fputc('[', f); else if (br) fputc('{', f);
       fputs(clearc, f);
       for (fdja_value *c = v->child; c != NULL; c = c->sibling)
       {
@@ -830,7 +833,7 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
       }
       if ( ! cp && v->child) fputc(' ', f);
       fputs(infrac, f);
-      if (v->type == 'a') fputc(']', f); else fputc('}', f);
+      if (v->type == 'a') fputc(']', f); else if (br) fputc('}', f);
       fputs(clearc, f);
     }
     else
@@ -839,21 +842,32 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
       if (dl < 3 || depth * 2 + dl < 80)
       {
-        char *dd = fdja_to_djan(v, FDJA_F_ONELINE | (flags & FDJA_F_COLOR));
-        fputs(dd, f);
+        char *dd = fdja_to_djan(
+          v,
+          FDJA_F_ONELINE | (flags & FDJA_F_COLOR) | (flags & FDJA_F_COMPACT));
+        if (br)
+        {
+          fputs(dd, f);
+        }
+        else
+        {
+          int off = dd[1] == ' ' ? 2 : 1;
+          fwrite(dd + off, sizeof(char), strlen(dd) - (2 + off), f);
+        }
         free(dd);
       }
       else
       {
         fputs(infrac, f);
-        if (v->type == 'a') fputs("[\n", f); else fputs("{\n", f);
+        if (v->type == 'a') fputs("[\n", f); else if (br) fputs("{\n", f);
         fputs(clearc, f);
         for (fdja_value *c = v->child; c != NULL; c = c->sibling)
         {
-          fdja_to_d(f, c, flags, depth + 1); fputc('\n', f);
+          fdja_to_d(f, c, flags, depth + (br ? 1 : 0)); fputc('\n', f);
         }
         fputs(infrac, f);
-        fputs(indent, f); if (v->type == 'a') fputc(']', f); else fputc('}', f);
+        fputs(indent, f);
+        if (v->type == 'a') fputc(']', f); else if (br) fputc('}', f);
         fputs(clearc, f);
       }
       free(d);
@@ -1231,6 +1245,44 @@ fdja_value *fdja_set(fdja_value *object, const char *key, ...)
   }
 
   free(ok); // free 'original key'
+
+  return val;
+}
+
+fdja_value *fdja_oset(fdja_value *object, const char *key, ...)
+{
+  if (object->type != 'o') return NULL;
+
+  va_list ap; va_start(ap, key);
+  char *k = flu_svprintf(key, ap);
+  fdja_value *val = va_arg(ap, fdja_value *);
+  va_end(ap);
+
+  free(val->key); val->key = k;
+
+  for (fdja_value **link = &object->child; ; link = &(*link)->sibling)
+  {
+    fdja_value *child = *link;
+
+    if (child == NULL) { *link = val; break; }
+
+    int cmp = strcmp(k, child->key);
+
+    if (cmp > 0) continue;
+
+    *link = val;
+
+    if (cmp == 0)
+    {
+      val->sibling = child->sibling;
+      fdja_value_free(child);
+    }
+    else if (cmp < 0)
+    {
+      val->sibling = child;
+    }
+    break;
+  }
 
   return val;
 }
