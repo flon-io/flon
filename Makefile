@@ -18,15 +18,14 @@ upgrade:
 
 ctst:
 	rm -f tst/var/spool/dis/*.json
-	rm -f tst/var/spool/dis/tat/*.json
-	rm -f tst/var/spool/dis/tcron/*.json
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
 	rm -f tst/var/spool/rejected/nada
 	rm -f tst/var/spool/rejected/*.json
-	find tst/var/run -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
-	find tst/var/archive -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
-	find tst/var/log -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
+	find tst/var/spool/tdis/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
+	find tst/var/run/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
+	find tst/var/archive/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
+	find tst/var/log/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
 	rm -f tst/var/run/*.pid
 	rm -f tst/var/log/dispatcher.log
 
