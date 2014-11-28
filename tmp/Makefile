@@ -35,7 +35,7 @@ DEPS=\
   gajeta.o aabro.o djan.o mnemo.o \
   fl_common.o fl_paths.o fl_ids.o fl_tools.o
 #
-DDEPS=$(DEPS) fl_dispatcher.o
+DDEPS=$(DEPS) flu64.o fl_dispatcher.o
 XDEPS=$(DEPS) dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS=$(DEPS) dollar.o fl_invoker.o
 #

@@ -36,6 +36,7 @@
 
 #include "flutil.h"
 #include "flutim.h"
+#include "flu64.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"
@@ -54,11 +55,21 @@ static short schedule(
 
   // write to var/spool/tdis/
 
-    // TODO
+flu_putf(fdja_todc(msg));
+
+  char *at = fdja_ls(msg, "at", NULL);
+  char *cron = fdja_ls(msg, "cron", NULL);
+
   char *type = "at";
-  char *ts = "20141128.223725";
+  char *ts = fdja_ls(msg, "at", NULL);
+  if (ts == NULL) { type = "cron"; ts = fdja_ls(msg, "cron", NULL); }
+
+  if (ts == NULL) { r = -1; goto _over; }
+
+  if (*type == 'c') { char *tss = ts; ts = flu64_encode(ts, -1); free(tss); }
 
   flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
+    // TODO: handle error
 
   char *fn = flu_sprintf("%s-%s-%s", type, ts, fname + 4);
   if (fdja_to_json_f(msg, "var/spool/tdis/%s/%s", fep, fn) != 1)
@@ -66,6 +77,7 @@ static short schedule(
     fgaj_r("failed to write var/spool/tdis/%s/%s", fep, fn);
     goto _over;
   }
+    // TODO: directly write from the source of the msg...
 
   // list in timer index
 
