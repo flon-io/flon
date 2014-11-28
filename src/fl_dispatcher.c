@@ -55,8 +55,6 @@ static short schedule(
 
   // write to var/spool/tdis/
 
-flu_putf(fdja_todc(msg));
-
   char *at = fdja_ls(msg, "at", NULL);
   char *cron = fdja_ls(msg, "cron", NULL);
 
@@ -71,13 +69,13 @@ flu_putf(fdja_todc(msg));
   flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
     // TODO: handle error
 
+    // directly write the source of the msg to file
   char *fn = flu_sprintf("%s-%s-%s", type, ts, fname + 4);
-  if (fdja_to_json_f(msg, "var/spool/tdis/%s/%s", fep, fn) != 1)
+  if (flu_writeall("var/spool/tdis/%s/%s", fep, fn, msg->source) != 1)
   {
     fgaj_r("failed to write var/spool/tdis/%s/%s", fep, fn);
     goto _over;
   }
-    // TODO: directly write from the source of the msg...
 
   // list in timer index
 

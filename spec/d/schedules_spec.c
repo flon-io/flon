@@ -78,6 +78,18 @@ context "flon-dispatcher"
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
 
       expect(flu_fstat("var/spool/tdis/%s", fep) c== 'd');
+
+      char *fn = flu_pline("ls var/spool/tdis/%s", fep);
+      expect(fn ^== "at-20141128.105313-dtest.");
+
+      fdja_value *v = fdja_parse_f("var/spool/tdis/%s/%s", fep, fn);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_ls(v, "point", NULL) ===f "schedule");
+      expect(fdja_ls(v, "at", NULL) ===f "20141128.105313");
+
+      fdja_free(v);
+      free(fn);
     }
 
     it "stores cron schedules"
@@ -114,7 +126,17 @@ context "flon-dispatcher"
       expect(flu_fstat("var/spool/dis/%s", name) c== 0);
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
 
-      expect(flu_fstat("var/spool/tdis/%s", fep) c== 'd');
+      char *fn = flu_pline("ls var/spool/tdis/%s", fep);
+      expect(fn ^== "cron-KiAqICogKiAq-dtest.");
+
+      fdja_value *v = fdja_parse_f("var/spool/tdis/%s/%s", fep, fn);
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_ls(v, "point", NULL) ===f "schedule");
+      expect(fdja_ls(v, "cron", NULL) ===f "* * * * *");
+
+      fdja_free(v);
+      free(fn);
     }
 
     it "rejects schedules missing 'at' or 'cron'"
