@@ -18,6 +18,8 @@ upgrade:
 
 ctst:
 	rm -f tst/var/spool/dis/*.json
+	rm -f tst/var/spool/dis/tat/*.json
+	rm -f tst/var/spool/dis/tcron/*.json
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
 	rm -f tst/var/spool/rejected/nada

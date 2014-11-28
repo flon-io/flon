@@ -33,12 +33,12 @@ context "flon-dispatcher"
   }
   after each
   {
-    if (exid) free(exid);
-    if (fep) free(fep);
-    if (nid) free(nid);
-    if (name) free(name);
-    if (path) free(path);
-    if (s) free(s);
+    free(exid);
+    free(fep);
+    free(nid);
+    free(name);
+    free(path);
+    free(s);
   }
 
   describe "flon_dispatch()"
