@@ -22,5 +22,7 @@ while read LINE; do
   echo $LINE | grep -E "definitely lost: [1-9][0-9]* bytes" || :
 
   echo $LINE | grep -E -i "segmentation fault" || :
+
+  echo $LINE | grep -E ": warning: " || :
 done
 

@@ -67,6 +67,10 @@ ls: $(LDEPS) fl_dispatcher.o l_helpers.o
 ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
 
+s: cs ds xs is ls ns zs
+warn:
+	$(MAKE) clean cs ds xs is ls ns zs  2>&1 | . ./spec_filter.sh
+
 sc: cs
 	@echo "\n--- make sc --common-------------------------------------------\n"
 	time ./cs
