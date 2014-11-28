@@ -143,6 +143,10 @@ context "fl_ids:"
         flon_parse_exid(
           "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json") ===f ""
         "xtest.pn-u0-20141021.0803.kurukuru");
+      expect(
+        flon_parse_exid(
+          "sch_xtest.pn-u0-20141021.0803.karako-0_1_2.json") ===f ""
+        "xtest.pn-u0-20141021.0803.karako");
     }
   }
 

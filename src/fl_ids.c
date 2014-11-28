@@ -104,7 +104,7 @@ static void flon_nid_parser_init()
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
 
   fabr_parser *msg =
-    fabr_n_rex("msg", "(exe_|inv_|rcv_|ret_)");
+    fabr_n_rex("msg", "(exe_|inv_|rcv_|ret_|sch_)");
   fabr_parser *ftype =
     fabr_n_rex("ftype", "\\.json");
 

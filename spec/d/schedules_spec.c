@@ -49,7 +49,10 @@ context "flon-dispatcher"
       fep = flon_exid_path(exid);
       name = flu_sprintf("sch_%s-0_2.json", exid);
 
-      int r = flu_writeall(
+      int r = flu_mkdir_p("var/run/%s/processed", fep, 0755);
+      expect(r i== 0);
+
+      r = flu_writeall(
         "var/spool/dis/%s", name,
         "{"
           "point: schedule\n"
@@ -71,25 +74,10 @@ context "flon-dispatcher"
 
       expect(r i== 2);
 
-      //sleep(1);
+      expect(flu_fstat("var/spool/dis/%s", name) c== 0);
+      expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
 
-      //fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
-      //expect(v != NULL);
-      ////flu_putf(fdja_todc(v));
-      //expect(fdja_l(v, "stamp", NULL) != NULL);
-      //fdja_free(v);
-
-      //s = flu_readall("var/log/%s/inv_%s-0_2.log", fep, exid);
-      ////printf(">>>\n%s<<<\n", s);
-      //expect(s != NULL);
-      //expect(s >== " invoked >ruby stamp.rb<");
-      //expect(s >== " stamp.rb over.");
-
-      //expect(flu_fstat("var/spool/dis/%s", name) == 0);
-
-      //flu_unlink("var/spool/dis/ret_%s-0_2.json", exid);
-      //flu_unlink("var/spool/inv/inv_%s-0_2.json", exid);
-      //flu_unlink("var/log/inv/%s-0_2.txt", exid);
+      expect(flu_fstat("var/spool/tdis/%s", fep) c== 'd');
     }
   }
 }

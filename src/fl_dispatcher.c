@@ -44,6 +44,54 @@
 #include "fl_dispatcher.h"
 
 
+static short schedule(
+  const char *fname, fdja_value *msg)
+{
+  int r = 1; // seen, failed, for now
+
+  char *exid = flon_parse_exid(fname);
+  char *fep = flon_exid_path(exid);
+
+  // write to var/spool/tdis/
+
+    // TODO
+  char *type = "at";
+  char *ts = "20141128.223725";
+
+  flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
+
+  char *fn = flu_sprintf("%s-%s-%s", type, ts, fname + 4);
+  if (fdja_to_json_f(msg, "var/spool/tdis/%s/%s", fep, fn) != 1)
+  {
+    fgaj_r("failed to write var/spool/tdis/%s/%s", fep, fn);
+    goto _over;
+  }
+
+  // list in timer index
+
+  // TODO
+
+  // move to processed/
+
+  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
+
+  if (flu_move("var/spool/dis/%s", fname, "var/%s/%s/processed/", d, fep) != 0)
+  {
+    fgaj_r(
+      "failed to move var/spool/dis/%s to /var/%s/%sprocessed/", fname, d, fep);
+  }
+
+  r = 2; // success
+
+_over:
+
+  free(fn);
+  free(fep);
+  free(exid);
+
+  return r;
+}
+
 static short double_fork(char *ctx, char *logpath, char *arg)
 {
   pid_t i = fork();
@@ -164,12 +212,6 @@ static int executor_not_running(const char *exid)
     // it might be a zombie though...
 
   return 0;
-}
-
-static short schedule(const char *fname, fdja_value *msg)
-{
-  return 1;
-  //return 2;
 }
 
 static short dispatch(const char *fname, fdja_value *j)
