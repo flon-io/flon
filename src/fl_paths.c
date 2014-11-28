@@ -25,17 +25,13 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <time.h>
-//#include <stdlib.h>
+#include <stdlib.h>
 #include <string.h>
-//#include <sys/time.h>
+#include <dirent.h>
 
-//#include "flutil.h"
-//#include "mnemo.h"
-//#include "aabro.h"
+#include "flutil.h"
 #include "djan.h"
-//#include "fl_common.h"
-//#include "fl_ids.h"
+#include "fl_ids.h"
 
 
 char *flon_nid_path(fdja_value *nid)
@@ -68,6 +64,44 @@ char *flon_exid_path(const char *s)
 
   char *r = flon_nid_path(n);
   fdja_free(n);
+
+  return r;
+}
+
+static void find(const char *path, short depth, flu_list *fnames)
+{
+  DIR *d = opendir(path);
+  if (d == NULL) return;
+
+  struct dirent *de;
+  while ((de = readdir(d)) != NULL)
+  {
+    if (*de->d_name == '.') continue;
+
+    if (depth < 3)
+    {
+      if (de->d_type != 4) continue;
+
+      char *p = flu_path("%s/%s", path, de->d_name);
+      find(p, depth + 1, fnames);
+      free(p);
+    }
+    else
+    {
+      if (de->d_type != 8) continue;
+
+      flu_list_add(fnames, flu_path("%s/%s", path, de->d_name));
+    }
+  }
+
+  closedir(d);
+}
+
+flu_list *flon_find_json(const char *path)
+{
+  flu_list *r = flu_list_malloc();
+
+  find(path, 0, r);
 
   return r;
 }

@@ -26,11 +26,13 @@
 #ifndef FL_PATHS_H
 #define FL_PATHS_H
 
+#include "flutil.h"
 #include "djan.h"
 
 
 char *flon_nid_path(fdja_value *nid);
 char *flon_exid_path(const char *s);
+flu_list *flon_find_json(const char *path);
 
 #endif // FL_PATHS_H
 
