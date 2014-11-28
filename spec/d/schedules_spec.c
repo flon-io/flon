@@ -70,7 +70,7 @@ context "flon-dispatcher"
 
       r = flon_dispatch(name);
 
-      flu_system("tree var/ -I www");
+      //flu_system("tree var/ -I www");
 
       expect(r i== 2);
 
@@ -119,7 +119,7 @@ context "flon-dispatcher"
 
       r = flon_dispatch(name);
 
-      flu_system("tree var/ -I www");
+      //flu_system("tree var/ -I www");
 
       expect(r i== 2);
 

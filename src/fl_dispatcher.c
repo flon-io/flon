@@ -66,8 +66,11 @@ static short schedule(
 
   if (*type == 'c') { char *tss = ts; ts = flu64_encode(ts, -1); free(tss); }
 
-  flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
-    // TODO: handle error
+  if (flu_mkdir_p("var/spool/tdis/%s", fep, 0755) != 0)
+  {
+    fgaj_r("failed to mkdir var/spool/tdis/%s/", fep);
+    goto _over;
+  }
 
     // directly write the source of the msg to file
   char *fn = flu_sprintf("%s-%s-%s", type, ts, fname + 4);
