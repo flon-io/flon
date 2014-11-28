@@ -23,21 +23,52 @@
 // Made in Japan.
 //
 
-#ifndef FL_IDS_H
-#define FL_IDS_H
+#define _POSIX_C_SOURCE 200809L
 
+//#include <time.h>
+//#include <stdlib.h>
+#include <string.h>
+//#include <sys/time.h>
+
+//#include "flutil.h"
+//#include "mnemo.h"
+//#include "aabro.h"
 #include "djan.h"
+//#include "fl_common.h"
+//#include "fl_ids.h"
 
 
-char *flon_generate_exid(const char *domain);
+char *flon_nid_path(fdja_value *nid)
+{
+  if (nid == NULL) return NULL;
 
-fdja_value *flon_parse_nid(const char *s);
-char *flon_parse_exid(const char *s);
+  char *r = NULL;
 
-char *flon_nid_next(const char *nid);
-size_t flon_nid_depth(const char *nid);
+  char *exid = fdja_ls(nid, "exid", NULL);
+  char *domain = fdja_ls(nid, "domain", NULL);
 
-//void flon_stamp(fdja_value *o, const char *key);
+  if (exid == NULL || domain == NULL) goto _over;
 
-#endif // FL_IDS_H
+  char *dot = strrchr(exid, '.') + 1;
+
+  r = flu_sprintf("%s/%.2s/%s", domain, dot, exid);
+
+_over:
+
+  free(exid);
+  free(domain);
+
+  return r;
+}
+
+char *flon_exid_path(const char *s)
+{
+  fdja_value *n = flon_parse_nid(s);
+  if (n == NULL) return NULL;
+
+  char *r = flon_nid_path(n);
+  fdja_free(n);
+
+  return r;
+}
 

@@ -23,21 +23,14 @@
 // Made in Japan.
 //
 
-#ifndef FL_IDS_H
-#define FL_IDS_H
+#ifndef FL_PATHS_H
+#define FL_PATHS_H
 
 #include "djan.h"
 
 
-char *flon_generate_exid(const char *domain);
+char *flon_nid_path(fdja_value *nid);
+char *flon_exid_path(const char *s);
 
-fdja_value *flon_parse_nid(const char *s);
-char *flon_parse_exid(const char *s);
-
-char *flon_nid_next(const char *nid);
-size_t flon_nid_depth(const char *nid);
-
-//void flon_stamp(fdja_value *o, const char *key);
-
-#endif // FL_IDS_H
+#endif // FL_PATHS_H
 
