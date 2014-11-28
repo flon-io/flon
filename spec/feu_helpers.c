@@ -8,7 +8,6 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <errno.h>
-//#include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
 #include <unistd.h>
@@ -19,6 +18,7 @@
 #include "flutil.h"
 #include "flutim.h"
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_common.h"
 #include "n_helpers.h"
 

@@ -8,6 +8,7 @@
 #include "flutil.h"
 #include "gajeta.h"
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_tools.h"
 #include "fl_common.h"
 #include "fl_executor.h"
