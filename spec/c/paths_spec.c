@@ -53,6 +53,8 @@ context "fl_paths:"
         flu_system("mkdir -p tmp/%s", fep);
         flu_writeall("tmp/%s/f%zu.json", fep, i, "nada");
         flu_writeall("tmp/%s/f%zub.json", fep, i, "again");
+        free(fep);
+        free(exid);
       }
     }
     after each
@@ -72,6 +74,8 @@ context "fl_paths:"
       expect(l->first->item $== "/f0.json");
       expect(l->first->next->item $== "/f0b.json");
       expect(l->first->next->next->item $== "/f1.json");
+
+      flu_list_free_all(l);
     }
   }
 }
