@@ -35,6 +35,7 @@
 #include "shervin.h"
 #include "shv_protected.h"
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_common.h"
 #include "fl_listener.h"
 
@@ -212,7 +213,7 @@ static void add_execution_dirs(flu_list *l, const char *path, const char *dom)
     struct dirent *ep1; while ((ep1 = readdir(dir1)) != NULL)
     {
       if (*ep1->d_name == '.' || ep1->d_type != 4) continue;
-      flu_list_add(l, flu_sprintf("%s/%s", d1, ep1->d_name));
+      flu_list_add(l, flu_path("%s/%s", d1, ep1->d_name));
     }
     closedir(dir1);
     free(d1);

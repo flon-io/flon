@@ -39,6 +39,7 @@
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
 
@@ -163,6 +164,12 @@ static int executor_not_running(const char *exid)
     // it might be a zombie though...
 
   return 0;
+}
+
+static short schedule(const char *fname, fdja_value *msg)
+{
+  return 1;
+  //return 2;
 }
 
 static short dispatch(const char *fname, fdja_value *j)
@@ -300,7 +307,8 @@ short flon_dispatch(const char *fname)
   if (
     strncmp(fname, "exe_", 4) != 0 &&
     strncmp(fname, "inv_", 4) != 0 &&
-    strncmp(fname, "rcv_", 4) != 0
+    strncmp(fname, "rcv_", 4) != 0 &&
+    strncmp(fname, "sch_", 4) != 0
   ) { r = -1; goto _over; }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
@@ -309,8 +317,15 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  r = dispatch(fname, msg);
-  //r = route_or_dispatch(fname, msg);
+  if (*fname == 's')
+  {
+    r = schedule(fname, msg);
+  }
+  else
+  {
+    r = dispatch(fname, msg);
+    //r = route_or_dispatch(fname, msg);
+  }
 
 _over:
 
