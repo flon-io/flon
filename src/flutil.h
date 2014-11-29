@@ -272,6 +272,11 @@ void *flu_list_shift(flu_list *l);
 //void *flu_list_pop(flu_list *l);
 //void flu_list_insert(flu_list *l, size_t index, const void *item);
 
+/* Inserts an item at the right position...
+ */
+void flu_list_oinsert(
+  flu_list *l, void *item, int (*cmp)(const void *, const void *));
+
 /* Performs an insertion sort (in place) of the flu_list.
  */
 void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *));

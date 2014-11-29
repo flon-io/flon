@@ -540,6 +540,8 @@ flu_list *flu_list_malloc()
 
 void flu_list_free(flu_list *l)
 {
+  if (l == NULL) return;
+
   for (flu_node *n = l->first; n != NULL; )
   {
     flu_node *next = n->next;
@@ -551,6 +553,8 @@ void flu_list_free(flu_list *l)
 
 void flu_list_and_items_free(flu_list *l, void (*free_item)(void *))
 {
+  if (l == NULL) return;
+
   for (flu_node *n = l->first; n != NULL; n = n->next) free_item(n->item);
   flu_list_free(l);
 }
@@ -632,6 +636,7 @@ static void flu_list_ins(
   flu_list *l, flu_node *n, int (*cmp)(const void *, const void *))
 {
   if ( ! l->first) { l->first = n; l->last = n; n->next = NULL; return; }
+    // list empty, set as first
 
   for (flu_node **pnn = &l->first; *pnn != NULL; pnn = &((*pnn)->next))
   {
@@ -640,6 +645,14 @@ static void flu_list_ins(
   }
 
   l->last->next = n; l->last = n; n->next = NULL;
+    // insert at the end
+}
+
+void flu_list_oinsert(
+  flu_list *l, void *item, int (*cmp)(const void *, const void *))
+{
+  flu_list_ins(l, flu_node_malloc(item), cmp);
+  ++l->size;
 }
 
 void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *))
