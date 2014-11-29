@@ -60,21 +60,13 @@ static void flon_timer_free(flon_timer *t)
   free(t->ts); free(t->fn); free(t);
 }
 
-void flon__zero_timers()
+void flon_empty_timers()
 {
   flu_list_and_items_free(at_timers, (void (*)(void *))flon_timer_free);
   flu_list_and_items_free(cron_timers, (void (*)(void *))flon_timer_free);
 
   at_timers = flu_list_malloc();
   cron_timers = flu_list_malloc();
-}
-
-static void init_timers()
-{
-  at_timers = flu_list_malloc();
-  cron_timers = flu_list_malloc();
-
-  // TODO: read from files...
 }
 
 static int at_cmp(const void *ta, const void *tb)
@@ -86,12 +78,12 @@ static int at_cmp(const void *ta, const void *tb)
 //  // high frequency first... // MAYBE
 //}
 
-static void add_at_timer(const char *ts, const char *fn)
+static void add_at_timer(const char *ts, ssize_t l, const char *fn)
 {
-  if (at_timers == NULL) init_timers();
+  if (at_timers == NULL) flon_load_timers();
 
   flon_timer *t = calloc(1, sizeof(flon_timer));
-  t->ts = strdup(ts);
+  t->ts = l < 1 ? strdup(ts) : strndup(ts, l);
   t->fn = strdup(fn);
 
   flu_list_oinsert(at_timers, t, at_cmp);
@@ -99,7 +91,7 @@ static void add_at_timer(const char *ts, const char *fn)
 
 static void add_cron_timer(const char *ts, const char *fn)
 {
-  if (at_timers == NULL) init_timers();
+  if (at_timers == NULL) flon_load_timers();
 
   flon_timer *t = calloc(1, sizeof(flon_timer));
   t->ts = strdup(ts);
@@ -111,6 +103,34 @@ static void add_cron_timer(const char *ts, const char *fn)
   //flu_list_oinsert(cron_timers, t, cron_cmp);
     // at some point, one could think of adding high frequency first,
     // low frequency last, to help determine the scheduling frequency...
+}
+
+void flon_load_timers()
+{
+  flon_empty_timers();
+
+  flu_list *l = flon_find_json("var/spool/tdis");
+
+  for (flu_node *n = l->first; n; n = n->next)
+  {
+    char *fn = strrchr((char *)n->item, '/'); if (fn == NULL) continue;
+
+    char *a = strchr(fn, '-'); if (a == NULL) continue;
+    char *b = strchr(a + 1, '-'); if (b == NULL) continue;
+
+    if (fn[1] == 'a')
+    {
+      add_at_timer(a + 1, b - a - 1, (char *)n->item);
+    }
+    else
+    {
+      char *ts = flu64_decode(a + 1, b - a - 1);
+      add_cron_timer(ts, (char *)n->item);
+      free(ts);
+    }
+  }
+
+  flu_list_free_all(l);
 }
 
 static short schedule(
@@ -151,7 +171,7 @@ static short schedule(
   // list in timer index
 
   if (*type == 'c')add_cron_timer(ots, fn);
-  else add_at_timer(ots, fn);
+  else add_at_timer(ots, -1, fn);
 
   // move to processed/
 

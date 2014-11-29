@@ -24,7 +24,7 @@ context "flon-dispatcher"
     chdir("../tst");
     flon_configure(".");
 
-    flon__zero_timers();
+    flon_empty_timers();
 
     char *exid = NULL;
     char *fep = NULL;
@@ -96,8 +96,8 @@ context "flon-dispatcher"
       flu_list *at = flon__timer('a');
       flu_list *ct = flon__timer('c');
 
-      expect(at->size == 1);
-      expect(ct->size == 0);
+      expect(at->size zu== 1);
+      expect(ct->size zu== 0);
     }
 
     it "stores cron schedules"
@@ -149,13 +149,65 @@ context "flon-dispatcher"
       flu_list *at = flon__timer('a');
       flu_list *ct = flon__timer('c');
 
-      expect(at->size == 0);
-      expect(ct->size == 1);
+      expect(at->size zu== 0);
+      expect(ct->size zu== 1);
     }
 
     it "rejects schedules missing 'at' or 'cron'"
     it "rejects schedules with an invalid at time"
     it "rejects schedules with an invalid cron string"
+  }
+
+  describe "flon_load_timers()"
+  {
+    before each
+    {
+      flu_system("rm -fR var/spool/tdis");
+
+      for (size_t i = 0; i < 6; ++i)
+      {
+        char *dom = flu_sprintf("dtest.flt%i", i % 2);
+        char *exid = flon_generate_exid(dom);
+        char *fep = flon_exid_path(exid);
+
+        flu_mkdir_p(
+          "var/spool/tdis/%s", fep, 0755);
+        flu_writeall(
+          "var/spool/tdis/%s/cron-KiAqICogKiAq-%s-0_2.json", fep, exid,
+          "{"
+            "point: schedule, cron: \"* * * * *\"\n"
+            "exid: %s, nid: 0_2\n"
+            "msg: { point: execute, exid: %s, nid: 0_2_0 }\n"
+          "}", exid, exid);
+        flu_writeall(
+          "var/spool/tdis/%s/at-20141130.065728-%s-0_2.json", fep, exid,
+          "{"
+            "point: schedule, at: 20141130.065728\n"
+            "exid: %s, nid: 0_2\n"
+            "msg: { point: execute, exid: %s, nid: 0_2_0 }\n"
+          "}", exid, exid);
+
+        free(dom); free(exid); free(fep);
+      }
+      //flu_system("tree var/spool/tdis");
+    }
+
+    it "scans var/spool/tdis and loads timers"
+    {
+      flon_load_timers();
+
+      flu_list *at = flon__timer('a');
+      flu_list *ct = flon__timer('c');
+
+      expect(at->size zu== 6);
+      expect(ct->size zu== 6);
+
+      expect(((flon_timer *)at->first->item)->ts === "20141130.065728");
+      expect(((flon_timer *)at->last->item)->ts === "20141130.065728");
+
+      expect(((flon_timer *)ct->first->item)->ts === "* * * * *");
+      expect(((flon_timer *)ct->last->item)->ts === "* * * * *");
+    }
   }
 }
 
