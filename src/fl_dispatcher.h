@@ -28,6 +28,12 @@
 #ifndef FL_DISPATCHER_H
 #define FL_DISPATCHER_H
 
+#include <flutil.h>
+
+
+typedef struct { char *ts; char *fn; } flon_timer;
+flu_list *flon__timer(char a_or_c);
+void flon__zero_timers();
 
 short flon_dispatch(const char *path);
 

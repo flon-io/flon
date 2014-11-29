@@ -24,6 +24,8 @@ context "flon-dispatcher"
     chdir("../tst");
     flon_configure(".");
 
+    flon__zero_timers();
+
     char *exid = NULL;
     char *fep = NULL;
     char *nid = NULL;
@@ -90,6 +92,12 @@ context "flon-dispatcher"
 
       fdja_free(v);
       free(fn);
+
+      flu_list *at = flon__timer('a');
+      flu_list *ct = flon__timer('c');
+
+      expect(at->size == 1);
+      expect(ct->size == 0);
     }
 
     it "stores cron schedules"
@@ -137,6 +145,12 @@ context "flon-dispatcher"
 
       fdja_free(v);
       free(fn);
+
+      flu_list *at = flon__timer('a');
+      flu_list *ct = flon__timer('c');
+
+      expect(at->size == 0);
+      expect(ct->size == 1);
     }
 
     it "rejects schedules missing 'at' or 'cron'"

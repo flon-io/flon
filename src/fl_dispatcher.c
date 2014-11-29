@@ -45,6 +45,74 @@
 #include "fl_dispatcher.h"
 
 
+flu_list *at_timers = NULL;
+flu_list *cron_timers = NULL;
+
+flu_list *flon__timer(char a_or_c)
+{
+  return a_or_c == 'a' ? at_timers : cron_timers;
+}
+
+static void flon_timer_free(flon_timer *t)
+{
+  if (t == NULL) return;
+
+  free(t->ts); free(t->fn); free(t);
+}
+
+void flon__zero_timers()
+{
+  flu_list_and_items_free(at_timers, (void (*)(void *))flon_timer_free);
+  flu_list_and_items_free(cron_timers, (void (*)(void *))flon_timer_free);
+
+  at_timers = flu_list_malloc();
+  cron_timers = flu_list_malloc();
+}
+
+static void init_timers()
+{
+  at_timers = flu_list_malloc();
+  cron_timers = flu_list_malloc();
+
+  // TODO: read from files...
+}
+
+static int at_cmp(const void *ta, const void *tb)
+{
+  return strcmp(((flon_timer *)ta)->ts, ((flon_timer *)tb)->ts);
+}
+//static int cron_cmp(const void *ta, const void *tb)
+//{
+//  // high frequency first... // MAYBE
+//}
+
+static void add_at_timer(const char *ts, const char *fn)
+{
+  if (at_timers == NULL) init_timers();
+
+  flon_timer *t = calloc(1, sizeof(flon_timer));
+  t->ts = strdup(ts);
+  t->fn = strdup(fn);
+
+  flu_list_oinsert(at_timers, t, at_cmp);
+}
+
+static void add_cron_timer(const char *ts, const char *fn)
+{
+  if (at_timers == NULL) init_timers();
+
+  flon_timer *t = calloc(1, sizeof(flon_timer));
+  t->ts = strdup(ts);
+  t->fn = strdup(fn);
+
+  flu_list_add(cron_timers, t);
+    // simply add at the end
+
+  //flu_list_oinsert(cron_timers, t, cron_cmp);
+    // at some point, one could think of adding high frequency first,
+    // low frequency last, to help determine the scheduling frequency...
+}
+
 static short schedule(
   const char *fname, fdja_value *msg)
 {
@@ -55,16 +123,14 @@ static short schedule(
 
   // write to var/spool/tdis/
 
-  char *at = fdja_ls(msg, "at", NULL);
-  char *cron = fdja_ls(msg, "cron", NULL);
-
   char *type = "at";
   char *ts = fdja_ls(msg, "at", NULL);
   if (ts == NULL) { type = "cron"; ts = fdja_ls(msg, "cron", NULL); }
 
   if (ts == NULL) { r = -1; goto _over; }
 
-  if (*type == 'c') { char *tss = ts; ts = flu64_encode(ts, -1); free(tss); }
+  char *ots = ts;
+  if (*type == 'c') ts = flu64_encode(ts, -1);
 
   if (flu_mkdir_p("var/spool/tdis/%s", fep, 0755) != 0)
   {
@@ -72,17 +138,20 @@ static short schedule(
     goto _over;
   }
 
+  char *fn = flu_sprintf(
+    "var/spool/tdis/%s/%s-%s-%s", fep, type, ts, fname + 4);
+
     // directly write the source of the msg to file
-  char *fn = flu_sprintf("%s-%s-%s", type, ts, fname + 4);
-  if (flu_writeall("var/spool/tdis/%s/%s", fep, fn, msg->source) != 1)
+  if (flu_writeall(fn, msg->source) != 1)
   {
-    fgaj_r("failed to write var/spool/tdis/%s/%s", fep, fn);
+    fgaj_r("failed to write %s", fn);
     goto _over;
   }
 
   // list in timer index
 
-  // TODO
+  if (*type == 'c')add_cron_timer(ots, fn);
+  else add_at_timer(ots, fn);
 
   // move to processed/
 
@@ -97,6 +166,9 @@ static short schedule(
   r = 2; // success
 
 _over:
+
+  if (ots != ts) free(ots);
+  free(ts);
 
   free(fn);
   free(fep);
