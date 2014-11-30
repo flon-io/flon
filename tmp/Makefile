@@ -1,6 +1,7 @@
 
 #CFLAGS=-I../src -g -Wall -O3 -lrt
 CFLAGS=-I../src -g -Wall -lrt -lev
+#CFLAGS=-I../src -g -Wall -lrt -lev -D_POSIX_C_SOURCE=200809L
 LDLIBS=
 CC=c99
 VPATH=../src

@@ -203,9 +203,11 @@ _over:
   return r;
 }
 
-void flon_trigger()
+void flon_trigger(long long now_s)
 {
-  // TODO
+  //printf("***\nnow: %lli\n", now_s);
+  //flu_putf(flu_sstamp(now_s, 1, 'z'));
+  //flu_putf(flu_sstamp(now_s, 0, 'm'));
 }
 
 static short double_fork(char *ctx, char *logpath, char *arg)

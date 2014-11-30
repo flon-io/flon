@@ -101,7 +101,7 @@ static void trigger_cb(struct ev_loop *loop, ev_stat *w, int revents)
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
 
-  flon_trigger();
+  flon_trigger(ev_now(loop));
 }
 
 static void sighup_cb(struct ev_loop *loop, ev_stat *w, int revents)
