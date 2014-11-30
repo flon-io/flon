@@ -77,6 +77,11 @@ long long flu_do_msleep(long long milliseconds);
  */
 char *flu_tstamp(struct timespec *ts, int utc, char format);
 
+/* Like flu_tstamp() but expect a count of seconds, not a struct timespec.
+ * So, no nanoseconds involved.
+ */
+char *flu_sstamp(long long s, int utc, char format);
+
 /* Parses a timestamp, takes a utc hint.
  *
  * /!\ not thread-safe, sets and resets the "TZ" env variable /!\

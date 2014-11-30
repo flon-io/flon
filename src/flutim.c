@@ -163,6 +163,13 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
   return r;
 }
 
+char *flu_sstamp(long long s, int utc, char format)
+{
+  struct timespec ts; ts.tv_sec = s; ts.tv_nsec = 0;
+
+  return flu_tstamp(&ts, utc, format);
+}
+
 static int ptime(char *s, struct tm *tm)
 {
   char *d = strchr(s, 'T');
