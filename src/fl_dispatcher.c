@@ -203,6 +203,11 @@ _over:
   return r;
 }
 
+void flon_trigger()
+{
+  // TODO
+}
+
 static short double_fork(char *ctx, char *logpath, char *arg)
 {
   pid_t i = fork();

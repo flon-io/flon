@@ -37,6 +37,7 @@ flu_list *flon__timer(char a_or_c);
 void flon_empty_timers();
 void flon_load_timers();
 
+void flon_trigger();
 short flon_dispatch(const char *path);
 
 #endif // FL_DISPATCHER_H

@@ -77,6 +77,7 @@ static size_t scan_dir()
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+    // TODO: shutdown flon-dispatcher
 
   size_t count = 0;
   long long start = flu_gets('s');
@@ -93,6 +94,14 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
   }
     //
     // delta: 0s085, no, it's: 0s165
+}
+
+static void trigger_cb(struct ev_loop *loop, ev_stat *w, int revents)
+{
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+    // TODO: shutdown flon-dispatcher
+
+  flon_trigger();
 }
 
 int main(int argc, char *argv[])
@@ -143,9 +152,9 @@ int main(int argc, char *argv[])
 
   // check from time to time too
 
-  //ev_periodic epe;
-  //ev_periodic_init (&epe, spool_cb, 0., .5, 0);
-  //ev_periodic_start (l, &epe);
+  ev_periodic epe;
+  ev_periodic_init(&epe, trigger_cb, 0., .32, NULL);
+  ev_periodic_start(l, &epe);
 
   //ev_timer eti;
   //ev_timer_init(&eti, do_something_when_loop_ready_cb, 0., 0.);
