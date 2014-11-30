@@ -125,6 +125,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     con->head = NULL;
 
     con->req = shv_parse_request_head(head);
+    con->req->startus = 1000 * 1000 * ev_now(l);
     con->rqount++;
 
     free(head);
@@ -216,7 +217,9 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  ceio->data = shv_con_malloc(ca, (shv_route **)eio->data);
+  shv_con *con = shv_con_malloc(ca, (shv_route **)eio->data);
+  con->startus = 1000 * 1000 * ev_now(l);
+  ceio->data = con;
 
   ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
   ev_io_start(l, ceio);

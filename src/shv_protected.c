@@ -76,7 +76,7 @@ shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes)
 {
   shv_con *c = calloc(1, sizeof(shv_con));
   c->client = client;
-  c->startus = flu_gets('u');
+  //c->startus = flu_gets('u');
   c->routes = routes;
   shv_con_reset(c);
   c->rqount = -1;

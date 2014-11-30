@@ -108,7 +108,7 @@ shv_request *shv_parse_request_head(char *s)
   //puts(fabr_tree_to_string_with_leaves(s, r));
 
   shv_request *req = calloc(1, sizeof(shv_request));
-  req->startus = flu_gets('u');
+  //req->startus = flu_gets('u');
   req->status_code = 400; // Bad Request
 
   if (r->result != 1) { fabr_tree_free(r); return req; }

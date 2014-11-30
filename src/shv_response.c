@@ -193,7 +193,8 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // prepare headers
 
-  flu_list_set(con->res->headers, "date", flu_tstamp(NULL, 1, 'r'));
+  flu_list_set(
+    con->res->headers, "date", flu_sstamp(l ? ev_now(l) : 0, 1, 'r'));
 
   flu_list_set_last(
     con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
@@ -203,7 +204,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set(
     con->res->headers, "location", strdup("northpole")); // FIXME
 
-  long long now = flu_gets('u');
+  long long now = l ? ev_now(l) : flu_gets('u');
   //
   flu_list_set(
     con->res->headers,
