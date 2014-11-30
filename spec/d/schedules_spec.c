@@ -12,7 +12,7 @@
 #include "fl_dispatcher.h"
 
 
-context "flon-dispatcher"
+context "flon-dispatcher and schedules:"
 {
   before each
   {
@@ -207,6 +207,62 @@ context "flon-dispatcher"
 
       expect(((flon_timer *)ct->first->item)->ts === "* * * * *");
       expect(((flon_timer *)ct->last->item)->ts === "* * * * *");
+    }
+  }
+
+  describe "flon_trigger()"
+  {
+    before each
+    {
+      flu_system("make -C .. ctst");
+
+      long long nows = 1417381080; // 20141130.205800 utc
+
+      exid = flon_generate_exid("dtest.trig");
+      fep = flon_exid_path(exid);
+
+      flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
+
+      char *ts = "20141130.205800";
+      flu_writeall(
+        "var/spool/tdis/%s/at-%s-%s-0_0.json", fep, ts, exid,
+        "{"
+          "point: schedule, at: %s\n"
+          "exid: %s, nid: 0_0\n"
+          "msg: { point: execute, exid: %s, nid: 0_0_0 }\n"
+        "}", ts, exid, exid);
+
+      ts = "20141130.205900";
+      flu_writeall(
+        "var/spool/tdis/%s/at-%s-%s-0_1.json", fep, ts, exid,
+        "{"
+          "point: schedule, at: %s\n"
+          "exid: %s, nid: 0_1\n"
+          "msg: { point: execute, exid: %s, nid: 0_1_0 }\n"
+        "}", ts, exid, exid);
+
+      flu_system("tree var/spool/tdis");
+    }
+
+    it "triggers matching timers"
+    {
+      flu_system("tree var/spool/dis");
+
+      flon_load_timers();
+
+      flu_list *l = flon_find_json("var/spool/dis");
+      expect(l->size == 0);
+      flu_list_free(l);
+
+      flon_trigger(nows);
+
+      flu_system("tree var/spool/dis");
+
+      fdja_value *v = fdja_parse_f("var/spool/dis/exe_%s-0_0_0.json", exid);
+
+      flu_putf(fdja_todc(v));
+
+      fdja_free(v);
     }
   }
 }

@@ -39,5 +39,7 @@ size_t flon_nid_depth(const char *nid);
 
 //void flon_stamp(fdja_value *o, const char *key);
 
+char *flon_point_to_prefix(const char *point);
+
 #endif // FL_IDS_H
 

@@ -248,3 +248,14 @@ size_t flon_nid_depth(const char *nid)
 //  fdja_set(entry, "l", fdja_s(t));
 //}
 
+char *flon_point_to_prefix(const char *point)
+{
+  if (point == NULL) return "UNK_";
+  if (*point == 'e') return "exe_";
+  if (*point == 'i') return "inv_";
+  if (*point == 's') return "sch_";
+  //if (strcmp(point, "return") == 0) return "ret_";
+  if (*point == 'r') return "rcv_";
+  return "UNK_";
+}
+

@@ -205,9 +205,55 @@ _over:
 
 void flon_trigger(long long now_s)
 {
-  //printf("***\nnow: %lli\n", now_s);
-  //flu_putf(flu_sstamp(now_s, 1, 'z'));
-  //flu_putf(flu_sstamp(now_s, 0, 'm'));
+  if (at_timers->size < 1) return;
+
+  char *ns = flu_sstamp(now_s, 1, 's');
+
+  while (1)
+  {
+    flon_timer *t = at_timers->first->item;
+
+    if (strcmp(t->ts, ns) > 0) break;
+
+    fdja_value *j = fdja_parse_obj_f(t->fn);
+
+    if (j == NULL)
+    {
+      // TODO: reject
+    }
+
+    fdja_value *msg = fdja_l(j, "msg");
+
+    if (msg == NULL)
+    {
+      // TODO: reject
+    }
+
+    char *prefix = flon_point_to_prefix(fdja_ls(msg, "point", NULL));
+    char *exid = fdja_ls(msg, "exid", NULL);
+    char *nid = fdja_ls(msg, "nid", NULL);
+
+    char *fn = flu_sprintf("var/spool/dis/%s%s-%s.json", prefix, exid, nid);
+
+    puts(fn);
+    if (fdja_to_json_f(msg, fn) != 1)
+    {
+      fgaj_r("failed to place msg from %s to %s", t->fn, fn);
+    }
+
+    if (flu_unlink(t->fn) != 0)
+    {
+      // TODO: prune dir if necessary
+      fgaj_r("failed to unlink %s removing from at_timers anyway", t->fn);
+    }
+    // TODO: change: move to processed/
+
+    flu_list_shift(at_timers);
+
+    free(fn); free(nid); free(exid);
+
+    flon_timer_free(t);
+  }
 }
 
 static short double_fork(char *ctx, char *logpath, char *arg)
