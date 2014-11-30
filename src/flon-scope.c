@@ -40,7 +40,7 @@ static void print_usage()
   puts("");
   puts("# flon-scope");
   puts("");
-  puts("  flon-scope [{start-dir}:]{exid-fragment}");
+  puts("  flon-scope [-d {dir}] {exid-fragment}");
   puts("");
   puts("Pretty prints the first execution it finds.");
   puts("looks in {start-dir}/var/run/ first, then in {start-dir}/var/archive/");
@@ -99,22 +99,21 @@ static char *determine_exid(char *fragment)
 
 int main(int argc, char *argv[])
 {
-  if (argc < 2) { print_usage(); return 1; }
+  char *d = ".";
+  short badarg = 0;
 
-  char *start = argv[1];
-  char *fragment = start;
-  //
-  char *colon = strchr(start, ':');
-  if (colon) { *colon = '\0'; fragment = colon + 1; }
-  else { start = "."; }
-
-  //printf("start >%s<, fragment >%s<\n", start, fragment);
-
-  if (chdir(start) != 0)
+  int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
   {
-    printf("couldn't chdir to %s", start);
-    return 1;
+    if (opt == 'd') d = optarg;
+    else badarg = 1;
   }
+
+  if (optind >= argc) badarg = 1;
+  if (badarg) { print_usage(); return 1; }
+
+  if (chdir(d) != 0) { printf("couldn't chdir to %s", d); return 1; }
+
+  char *fragment = argv[optind];
 
   char *exid = determine_exid(fragment);
 
