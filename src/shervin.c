@@ -203,12 +203,12 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
 static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+
   socklen_t cal = sizeof(struct sockaddr_in);
   struct sockaddr_in *ca = calloc(1, cal); // client address
 
   struct ev_io *ceio = calloc(1, sizeof(struct ev_io));
-
-  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
 
   int csd = accept(eio->fd, (struct sockaddr *)ca, &cal);
 
