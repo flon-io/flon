@@ -131,6 +131,12 @@ void flon_load_timers()
   }
 
   flu_list_free_all(l);
+
+  fgaj_i("at: %zu, cron: %zu", at_timers->size, cron_timers->size);
+  if (at_timers->first)
+  {
+    fgaj_i("next at: %s", ((flon_timer *)at_timers->first->item)->ts);
+  }
 }
 
 static short schedule(
