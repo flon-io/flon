@@ -96,7 +96,7 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
     // delta: 0s085, no, it's: 0s165
 }
 
-static void trigger_cb(struct ev_loop *loop, ev_stat *w, int revents)
+static void trigger_cb(struct ev_loop *loop, ev_periodic *w, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
@@ -104,7 +104,7 @@ static void trigger_cb(struct ev_loop *loop, ev_stat *w, int revents)
   flon_trigger(ev_now(loop));
 }
 
-static void sighup_cb(struct ev_loop *loop, ev_stat *w, int revents)
+static void sighup_cb(struct ev_loop *loop, ev_signal *w, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
