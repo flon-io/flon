@@ -76,6 +76,8 @@ static size_t scan_dir()
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
 {
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+
   size_t count = 0;
   long long start = flu_gets('s');
   int sleep = 0;
