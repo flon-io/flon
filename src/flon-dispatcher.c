@@ -104,6 +104,16 @@ static void trigger_cb(struct ev_loop *loop, ev_stat *w, int revents)
   flon_trigger();
 }
 
+static void sighup_cb(struct ev_loop *loop, ev_stat *w, int revents)
+{
+  if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
+    // TODO: shutdown flon-dispatcher
+
+  flon_load_timers();
+
+  // TODO reload configuration and reset logging as well
+}
+
 int main(int argc, char *argv[])
 {
   // read options
@@ -140,6 +150,10 @@ int main(int argc, char *argv[])
 
   scan_dir();
 
+  // load timers
+
+  flon_load_timers();
+
   // then, ev...
 
   struct ev_loop *l = ev_default_loop(0);
@@ -160,7 +174,9 @@ int main(int argc, char *argv[])
   //ev_timer_init(&eti, do_something_when_loop_ready_cb, 0., 0.);
   //ev_timer_start(l, &eti);
 
-  // TODO: SIGHUP to reload timers?
+  ev_signal esi;
+  ev_signal_init(&esi, sighup_cb, SIGHUP);
+  ev_signal_start(l, &esi);
 
   // loop
 
