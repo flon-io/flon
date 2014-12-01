@@ -141,7 +141,8 @@ void flon_load_timers()
 
 static int move_to_processed(char *fep, const char *dformat, const char *fn)
 {
-  printf("%s, %s, %s", fep, dformat, fn);
+  //printf("%s, %s, %s\n", fep, dformat, fn);
+
   char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
 
   int r = flu_move(dformat, fn, "var/%s/%s/processed", d, fep);
@@ -256,7 +257,7 @@ void flon_trigger(long long now_s)
 
     char *fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
     //
-    if (move_to_processed(fep, "var/spool/tdis/%s", fn) != 0)
+    if (move_to_processed(fep, "var/spool/tdis/%s", t->fn) != 0)
     {
       // TODO
     }

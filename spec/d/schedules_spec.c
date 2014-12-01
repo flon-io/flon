@@ -216,7 +216,6 @@ context "flon-dispatcher and schedules:"
   {
     before each
     {
-      //flu_system("make -C .. ctst");
       hlp_reset_tst();
 
       long long nows = 1417381080; // 20141130.205800 utc
@@ -248,6 +247,10 @@ context "flon-dispatcher and schedules:"
 
       //flu_system("tree var/spool/tdis");
     }
+    after each
+    {
+      free(ns);
+    }
 
     it "triggers matching timers"
     {
@@ -262,8 +265,7 @@ context "flon-dispatcher and schedules:"
 
       flon_trigger(nows);
 
-      //flu_system("tree var/run");
-      //flu_system("tree var/spool/dis");
+      //flu_system("tree var/ -I www");
 
       fdja_value *v = fdja_parse_f("var/spool/dis/exe_%s-0_0_0.json", exid);
       //flu_putf(fdja_todc(v));
@@ -286,9 +288,7 @@ context "flon-dispatcher and schedules:"
 
       fdja_free(v);
 
-      flu_system("tree var/run");
-      flu_system("tree var/spool/dis");
-      flu_system("tree var/spool/tdis");
+      flu_system("tree var/ -I www");
     }
   }
 }
