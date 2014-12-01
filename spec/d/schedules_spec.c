@@ -72,7 +72,7 @@ context "flon-dispatcher and schedules:"
 
       r = flon_dispatch(name);
 
-      //flu_system("tree var/ -I www");
+      flu_system("tree var/ -I www");
 
       expect(r i== 2);
 
@@ -217,17 +217,19 @@ context "flon-dispatcher and schedules:"
       flu_system("make -C .. ctst");
 
       long long nows = 1417381080; // 20141130.205800 utc
+      char *ns = flu_sstamp(nows, 1, 's');
 
       exid = flon_generate_exid("dtest.trig");
       fep = flon_exid_path(exid);
 
+      flu_mkdir_p("var/run/%s/processed", fep, 0755);
       flu_mkdir_p("var/spool/tdis/%s", fep, 0755);
 
       char *ts = "20141130.205800";
       flu_writeall(
         "var/spool/tdis/%s/at-%s-%s-0_0.json", fep, ts, exid,
         "{"
-          "point: schedule, at: %s\n"
+          "point: schedule, at: \"%s\"\n"
           "exid: %s, nid: 0_0\n"
           "msg: { point: execute, exid: %s, nid: 0_0_0 }\n"
         "}", ts, exid, exid);
@@ -236,33 +238,34 @@ context "flon-dispatcher and schedules:"
       flu_writeall(
         "var/spool/tdis/%s/at-%s-%s-0_1.json", fep, ts, exid,
         "{"
-          "point: schedule, at: %s\n"
+          "point: schedule, at: \"%s\"\n"
           "exid: %s, nid: 0_1\n"
           "msg: { point: execute, exid: %s, nid: 0_1_0 }\n"
         "}", ts, exid, exid);
 
-      flu_system("tree var/spool/tdis");
+      //flu_system("tree var/spool/tdis");
     }
 
     it "triggers matching timers"
     {
-      flu_system("tree var/spool/dis");
+      //flu_system("tree var/spool/dis");
 
       flon_load_timers();
 
       flu_list *l = flon_find_json("var/spool/dis");
       expect(l->size == 0);
       flu_list_free(l);
+        // TODO turn that into a helper...
 
       flon_trigger(nows);
 
-      char *ns = flu_sstamp(nows, 1, 's');
-
-      flu_system("tree var/spool/dis");
+      //flu_system("tree var/run");
+      //flu_system("tree var/spool/dis");
 
       fdja_value *v = fdja_parse_f("var/spool/dis/exe_%s-0_0_0.json", exid);
+      //flu_putf(fdja_todc(v));
 
-      flu_putf(fdja_todc(v));
+      expect(v != NULL);
       expect(fdja_ls(v, "point", NULL) ===f "execute");
       expect(fdja_ls(v, "trigger.now", NULL) ===f ns);
       expect(fdja_ls(v, "trigger.ts", NULL) ===f ns);
@@ -271,7 +274,18 @@ context "flon-dispatcher and schedules:"
       expect(fdja_ls(v, "trigger.fn", NULL) ===F fn);
 
       fdja_free(v);
-      free(ns);
+
+      v = fdja_parse_f("var/run/%s/processed/at-%s-%s-0_0.json", fep, ns, exid);
+      //flu_putf(fdja_todc(v));
+
+      expect(v != NULL);
+      expect(fdja_ls(v, "point", NULL) ===f "schedule");
+
+      fdja_free(v);
+
+      flu_system("tree var/run");
+      flu_system("tree var/spool/dis");
+      flu_system("tree var/spool/tdis");
     }
   }
 }

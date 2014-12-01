@@ -139,6 +139,20 @@ void flon_load_timers()
   }
 }
 
+static int move_to_processed(char *fep, const char *dformat, const char *fn)
+{
+  printf("%s, %s, %s", fep, dformat, fn);
+  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
+
+  int r = flu_move(dformat, fn, "var/%s/%s/processed", d, fep);
+  if (r == 0) return 0;
+
+  fgaj_r("failed to move %s to var/%s/%s/processed/", fn, d, fep);
+  return 1;
+
+  // TODO: move to some dump in case of failure? simply remove file?
+}
+
 static short schedule(
   const char *fname, fdja_value *msg)
 {
@@ -181,13 +195,7 @@ static short schedule(
 
   // move to processed/
 
-  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
-
-  if (flu_move("var/spool/dis/%s", fname, "var/%s/%s/processed/", d, fep) != 0)
-  {
-    fgaj_r(
-      "failed to move var/spool/dis/%s to /var/%s/%sprocessed/", fname, d, fep);
-  }
+  move_to_processed(fep, "var/spool/dis/%s", fname); // ignore result
 
   r = 2; // success
 
@@ -246,16 +254,16 @@ void flon_trigger(long long now_s)
       fgaj_r("failed to place msg from %s to %s", t->fn, fn);
     }
 
-    if (flu_unlink(t->fn) != 0)
+    char *fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
+    //
+    if (move_to_processed(fep, "var/spool/tdis/%s", fn) != 0)
     {
-      // TODO: prune dir if necessary
-      fgaj_r("failed to unlink %s removing from at_timers anyway", t->fn);
+      // TODO
     }
-    // TODO: change: move to processed/
 
     flu_list_shift(at_timers);
 
-    free(fn); free(nid); free(exid); free(point);
+    free(fep);free(fn); free(nid); free(exid); free(point);
     fdja_free(j);
     flon_timer_free(t);
   }
