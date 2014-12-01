@@ -96,7 +96,7 @@ sz: zs invoker executor dispatcher
 	time ./zs
 
 sum: cs ds is ls ns xs zs invoker executor dispatcher
-	$(MAKE) -C .. ctst
+	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	@echo "\n--- make sc --common-------------------------------------------"
 	@./cs 2>&1 | . ./spec_filter.sh
 	@echo "\n--- make sd --dispatcher---------------------------------------"
@@ -114,7 +114,7 @@ sum: cs ds is ls ns xs zs invoker executor dispatcher
 	@echo ""
 
 vsum: cs ds is ls ns xs zs invoker executor dispatcher
-	$(MAKE) -C .. ctst
+	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	@echo "\n--- make vsc --common------------------------------------------"
 	$(VAL) ./cs 2>&1 | . ./spec_filter.sh
 	@echo "\n--- make vsd --dispatcher--------------------------------------"
