@@ -74,60 +74,60 @@ warn:
 	$(MAKE) clean cs ds xs is ls ns zs  2>&1 | . ./spec_filter.sh
 
 sc: cs
-	@echo "\n--- make sc --common-------------------------------------------\n"
+	@echo "\n--- make sc ---common------------------------------------------\n"
 	time ./cs
 sd: ds invoker executor
-	@echo "\n--- make sd --dispatcher---------------------------------------\n"
+	@echo "\n--- make sd ---dispatcher--------------------------------------\n"
 	time ./ds
 sx: xs
-	@echo "\n--- make sx --executor-----------------------------------------\n"
+	@echo "\n--- make sx ---executor----------------------------------------\n"
 	time ./xs
 si: is
-	@echo "\n--- make si --invoker------------------------------------------\n"
+	@echo "\n--- make si ---invoker-----------------------------------------\n"
 	time ./is
 sl: ls invoker executor dispatcher
-	@echo "\n--- make sl --listener-----------------------------------------\n"
+	@echo "\n--- make sl ---listener----------------------------------------\n"
 	time ./ls
 sn: ns invoker executor dispatcher
-	@echo "\n--- make sn --instructions-------------------------------------\n"
+	@echo "\n--- make sn ---instructions------------------------------------\n"
 	time ./ns
 sz: zs invoker executor dispatcher
-	@echo "\n--- make sz --a-to-z-------------------------------------------\n"
+	@echo "\n--- make sz ---a-to-z------------------------------------------\n"
 	time ./zs
 
 sum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
-	@echo "\n--- make sc --common-------------------------------------------"
+	@echo "\n--- make sc ---common-------------------------------------------"
 	@./cs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make sd --dispatcher---------------------------------------"
+	@echo "\n--- make sd ---dispatcher---------------------------------------"
 	@./ds 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make sx --executor-----------------------------------------"
+	@echo "\n--- make sx ---executor-----------------------------------------"
 	@./xs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make si --invoker------------------------------------------"
+	@echo "\n--- make si ---invoker------------------------------------------"
 	@./is 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make sl --listener-----------------------------------------"
+	@echo "\n--- make sl ---listener-----------------------------------------"
 	@./ls 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make sn --instructions-------------------------------------"
+	@echo "\n--- make sn ---instructions-------------------------------------"
 	@./ns 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make sz --a-to-z-------------------------------------------"
+	@echo "\n--- make sz ---a-to-z-------------------------------------------"
 	@./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
 
 vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
-	@echo "\n--- make vsc --common------------------------------------------"
+	@echo "\n--- make vsc ---common------------------------------------------"
 	$(VAL) ./cs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsd --dispatcher--------------------------------------"
+	@echo "\n--- make vsd ---dispatcher--------------------------------------"
 	$(VAL) ./ds 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsx --executor----------------------------------------"
+	@echo "\n--- make vsx ---executor----------------------------------------"
 	$(VAL) ./xs 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsi --invoker-----------------------------------------"
+	@echo "\n--- make vsi ---invoker-----------------------------------------"
 	$(VAL) ./is 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsl --listener----------------------------------------"
+	@echo "\n--- make vsl ---listener----------------------------------------"
 	$(VAL) ./ls 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsn --instructions------------------------------------"
+	@echo "\n--- make vsn ---instructions------------------------------------"
 	$(VAL) ./ns 2>&1 | . ./spec_filter.sh
-	@echo "\n--- make vsz --a-to-z------------------------------------------"
+	@echo "\n--- make vsz ---a-to-z------------------------------------------"
 	$(VAL) ./zs 2>&1 | . ./spec_filter.sh
 	@echo ""
 
