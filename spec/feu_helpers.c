@@ -281,3 +281,14 @@ void hlp_reset_tst()
   // don't maintain two lists
 }
 
+size_t hlp_count_jsons(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  flu_list *l = flon_find_json(p);
+  size_t r = l->size;
+  flu_list_free(l);
+
+  return r;
+}
+

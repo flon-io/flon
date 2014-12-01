@@ -20,3 +20,5 @@ char *hlp_last_msg(char *exid);
 
 void hlp_reset_tst();
 
+size_t hlp_count_jsons(const char *path, ...);
+

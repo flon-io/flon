@@ -258,10 +258,7 @@ context "flon-dispatcher and schedules:"
 
       flon_load_timers();
 
-      flu_list *l = flon_find_json("var/spool/dis");
-      expect(l->size == 0);
-      flu_list_free(l);
-        // TODO turn that into a helper...
+      expect(hlp_count_jsons("var/spool/dis") zu== 0);
 
       // trigger first timer
 
