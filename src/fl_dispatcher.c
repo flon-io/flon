@@ -120,12 +120,12 @@ void flon_load_timers()
 
     if (fn[1] == 'a')
     {
-      add_at_timer(a + 1, b - a - 1, (char *)n->item);
+      add_at_timer(a + 1, b - a - 1, ((char *)n->item) + 15);
     }
     else
     {
       char *ts = flu64_decode(a + 1, b - a - 1);
-      add_cron_timer(ts, (char *)n->item);
+      add_cron_timer(ts, ((char *)n->item) + 15);
       free(ts);
     }
   }
@@ -215,7 +215,7 @@ void flon_trigger(long long now_s)
 
     if (strcmp(t->ts, ns) > 0) break;
 
-    fdja_value *j = fdja_parse_obj_f(t->fn);
+    fdja_value *j = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
 
     if (j == NULL)
     {
@@ -229,13 +229,18 @@ void flon_trigger(long long now_s)
       // TODO: reject
     }
 
-    char *prefix = flon_point_to_prefix(fdja_ls(msg, "point", NULL));
+    char *point = fdja_ls(msg, "point", NULL);
+    char *prefix = flon_point_to_prefix(point);
     char *exid = fdja_ls(msg, "exid", NULL);
     char *nid = fdja_ls(msg, "nid", NULL);
 
     char *fn = flu_sprintf("var/spool/dis/%s%s-%s.json", prefix, exid, nid);
 
-    puts(fn);
+    fdja_set(msg, "trigger", fdja_v("{}"));
+    fdja_pset(msg, "trigger.now", fdja_s(ns));
+    fdja_pset(msg, "trigger.ts", fdja_s(t->ts));
+    fdja_pset(msg, "trigger.fn", fdja_s(t->fn));
+
     if (fdja_to_json_f(msg, fn) != 1)
     {
       fgaj_r("failed to place msg from %s to %s", t->fn, fn);
@@ -250,10 +255,12 @@ void flon_trigger(long long now_s)
 
     flu_list_shift(at_timers);
 
-    free(fn); free(nid); free(exid);
-
+    free(fn); free(nid); free(exid); free(point);
+    fdja_free(j);
     flon_timer_free(t);
   }
+
+  free(ns);
 }
 
 static short double_fork(char *ctx, char *logpath, char *arg)

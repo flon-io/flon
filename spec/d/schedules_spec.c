@@ -256,13 +256,22 @@ context "flon-dispatcher and schedules:"
 
       flon_trigger(nows);
 
+      char *ns = flu_sstamp(nows, 1, 's');
+
       flu_system("tree var/spool/dis");
 
       fdja_value *v = fdja_parse_f("var/spool/dis/exe_%s-0_0_0.json", exid);
 
       flu_putf(fdja_todc(v));
+      expect(fdja_ls(v, "point", NULL) ===f "execute");
+      expect(fdja_ls(v, "trigger.now", NULL) ===f ns);
+      expect(fdja_ls(v, "trigger.ts", NULL) ===f ns);
+
+      char *fn = flu_sprintf("%s/at-%s-%s-0_0.json", fep, ns, exid);
+      expect(fdja_ls(v, "trigger.fn", NULL) ===F fn);
 
       fdja_free(v);
+      free(ns);
     }
   }
 }
