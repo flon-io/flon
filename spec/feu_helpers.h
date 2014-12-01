@@ -18,3 +18,5 @@ fdja_value *hlp_read_run_json(char *exid);
 void hlp_cat_inv_log(char *exid);
 char *hlp_last_msg(char *exid);
 
+void hlp_reset_tst();
+

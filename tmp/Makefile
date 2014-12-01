@@ -42,26 +42,26 @@ IDEPS=$(DEPS) dollar.o fl_invoker.o
 #
 LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
+feu_hlp:
+	cp ../spec/feu_helpers.[ch] .
+
 cs.c: ../spec/c/*_spec.c
 	$(RODZO) ../spec/c/*_spec.c -o cs.c
-ds.c: ../spec/d/*_spec.c
+ds.c: ../spec/d/*_spec.c feu_hlp
 	$(RODZO) ../spec/d/*_spec.c -o ds.c
 xs.c: ../spec/x/*_spec.c
 	$(RODZO) ../spec/x/*_spec.c -o xs.c
 is.c: ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
-ls.c: ../spec/l/*_spec.c
+ls.c: ../spec/l/*_spec.c feu_hlp
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
-	cp ../spec/l/l_helpers.[ch] .
-ns.c: ../spec/n/*_spec.c
+ns.c: ../spec/n/*_spec.c feu_hlp
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
-	cp ../spec/feu_helpers.[ch] .
-zs.c: ../spec/z/*_spec.c
+zs.c: ../spec/z/*_spec.c feu_hlp
 	$(RODZO) ../spec/z/*_spec.c -o zs.c
-	cp ../spec/feu_helpers.[ch] .
 
 cs: $(DEPS)
-ds: $(DDEPS)
+ds: $(DDEPS) feu_helpers.o
 xs: $(XDEPS)
 is: $(IDEPS)
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o

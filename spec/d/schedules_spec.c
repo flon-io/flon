@@ -6,10 +6,12 @@
 //
 
 #include "flutil.h"
+#include "flutim.h"
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
+#include "feu_helpers.h"
 
 
 context "flon-dispatcher and schedules:"
@@ -214,7 +216,8 @@ context "flon-dispatcher and schedules:"
   {
     before each
     {
-      flu_system("make -C .. ctst");
+      //flu_system("make -C .. ctst");
+      hlp_reset_tst();
 
       long long nows = 1417381080; // 20141130.205800 utc
       char *ns = flu_sstamp(nows, 1, 's');
