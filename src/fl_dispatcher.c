@@ -217,6 +217,7 @@ void flon_trigger(long long now_s)
   if (at_timers->size < 1) return;
 
   char *ns = flu_sstamp(now_s, 1, 's');
+  short triggered = 0;
 
   while (1)
   {
@@ -264,14 +265,15 @@ void flon_trigger(long long now_s)
       // TODO
     }
 
+    triggered = 1;
     flu_list_shift(at_timers);
-
-    flu_prune_empty_dirs("var/spool/tdis");
 
     free(fep);free(fn); free(nid); free(exid); free(point);
     fdja_free(j);
     flon_timer_free(t);
   }
+
+  if (triggered > 0) flu_prune_empty_dirs("var/spool/tdis");
 
   free(ns);
 }
