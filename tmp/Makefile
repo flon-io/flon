@@ -55,6 +55,7 @@ is.c: ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
 ls.c: ../spec/l/*_spec.c feu_hlp
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
+	cp ../spec/l/l_helpers.[ch] .
 ns.c: ../spec/n/*_spec.c feu_hlp
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
 zs.c: ../spec/z/*_spec.c feu_hlp
