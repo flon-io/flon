@@ -139,19 +139,47 @@ void flon_load_timers()
   }
 }
 
-static int move_to_processed(char *fep, const char *dformat, const char *fn)
+static void move_to_rejected(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *pa = flu_svprintf(path, ap);
+  char *re = flu_svprintf(va_arg(ap, char *), ap);
+  va_end(ap);
+
+  FILE *f = fopen(pa, "a");
+  if (f)
+  {
+    char *ts = flu_tstamp(NULL, 1, 'u');
+    fprintf(f, "\n# reason: %s (%s Z)\n", re, ts);
+    fclose(f);
+    free(ts);
+  }
+
+  int mr = flu_move(pa, "var/spool/rejected/");
+
+  if (mr == 0)
+    fgaj_i("%s, reason is: %s", pa, re);
+  else
+    fgaj_r("failed moving %s to var/spool/rejected, reason was: %s", pa, re);
+
+  free(pa);
+  free(re);
+}
+
+static void move_to_processed(char *fep, const char *dformat, const char *fn)
 {
   //printf("%s, %s, %s\n", fep, dformat, fn);
 
   char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
 
   int r = flu_move(dformat, fn, "var/%s/%s/processed", d, fep);
-  if (r == 0) return 0;
+  if (r == 0) return;
 
-  fgaj_r("failed to move %s to var/%s/%s/processed/", fn, d, fep);
-  return 1;
+  fgaj_r(
+    "failed to move %s to var/%s/%s/processed/", fn, d, fep);
 
-  // TODO: move to some dump in case of failure? simply remove file?
+  move_to_rejected(
+    dformat, fn, "couldn't move to var/%s/%s/processed/", d, fep);
 }
 
 static short schedule(
@@ -212,68 +240,87 @@ _over:
   return r;
 }
 
+static int do_trigger(const char *ns)
+{
+  int r = 0;
+
+  char *fep = NULL;
+  fdja_value *sch = NULL;
+  char *point = NULL;
+  char *prefix = NULL;
+  char *exid = NULL;
+  char *nid = NULL;
+  char *fn = NULL;
+  flon_timer *t = NULL;
+
+  if (at_timers->first == NULL) goto _over;
+
+  t = at_timers->first->item;
+
+  if (strcmp(t->ts, ns) > 0) goto _over;
+
+  r = 1;
+  t = flu_list_shift(at_timers); // shift
+
+  sch = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
+
+  fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
+  move_to_processed(fep, "var/spool/tdis/%s", t->fn);
+
+  if (sch == NULL)
+  {
+    move_to_rejected("var/spool/tdis/%s", t->fn, "couldn't parse");
+    goto _over;
+  }
+
+  fdja_value *msg = fdja_l(sch, "msg");
+
+  if (msg == NULL)
+  {
+    move_to_rejected("var/spool/tdis/%s", t->fn, "doesn't contain 'msg' key");
+    goto _over;
+  }
+
+  point = fdja_ls(msg, "point", NULL);
+  prefix = flon_point_to_prefix(point);
+  exid = fdja_ls(msg, "exid", NULL);
+  nid = fdja_ls(msg, "nid", NULL);
+
+  fn = flu_sprintf("var/spool/dis/%s%s-%s.json", prefix, exid, nid);
+
+  fdja_set(msg, "trigger", fdja_v("{}"));
+  fdja_pset(msg, "trigger.now", fdja_s(ns));
+  fdja_pset(msg, "trigger.ts", fdja_s(t->ts));
+  fdja_pset(msg, "trigger.fn", fdja_s(t->fn));
+
+  if (fdja_to_json_f(msg, fn) != 1)
+  {
+    fgaj_r("failed to place msg from %s to %s", t->fn, fn);
+  }
+
+_over:
+
+  free(fep); free(fn); free(nid); free(exid); free(point);
+  fdja_free(sch);
+  if (r) flon_timer_free(t);
+
+  return r;
+}
+
 void flon_trigger(long long now_s)
 {
   if (at_timers->size < 1) return;
 
   char *ns = flu_sstamp(now_s, 1, 's');
-  short triggered = 0;
+  short moved = 0;
 
   while (1)
   {
-    if (at_timers->first == NULL) break;
-
-    flon_timer *t = at_timers->first->item;
-
-    if (strcmp(t->ts, ns) > 0) break;
-
-    fdja_value *j = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
-
-    if (j == NULL)
-    {
-      // TODO: reject
-    }
-
-    fdja_value *msg = fdja_l(j, "msg");
-
-    if (msg == NULL)
-    {
-      // TODO: reject
-    }
-
-    char *point = fdja_ls(msg, "point", NULL);
-    char *prefix = flon_point_to_prefix(point);
-    char *exid = fdja_ls(msg, "exid", NULL);
-    char *nid = fdja_ls(msg, "nid", NULL);
-
-    char *fn = flu_sprintf("var/spool/dis/%s%s-%s.json", prefix, exid, nid);
-
-    fdja_set(msg, "trigger", fdja_v("{}"));
-    fdja_pset(msg, "trigger.now", fdja_s(ns));
-    fdja_pset(msg, "trigger.ts", fdja_s(t->ts));
-    fdja_pset(msg, "trigger.fn", fdja_s(t->fn));
-
-    if (fdja_to_json_f(msg, fn) != 1)
-    {
-      fgaj_r("failed to place msg from %s to %s", t->fn, fn);
-    }
-
-    char *fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
-    //
-    if (move_to_processed(fep, "var/spool/tdis/%s", t->fn) != 0)
-    {
-      // TODO
-    }
-
-    triggered = 1;
-    flu_list_shift(at_timers);
-
-    free(fep);free(fn); free(nid); free(exid); free(point);
-    fdja_free(j);
-    flon_timer_free(t);
+    int tr = do_trigger(ns);
+    if (tr > 0) moved = 1; else break;
   }
 
-  if (triggered > 0) flu_prune_empty_dirs("var/spool/tdis");
+  if (moved) flu_prune_empty_dirs("var/spool/tdis");
 
   free(ns);
 }
@@ -453,16 +500,6 @@ static short dispatch(const char *fname, fdja_value *j)
   return r;
 }
 
-static int reject(const char *fname)
-{
-  int r = flu_move("var/spool/dis/%s", fname, "var/spool/rejected/");
-
-  if (r == 0) fgaj_i(fname);
-  else fgaj_r("failed to move %s to var/spool/rejected/", fname);
-
-  return 1; // failure
-}
-
 static short receive_ret(const char *fname)
 {
   short r = 2;
@@ -582,7 +619,8 @@ _over:
     free(path);
   }
 
-  if (r == -1) r = reject(fname);
+  if (r == -1) { move_to_rejected("var/spool/dis/%s", fname, NULL); r = 1; }
+    // reason is NULL
 
   fdja_free(msg);
 

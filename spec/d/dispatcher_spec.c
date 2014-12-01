@@ -101,7 +101,8 @@ context "flon-dispatcher"
       expect(r i== 1);
 
       s = flu_readall("var/spool/rejected/inv_%s.json", exid);
-      expect(s === "NADA");
+      expect(s >== "NADA");
+      expect(s >== "# reason:");
 
       flu_unlink("var/spool/rejected/inv_%s.json", exid);
     }

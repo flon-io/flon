@@ -303,7 +303,7 @@ context "flon-dispatcher and schedules:"
 
       expect(flu_fstat("var/spool/dis/exe_%s-0_1_0.json", exid) c== 'f');
 
-      //flu_system("tree var/ -I www");
+      flu_system("tree var/ -I www");
 
       expect(flu_fstat("var/spool/tdis/%s", fep) c== 0);
     }
