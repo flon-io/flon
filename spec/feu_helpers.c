@@ -289,6 +289,8 @@ size_t hlp_count_jsons(const char *path, ...)
   size_t r = l->size;
   flu_list_free(l);
 
+  free(p);
+
   return r;
 }
 
