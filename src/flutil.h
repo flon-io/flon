@@ -186,6 +186,24 @@ int flu_move(const char *path, ...);
  */
 int flu_mkdir_p(const char *path, ...);
 
+/* Given a wordexp path, unlinks the matching files.
+ *
+ * Returns the count of unlinked files in case of success.
+ *
+ * In case of error, it returns -1, immediately after the error. Files
+ * seen up to the error are unlinked. Files after the error are not unlinked.
+ */
+ssize_t flu_rm_files(const char *path, ...);
+
+/* Empties a dir recursively.
+ * Doesn't remove files prefixed with a dot.
+ *
+ * Returns 0 in case of success.
+ */
+int flu_empty_dir(const char *path, ...);
+
+int flu_prune_empty_dirs(const char *path, ...);
+
 
 //
 // flu_list

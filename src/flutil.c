@@ -34,6 +34,8 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <errno.h>
+#include <dirent.h>
+#include <wordexp.h>
 
 #include "flutil.h"
 
@@ -502,6 +504,101 @@ int flu_mkdir_p(const char *path, ...)
   }
 
   if (pp) free(pp);
+  free(p);
+
+  return r;
+}
+
+ssize_t flu_rm_files(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  ssize_t r = 0;
+
+  wordexp_t we;
+  wordexp(p, &we, WRDE_NOCMD);
+
+  for (size_t i = 0; i < we.we_wordc; ++i)
+  {
+    int ur = unlink(we.we_wordv[i]);
+    if (ur != 0) { r = -1; goto _over; }
+    ++r;
+  }
+
+_over:
+
+  wordfree(&we);
+  free(p);
+
+  return r;
+}
+
+int flu_empty_dir(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  int r = 0;
+  char *pa = NULL;
+
+  DIR *dir = opendir(p);
+  if (dir == NULL) { r = 1; goto _over; }
+
+  struct dirent *de;
+  while ((de = readdir(dir)) != NULL)
+  {
+    if (*de->d_name == '.') continue;
+
+    free(pa); pa = flu_path("%s/%s", p, de->d_name);
+
+    if (de->d_type == 4) // dir
+    {
+      flu_empty_dir(pa);
+
+      if (rmdir(pa) != 0) { r = 2; goto _over; }
+    }
+    else // not a dir
+    {
+      if (unlink(pa) != 0) { r = 3; goto _over; }
+    }
+  }
+
+_over:
+
+  free(pa);
+  if (dir) closedir(dir);
+  free(p);
+
+  return r;
+}
+
+int flu_prune_empty_dirs(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  int r = 1;
+
+  DIR *dir = opendir(p);
+  if (dir == NULL) goto _over;
+
+  char *pa = NULL;
+
+  struct dirent *de;
+  while ((de = readdir(dir)) != NULL)
+  {
+    if (strcmp(de->d_name, ".") == 0) continue;
+    if (strcmp(de->d_name, "..") == 0) continue;
+
+    if (de->d_type != 4) { r = 0; continue; }
+
+    free(pa); pa = flu_path("%s/%s", p, de->d_name);
+
+    if (flu_prune_empty_dirs(pa) == 0 || rmdir(pa) != 0) r = 0;
+  }
+
+_over:
+
+  free(pa);
+  if (dir) closedir(dir);
   free(p);
 
   return r;
