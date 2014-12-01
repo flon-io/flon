@@ -164,7 +164,7 @@ context "flon-dispatcher and schedules:"
   {
     before each
     {
-      flu_system("rm -fR var/spool/tdis");
+      flu_empty_dir("var/spool/tdis");
 
       for (size_t i = 0; i < 6; ++i)
       {
