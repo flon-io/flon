@@ -220,6 +220,8 @@ void flon_trigger(long long now_s)
 
   while (1)
   {
+    if (at_timers->first == NULL) break;
+
     flon_timer *t = at_timers->first->item;
 
     if (strcmp(t->ts, ns) > 0) break;
@@ -263,6 +265,8 @@ void flon_trigger(long long now_s)
     }
 
     flu_list_shift(at_timers);
+
+    flu_prune_empty_dirs("var/spool/tdis");
 
     free(fep);free(fn); free(nid); free(exid); free(point);
     fdja_free(j);

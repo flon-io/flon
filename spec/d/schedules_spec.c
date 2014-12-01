@@ -263,6 +263,8 @@ context "flon-dispatcher and schedules:"
       flu_list_free(l);
         // TODO turn that into a helper...
 
+      // trigger first timer
+
       flon_trigger(nows);
 
       //flu_system("tree var/ -I www");
@@ -288,7 +290,25 @@ context "flon-dispatcher and schedules:"
 
       fdja_free(v);
 
-      flu_system("tree var/ -I www");
+      //flu_system("tree var/ -I www");
+
+      expect(flu_fstat("var/run/%s/at-%s-%s-0_0.json", fep, ns, exid) == 0);
+
+      expect(flon__timer('a')->size zu== 1);
+      expect(flon__timer('c')->size zu== 0);
+
+      // trigger second timer
+
+      nows += 60; // 20141130.205900 utc
+      free(ns); ns = flu_sstamp(nows, 1, 's');
+
+      flon_trigger(nows);
+
+      expect(flu_fstat("var/spool/dis/exe_%s-0_1_0.json", exid) c== 'f');
+
+      //flu_system("tree var/ -I www");
+
+      expect(flu_fstat("var/spool/tdis/%s", fep) c== 0);
     }
   }
 }
