@@ -199,7 +199,9 @@ _respond:
 //
 // /i/executions
 
-// TODO ?archived=true or ?archived=1 or =yes
+// TODO ?archived=true or =1 or =yes
+//  OR
+//      ?archive=true or =1 or =yes
 
 static void add_execution_dirs(flu_list *l, const char *path, const char *dom)
 {

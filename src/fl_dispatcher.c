@@ -177,7 +177,7 @@ static void move_to_processed(char *fep, const char *dformat, const char *fn)
 {
   //printf("%s, %s, %s\n", fep, dformat, fn);
 
-  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
+  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archive" : "run";
 
   int r = flu_move(dformat, fn, "var/%s/%s/processed", d, fep);
   if (r == 0) return;
