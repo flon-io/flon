@@ -364,6 +364,8 @@ struct timespec *flu_parse_ts(const char *s)
 
 long long flu_parse_t(const char *s)
 {
+  errno = 0;
+
   struct timespec *ts = flu_parse_ts(s);
   if (ts == NULL) { errno = EINVAL; return 0; }
 
@@ -371,5 +373,15 @@ long long flu_parse_t(const char *s)
   free(ts);
 
   return r;
+}
+
+double flu_parse_d(const char *s)
+{
+  errno = 0;
+
+  struct timespec *ts = flu_parse_ts(s);
+  if (ts == NULL) { errno = EINVAL; return 0.0; }
+
+  return ts->tv_sec + (double)ts->tv_nsec / 1000000000;
 }
 

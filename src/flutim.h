@@ -107,5 +107,10 @@ struct timespec *flu_parse_ts(const char *s);
  */
 long long flu_parse_t(const char *s);
 
+/* Like flu_parse_ts() but returns a double (where 1.0 means 1s).
+ * When it cannot parse, it sets errno to EINVAL and returns 0.0.
+ */
+double flu_parse_d(const char *s);
+
 #endif // FLON_FLUTIM_H
 

@@ -520,8 +520,7 @@ ssize_t flu_rm_files(const char *path, ...)
 
   for (size_t i = 0; i < we.we_wordc; ++i)
   {
-    int ur = unlink(we.we_wordv[i]);
-    if (ur != 0) { r = -1; goto _over; }
+    if (unlink(we.we_wordv[i]) != 0) { r = -1; goto _over; }
     ++r;
   }
 
