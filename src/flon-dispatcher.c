@@ -38,6 +38,9 @@
 #include "fl_dispatcher.h"
 
 
+int scan_dir_count = 0;
+
+
 static void print_usage()
 {
   fprintf(stderr, "" "\n");
@@ -51,8 +54,9 @@ static void print_usage()
 
 static size_t scan_dir()
 {
-  //fgaj_d(".");
+  //fgaj_d(". sdc: %i", scan_dir_count);
 
+  size_t seen = 0;
   size_t dispatched = 0;
 
   DIR *dir = opendir("var/spool/dis/");
@@ -61,6 +65,8 @@ static size_t scan_dir()
   while ((de = readdir(dir)) != NULL)
   {
     if (*de->d_name == '.') continue;
+
+    ++seen;
 
     short r = flon_dispatch(de->d_name);
     if (r > 0) ++dispatched;
@@ -71,6 +77,8 @@ static size_t scan_dir()
   closedir(dir);
 
   //fgaj_i("> scanning over.");
+  if (seen > 0) fgaj_d("dispatched: %zu/%zu", dispatched, seen);
+
   return dispatched;
 }
 
@@ -79,32 +87,27 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
 
-  size_t count = 0;
-  long long start = flu_gets('s');
-  int sleep = 0;
-
-  while (1)
-  {
-    count = scan_dir();
-    long long now = flu_gets('s');
-    if (count > 0) { sleep = 0; start = now; }
-    if (now >= start + 2) break;
-    if (count < 1) sleep += 10;
-    if (sleep > 0) flu_do_msleep(sleep);
-  }
-    //
-    // delta: 0s085, no, it's: 0s165
+  scan_dir_count = 3;
 }
 
-static void trigger_cb(struct ev_loop *loop, ev_periodic *w, int revents)
+static void trigger_cb(struct ev_loop *loop, ev_periodic *ep, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
 
   flon_trigger(ev_now(loop));
+
+  if (scan_dir_count < 1) return;
+
+  scan_dir_count += scan_dir() < 1 ? -1 : 1;
 }
 
-static void sighup_cb(struct ev_loop *loop, ev_signal *w, int revents)
+static ev_tstamp trigger_reschedule_cb(ev_periodic *ep, ev_tstamp now)
+{
+  return now + (scan_dir_count > 0 ? .07 : .32);
+}
+
+static void sighup_cb(struct ev_loop *loop, ev_signal *es, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
@@ -167,7 +170,7 @@ int main(int argc, char *argv[])
   // check from time to time too
 
   ev_periodic epe;
-  ev_periodic_init(&epe, trigger_cb, 0., .32, NULL);
+  ev_periodic_init(&epe, trigger_cb, 0., .35, trigger_reschedule_cb);
   ev_periodic_start(l, &epe);
 
   //ev_timer eti;

@@ -44,7 +44,7 @@ context "instruction:"
 
       //flon_pp_execution(exid);
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 60);
 
       flon_pp_execution(exid);
 
@@ -55,25 +55,4 @@ context "instruction:"
     }
   }
 }
-
-//    it "sets a field"
-//    {
-//      exid = flon_generate_exid("n.set.0");
-//
-//      hlp_launch(
-//        exid,
-//        "set f.a: 1\n"
-//        "",
-//        "{ hello: set }");
-//
-//      result = hlp_wait(exid, "terminated", NULL, 1);
-//
-//      //flon_pp_execution(exid);
-//
-//      expect(result != NULL);
-//      //flu_putf(fdja_todc(result));
-//
-//      expect(fdja_lj(result, "payload") ===F fdja_vj(""
-//        "{ hello: set, a: 1 }"));
-//    }
 

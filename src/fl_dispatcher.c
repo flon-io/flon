@@ -87,6 +87,8 @@ static void add_at_timer(const char *ts, ssize_t l, const char *fn)
   t->fn = strdup(fn);
 
   flu_list_oinsert(at_timers, t, at_cmp);
+
+  fgaj_d("ts: %s, fn: %s", t->ts, t->fn);
 }
 
 static void add_cron_timer(const char *ts, const char *fn)
@@ -250,6 +252,8 @@ _over:
 
 static int do_trigger(const char *ns)
 {
+  //fgaj_d("ns: %s", ns);
+
   int r = 0;
 
   char *fep = NULL;
@@ -272,13 +276,13 @@ static int do_trigger(const char *ns)
 
   sch = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
 
-  fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
-  move_to_processed(fep, "var/spool/tdis/%s", t->fn);
-
   if (sch == NULL)
   {
     move_to_rejected(t->fn, "couldn't parse"); goto _over;
   }
+
+  fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
+  move_to_processed(fep, "var/spool/tdis/%s", t->fn);
 
   fdja_value *msg = fdja_l(sch, "msg");
 
@@ -315,6 +319,8 @@ _over:
 
 void flon_trigger(long long now_s)
 {
+  //fgaj_d("now_s: %lli", now_s);
+
   if (at_timers->size < 1) return;
 
   char *ns = flu_sstamp(now_s, 1, 's');
