@@ -49,6 +49,18 @@ typedef char flon_instruction(fdja_value *, fdja_value *);
 //
 // helpers
 
+static char *node_id(fdja_value *node, fdja_value *msg)
+{
+  char *nid = fdja_lsd(node, "nid", "nid?");
+  char *exid = fdja_lsd(node, "exid", "exid?");
+
+  char *r = flu_sprintf("%s-%s", nid, exid);
+
+  free(nid); free(exid);
+
+  return r;
+}
+
 static fdja_value *tree(fdja_value *node, fdja_value *msg)
 {
   fdja_value *r =  NULL;
@@ -146,16 +158,26 @@ static void expand(
 static fdja_value *attributes(
   fdja_value *node, fdja_value *msg)
 {
-  return fdja_l(tree(node, msg), "1");
-}
+  fdja_value *atts = fdja_l(tree(node, msg), "1");
+  fdja_value *r = fdja_v("{}");
 
-static fdja_value *attribute(
-  const char *name, fdja_value *node, fdja_value *msg)
-{
-  fdja_value *att = fdja_lc(attributes(node, msg), name);
-  expand(att, node, msg);
+  if (atts == NULL || atts->type != 'o')
+  {
+    char *nid = node_id(node, msg);
+    fgaj_e("%s: tree not found, no attributes", nid);
+    free(nid);
 
-  return att;
+    return r;
+  }
+
+  for (fdja_value *v = atts->child; v; v = v->sibling)
+  {
+    fdja_value *vv = fdja_clone(v); vv->key = strdup(v->key);
+    expand(vv, node, msg);
+    fdja_set(r, vv->key, vv);
+  }
+
+  return r;
 }
 
 
@@ -250,8 +272,11 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
 
-  //fdja_push(trace, fdja_lc(exe, "tree.1._0"));
-  fdja_push(trace, attribute("_0", node, exe));
+  fdja_value *atts = attributes(node, exe);
+
+  fdja_push(trace, fdja_lc(atts, "_0"));
+
+  fdja_free(atts);
 
   return 'v'; // over
 }
@@ -264,20 +289,27 @@ static char exe_set(fdja_value *node, fdja_value *exe)
 {
   fdja_value *pl = payload(exe, 0);
 
-  for (fdja_value *a = attributes(node, exe)->child; a; a = a->sibling)
-  {
-    fdja_value *a1 = fdja_clone(a); a1->key = strdup(a->key);
-    expand(a1, node, exe);
+  fdja_value *atts = attributes(node, exe);
 
-    char *key = a1->key;
-    char k = extract_prefix(key);
+  for (fdja_value *a = atts->child; a; )
+  {
+    char *key = a->key;
+    fdja_value *sibling = a->sibling;
+
+    fgaj_d("key: 0 >%s<", key);
+
+    char k = extract_prefix(a->key);
     if (k == 'f' || k == 'v') key = strchr(key, '.') + 1;
 
-    //fgaj_d("key: >%s<", key);
+    fgaj_d("key: 1 >%s<", key);
 
-    if (k == 'f' || k == 'F') fdja_pset(pl, key, a1);
+    if (k == 'f' || k == 'F') fdja_pset(pl, key, a);
     //else if (k == 'v') // TODO
+
+    a = a->sibling;
   }
+
+  atts->child = NULL; fdja_free(atts);
 
   return 'v'; // over
 }
