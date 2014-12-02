@@ -96,6 +96,22 @@ void flon_queue_msg(
   flu_list_add(msgs, msg);
 }
 
+void flon_schedule_msg(
+  const char *type, const char *ts, const char *nid, fdja_value *msg)
+{
+  //flu_putf(fdja_todc(msg));
+
+  fgaj_i("%s %s from -%s", type, ts, nid);
+
+  fdja_value *m = fdja_v("{ point: schedule }");
+  fdja_set(m, type, fdja_s(ts));
+  fdja_set(m, "msg", msg);
+
+  fdja_to_json_f(
+    m,
+    "var/spool/dis/%s-%s-%s-%s.json", type, ts, execution_id, nid);
+}
+
 
 static fdja_value *create_node(
   const char *nid,

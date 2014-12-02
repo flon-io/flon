@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "dollar.h"
@@ -352,11 +353,27 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
 {
   fdja_value *atts = attributes(node, exe);
 
-  char *_for = fdja_ls(atts, "_0", "");
+  char *f = fdja_ls(atts, "_0", "");
+  long long s = flu_parse_t(f);
+  char *a = flu_sstamp(flu_gets('s') + s, 1, 's');
 
-  log_d(node, exe, "sleep for %s", _for);
+  log_d(node, exe, "sleep for %s (%llis) --> until %s", f, s, a);
+
+  char *nid = fdja_ls(node, "nid", NULL);
+  char *exid = fdja_ls(exe, "exid", NULL);
+
+  fdja_value *msg = fdja_v("{}");
+  fdja_set(msg, "point", fdja_s("receive"));
+  fdja_set(msg, "nid", fdja_s(nid));
+  fdja_set(msg, "exid", fdja_s(exid));
+
+  flon_schedule_msg("at", a, nid, msg);
 
   fdja_free(atts);
+  free(f);
+  free(a);
+  free(nid);
+  free(exid);
 
   return 'k'; // ok
 }
