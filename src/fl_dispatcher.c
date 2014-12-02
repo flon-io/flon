@@ -168,7 +168,7 @@ static void move_to_rejected(const char *path, ...)
 
 static void move_to_processed(char *fep, const char *dformat, const char *fn)
 {
-  //printf("%s, %s, %s\n", fep, dformat, fn);
+  printf("%s, %s, %s\n", fep, dformat, fn);
 
   char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
 
@@ -198,7 +198,12 @@ static short schedule(
   char *ts = fdja_ls(msg, "at", NULL);
   if (ts == NULL) { type = "cron"; ts = fdja_ls(msg, "cron", NULL); }
 
-  if (ts == NULL) { r = -7; goto _over; }
+  if (ts == NULL)
+  {
+    r = -1;
+    move_to_rejected("var/spool/dis/%s", fname, "no 'at' or 'cron'");
+    goto _over;
+  }
 
   char *ots = ts;
   if (*type == 'c') ts = flu64_encode(ts, -1);
@@ -453,7 +458,11 @@ static short dispatch(const char *fname, fdja_value *j)
 {
   //flu_putf(fdja_todc(j));
 
-  if (fdja_l(j, "point") == NULL) return -8;
+  if (fdja_l(j, "point") == NULL)
+  {
+    move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
+    return -1;
+  }
 
   int r = 2; // 'dispatched' for now
 
@@ -480,8 +489,10 @@ static short dispatch(const char *fname, fdja_value *j)
 
   if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
   {
-    fgaj_r("failed to move %s to var/spool/%s/%s", fname, ct, fname);
-    r = -6; // triggers rejection
+    move_to_rejected(
+      "var/spool/dis/%s", fname,
+      "failed to move to var/spool/%s/%s", ct, fname);
+    r = -1; // rejected
   }
 
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
@@ -528,8 +539,14 @@ static short receive_ret(const char *fname)
 
     // no need to lock file when writing, since we're in the reader...
     //
-  int rr = fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4);
-  if (rr != 1) { r = -1; goto _over; }
+  if (fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4) != 1)
+  {
+    move_to_rejected(
+      "var/spool/dis/%s", fname,
+      "failed to move to var/spool/dis/rcv_%s", fname + 4);
+    r = -1;
+    goto _over;
+  }
 
   // unlink inv_
 
@@ -556,9 +573,8 @@ _over:
 // returns
 //
 //   -1 rejected
-//    0 not seen
-//    1 seen
-//    2 dispatched
+//    0 error
+//    1 dispatched
 //
 short flon_dispatch(const char *fname)
 {
@@ -567,7 +583,12 @@ short flon_dispatch(const char *fname)
   int r = 1;
   fdja_value *msg = NULL;
 
-  if ( ! flu_strends(fname, ".json")) { r = -1; goto _over; }
+  if ( ! flu_strends(fname, ".json"))
+  {
+    r = -1;
+    move_to_rejected("var/spool/dis/%s", fname, "not a .json file");
+    goto _over;
+  }
 
   if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
 
@@ -576,11 +597,27 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "inv_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0
-  ) { r = -3; goto _over; }
+  ) {
+    r = -1;
+    move_to_rejected("var/spool/dis/%s", fname, "unknown file prefix");
+    goto _over;
+  }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
 
-  if (msg == NULL) { r = (errno == 0) ? -2 : 1; goto _over; }
+  if (msg == NULL)
+  {
+    if (errno == 0)
+    {
+      r = -1;
+      move_to_rejected("var/spool/dis/%s", fname, "couldn't parse json");
+    }
+    else
+    {
+      r = 1;
+    }
+    goto _over;
+  }
 
   // TODO reroute?
 
@@ -595,47 +632,6 @@ short flon_dispatch(const char *fname)
   }
 
 _over:
-
-  if (r == 1)
-  {
-    char *path = flu_sprintf("var/spool/dis/%s", fname);
-    struct stat sta;
-
-    if (stat(path, &sta) != 0)
-    {
-      //fgaj_r("failed to stat var/spool/dis/%s, rejecting...", fname);
-      r = -4;
-    }
-    else
-    {
-      long long age = flu_gets('s') - sta.st_mtime;
-      //fgaj_d("age: %lli", age);
-
-      if (age > 1 * 60 * 60) r = -5; // reject
-      else if (age > 2) r = 0; // not seen
-      // else r = 1; // seen
-
-      // TODO: make those 2 thresholds configurable (flu_parse_t())
-    }
-
-    free(path);
-  }
-
-  if (r < 0)
-  {
-    char *reason = NULL;
-    if (r == -2) reason = "couldn't parse JSON";
-    else if (r == -3) reason = "unknown file prefix";
-    else if (r == -4) reason = "couldn't stat file";
-    else if (r == -5) reason = "couldn't read file";
-    else if (r == -6) reason = "failed to move to spool/";
-    else if (r == -7) reason = "no 'at' or 'cron'";
-    else if (r == -8) reason = "no 'point'";
-
-    move_to_rejected("var/spool/dis/%s", fname, reason);
-
-    r = -1;
-  }
 
   fdja_free(msg);
 
