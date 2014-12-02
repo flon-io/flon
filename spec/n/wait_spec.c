@@ -20,6 +20,7 @@ context "instruction:"
   before each
   {
     hlp_reset_tst();
+    //hlp_sighup_dispatcher(); //TODO
 
     char *exid = NULL;
     fdja_value *result = NULL;
@@ -44,14 +45,11 @@ context "instruction:"
 
       //flon_pp_execution(exid);
 
-      result = hlp_wait(exid, "terminated", NULL, 60);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
       flon_pp_execution(exid);
 
       expect(result != NULL);
-
-      //hlp_sighup_dispatcher();
-        // idea...
     }
   }
 }

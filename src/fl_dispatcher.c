@@ -189,8 +189,7 @@ static void move_to_processed(char *fep, const char *dformat, const char *fn)
     dformat, fn, "couldn't move to var/%s/%s/processed/", d, fep);
 }
 
-static short schedule(
-  const char *fname, fdja_value *msg)
+static short schedule(const char *fname, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
 
@@ -218,11 +217,10 @@ static short schedule(
     fgaj_r("failed to mkdir var/spool/tdis/%s/", fep); goto _over;
   }
 
-  char *fn = flu_sprintf(
-    "var/spool/tdis/%s/%s-%s-%s", fep, type, ts, fname + 4);
+  char *fn = flu_sprintf("%s/%s-%s-%s", fep, type, ts, fname + 4);
 
     // directly write the source of the msg to file
-  if (flu_writeall(fn, msg->source) != 1)
+  if (flu_writeall("var/spool/tdis/%s", fn, msg->source) != 1)
   {
     fgaj_r("failed to write %s", fn); goto _over;
   }
@@ -274,7 +272,9 @@ static int do_trigger(const char *ns)
   r = 1;
   t = flu_list_shift(at_timers); // shift
 
+  fgaj_d(t->fn);
   sch = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
+  fgaj_d("sch: %p", sch);
 
   if (sch == NULL)
   {
