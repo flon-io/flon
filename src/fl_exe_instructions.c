@@ -49,17 +49,51 @@ typedef char flon_instruction(fdja_value *, fdja_value *);
 //
 // helpers
 
-static char *node_id(fdja_value *node, fdja_value *msg)
+//static char *node_id(fdja_value *node, fdja_value *msg)
+//{
+//  //flu_putf(fdja_todc(node));
+//  //flu_putf(fdja_todc(msg));
+//
+//  char *nid = fdja_lsd(node, "nid", "nid?");
+//  char *exid = fdja_ls(node, "exid", NULL);
+//  if (exid == NULL) exid = fdja_lsd(msg, "exid", "exid?");
+//
+//  char *r = flu_sprintf("%s-%s", exid, nid);
+//
+//  free(nid); free(exid);
+//
+//  return r;
+//}
+
+static void n_log(
+  char level,
+  fdja_value *node, fdja_value *msg,
+  const char *file, int line, const char *func,
+  const char *format, ...)
 {
+  va_list ap; va_start(ap, format);
+  char *m = flu_svprintf(format, ap);
+  va_end(ap);
+
   char *nid = fdja_lsd(node, "nid", "nid?");
-  char *exid = fdja_lsd(node, "exid", "exid?");
 
-  char *r = flu_sprintf("%s-%s", nid, exid);
+  fgaj_log(level, file, line, func, "-%s: %s", nid, m);
 
-  free(nid); free(exid);
-
-  return r;
+  free(nid);
+  free(m);
 }
+#define log_t(node, msg, ...) \
+  n_log('t', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_d(node, msg, ...) \
+  n_log('d', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_i(node, msg, ...) \
+  n_log('i', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_w(node, msg, ...) \
+  n_log('w', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_e(node, msg, ...) \
+  n_log('e', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define log_r(node, msg, ...) \
+  n_log('r', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 static fdja_value *tree(fdja_value *node, fdja_value *msg)
 {
@@ -155,18 +189,14 @@ static void expand(
   //else // do not expand
 }
 
-static fdja_value *attributes(
-  fdja_value *node, fdja_value *msg)
+static fdja_value *attributes(fdja_value *node, fdja_value *msg)
 {
   fdja_value *atts = fdja_l(tree(node, msg), "1");
   fdja_value *r = fdja_v("{}");
 
   if (atts == NULL || atts->type != 'o')
   {
-    char *nid = node_id(node, msg);
-    fgaj_e("%s: tree not found, no attributes", nid);
-    free(nid);
-
+    log_e(node, msg, "tree not found, no attributes");
     return r;
   }
 
@@ -306,7 +336,7 @@ static char exe_set(fdja_value *node, fdja_value *exe)
     if (k == 'f' || k == 'F') fdja_pset(pl, key, a);
     //else if (k == 'v') // TODO
 
-    a = a->sibling;
+    a = sibling;
   }
 
   atts->child = NULL; fdja_free(atts);
@@ -320,23 +350,14 @@ static char exe_set(fdja_value *node, fdja_value *exe)
 
 static char exe_wait(fdja_value *node, fdja_value *exe)
 {
-//  fdja_value *pl = payload(exe, 0);
-//
-//  for (fdja_value *a = attributes(node, exe)->child; a; a = a->sibling)
-//  {
-//    fdja_value *a1 = fdja_clone(a); a1->key = strdup(a->key);
-//    expand(a1, node, exe);
-//
-//    char *key = a1->key;
-//    char k = extract_prefix(key);
-//    if (k == 'f' || k == 'v') key = strchr(key, '.') + 1;
-//
-//    //fgaj_d("key: >%s<", key);
-//
-//    if (k == 'f' || k == 'F') fdja_pset(pl, key, a1);
-//    //else if (k == 'v') // TODO
-//  }
-//
+  fdja_value *atts = attributes(node, exe);
+
+  char *_for = fdja_ls(atts, "_0", "");
+
+  log_d(node, exe, "sleep for %s", _for);
+
+  fdja_free(atts);
+
   return 'k'; // ok
 }
 
