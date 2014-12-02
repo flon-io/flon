@@ -53,6 +53,12 @@ void flon_pp_execution(const char *exid)
 
   free(fep);
 
+  puts("\n## dispatcher log\n#");
+  printf("[0;32m"); fflush(stdout);
+  flu_system(
+    "cat var/log/dispatcher.log | grep --colour=never \"%s\"", exid);
+  printf("[0;0m");
+
   puts("\n## execution log\n#");
   printf("[0;32m"); fflush(stdout);
   flu_system(
