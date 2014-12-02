@@ -146,6 +146,11 @@ static void move_to_rejected(const char *path, ...)
   char *re = flu_svprintf(va_arg(ap, char *), ap);
   va_end(ap);
 
+  if (strncmp(pa, "var/", 4) != 0)
+  {
+    char *opa = pa; pa = flu_path("var/spool/dis/%s", pa); free(opa);
+  }
+
   FILE *f = fopen(pa, "a");
   if (f)
   {
@@ -168,7 +173,7 @@ static void move_to_rejected(const char *path, ...)
 
 static void move_to_processed(char *fep, const char *dformat, const char *fn)
 {
-  printf("%s, %s, %s\n", fep, dformat, fn);
+  //printf("%s, %s, %s\n", fep, dformat, fn);
 
   char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archived" : "run";
 
@@ -200,9 +205,7 @@ static short schedule(
 
   if (ts == NULL)
   {
-    r = -1;
-    move_to_rejected("var/spool/dis/%s", fname, "no 'at' or 'cron'");
-    goto _over;
+    r = -1; move_to_rejected(fname, "no 'at' or 'cron'"); goto _over;
   }
 
   char *ots = ts;
@@ -210,8 +213,7 @@ static short schedule(
 
   if (flu_mkdir_p("var/spool/tdis/%s", fep, 0755) != 0)
   {
-    fgaj_r("failed to mkdir var/spool/tdis/%s/", fep);
-    goto _over;
+    fgaj_r("failed to mkdir var/spool/tdis/%s/", fep); goto _over;
   }
 
   char *fn = flu_sprintf(
@@ -220,8 +222,7 @@ static short schedule(
     // directly write the source of the msg to file
   if (flu_writeall(fn, msg->source) != 1)
   {
-    fgaj_r("failed to write %s", fn);
-    goto _over;
+    fgaj_r("failed to write %s", fn); goto _over;
   }
 
   // list in timer index
@@ -276,16 +277,14 @@ static int do_trigger(const char *ns)
 
   if (sch == NULL)
   {
-    move_to_rejected("var/spool/tdis/%s", t->fn, "couldn't parse");
-    goto _over;
+    move_to_rejected(t->fn, "couldn't parse"); goto _over;
   }
 
   fdja_value *msg = fdja_l(sch, "msg");
 
   if (msg == NULL)
   {
-    move_to_rejected("var/spool/tdis/%s", t->fn, "doesn't contain 'msg' key");
-    goto _over;
+    move_to_rejected(t->fn, "doesn't contain 'msg' key"); goto _over;
   }
 
   point = fdja_ls(msg, "point", NULL);
@@ -460,8 +459,7 @@ static short dispatch(const char *fname, fdja_value *j)
 
   if (fdja_l(j, "point") == NULL)
   {
-    move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
-    return -1;
+    move_to_rejected(fname, "no 'point'"); return -1;
   }
 
   int r = 2; // 'dispatched' for now
@@ -489,9 +487,7 @@ static short dispatch(const char *fname, fdja_value *j)
 
   if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
   {
-    move_to_rejected(
-      "var/spool/dis/%s", fname,
-      "failed to move to var/spool/%s/%s", ct, fname);
+    move_to_rejected(fname, "failed to move to var/spool/%s/%s", ct, fname);
     r = -1; // rejected
   }
 
@@ -542,7 +538,7 @@ static short receive_ret(const char *fname)
   if (fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4) != 1)
   {
     move_to_rejected(
-      "var/spool/dis/%s", fname,
+      fname,
       "failed to move to var/spool/dis/rcv_%s", fname + 4);
     r = -1;
     goto _over;
@@ -585,9 +581,7 @@ short flon_dispatch(const char *fname)
 
   if ( ! flu_strends(fname, ".json"))
   {
-    r = -1;
-    move_to_rejected("var/spool/dis/%s", fname, "not a .json file");
-    goto _over;
+    r = -1; move_to_rejected(fname, "not a .json file"); goto _over;
   }
 
   if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
@@ -598,24 +592,15 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0
   ) {
-    r = -1;
-    move_to_rejected("var/spool/dis/%s", fname, "unknown file prefix");
-    goto _over;
+    r = -1; move_to_rejected(fname, "unknown file prefix"); goto _over;
   }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
 
   if (msg == NULL)
   {
-    if (errno == 0)
-    {
-      r = -1;
-      move_to_rejected("var/spool/dis/%s", fname, "couldn't parse json");
-    }
-    else
-    {
-      r = 1;
-    }
+    r = (errno == 0) ? -1 : 1;
+    if (r == -1) move_to_rejected(fname, "couldn't parse json");
     goto _over;
   }
 
