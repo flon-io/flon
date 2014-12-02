@@ -196,7 +196,7 @@ static short schedule(
   char *ts = fdja_ls(msg, "at", NULL);
   if (ts == NULL) { type = "cron"; ts = fdja_ls(msg, "cron", NULL); }
 
-  if (ts == NULL) { r = -1; goto _over; }
+  if (ts == NULL) { r = -7; goto _over; }
 
   char *ots = ts;
   if (*type == 'c') ts = flu64_encode(ts, -1);
@@ -451,7 +451,7 @@ static short dispatch(const char *fname, fdja_value *j)
 {
   //flu_putf(fdja_todc(j));
 
-  if (fdja_l(j, "point") == NULL) return -1;
+  if (fdja_l(j, "point") == NULL) return -8;
 
   int r = 2; // 'dispatched' for now
 
@@ -479,7 +479,7 @@ static short dispatch(const char *fname, fdja_value *j)
   if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
   {
     fgaj_r("failed to move %s to var/spool/%s/%s", fname, ct, fname);
-    r = -1; // triggers rejection
+    r = -6; // triggers rejection
   }
 
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
@@ -574,11 +574,11 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "inv_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0
-  ) { r = -1; goto _over; }
+  ) { r = -3; goto _over; }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
 
-  if (msg == NULL) { r = (errno == 0) ? -1 : 1; goto _over; }
+  if (msg == NULL) { r = (errno == 0) ? -2 : 1; goto _over; }
 
   // TODO reroute?
 
@@ -601,15 +601,15 @@ _over:
 
     if (stat(path, &sta) != 0)
     {
-      fgaj_r("failed to stat var/spool/dis/%s, rejecting...", fname);
-      r = -1;
+      //fgaj_r("failed to stat var/spool/dis/%s, rejecting...", fname);
+      r = -4;
     }
     else
     {
       long long age = flu_gets('s') - sta.st_mtime;
       //fgaj_d("age: %lli", age);
 
-      if (age > 1 * 60 * 60) r = -1; // reject
+      if (age > 1 * 60 * 60) r = -5; // reject
       else if (age > 2) r = 0; // not seen
       // else r = 1; // seen
 
@@ -619,8 +619,21 @@ _over:
     free(path);
   }
 
-  if (r == -1) { move_to_rejected("var/spool/dis/%s", fname, NULL); r = 1; }
-    // reason is NULL
+  if (r < 0)
+  {
+    char *reason = NULL;
+    if (r == -2) reason = "couldn't parse JSON";
+    else if (r == -3) reason = "unknown file prefix";
+    else if (r == -4) reason = "couldn't stat file";
+    else if (r == -5) reason = "couldn't read file";
+    else if (r == -6) reason = "failed to move to spool/";
+    else if (r == -7) reason = "no 'at' or 'cron'";
+    else if (r == -8) reason = "no 'point'";
+
+    move_to_rejected("var/spool/dis/%s", fname, reason);
+
+    r = 1;
+  }
 
   fdja_free(msg);
 
