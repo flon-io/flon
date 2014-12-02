@@ -34,6 +34,7 @@
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
+#include "fl_common.h"
 #include "fl_executor.h"
 
 
@@ -107,9 +108,7 @@ void flon_schedule_msg(
   fdja_set(m, type, fdja_s(ts));
   fdja_set(m, "msg", msg);
 
-  fdja_to_json_f(
-    m,
-    "var/spool/dis/%s-%s-%s-%s.json", type, ts, execution_id, nid);
+  flon_lock_write(m, "var/spool/dis/sch_%s-%s.json", execution_id, nid);
 }
 
 

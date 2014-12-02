@@ -187,6 +187,8 @@ static short schedule(
 {
   int r = 1; // seen, failed, for now
 
+  fgaj_d("considering %s", fname);
+
   char *exid = flon_parse_exid(fname);
   char *fep = flon_exid_path(exid);
 

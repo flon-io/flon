@@ -19,6 +19,8 @@ context "instruction:"
 
   before each
   {
+    hlp_reset_tst();
+
     char *exid = NULL;
     fdja_value *result = NULL;
   }
@@ -42,7 +44,7 @@ context "instruction:"
 
       //flon_pp_execution(exid);
 
-      result = hlp_wait(exid, "terminated", NULL, 1);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
       flon_pp_execution(exid);
 
