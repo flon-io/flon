@@ -632,7 +632,7 @@ _over:
 
     move_to_rejected("var/spool/dis/%s", fname, reason);
 
-    r = 1;
+    r = -1;
   }
 
   fdja_free(msg);
