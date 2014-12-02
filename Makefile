@@ -27,7 +27,8 @@ ctst:
 	find tst/var/archive/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
 	find tst/var/log/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
 	rm -f tst/var/run/*.pid
-	rm -f tst/var/log/dispatcher.log
+	#rm -f tst/var/log/dispatcher.log
+	echo "" > tst/var/log/dispatcher.log
 
 dis:
 	make clean dispatcher && \
