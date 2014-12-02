@@ -177,7 +177,7 @@ static void handle_order(char order, fdja_value *msg)
   else if (*spoint == 'e') a = 'x'; // execute
   else return; // failed, launched, terminated...
 
-  fgaj_i("a: %c", a);
+  //fgaj_i("a: %c", a);
 
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);

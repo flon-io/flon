@@ -284,6 +284,32 @@ static char exe_set(fdja_value *node, fdja_value *exe)
 
 
 //
+// *** WAIT
+
+static char exe_wait(fdja_value *node, fdja_value *exe)
+{
+//  fdja_value *pl = payload(exe, 0);
+//
+//  for (fdja_value *a = attributes(node, exe)->child; a; a = a->sibling)
+//  {
+//    fdja_value *a1 = fdja_clone(a); a1->key = strdup(a->key);
+//    expand(a1, node, exe);
+//
+//    char *key = a1->key;
+//    char k = extract_prefix(key);
+//    if (k == 'f' || k == 'v') key = strchr(key, '.') + 1;
+//
+//    //fgaj_d("key: >%s<", key);
+//
+//    if (k == 'f' || k == 'F') fdja_pset(pl, key, a1);
+//    //else if (k == 'v') // TODO
+//  }
+//
+  return 'k'; // ok
+}
+
+
+//
 // function table
 
 typedef struct {
@@ -297,6 +323,7 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence },
   &(flon_ni){ "trace", exe_trace, rcv_ },
   &(flon_ni){ "set", exe_set, rcv_ },
+  &(flon_ni){ "wait", exe_wait, rcv_ },
   NULL
 };
 
