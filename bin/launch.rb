@@ -6,7 +6,8 @@ id = `tst/bin/flon-flon -i #{dom}`.strip
 f = File.open("tst/var/spool/dis/exe_#{id}.json", 'w')
 f.write(%[
 {
-  execute:
+  point: execute
+  tree:
     [ sequence, {}, [
       [ invoke, { _0: stamp, color: blue }, [] ]
       [ invoke, { _0: stamp, color: green }, [] ]
