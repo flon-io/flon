@@ -67,6 +67,11 @@ context "instruction:"
 
       expect(fdja_lj(result, "payload") ===F fdja_vj("{ hello : wait }"));
     }
+
+    context "when cancelled"
+    {
+      it "unschedules its timer"
+    }
   }
 }
 
