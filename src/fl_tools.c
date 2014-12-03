@@ -113,6 +113,17 @@ void flon_pp_execution(const char *exid)
     flu_system("cat %s/run.json", path);
   }
 
+  puts("\n## timers\n#");
+  flu_list *l = flon_find_json("var/spool/tdis/%s", fep);
+  for (flu_node *n = l->first; n; n = n->next)
+  {
+    char *fn = n->item;
+    puts(strrchr(fn, '/') + 1);
+    fdja_value *v = fdja_parse_obj_f(fn);
+    if (v) flu_putf(fdja_todc(v)); else puts("(null)");
+  }
+  flu_list_free_all(l);
+
   puts("\n## processed\n#");
   printf("[0;32m"); fflush(stdout);
   flu_system("ls -lh %s/processed", path);

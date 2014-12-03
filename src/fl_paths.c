@@ -97,11 +97,15 @@ static void find(const char *path, short depth, flu_list *fnames)
   closedir(d);
 }
 
-flu_list *flon_find_json(const char *path)
+flu_list *flon_find_json(const char *path, ...)
 {
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
   flu_list *r = flu_list_malloc();
 
-  find(path, 0, r);
+  find(p, 0, r);
+
+  free(p);
 
   return r;
 }

@@ -49,10 +49,10 @@ context "instruction:"
         "",
         "{ hello: wait }");
 
-      //flon_pp_execution(exid);
-
       flu_msleep(250);
         // so that the execution actually starts
+
+      flon_pp_execution(exid);
 
       v = hlp_read_node(exid, "0");
       //flu_putf(fdja_todc(v));

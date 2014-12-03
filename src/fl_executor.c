@@ -109,6 +109,9 @@ void flon_schedule_msg(
   fdja_set(m, "msg", msg);
 
   flon_lock_write(m, "var/spool/dis/sch_%s-%s.json", execution_id, nid);
+
+  //flu_list_add(msgs, mmm);
+    // now what about "unscheduled" msgs? TODO
 }
 
 
