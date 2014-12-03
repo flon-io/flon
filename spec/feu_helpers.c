@@ -257,6 +257,30 @@ fdja_value *hlp_read_node(char *exid, char *nid)
   return fdja_lc(v, "nodes.%s", nid);
 }
 
+double hlp_determine_delta(char *exid)
+{
+  double r = -1.0;
+
+  char *fep = flon_exid_path(exid);
+  char *line = flu_pline("grep delta var/archive/%s/exe.log", fep);
+  char *delta = strrchr(line, ' ');
+
+  if (delta == NULL) goto _over;
+
+  r = flu_parse_d(delta + 1);
+
+  if (errno != 0) r = -1.0;
+
+_over:
+
+  free(fep);
+  free(line);
+
+  //printf("delta: %f\n", r);
+
+  return r;
+}
+
 void hlp_cat_inv_log(char *exid)
 {
   char *fep = flon_exid_path(exid);

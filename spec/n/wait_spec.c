@@ -65,11 +65,7 @@ context "instruction:"
 
       expect(result != NULL);
 
-      char *line = flu_pline("grep delta var/archive/%s/exe.log", fep);
-      char *delta = strrchr(line, ' ') + 1;
-      double d = flu_parse_d(delta);
-      //printf("d: %f\n", d);
-        // TODO: package that into a helper...
+      double d = hlp_determine_delta(exid);
 
       expect(d > 1.2);
       expect(d < 3.0);
