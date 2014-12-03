@@ -619,6 +619,8 @@ static flu_node *flu_node_malloc(void *item)
 
 void flu_node_free(flu_node *n)
 {
+  if (n == NULL) return;
+
   if (n->key != NULL) free(n->key);
   free(n);
 }

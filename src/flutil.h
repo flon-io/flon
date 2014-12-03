@@ -233,6 +233,10 @@ flu_list *flu_list_malloc();
  */
 void flu_list_free(flu_list *l);
 
+/* Used by functions that remove items from flu_list instances.
+ */
+void flu_node_free(flu_node *n);
+
 /* Frees a flu_list and all its nodes. Calls the given free_item function
  * on each of the items within the nodes.
  */
