@@ -351,6 +351,10 @@ struct timespec *flu_parse_ts(const char *s)
 
       prev = c;
     }
+    else if (c == ' ')
+    {
+      // ignore
+    }
     else
     {
       free(ss); free(ts); return NULL;
@@ -382,6 +386,9 @@ double flu_parse_d(const char *s)
   struct timespec *ts = flu_parse_ts(s);
   if (ts == NULL) { errno = EINVAL; return 0.0; }
 
-  return ts->tv_sec + (double)ts->tv_nsec / 1000000000;
+  double r = ts->tv_sec + (double)ts->tv_nsec / 1000000000;
+  free(ts);
+
+  return r;
 }
 
