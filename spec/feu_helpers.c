@@ -327,6 +327,8 @@ void hlp_reset_tst()
   flu_system("make -C .. ctst 2>&1 > /dev/null");
 
   // don't maintain two lists
+
+  hlp_dispatcher_sighup();
 }
 
 size_t hlp_count_jsons(const char *path, ...)
