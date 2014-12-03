@@ -120,6 +120,8 @@ void hlp_dispatcher_start()
 
 void hlp_dispatcher_sighup()
 {
+  if (dispatcher_pid < 1) return;
+
   if (kill(dispatcher_pid, SIGHUP) == 0) return;
 
   char *s =
