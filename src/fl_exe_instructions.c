@@ -366,6 +366,7 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_set(msg, "point", fdja_s("receive"));
   fdja_set(msg, "nid", fdja_s(nid));
   fdja_set(msg, "exid", fdja_s(exid));
+  fdja_set(msg, "payload", fdja_lc(exe, "payload"));
 
   flon_schedule_msg("at", a, nid, msg);
 
