@@ -211,14 +211,14 @@ static short schedule(const char *fname, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
 
-  fgaj_d("considering %s", fname);
+  int unschedule = (*fdja_srk(fdja_l(msg, "point")) == 'u');
+
+  fgaj_d("%sschedule order: %s", unschedule ? "un" : "", fname);
 
   char *exid = flon_parse_exid(fname);
   char *fep = flon_exid_path(exid);
 
   // write to var/spool/tdis/
-
-  int unschedule = (*fdja_srk(fdja_l(msg, "point")) == 'u');
 
   char *type = "at";
   char *ts = fdja_ls(msg, "at", NULL);

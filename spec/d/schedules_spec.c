@@ -162,7 +162,7 @@ context "flon-dispatcher and schedules:"
 
     it "unstores at schedules"
     {
-      exid = flon_generate_exid("dtest.unsch.one");
+      exid = flon_generate_exid("dtest.unsch.at");
       fep = flon_exid_path(exid);
       name = flu_sprintf("sch_%s-0_2.json", exid);
 
@@ -214,6 +214,57 @@ context "flon-dispatcher and schedules:"
     }
 
     it "unstores cron schedules"
+    {
+      exid = flon_generate_exid("dtest.unsch.cron");
+      fep = flon_exid_path(exid);
+      name = flu_sprintf("sch_%s-0_2.json", exid);
+
+      int r = flu_mkdir_p("var/run/%s/processed", fep, 0755);
+      expect(r i== 0);
+
+      r = flu_writeall(
+        "var/spool/dis/%s", name,
+        "{"
+          "point: schedule\n"
+          "cron: \"* * * * *\"\n"
+          "exid: %s\n"
+          "nid: 0_2\n"
+          "msg: { point: execute, exid: \"%s\", nid: 0_2_0 }\n"
+        "}", exid, exid
+      );
+      expect(r i== 1);
+      //
+      r = flon_dispatch(name);
+      expect(r i== 2);
+
+      r = flu_writeall(
+        "var/spool/dis/%s", name,
+        "{"
+          "point: unschedule\n"
+          "cron: \"* * * * *\"\n"
+          "exid: %s\n"
+          "nid: 0_2\n"
+        "}", exid
+      );
+      expect(r i== 1);
+
+      r = flon_dispatch(name);
+
+      flu_system("tree var/ -I www");
+
+      expect(r i== 2);
+
+      expect(flu_fstat("var/spool/dis/%s", name) c== 0);
+      expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
+
+      expect(flu_fstat("var/spool/tdis/%s", fep) c== 0);
+
+      flu_list *at = flon__timer('a');
+      flu_list *ct = flon__timer('c');
+
+      expect(at->size zu== 0);
+      expect(ct->size zu== 0);
+    }
   }
 
   describe "flon_load_timers()"
