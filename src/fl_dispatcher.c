@@ -107,14 +107,22 @@ static void add_cron_timer(const char *ts, const char *fn)
     // low frequency last, to help determine the scheduling frequency...
 }
 
-static void remove_at_timer(const char *ts, const char *fn)
+static void remove_timer(flu_list *l, const char *ts, const char *fn)
 {
-  // TODO
-}
+  for (flu_node **link = &l->first; *link; link = &(*link)->next)
+  {
+    flu_node *n = *link;
+    flon_timer *t = n->item;
 
-static void remove_cron_timer(const char *ts, const char *fn)
-{
-  // TODO
+    if (strcmp(t->ts, ts) != 0 || strcmp(t->fn, fn) != 0) continue;
+
+    *link = (*link)->next;
+    flon_timer_free(t);
+    flu_node_free(n);
+    l->size--;
+
+    break;
+  }
 }
 
 void flon_load_timers()
@@ -237,8 +245,7 @@ static short schedule(const char *fname, fdja_value *msg)
 
     // unlist from timer index
 
-    if (*type == 'c') remove_cron_timer(ots, fn);
-    else remove_at_timer(ots, fn);
+    remove_timer(*type == 'c' ? cron_timers : at_timers, ots, fn);
   }
   else // add schedule
   {
