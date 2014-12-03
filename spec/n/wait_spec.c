@@ -26,12 +26,14 @@ context "instruction:"
 
     char *exid = NULL;
     char *fep = NULL;
+    fdja_value *v = NULL;
     fdja_value *result = NULL;
   }
   after each
   {
     free(exid);
     free(fep);
+    fdja_free(v);
     fdja_free(result);
   }
 
@@ -49,6 +51,11 @@ context "instruction:"
         "{ hello: wait }");
 
       //flon_pp_execution(exid);
+
+      flu_msleep(250);
+
+      v = hlp_read_node(exid, "0");
+      flu_putf(fdja_todc(v));
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 

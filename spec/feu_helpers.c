@@ -249,6 +249,14 @@ fdja_value *hlp_read_run_json(char *exid)
   return v;
 }
 
+fdja_value *hlp_read_node(char *exid, char *nid)
+{
+  fdja_value *v = hlp_read_run_json(exid);
+  if (v == NULL) return NULL;
+
+  return fdja_lc(v, "nodes.%s", nid);
+}
+
 void hlp_cat_inv_log(char *exid)
 {
   char *fep = flon_exid_path(exid);
