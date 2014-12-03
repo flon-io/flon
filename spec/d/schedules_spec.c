@@ -27,6 +27,7 @@ context "flon-dispatcher and schedules:"
     flon_configure(".");
 
     flon_empty_timers();
+    //hlp_reset_tst();
 
     char *exid = NULL;
     char *fep = NULL;
@@ -158,6 +159,61 @@ context "flon-dispatcher and schedules:"
     it "rejects schedules missing 'at' or 'cron'"
     it "rejects schedules with an invalid at time"
     it "rejects schedules with an invalid cron string"
+
+    it "unstores at schedules"
+    {
+      exid = flon_generate_exid("dtest.unsch.one");
+      fep = flon_exid_path(exid);
+      name = flu_sprintf("sch_%s-0_2.json", exid);
+
+      int r = flu_mkdir_p("var/run/%s/processed", fep, 0755);
+      expect(r i== 0);
+
+      r = flu_writeall(
+        "var/spool/dis/%s", name,
+        "{"
+          "point: schedule\n"
+          "at: \"20141128.105313\"\n"
+          "exid: %s\n"
+          "nid: 0_2\n"
+          "msg: { point: execute, exid: \"%s\", nid: 0_2_0 }\n"
+        "}", exid, exid
+      );
+      expect(r i== 1);
+      //
+      r = flon_dispatch(name);
+      expect(r i== 2);
+
+      r = flu_writeall(
+        "var/spool/dis/%s", name,
+        "{"
+          "point: unschedule\n"
+          "at: \"20141128.105313\"\n"
+          "exid: %s\n"
+          "nid: 0_2\n"
+        "}", exid
+      );
+      expect(r i== 1);
+
+      r = flon_dispatch(name);
+
+      flu_system("tree var/ -I www");
+
+      expect(r i== 2);
+
+      expect(flu_fstat("var/spool/dis/%s", name) c== 0);
+      expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
+
+      expect(flu_fstat("var/spool/tdis/%s", fep) c== 0);
+
+      flu_list *at = flon__timer('a');
+      flu_list *ct = flon__timer('c');
+
+      expect(at->size zu== 0);
+      expect(ct->size zu== 0);
+    }
+
+    it "unstores cron schedules"
   }
 
   describe "flon_load_timers()"

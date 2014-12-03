@@ -107,6 +107,16 @@ static void add_cron_timer(const char *ts, const char *fn)
     // low frequency last, to help determine the scheduling frequency...
 }
 
+static void remove_at_timer(const char *ts, const char *fn)
+{
+  // TODO
+}
+
+static void remove_cron_timer(const char *ts, const char *fn)
+{
+  // TODO
+}
+
 void flon_load_timers()
 {
   flon_empty_timers();
@@ -200,6 +210,8 @@ static short schedule(const char *fname, fdja_value *msg)
 
   // write to var/spool/tdis/
 
+  int unschedule = (*fdja_srk(fdja_l(msg, "point")) == 'u');
+
   char *type = "at";
   char *ts = fdja_ls(msg, "at", NULL);
   if (ts == NULL) { type = "cron"; ts = fdja_ls(msg, "cron", NULL); }
@@ -212,23 +224,40 @@ static short schedule(const char *fname, fdja_value *msg)
   char *ots = ts;
   if (*type == 'c') ts = flu64_encode(ts, -1);
 
-  if (flu_mkdir_p("var/spool/tdis/%s", fep, 0755) != 0)
-  {
-    fgaj_r("failed to mkdir var/spool/tdis/%s/", fep); goto _over;
-  }
-
   char *fn = flu_sprintf("%s/%s-%s-%s", fep, type, ts, fname + 4);
 
-    // directly write the source of the msg to file
-  if (flu_writeall("var/spool/tdis/%s", fn, msg->source) != 1)
+  if (unschedule) // remove schedule
   {
-    fgaj_r("failed to write %s", fn); goto _over;
+    if (flu_unlink("var/spool/tdis/%s", fn) != 0)
+    {
+      fgaj_r("failed to unlink %s", fn); goto _over;
+    }
+
+    flu_prune_empty_dirs("var/spool/tdis");
+
+    // unlist from timer index
+
+    if (*type == 'c') remove_cron_timer(ots, fn);
+    else remove_at_timer(ots, fn);
   }
+  else // add schedule
+  {
+    if (flu_mkdir_p("var/spool/tdis/%s", fep, 0755) != 0)
+    {
+      fgaj_r("failed to mkdir var/spool/tdis/%s/", fep); goto _over;
+    }
 
-  // list in timer index
+      // directly write the source of the msg to file
+    if (flu_writeall("var/spool/tdis/%s", fn, msg->source) != 1)
+    {
+      fgaj_r("failed to write %s", fn); goto _over;
+    }
 
-  if (*type == 'c')add_cron_timer(ots, fn);
-  else add_at_timer(ots, -1, fn);
+    // list in timer index
+
+    if (*type == 'c') add_cron_timer(ots, fn);
+    else add_at_timer(ots, -1, fn);
+  }
 
   // move to processed/
 
