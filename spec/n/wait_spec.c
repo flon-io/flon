@@ -53,9 +53,11 @@ context "instruction:"
       //flon_pp_execution(exid);
 
       flu_msleep(250);
+        // so that the execution actually starts
 
       v = hlp_read_node(exid, "0");
-      flu_putf(fdja_todc(v));
+      //flu_putf(fdja_todc(v));
+      expect(fdja_lj(v, "timers") ===f "true");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
