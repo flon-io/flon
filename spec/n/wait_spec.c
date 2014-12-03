@@ -41,7 +41,7 @@ context "instruction:"
     it "waits for the given time duration"
     {
       exid = flon_generate_exid("n.wait.0");
-      fep = flon_exid_path(exid);
+      //fep = flon_exid_path(exid);
 
       hlp_launch(
         exid,
@@ -75,6 +75,23 @@ context "instruction:"
     context "when cancelled"
     {
       it "unschedules its timer"
+      {
+        exid = flon_generate_exid("n.wait.cancel");
+
+        hlp_launch(
+          exid,
+          "wait 1h\n"
+          "",
+          "{ hello: wait.cancel }");
+
+        result = hlp_wait(exid, "scheduled", NULL, 2);
+
+        flon_pp_execution(exid);
+
+        expect(result != NULL);
+
+        // TODO: queue cancel message
+      }
     }
   }
 }
