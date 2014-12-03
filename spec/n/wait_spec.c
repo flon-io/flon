@@ -56,7 +56,9 @@ context "instruction:"
 
       v = hlp_read_node(exid, "0");
       //flu_putf(fdja_todc(v));
-      expect(fdja_lj(v, "timers") ===f "true");
+
+      expect(fdja_l(v, "timers.0.at") != NULL);
+      expect(fdja_ls(v, "timers.0.at") ^==f "20");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 

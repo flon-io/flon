@@ -369,7 +369,9 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_set(msg, "payload", fdja_lc(exe, "payload"));
 
   flon_schedule_msg("at", a, nid, msg);
-  fdja_psetv(node, "timers", "true");
+
+  if (fdja_l(node, "timers") == NULL) fdja_set(node, "timers", fdja_v("[]"));
+  fdja_psetv(node, "timers.]", "{ at: \"%s\" }", a);
 
   fdja_free(atts);
   free(f);
