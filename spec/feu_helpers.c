@@ -254,7 +254,11 @@ fdja_value *hlp_read_node(char *exid, char *nid)
   fdja_value *v = hlp_read_run_json(exid);
   if (v == NULL) return NULL;
 
-  return fdja_lc(v, "nodes.%s", nid);
+  fdja_value *r = fdja_lc(v, "nodes.%s", nid);
+
+  fdja_free(v);
+
+  return r;
 }
 
 double hlp_determine_delta(char *exid)
