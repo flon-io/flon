@@ -22,7 +22,7 @@ context "instruction:"
   before each
   {
     hlp_reset_tst();
-    //hlp_sighup_dispatcher(); //TODO
+    hlp_dispatcher_sighup();
 
     char *exid = NULL;
     char *fep = NULL;

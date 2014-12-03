@@ -112,6 +112,8 @@ static void sighup_cb(struct ev_loop *loop, ev_signal *es, int revents)
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
 
+  fgaj_i("received SIGHUP");
+
   flon_load_timers();
 
   // TODO reload configuration and reset logging as well

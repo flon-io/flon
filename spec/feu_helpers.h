@@ -10,6 +10,7 @@
 
 
 void hlp_dispatcher_start();
+void hlp_dispatcher_sighup();
 
 void hlp_launch(char *exid, char *flow, char *payload);
 fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec);

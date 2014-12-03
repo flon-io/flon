@@ -118,6 +118,18 @@ void hlp_dispatcher_start()
   }
 }
 
+void hlp_dispatcher_sighup()
+{
+  if (kill(dispatcher_pid, SIGHUP) == 0) return;
+
+  char *s =
+    flu_sprintf("sending SIGHUP to dispatcher %i failed", dispatcher_pid);
+
+  perror(s);
+
+  free(s);
+}
+
 void hlp_launch(char *exid, char *flow, char *payload)
 {
   char *fep = flon_exid_path(exid);
