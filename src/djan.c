@@ -226,7 +226,7 @@ static void fdja_parser_init()
 
   fdja_obj_parser =
     fabr_seq(
-      fabr_rex("[ \t]*(#[^\n\r]*[\n\r]+)?"), fabr_q("*"),
+      fabr_rex("[ \t\r\n]*(#[^\n\r]*[\n\r]+)?"), fabr_q("*"),
       fabr_n_seq("object", fabr_rex("\\{?"), entries, fabr_rex("\\}?"), NULL),
       fabr_rex("[ \t\r\n]*(#[^\n\r]*)?"), fabr_q("*"),
       NULL);
@@ -623,8 +623,10 @@ fdja_value *fdja_parse_obj(char *input)
   fabr_tree *t = fabr_parse_all(input, 0, fdja_obj_parser);
 
   //printf(">%s<\n", input);
-  //puts("[1;30m"); puts(fabr_parser_to_string(t->parser)); puts("[0;0m");
-  //puts(fabr_tree_to_string(t, input, 1));
+  //puts("[1;30m");
+  //flu_putf(fabr_parser_to_string(t->parser));
+  //puts("[0;0m");
+  //flu_putf(fabr_tree_to_string(t, input, 1));
 
   if (t->result != 1) { fabr_tree_free(t); return NULL; }
 
