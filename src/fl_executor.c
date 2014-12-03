@@ -98,20 +98,25 @@ void flon_queue_msg(
 }
 
 void flon_schedule_msg(
-  const char *type, const char *ts, const char *nid, fdja_value *msg)
+  const char *type, const char *ts, const char *nid,
+  fdja_value *tree, fdja_value *msg)
 {
+  //flu_putf(fdja_todc(tree));
   //flu_putf(fdja_todc(msg));
 
   fgaj_i("%s %s from -%s", type, ts, nid);
 
   fdja_value *m = fdja_v("{ point: schedule }");
   fdja_set(m, type, fdja_s(ts));
+  fdja_set(m, "tree", tree);
   fdja_set(m, "msg", msg);
 
   flon_lock_write(m, "var/spool/dis/sch_%s-%s.json", execution_id, nid);
 
   //flu_list_add(msgs, mmm);
     // now what about "unscheduled" msgs? TODO
+
+  fdja_free(m);
 }
 
 

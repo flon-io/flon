@@ -310,7 +310,7 @@ static int do_trigger(const char *ns)
 
   fgaj_d(t->fn);
   sch = fdja_parse_obj_f("var/spool/tdis/%s", t->fn);
-  fgaj_d("sch: %p", sch);
+  //fgaj_d("sch: %p", sch);
 
   if (sch == NULL)
   {

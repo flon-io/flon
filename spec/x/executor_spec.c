@@ -33,8 +33,8 @@ context "flon-executor"
   }
   after each
   {
-    if (fep) free(fep);
-    if (exid) free(exid);
+    free(fep);
+    free(exid);
   }
 
   describe "flon_execute()"

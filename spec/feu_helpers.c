@@ -83,7 +83,7 @@ void hlp_dispatcher_start()
   {
     char *v = getenv("FLONVAL");
 
-    if (v && strstr(v, "dis"))
+    if (v && (strstr(v, "dis") || strstr(v, "all")))
     {
       execl(
         "/usr/bin/valgrind", "v n_flon-dispatcher",

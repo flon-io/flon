@@ -89,6 +89,7 @@ static void find(const char *path, short depth, flu_list *fnames)
     else
     {
       if (de->d_type != 8) continue;
+      if (strcmp(de->d_name + strlen(de->d_name) - 5, ".json") != 0) continue;
 
       flu_list_add(fnames, flu_path("%s/%s", path, de->d_name));
     }
@@ -105,6 +106,30 @@ flu_list *flon_find_json(const char *path, ...)
 
   find(p, 0, r);
 
+  free(p);
+
+  return r;
+}
+
+flu_list *flon_list_json(const char *path, ...)
+{
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
+  DIR *d = opendir(p);
+  if (d == NULL) return NULL;
+
+  flu_list *r = flu_list_malloc();
+
+  struct dirent *de;
+  while ((de = readdir(d)) != NULL)
+  {
+    if (de->d_type != 8) continue;
+    if (strcmp(de->d_name + strlen(de->d_name) - 5, ".json") != 0) continue;
+
+    flu_list_add(r, flu_path("%s/%s", p, de->d_name));
+  }
+
+  closedir(d);
   free(p);
 
   return r;

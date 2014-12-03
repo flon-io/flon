@@ -51,8 +51,6 @@ void flon_pp_execution(const char *exid)
   flu_system("tree -h var/spool/ -P *%s*", exid);
   flu_system("tree -h var/log/%s", fep);
 
-  free(fep);
-
   puts("\n## dispatcher log\n#");
   printf("[0;32m"); fflush(stdout);
   flu_system(
@@ -114,13 +112,15 @@ void flon_pp_execution(const char *exid)
   }
 
   puts("\n## timers\n#");
-  flu_list *l = flon_find_json("var/spool/tdis/%s", fep);
+  //flu_system("ls -lh var/spool/tdis/%s", fep);
+  flu_list *l = flon_list_json("var/spool/tdis/%s", fep);
   for (flu_node *n = l->first; n; n = n->next)
   {
     char *fn = n->item;
     puts(strrchr(fn, '/') + 1);
     fdja_value *v = fdja_parse_obj_f(fn);
     if (v) flu_putf(fdja_todc(v)); else puts("(null)");
+    fdja_free(v);
   }
   flu_list_free_all(l);
 
@@ -137,6 +137,7 @@ void flon_pp_execution(const char *exid)
   printf("\n\n# %s/ .\n", path);
   puts("");
 
+  free(fep);
   free(path);
 }
 
