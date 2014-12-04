@@ -17,6 +17,7 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec);
 
 fdja_value *hlp_read_run_json(char *exid);
 fdja_value *hlp_read_node(char *exid, char *nid);
+fdja_value *hlp_read_timer(char *exid, char *nid, char *type, char *ts);
 
 double hlp_determine_delta(char *exid);
 

@@ -274,6 +274,18 @@ fdja_value *hlp_read_node(char *exid, char *nid)
   return r;
 }
 
+fdja_value *hlp_read_timer(char *exid, char *nid, char *type, char *ts)
+{
+  char *fep = flon_exid_path(exid);
+
+  fdja_value *v = fdja_parse_f(
+    "var/spool/tdis/%s/%s-%s-%s-%s.json", fep, type, ts, exid, nid);
+
+  free(fep);
+
+  return v;
+}
+
 double hlp_determine_delta(char *exid)
 {
   double r = -1.0;

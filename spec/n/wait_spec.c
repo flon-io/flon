@@ -25,6 +25,7 @@ context "instruction:"
 
     char *exid = NULL;
     char *fep = NULL;
+    char *ts = NULL;
     fdja_value *v = NULL;
     fdja_value *result = NULL;
   }
@@ -32,6 +33,7 @@ context "instruction:"
   {
     free(exid);
     free(fep);
+    free(ts);
     fdja_free(v);
     fdja_free(result);
   }
@@ -49,22 +51,31 @@ context "instruction:"
         "",
         "{ hello: wait }");
 
-      flu_msleep(250);
-        // so that the execution actually starts
+      result = hlp_wait(exid, "launched", NULL, 5);
+      flu_msleep(140);
 
-      flon_pp_execution(exid);
+      expect(result != NULL);
 
-// TODO: check tree and tree1...
-expect(0 i== 1);
+      //flon_pp_execution(exid);
 
       v = hlp_read_node(exid, "0");
       //flu_putf(fdja_todc(v));
 
       expect(v != NULL);
-      expect(fdja_l(v, "timers.0.at") != NULL);
-      expect(fdja_ls(v, "timers.0.at") ^==f "20");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      ts = fdja_ls(v, "timers.0.at", NULL);
+
+      expect(ts != NULL);
+
+      fdja_free(v); v = hlp_read_timer(exid, "0", "at", ts);
+      //flu_putf(fdja_todc(v));
+
+      expect(v != NULL);
+      expect(fdja_lj(v, "tree0") ===F fdja_vj("[ wait, { _0: 2s }, [ 0 ] ]"));
+      expect(fdja_lj(v, "tree1") ===F fdja_vj("[ wait, { _0: 2s }, [ 0 ] ]"));
+
+      fdja_free(result);
+      result = hlp_wait(exid, "terminated", NULL, 5);
 
       //flon_pp_execution(exid);
 
@@ -73,7 +84,7 @@ expect(0 i== 1);
       double d = hlp_determine_delta(exid);
 
       expect(d > 1.2);
-      expect(d < 3.0);
+      expect(d < 3.2);
 
       expect(fdja_lj(result, "payload") ===F fdja_vj("{ hello : wait }"));
     }
@@ -90,7 +101,7 @@ expect(0 i== 1);
           "",
           "{ hello: wait.cancel }");
 
-        result = hlp_wait(exid, "scheduled", NULL, 2);
+        result = hlp_wait(exid, "scheduled", NULL, 5);
 
         flon_pp_execution(exid);
 
