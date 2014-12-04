@@ -370,7 +370,7 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
 
   fdja_value *t = tree(node, exe);
   fdja_value *tre = fdja_v("[]");
-  fdja_push(tre, fdja_v(fdja_lsd(node, "inst", "?")));
+  fdja_push(tre, fdja_lc(node, "inst"));
   fdja_push(tre, atts);
   fdja_push(tre, fdja_v("[]"));
   fdja_psetv(tre, "2.]", "%zu", fdja_size(fdja_l(t, "2")));
