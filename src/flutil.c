@@ -1079,16 +1079,12 @@ char *flu_pline(const char *cmd, ...)
 {
   va_list ap; va_start(ap, cmd); char *c = flu_svprintf(cmd, ap); va_end(ap);
 
-  char *s = NULL; size_t l = 0;
+  char *r = flu_plines(c);
 
-  FILE *f = popen(c, "r"); if (f == NULL) { free(c); return NULL; }
-
-  getline(&s, &l, f);
-
-  fclose(f);
   free(c);
-  if (s) s[strlen(s) - 1] = 0;
 
-  return s;
+  char *lf = strchr(r, '\n'); if (lf) *lf = 0;
+
+  return r;
 }
 
