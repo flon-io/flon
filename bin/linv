@@ -1,0 +1,5 @@
+#!/bin/sh
+
+find tst/var/log -name "*.log" ! -name "dispatcher.log" | \
+  xargs tail -n +1 | less
+
