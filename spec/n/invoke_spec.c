@@ -41,7 +41,7 @@ context "instruction:"
         "",
         "{ hello: invoke }");
 
-      result = hlp_wait(exid, "receive", "0", 2);
+      result = hlp_wait(exid, "receive", "0", 5);
 
       //flon_pp_execution(exid);
       //hlp_cat_inv_log(exid);
@@ -69,7 +69,7 @@ context "instruction:"
         "",
         "{ air: [ sr, lh, em ] }");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 5);
 
       //flu_putf(hlp_last_msg(exid));
       //flon_pp_execution(exid);
