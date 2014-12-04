@@ -90,6 +90,7 @@ int flon_invoke(const char *path)
   char *invoked = fdja_ls(invocation, "0", NULL);
   if (strcmp(invoked, "invoke") == 0)
   {
+    free(invoked);
     invoked = fdja_ls(invocation, "1._0", NULL);
   }
 
