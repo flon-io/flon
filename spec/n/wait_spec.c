@@ -54,6 +54,9 @@ context "instruction:"
 
       flon_pp_execution(exid);
 
+// TODO: check tree and tree1...
+expect(0 i== 1);
+
       v = hlp_read_node(exid, "0");
       //flu_putf(fdja_todc(v));
 
