@@ -104,22 +104,32 @@ void flon_schedule_msg(
 {
   //flu_putf(fdja_todc(msg));
 
-  fgaj_i("%s %s from -%s", type, ts, nid);
+  fgaj_i("%sschedule %s %s from -%s", msg ? "" : "un", type, ts, nid);
 
-  fdja_value *m = fdja_v("{ point: schedule }");
+  fdja_value *m = fdja_v("{}");
+  fdja_psetv(m, "point", msg ? "schedule" : "unschedule");
   fdja_set(m, type, fdja_s(ts));
-  fdja_set(m, "tree0", tree0);
-  fdja_set(m, "tree1", tree1);
-  fdja_set(m, "msg", msg);
+  if (msg)
+  {
+    fdja_set(m, "tree0", tree0);
+    fdja_set(m, "tree1", tree1);
+    fdja_set(m, "msg", msg);
+  }
 
-  int r = flon_lock_write(m, "var/spool/dis/sch_%s-%s.json", execution_id, nid);
-  if (r != 1)
+  if (
+    flon_lock_write(m, "var/spool/dis/sch_%s-%s.json", execution_id, nid) != 1)
   {
     fgaj_r(
       "failed to write to var/spool/dis/sch_%s-%s.json", execution_id, nid);
   }
 
   fdja_free(m);
+}
+
+void flon_unschedule_msg(
+  const char *type, const char *ts, const char *nid)
+{
+  flon_schedule_msg(type, ts, nid, NULL, NULL, NULL);
 }
 
 static fdja_value *create_node(
@@ -206,7 +216,7 @@ static void handle_order(char order, fdja_value *msg)
 
   fdja_value *payload = fdja_l(msg, "payload");
 
-  fgaj_i("%c _ %s", order, instruction);
+  fgaj_d("%c %s", order, instruction);
 
   if (order == 'e')
   {
@@ -227,6 +237,8 @@ static void handle_order(char order, fdja_value *msg)
   // perform instruction
 
   char r = flon_call_instruction(order, instruction, node, msg);
+
+  fgaj_d("%c %s --> %c", order, instruction, r);
 
   //
   // v, k, r, handle instruction result
@@ -350,7 +362,8 @@ static int name_matches(const char *n)
   if (
     strncmp(n, "exe_", 4) != 0 &&
     strncmp(n, "ret_", 4) != 0 &&
-    strncmp(n, "rcv_", 4) != 0
+    strncmp(n, "rcv_", 4) != 0 &&
+    strncmp(n, "can_", 4) != 0
   ) return 0;
 
   size_t l = strlen(execution_id);

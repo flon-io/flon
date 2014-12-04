@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
 
-ps aux | grep flon | awk '{ print $2 }' | xargs kill -9
+ps aux | grep flon | awk '{ print $2 }' | xargs kill -SIGTERM
+
+# TODO: arg switch for SIGKILL
 

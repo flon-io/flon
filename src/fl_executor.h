@@ -48,6 +48,9 @@ void flon_schedule_msg(
   fdja_value *tree0, fdja_value *tree1,
   fdja_value *msg);
 
+void flon_unschedule_msg(
+  const char *type, const char *ts, const char *nid);
+
 //
 // instructions
 

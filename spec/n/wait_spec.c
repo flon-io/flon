@@ -95,6 +95,7 @@ context "instruction:"
       it "unschedules its timer"
       {
         exid = flon_generate_exid("n.wait.cancel");
+        fep = flon_exid_path(exid);
 
         hlp_launch(
           exid,
@@ -109,8 +110,9 @@ context "instruction:"
         expect(result != NULL);
 
         fdja_value *msg = fdja_v("{ point: cancel }");
-
         int r = flon_lock_write(msg, "var/spool/dis/can_%s-0.json", exid);
+        fdja_free(msg);
+        //
         expect(r i== 1);
 
         fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);
@@ -118,6 +120,9 @@ context "instruction:"
         flon_pp_execution(exid);
 
         expect(result != NULL);
+
+        expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""
+          "No such file or directory");
       }
     }
   }

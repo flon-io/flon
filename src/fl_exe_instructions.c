@@ -215,6 +215,42 @@ static fdja_value *attributes(fdja_value *node, fdja_value *msg)
 //
 // ... some defaults
 
+static void unschedule_timer(
+  const char *type, char *ts, fdja_value *node, size_t i)
+{
+  fgaj_d("%zu %s: %s\n", i, type, ts);
+
+  fdja_psetv(node, "timers.%zu.cancelled", i, "true");
+
+  char *nid = fdja_ls(node, "nid", NULL);
+
+  flon_unschedule_msg(type, ts, nid);
+
+  free(nid);
+  free(ts);
+}
+
+static void unschedule_timers(fdja_value *node, fdja_value *msg)
+{
+  //log_d(node, msg, "self: %s", fdja_tod(node));
+
+  fdja_value *timers = fdja_l(node, "timers");
+  if (timers == NULL) return;
+
+  for (size_t i = 0; ; ++i)
+  {
+    if (fdja_l(node, "timers.%zu.cancelled", i)) continue;
+
+    char *at = fdja_ls(node, "timers.%zu.at", i, NULL);
+    if (at) { unschedule_timer("at", at, node, i); continue; }
+
+    char *cron = fdja_ls(node, "timers.%zu.cron", i, NULL);
+    if (cron) { unschedule_timer("cron", cron, node, i); continue; }
+
+    break;
+  }
+}
+
 static char rcv_(fdja_value *node, fdja_value *rcv)
 {
   return 'v'; // over
@@ -224,8 +260,9 @@ static char can_(fdja_value *node, fdja_value *can)
 {
   // TODO: set self 'status' to "cancelling"
   // TODO: cancel children if any...
-  // TODO: remove timers
   // if no children, return 'v';
+
+  unschedule_timers(node, can);
 
   return 'v'; // over
 }

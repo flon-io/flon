@@ -449,7 +449,10 @@ static short double_fork(char *ctx, char *logpath, char *arg)
       )
     )
     {
-      args = &(char *[]){ val, "--leak-check=full", "-v", bin, arg, NULL };
+      args = &(char *[]){
+        val, "--leak-check=full", "-v", "--num-callers=50", bin, arg,
+        NULL
+      };
       bin = val;
     }
     else
