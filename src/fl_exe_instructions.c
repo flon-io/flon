@@ -368,14 +368,15 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_set(msg, "exid", fdja_s(exid));
   fdja_set(msg, "payload", fdja_lc(exe, "payload"));
 
-  fdja_value *t = tree(node, exe);
-  fdja_value *tre = fdja_v("[]");
-  fdja_push(tre, fdja_lc(node, "inst"));
-  fdja_push(tre, atts);
-  fdja_push(tre, fdja_v("[]"));
-  fdja_psetv(tre, "2.]", "%zu", fdja_size(fdja_l(t, "2")));
+  fdja_value *t0 = tree(node, exe);
+  fdja_value *t1 = fdja_v("[]");
+  fdja_push(t1, fdja_lc(node, "inst"));
+  fdja_push(t1, atts);
+  fdja_push(t1, fdja_v("[]"));
+  fdja_psetv(t1, "2.]", "%zu", fdja_size(fdja_l(t0, "2")));
+  fdja_psetv(t0, "2", "[ %zu ]", fdja_size(fdja_l(t0, "2")));
 
-  flon_schedule_msg("at", a, nid, tre, msg);
+  flon_schedule_msg("at", a, nid, t0, t1, msg);
 
   if (fdja_l(node, "timers") == NULL) fdja_set(node, "timers", fdja_v("[]"));
   fdja_psetv(node, "timers.]", "{ at: \"%s\" }", a);

@@ -46,6 +46,7 @@ context "flon-executor"
 
       flon_schedule_msg(
         "at", "20141224.203030", "0_0",
+        fdja_v("[ wait, { _0: $(my_at)h }, [ 0 ]]"),
         fdja_v("[ wait, { _0: 1h }, [ 0 ]]"),
         fdja_v("{ point: receive, exid: %s, nid: 0_0 }", exid)
       );
@@ -59,7 +60,9 @@ context "flon-executor"
       expect(fdja_ls(v, "point", NULL) ===f "schedule");
       expect(fdja_ls(v, "at", NULL) ===f "20141224.203030");
 
-      expect(fdja_lj(v, "tree") ===F fdja_vj(""
+      expect(fdja_lj(v, "tree0") ===F fdja_vj(""
+        "[ wait, { _0: $(my_at)h }, [ 0 ] ]"));
+      expect(fdja_lj(v, "tree1") ===F fdja_vj(""
         "[ wait, { _0: 1h }, [ 0 ] ]"));
       expect(fdja_lj(v, "msg") ===F fdja_vj(""
         "{ point: receive, exid: %s, nid: 0_0 }", exid));
@@ -72,6 +75,7 @@ context "flon-executor"
 
       flon_schedule_msg(
         "cron", "* * * * *", "0_0",
+        fdja_v("[ cron, { _0: $(my_cron) }, [ 1 ]]"),
         fdja_v("[ cron, { _0: \"* * * * *\" }, [ 1 ]]"),
         fdja_v("{ point: execute, exid: %s, nid: 0_0, tree: [] }", exid)
       );
@@ -85,7 +89,9 @@ context "flon-executor"
       expect(fdja_ls(v, "point", NULL) ===f "schedule");
       expect(fdja_ls(v, "cron", NULL) ===f "* * * * *");
 
-      expect(fdja_lj(v, "tree") ===F fdja_vj(""
+      expect(fdja_lj(v, "tree0") ===F fdja_vj(""
+        "[ cron, { _0: $(my_cron) }, [ 1 ] ]"));
+      expect(fdja_lj(v, "tree1") ===F fdja_vj(""
         "[ cron, { _0: \"* * * * *\" }, [ 1 ] ]"));
       expect(fdja_lj(v, "msg") ===F fdja_vj(""
         "{ point: execute, exid: %s, nid: 0_0, tree: [] }", exid));

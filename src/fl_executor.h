@@ -45,7 +45,8 @@ void flon_queue_msg(
 
 void flon_schedule_msg(
   const char *type, const char *ts, const char *nid,
-  fdja_value *tree, fdja_value *msg);
+  fdja_value *tree0, fdja_value *tree1,
+  fdja_value *msg);
 
 //
 // instructions
