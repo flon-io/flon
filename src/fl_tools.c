@@ -114,7 +114,7 @@ void flon_pp_execution(const char *exid)
   puts("\n## timers\n#");
   //flu_system("ls -lh var/spool/tdis/%s", fep);
   flu_list *l = flon_list_json("var/spool/tdis/%s", fep);
-  for (flu_node *n = l->first; n; n = n->next)
+  if (l) for (flu_node *n = l->first; n; n = n->next)
   {
     char *fn = n->item;
     puts(strrchr(fn, '/') + 1);

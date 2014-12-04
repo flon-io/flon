@@ -48,20 +48,15 @@ static void hlp_dispatcher_stop()
   if (kill(dispatcher_pid, SIGTERM) == 0)
   {
     int status; waitpid(dispatcher_pid, &status, 0);
-    //if (logtoterm())
-    //{
+
     nlog("stopped dispatcher pid: %i status: %i", dispatcher_pid, status);
-    //}
   }
-  //else if (logtoterm())
   else
   {
     nlog("stopped dispatcher pid: %i -> %s", dispatcher_pid, strerror(errno));
   }
 
   dispatcher_pid = -1;
-
-  //sleep(1);
 }
 
 void hlp_dispatcher_start()
@@ -81,24 +76,28 @@ void hlp_dispatcher_start()
 
   if (dispatcher_pid == 0)
   {
+    if ( ! logtoterm())
+    {
+      freopen("var/log/dispatcher.log", "a", stdout);
+      fflush(stdout);
+      freopen("var/log/dispatcher.log", "a", stderr);
+      fflush(stderr);
+    }
+
     char *v = getenv("FLONVAL");
 
     if (v && (strstr(v, "dis") || strstr(v, "all")))
     {
+      //execle(
+      //  "/usr/bin/valgrind", "v n_flon-dispatcher",
+      //  "--leak-check=full", "-v", dispatcher_path, NULL,
+      //  (char *[]){ flu_sprintf("FLONVAL=%s", v), NULL });
       execl(
         "/usr/bin/valgrind", "v n_flon-dispatcher",
         "--leak-check=full", "-v", dispatcher_path, NULL);
     }
     else
     {
-      if ( ! logtoterm())
-      {
-        freopen("var/log/dispatcher.log", "a", stdout);
-        fflush(stdout);
-        freopen("var/log/dispatcher.log", "a", stderr);
-        fflush(stderr);
-      }
-
       execl(
         dispatcher_path, "n_flon-dispatcher",
         NULL);

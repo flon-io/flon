@@ -116,7 +116,7 @@ flu_list *flon_list_json(const char *path, ...)
   va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
 
   DIR *d = opendir(p);
-  if (d == NULL) return NULL;
+  if (d == NULL) { free(p); return NULL; }
 
   flu_list *r = flu_list_malloc();
 
