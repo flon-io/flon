@@ -1,4 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-less tst/var/log/dispatcher.log
+cat tst/var/log/dispatcher.log | \
+  bin/valcol.sh | \
+  less -R
 
