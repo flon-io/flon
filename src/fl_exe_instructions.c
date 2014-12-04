@@ -220,6 +220,16 @@ static char rcv_(fdja_value *node, fdja_value *rcv)
   return 'v'; // over
 }
 
+static char can_(fdja_value *node, fdja_value *can)
+{
+  // TODO: set self 'status' to "cancelling"
+  // TODO: cancel children if any...
+  // TODO: remove timers
+  // if no children, return 'v';
+
+  return 'v'; // over
+}
+
 
 //
 // *** INVOKE
@@ -397,14 +407,15 @@ typedef struct {
   char *name;
   flon_instruction *exe;
   flon_instruction *rcv;
+  flon_instruction *can;
 } flon_ni;
 
 static flon_ni *instructions[] = {
-  &(flon_ni){ "invoke", exe_invoke, rcv_invoke },
-  &(flon_ni){ "sequence", exe_sequence, rcv_sequence },
-  &(flon_ni){ "trace", exe_trace, rcv_ },
-  &(flon_ni){ "set", exe_set, rcv_ },
-  &(flon_ni){ "wait", exe_wait, rcv_ },
+  &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
+  &(flon_ni){ "sequence", exe_sequence, rcv_sequence, can_ },
+  &(flon_ni){ "trace", exe_trace, rcv_, can_ },
+  &(flon_ni){ "set", exe_set, rcv_, can_ },
+  &(flon_ni){ "wait", exe_wait, rcv_, can_ },
   NULL
 };
 
@@ -435,7 +446,10 @@ char flon_call_instruction(
     if (ni == NULL) break;
     if (strcmp(ni->name, name) != 0) continue;
 
-    i = (dir == 'r') ? ni->rcv : ni->exe;
+    i = ni->exe;
+    if (dir == 'r') i = ni->rcv;
+    else if (dir == 'c') i = ni->can;
+
     break;
   }
 

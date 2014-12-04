@@ -104,7 +104,7 @@ static void flon_nid_parser_init()
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
 
   fabr_parser *msg =
-    fabr_n_rex("msg", "(exe_|inv_|rcv_|ret_|sch_)");
+    fabr_n_rex("msg", "(exe|inv|rcv|ret|sch|can)_");
   fabr_parser *ftype =
     fabr_n_rex("ftype", "\\.json");
 
@@ -256,6 +256,7 @@ char *flon_point_to_prefix(const char *point)
   if (*point == 's') return "sch_";
   //if (strcmp(point, "return") == 0) return "ret_";
   if (*point == 'r') return "rcv_";
+  if (*point == 'c') return "can_";
   return "UNK_";
 }
 

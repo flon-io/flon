@@ -9,6 +9,7 @@
 #include "flutim.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
+#include "fl_common.h"
 #include "feu_helpers.h"
 
 
@@ -103,11 +104,20 @@ context "instruction:"
 
         result = hlp_wait(exid, "launched", NULL, 5);
 
-        flon_pp_execution(exid);
+        //flon_pp_execution(exid);
 
         expect(result != NULL);
 
-        // TODO: queue cancel message
+        fdja_value *msg = fdja_v("{ point: cancel }");
+
+        int r = flon_lock_write(msg, "var/spool/dis/can_%s-0.json", exid);
+        expect(r i== 1);
+
+        fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);
+
+        flon_pp_execution(exid);
+
+        expect(result != NULL);
       }
     }
   }

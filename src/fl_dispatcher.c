@@ -497,7 +497,8 @@ static int executor_not_running(const char *exid)
 
 static short dispatch(const char *fname, fdja_value *j)
 {
-  //flu_putf(fdja_todc(j));
+  fgaj_d(fname);
+  //fgaj_d("j: %s", fdja_tod(j));
 
   if (fdja_l(j, "point") == NULL)
   {
@@ -507,8 +508,20 @@ static short dispatch(const char *fname, fdja_value *j)
   int r = 2; // 'dispatched' for now
 
   char *exid = fdja_ls(j, "exid", NULL);
-  char *fep = flon_exid_path(exid);
   char *nid = fdja_ls(j, "nid", NULL);
+  //
+  if (exid == NULL)
+  {
+    fdja_value *i = flon_parse_nid(fname);
+    if (i == NULL) { move_to_rejected(fname, "no 'exid'"); return -1; }
+
+    exid = fdja_ls(i, "exid", NULL);
+    nid = fdja_ls(i, "nid", NULL);
+
+    fdja_free(i);
+  }
+
+  char *fep = flon_exid_path(exid);
 
   char *ct = "exe";
   char *ctx = "executor";
@@ -534,6 +547,7 @@ static short dispatch(const char *fname, fdja_value *j)
   }
 
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
+  fgaj_d("%s, r: %i", fname, r);
 
   if (r == 2 && executor_not_running(exid))
   {
@@ -616,7 +630,7 @@ _over:
 //
 short flon_dispatch(const char *fname)
 {
-  //fgaj_i(fname);
+  fgaj_i(fname);
 
   int r = 1;
   fdja_value *msg = NULL;
@@ -632,7 +646,8 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "exe_", 4) != 0 &&
     strncmp(fname, "inv_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
-    strncmp(fname, "sch_", 4) != 0
+    strncmp(fname, "sch_", 4) != 0 &&
+    strncmp(fname, "can_", 4) != 0
   ) {
     r = -1; move_to_rejected(fname, "unknown file prefix"); goto _over;
   }

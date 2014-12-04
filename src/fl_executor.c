@@ -185,6 +185,7 @@ static void do_log(fdja_value *msg)
 
 static void handle_order(char order, fdja_value *msg)
 {
+  fgaj_i("%c", order);
   //fgaj_i("%s", fdja_tod(msg));
   //flu_putf(fdja_todc(msg));
 
@@ -193,16 +194,6 @@ static void handle_order(char order, fdja_value *msg)
   fdja_value *tree = NULL;
   char *instruction = NULL;
   fdja_value *node = NULL;
-
-  fdja_value *point = fdja_l(msg, "point");
-  char *spoint = point ? fdja_srk(point) : "";
-
-  char a = '?';
-  if (*spoint == 'r') a = 'r'; // receive
-  else if (*spoint == 'e') a = 'x'; // execute
-  else return; // failed, launched, terminated...
-
-  //fgaj_i("a: %c", a);
 
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);
@@ -215,9 +206,9 @@ static void handle_order(char order, fdja_value *msg)
 
   fdja_value *payload = fdja_l(msg, "payload");
 
-  //fgaj_i("%c _ %s", a, instruction);
+  fgaj_i("%c _ %s", order, instruction);
 
-  if (a == 'x')
+  if (order == 'e')
   {
     node = create_node(nid, parent_nid, instruction, tree);
     fdja_set(msg, "tree", fdja_clone(tree));
@@ -227,7 +218,7 @@ static void handle_order(char order, fdja_value *msg)
       flon_queue_msg("launched", nid, NULL, payload);
     }
   }
-  else // a == 'r'
+  else // order == 'r' || order == 'c'
   {
     node = fdja_l(execution, "nodes.%s", nid);
   }
@@ -235,18 +226,18 @@ static void handle_order(char order, fdja_value *msg)
   //
   // perform instruction
 
-  char r = flon_call_instruction(a, instruction, node, msg);
+  char r = flon_call_instruction(order, instruction, node, msg);
 
   //
   // v, k, r, handle instruction result
 
   if (r == 'v') // over
   {
-    if (a == 'x')
+    if (order == 'e')
     {
       flon_queue_msg("receive", nid, nid, payload);
     }
-    else // (a == 'r')
+    else // (order == 'r' || order == 'c')
     {
       free(parent_nid);
       parent_nid = flon_node_parent_nid(nid);
@@ -461,7 +452,7 @@ static void execute()
       fdja_value *point = fdja_l(j, "point");
       char p = point ? *fdja_srk(point) : 0;
 
-      if (p == 'e' || p == 'r') // execute or receive
+      if (p == 'e' || p == 'r' || p == 'c') // execute, receive or cancel
         handle_order(p, j);
       else if (p)
         handle_event(p, j);

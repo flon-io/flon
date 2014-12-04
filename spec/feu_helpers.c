@@ -341,7 +341,7 @@ void hlp_reset_tst()
 
   // don't maintain two lists
 
-  hlp_dispatcher_sighup();
+  //hlp_dispatcher_sighup();
 }
 
 size_t hlp_count_jsons(const char *path, ...)
