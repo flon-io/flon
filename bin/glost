@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+find tst/ -name "*.log" | \
+  xargs cat | \
+  grep " definitely lost: [1-9]"
+
