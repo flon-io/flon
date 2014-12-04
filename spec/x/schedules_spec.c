@@ -18,10 +18,9 @@ context "flon-executor"
 {
   before each
   {
-    int r;
-
     char *exid = NULL;
     char *fep = NULL;
+    fdja_value *v = NULL;
 
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
@@ -35,59 +34,62 @@ context "flon-executor"
   {
     free(fep);
     free(exid);
+    fdja_free(v);
   }
 
   describe "flon_schedule_msg()"
   {
     it "schedules an at msg"
-//    {
-//      exid = flon_generate_exid("xtest.i");
-//      fep = flon_exid_path(exid);
-//
-//      flu_writeall(
-//        "var/spool/exe/exe_%s.json", exid,
-//        "{"
-//          "point: execute\n"
-//          "tree: [ invoke, { _0: stamp, color: blue }, [] ]\n"
-//          "exid: %s\n"
-//          "payload: {\n"
-//            "hello: world\n"
-//          "}\n"
-//        "}",
-//        exid
-//      );
-//
-//      r = flon_execute(exid);
-//
-//      expect(r i== 0);
-//
-//      expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
-//      expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
-//
-//      expect(flu_fstat("var/spool/dis/inv_%s-0.json", exid) == 'f');
-//
-//      fdja_value *v = fdja_parse_f("var/spool/dis/inv_%s-0.json", exid);
-//
-//      expect(v != NULL);
-//      expect(fdja_ls(v, "exid", NULL) ===f exid);
-//      expect(fdja_ls(v, "nid", NULL) ===f "0");
-//      expect(fdja_ls(v, "payload.hello", NULL) ===f "world");
-//      expect(fdja_ls(v, "payload.args.color", NULL) ===f "blue");
-//      fdja_free(v);
-//
-//      //puts(fdja_f_todc("var/run/%s/run.json", fep));
-//      v = fdja_parse_f("var/run/%s/run.json", fep);
-//
-//      expect(v != NULL);
-//      expect(fdja_ls(v, "exid", NULL) ===f exid);
-//
-//      expect(fdja_to_json(fdja_l(v, "nodes.0.tree")) ===f ""
-//        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
-//
-//      fdja_free(v);
-//    }
+    {
+      exid = flon_generate_exid("xtest.fsm.at");
+      execution_id = exid;
+
+      flon_schedule_msg(
+        "at", "20141224.203030", "0_0",
+        fdja_v("[ wait, { _0: 1h }, [ 0 ]]"),
+        fdja_v("{ point: receive, exid: %s, nid: 0_0 }", exid)
+      );
+
+      //flon_pp_execution(exid);
+
+      v = fdja_parse_f("var/spool/dis/sch_%s-0_0.json", exid);
+
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_ls(v, "point", NULL) ===f "schedule");
+      expect(fdja_ls(v, "at", NULL) ===f "20141224.203030");
+
+      expect(fdja_lj(v, "tree") ===F fdja_vj(""
+        "[ wait, { _0: 1h }, [ 0 ] ]"));
+      expect(fdja_lj(v, "msg") ===F fdja_vj(""
+        "{ point: receive, exid: %s, nid: 0_0 }", exid));
+    }
 
     it "schedules a cron msg"
+    {
+      exid = flon_generate_exid("xtest.fsm.cron");
+      execution_id = exid;
+
+      flon_schedule_msg(
+        "cron", "* * * * *", "0_0",
+        fdja_v("[ cron, { _0: \"* * * * *\" }, [ 1 ]]"),
+        fdja_v("{ point: execute, exid: %s, nid: 0_0, tree: [] }", exid)
+      );
+
+      //flon_pp_execution(exid);
+
+      v = fdja_parse_f("var/spool/dis/sch_%s-0_0.json", exid);
+
+      //flu_putf(fdja_todc(v));
+
+      expect(fdja_ls(v, "point", NULL) ===f "schedule");
+      expect(fdja_ls(v, "cron", NULL) ===f "* * * * *");
+
+      expect(fdja_lj(v, "tree") ===F fdja_vj(""
+        "[ cron, { _0: \"* * * * *\" }, [ 1 ] ]"));
+      expect(fdja_lj(v, "msg") ===F fdja_vj(""
+        "{ point: execute, exid: %s, nid: 0_0, tree: [] }", exid));
+    }
   }
 }
 
