@@ -368,7 +368,7 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_set(msg, "exid", fdja_s(exid));
   fdja_set(msg, "payload", fdja_lc(exe, "payload"));
 
-  fdja_value *t0 = tree(node, exe);
+  fdja_value *t0 = fdja_clone(tree(node, exe));
   fdja_value *t1 = fdja_v("[]");
   fdja_push(t1, fdja_lc(node, "inst"));
   fdja_push(t1, atts);
