@@ -119,9 +119,6 @@ void flon_schedule_msg(
       "failed to write to var/spool/dis/sch_%s-%s.json", execution_id, nid);
   }
 
-  //flu_list_add(msgs, mmm);
-    // now what about "unscheduled" msgs? TODO
-
   fdja_free(m);
 }
 

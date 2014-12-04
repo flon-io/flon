@@ -101,7 +101,7 @@ context "instruction:"
           "",
           "{ hello: wait.cancel }");
 
-        result = hlp_wait(exid, "scheduled", NULL, 5);
+        result = hlp_wait(exid, "launched", NULL, 5);
 
         flon_pp_execution(exid);
 
