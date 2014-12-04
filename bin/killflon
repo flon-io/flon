@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+ps aux | grep flon | awk '{ print $2 }' | xargs kill -9
+
