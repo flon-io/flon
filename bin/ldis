@@ -1,0 +1,4 @@
+#!/bin/sh
+
+less tst/var/log/dispatcher.log
+

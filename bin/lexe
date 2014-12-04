@@ -1,0 +1,4 @@
+#!/bin/sh
+
+find tst -name "exe.log" | xargs tail -n +1 | less
+
