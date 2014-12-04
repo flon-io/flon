@@ -1389,18 +1389,19 @@ fdja_value *fdja_pset(fdja_value *start, const char *path, ...)
   fdja_value *v = va_arg(ap, fdja_value *);
   va_end(ap);
 
-  char *lastdot = strrchr(p, '.');
+  char *key = p;
+  char *pat = NULL;
 
-  if (lastdot == NULL)
+  char *lastdot = strrchr(p, '.');
+  if (lastdot)
   {
-    r = fdja_set(start, p, v);
-    goto _over;
+    key = lastdot + 1;
+    pat = strndup(p, lastdot - p);
   }
 
-  char *key = lastdot + 1;
-  char *pat = strndup(p, lastdot - p);
+  fdja_value *target = start;
+  if (pat) target = fdja_lookup(start, pat);
 
-  fdja_value *target = fdja_lookup(start, pat);
   free(pat);
 
   if (target == NULL) goto _over;
