@@ -105,7 +105,7 @@ context "instruction:"
 
         result = hlp_wait(exid, "launched", NULL, 5);
 
-        flon_pp_execution(exid);
+        //flon_pp_execution(exid);
 
         expect(result != NULL);
 
@@ -117,6 +117,9 @@ context "instruction:"
         //flon_pp_execution(exid);
 
         expect(result != NULL);
+
+        flu_msleep(500);
+          // TODO: replace that with a help_wait("unscheduled")
 
         expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""
           "No such file or directory");

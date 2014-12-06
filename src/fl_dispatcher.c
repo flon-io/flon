@@ -538,7 +538,7 @@ static short dispatch(const char *fname, fdja_value *j)
     arg = flu_sprintf("var/spool/inv/%s", fname);
     logpath = flu_sprintf("var/log/%s/inv_%s-%s.log", fep, exid, nid);
   }
-  else // execute, receive
+  else // execute, receive, cancel
   {
     logpath = flu_sprintf("var/run/%s/exe.log", fep);
   }
