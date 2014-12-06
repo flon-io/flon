@@ -117,7 +117,7 @@ context "instruction:"
 
         fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);
 
-        flon_pp_execution(exid);
+        //flon_pp_execution(exid);
 
         expect(result != NULL);
 
