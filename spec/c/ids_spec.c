@@ -147,6 +147,10 @@ context "fl_ids:"
         flon_parse_exid(
           "sch_xtest.pn-u0-20141021.0803.karako-0_1_2.json") ===f ""
         "xtest.pn-u0-20141021.0803.karako");
+      expect(
+        flon_parse_exid(
+          "exe_nada.pn-u0-20141021.0803.karako.jon") ===f ""
+        "nada.pn-u0-20141021.0803.karako");
     }
   }
 

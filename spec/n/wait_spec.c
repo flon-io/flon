@@ -123,6 +123,11 @@ context "instruction:"
 
         expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""
           "No such file or directory");
+
+        expect(
+          flu_fstat("var/archive/%s/processed/sch_%s-0.json", fep, exid) == 'f');
+        expect(
+          flu_fstat("var/archive/%s/processed/sch_%s-0__1.json", fep, exid) == 'f');
       }
     }
   }

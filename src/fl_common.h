@@ -48,5 +48,8 @@ char *flon_conf_uid();
 fdja_value *flon_try_parse(char mode, const char *path, ...);
 int flon_lock_write(fdja_value *v, const char *path, ...);
 
+int flon_move_to_rejected(const char *path, const char *reason);
+int flon_move_to_processed(const char *path);
+
 #endif // FL_COMMON_H
 

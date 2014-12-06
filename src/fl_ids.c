@@ -106,7 +106,7 @@ static void flon_nid_parser_init()
   fabr_parser *msg =
     fabr_n_rex("msg", "(exe|inv|rcv|ret|sch|can)_");
   fabr_parser *ftype =
-    fabr_n_rex("ftype", "\\.json");
+    fabr_n_rex("ftype", "\\.[^\.]+");
 
   flon_nid_parser =
     fabr_alt(

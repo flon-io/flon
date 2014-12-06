@@ -34,6 +34,8 @@
 #include "flutil.h"
 #include "djan.h"
 #include "gajeta.h"
+#include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_common.h"
 
 
@@ -216,6 +218,68 @@ _over:
 
   fclose(f);
   free(fname);
+
+  return r;
+}
+
+int flon_move_to_rejected(const char *path, const char *reason)
+{
+  return -1; // TODO
+}
+
+int flon_move_to_processed(const char *path)
+{
+  int r = 0; // success
+
+  char *fn = strdup(strrchr(path, '/') + 1);
+  char *exid = flon_parse_exid(fn);
+  char *fep = flon_exid_path(exid);
+
+  char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
+  char *suf = dot ? dot + 1 : ".json";
+
+  char *d = (flu_fstat("var/run/%s/processed", fep) != 'd') ? "archive" : "run";
+  if (flu_fstat("var/%s/%s/processed", d, fep) == 0)
+  {
+    if (flu_mkdir_p("var/%s/%s/processed", d, fep, 0755) != 0)
+    {
+      fgaj_r("couldn't mkdir -p var/%s/%s/processed", d, fep);
+      r = 1;
+      goto _over;
+    }
+  }
+
+  char *t = NULL;
+  char *extra = NULL;
+
+  for (size_t i = 0; ; ++i)
+  {
+    if ((i + 1) % 100 == 0) fgaj_w("cycling like mad: %s", t);
+
+    free(extra);
+    extra = flu_sprintf("__%zu", i); if (i == 0) *extra = 0;
+    free(t);
+    t = flu_sprintf("var/%s/%s/processed/%s%s.%s", d, fep, fn, extra, suf);
+
+    if (flu_fstat(t) == 0)
+    {
+      if (flu_move(path, t) != 0)
+      {
+        fgaj_r("failed to move %s to %s", path, t);
+
+        // MAYBE move to rejected???
+      }
+      break;
+    }
+  }
+  free(t);
+  free(extra);
+
+_over:
+
+  free(fn);
+  free(exid);
+  free(fep);
 
   return r;
 }
