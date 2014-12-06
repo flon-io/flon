@@ -20,23 +20,25 @@ context "flon-listener auth"
     flon_configure(".");
   }
 
-  describe "flon_auth_filter()"
+  describe "shv_auth_filter() (was flon_auth_filter())"
   {
     before each
     {
       shv_request *req = NULL;
-      flu_dict *params = NULL;
       shv_response *res = shv_response_malloc(200);
       fdja_value *v = NULL;
       fdja_value *v1 = NULL;
+
+      flu_dict *params =
+        flu_d("func", flon_auth_enticate, "realm", "flon", NULL);
     }
     after each
     {
-      if (req) shv_request_free(req);
-      if (params) flu_list_free(params);
-      if (v) fdja_free(v);
-      if (v1) fdja_free(v1);
-      if (res) shv_response_free(res);
+      shv_request_free(req);
+      fdja_free(v);
+      fdja_free(v1);
+      shv_response_free(res);
+      flu_list_free(params);
     }
 
     it "returns 1 and 401 if auth fails (no authorization header)"
@@ -46,7 +48,7 @@ context "flon-listener auth"
         "Host: x.flon.io\r\n"
         "\r\n");
 
-      int r = flon_auth_filter(req, res, NULL);
+      int r = shv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -64,7 +66,7 @@ context "flon-listener auth"
         "Authorization: Basic nada\r\n"
         "\r\n");
 
-      int r = flon_auth_filter(req, res, NULL);
+      int r = shv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -82,7 +84,7 @@ context "flon-listener auth"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = flon_auth_filter(req, res, NULL);
+      int r = shv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -100,7 +102,7 @@ context "flon-listener auth"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = flon_auth_filter(req, res, NULL);
+      int r = shv_basic_auth_filter(req, res, params);
 
       expect(r i== 0);
       expect(flu_list_get(req->routing_d, "_user") === "john");
@@ -111,12 +113,12 @@ context "flon-listener auth"
   {
     it "returns 1 if the user and pass do match"
     {
-      expect(flon_auth_enticate("john", "wyvern") i== 1);
+      expect(flon_auth_enticate("john", "wyvern", NULL) i== 1);
     }
 
     it "returns 0 else"
     {
-      expect(flon_auth_enticate("john", "wivern") i== 0);
+      expect(flon_auth_enticate("john", "wivern", NULL) i== 0);
     }
 
     it "verifies 'wyvern'"

@@ -69,7 +69,7 @@ static int load_domain()
   return 0;
 }
 
-int flon_auth_enticate(char *user, char *pass)
+int flon_auth_enticate(char *user, char *pass, flu_dict *params)
 {
   if ( ! load_passwd()) return 0;
 
@@ -85,43 +85,6 @@ int flon_auth_enticate(char *user, char *pass)
   if (hash != dummy_hash) free(hash);
 
   return u ? r : 0;
-}
-
-int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params)
-{
-  int r = 1;
-  char *user = NULL;
-
-  if (flu_list_get(req->uri_d, "logout")) goto _over;
-    // /?logout logs out...
-
-  char *auth = flu_list_get(req->headers, "authorization");
-  if (auth == NULL) goto _over;
-
-  if (strncmp(auth, "Basic ", 6) != 0) goto _over;
-
-  user = flu64_decode(auth + 6, -1);
-  char *pass = strchr(user, ':');
-  if (pass == NULL) goto _over;
-
-  *pass = 0; pass = pass + 1;
-  if (flon_auth_enticate(user, pass) == 0) goto _over;
-
-  r = 0; // success
-  flu_list_set(req->routing_d, "_user", strdup(user));
-
-_over:
-
-  if (r == 1)
-  {
-    flu_list_set(
-      res->headers, "WWW-Authenticate", strdup("Basic realm=\"flon\""));
-    res->status_code = 401;
-  }
-
-  free(user);
-
-  return r;
 }
 
 int flon_dom_matches(const char *dom, const char *pat)

@@ -85,7 +85,10 @@ int main(int argc, char *argv[])
 
   shv_route *routes[] =
   {
-    shv_r(shv_any_guard, flon_auth_filter, NULL), // basic auth
+    shv_r(
+      shv_any_guard,
+      shv_basic_auth_filter,
+      "func", flon_auth_enticate, "realm", "flon", NULL),
 
     shv_rp("GET /i", flon_i_handler, NULL),
     shv_rp("POST /i/in", flon_in_handler, NULL),

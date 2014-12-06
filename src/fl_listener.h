@@ -31,8 +31,7 @@
 #include "shervin.h"
 
 
-int flon_auth_filter(shv_request *req, shv_response *res, flu_dict *params);
-int flon_auth_enticate(char *user, char *pass);
+int flon_auth_enticate(char *user, char *pass, flu_dict *params);
 
 int flon_dom_matches(const char *dom, const char *pat);
 int flon_is_subdomain(const char *root, const char *dom);
