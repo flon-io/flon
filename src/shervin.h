@@ -96,6 +96,16 @@ ssize_t shv_serve_file(
 
 int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params);
 
+// filters
+
+typedef int shv_authenticate(
+  const char *user, const char *path, flu_dict *params);
+
+int shv_basic_auth_filter(
+  shv_request *req, shv_response *res, flu_dict *params);
+//int shv_session_auth_filter(
+//  shv_request *req, shv_response *res, flu_dict *params);
+
 // serving
 
 void shv_serve(int port, shv_route **routes);
