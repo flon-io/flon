@@ -10,10 +10,14 @@
 
 
 void hlp_dispatcher_start();
+
 void hlp_dispatcher_sighup();
+  // when valgrinding and valgrind is right in charge, sighup terminates it...
+  // maybe when half a second before sending...
 
 void hlp_launch(char *exid, char *flow, char *payload);
 fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec);
+int hlp_queue_cancel_msg(char *exid, char *nid);
 
 fdja_value *hlp_read_run_json(char *exid);
 fdja_value *hlp_read_node(char *exid, char *nid);

@@ -105,14 +105,11 @@ context "instruction:"
 
         result = hlp_wait(exid, "launched", NULL, 5);
 
-        //flon_pp_execution(exid);
+        flon_pp_execution(exid);
 
         expect(result != NULL);
 
-        fdja_value *msg = fdja_v("{ point: cancel }");
-        int r = flon_lock_write(msg, "var/spool/dis/can_%s-0.json", exid);
-        fdja_free(msg);
-        //
+        int r = hlp_queue_cancel_msg(exid, "0");
         expect(r i== 1);
 
         fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);

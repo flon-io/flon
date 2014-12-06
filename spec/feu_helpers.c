@@ -161,6 +161,15 @@ void hlp_launch(char *exid, char *flow, char *payload)
   free(fep);
 }
 
+int hlp_queue_cancel_msg(char *exid, char *nid)
+{
+  fdja_value *msg = fdja_v("{ point: cancel }");
+  int r = flon_lock_write(msg, "var/spool/dis/can_%s-%s.json", exid, nid);
+  fdja_free(msg);
+
+  return r;
+}
+
 static fdja_value *scan(char *s, char *action, char *nid)
 {
   fdja_value *r = NULL;
