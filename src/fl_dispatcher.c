@@ -159,38 +159,6 @@ void flon_load_timers()
   }
 }
 
-static void move_to_rejected(const char *path, ...)
-{
-  va_list ap; va_start(ap, path);
-  char *pa = flu_svprintf(path, ap);
-  char *re = flu_svprintf(va_arg(ap, char *), ap);
-  va_end(ap);
-
-  if (strncmp(pa, "var/", 4) != 0)
-  {
-    char *opa = pa; pa = flu_path("var/spool/dis/%s", pa); free(opa);
-  }
-
-  FILE *f = fopen(pa, "a");
-  if (f)
-  {
-    char *ts = flu_tstamp(NULL, 1, 'u');
-    fprintf(f, "\n# reason: %s (%s Z)\n", re, ts);
-    fclose(f);
-    free(ts);
-  }
-
-  int mr = flu_move(pa, "var/spool/rejected/");
-
-  if (mr == 0)
-    fgaj_i("%s, reason is: %s", pa, re);
-  else
-    fgaj_r("failed moving %s to var/spool/rejected, reason was: %s", pa, re);
-
-  free(pa);
-  free(re);
-}
-
 static short schedule(const char *fname, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
@@ -210,7 +178,10 @@ static short schedule(const char *fname, fdja_value *msg)
 
   if (ts == NULL)
   {
-    r = -1; move_to_rejected(fname, "no 'at' or 'cron'"); goto _over;
+    flon_move_to_rejected(
+      "var/spool/tdis/%s/", fep, fname, "no 'at' or 'cron'");
+    r = -1;
+    goto _over;
   }
 
   char *ots = ts;
@@ -297,7 +268,9 @@ static int do_trigger(const char *ns)
 
   if (sch == NULL)
   {
-    move_to_rejected(t->fn, "couldn't parse"); goto _over;
+    flon_move_to_rejected(
+      "var/spool/tdis/%s", t->fn, "couldn't parse");
+    goto _over;
   }
 
   flon_move_to_processed("var/spool/tdis/%s", t->fn);
@@ -306,7 +279,9 @@ static int do_trigger(const char *ns)
 
   if (msg == NULL)
   {
-    move_to_rejected(t->fn, "doesn't contain 'msg' key"); goto _over;
+    flon_move_to_rejected(
+      "var/spool/tdis/%s", t->fn, "doesn't contain 'msg' key");
+    goto _over;
   }
 
   point = fdja_ls(msg, "point", NULL);
@@ -487,7 +462,8 @@ static short dispatch(const char *fname, fdja_value *j)
 
   if (fdja_l(j, "point") == NULL)
   {
-    move_to_rejected(fname, "no 'point'"); return -1;
+    flon_move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
+    return -1;
   }
 
   int r = 2; // 'dispatched' for now
@@ -498,7 +474,11 @@ static short dispatch(const char *fname, fdja_value *j)
   if (exid == NULL)
   {
     fdja_value *i = flon_parse_nid(fname);
-    if (i == NULL) { move_to_rejected(fname, "no 'exid'"); return -1; }
+    if (i == NULL)
+    {
+      flon_move_to_rejected("var/spool/dis/%s", fname, "no 'exid'");
+      return -1;
+    }
 
     exid = fdja_ls(i, "exid", NULL);
     nid = fdja_ls(i, "nid", NULL);
@@ -527,7 +507,9 @@ static short dispatch(const char *fname, fdja_value *j)
 
   if (flu_move("var/spool/dis/%s", fname, "var/spool/%s/%s", ct, fname) != 0)
   {
-    move_to_rejected(fname, "failed to move to var/spool/%s/%s", ct, fname);
+    flon_move_to_rejected(
+      "var/spool/dis/%s", fname,
+      "failed to move to var/spool/%s/%s", ct, fname);
     r = -1; // rejected
   }
 
@@ -578,8 +560,8 @@ static short receive_ret(const char *fname)
     //
   if (fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4) != 1)
   {
-    move_to_rejected(
-      fname,
+    flon_move_to_rejected(
+      "/var/spool/dis/%s", fname,
       "failed to move to var/spool/dis/rcv_%s", fname + 4);
     r = -1;
     goto _over;
@@ -622,7 +604,9 @@ short flon_dispatch(const char *fname)
 
   if ( ! flu_strends(fname, ".json"))
   {
-    r = -1; move_to_rejected(fname, "not a .json file"); goto _over;
+    flon_move_to_rejected("var/spool/dis/%s", fname, "not a .json file");
+    r = -1;
+    goto _over;
   }
 
   if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
@@ -634,7 +618,9 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "sch_", 4) != 0 &&
     strncmp(fname, "can_", 4) != 0
   ) {
-    r = -1; move_to_rejected(fname, "unknown file prefix"); goto _over;
+    flon_move_to_rejected("var/spool/dis/%s", fname, "unknown file prefix");
+    r = -1;
+    goto _over;
   }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
@@ -642,7 +628,10 @@ short flon_dispatch(const char *fname)
   if (msg == NULL)
   {
     r = (errno == 0) ? -1 : 1;
-    if (r == -1) move_to_rejected(fname, "couldn't parse json");
+    if (r == -1)
+    {
+      flon_move_to_rejected("var/spool/dis/%s", fname, "couldn't parse json");
+    }
     goto _over;
   }
 

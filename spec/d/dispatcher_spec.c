@@ -187,8 +187,7 @@ context "flon-dispatcher"
 
       s = flu_readall("var/archive/%s/exe.log", fep);
       //printf("exe.log >>>\n%s\n<<<\n", s);
-      expect(s != NULL);
-      expect(s >== "reject node not found, ");
+      expect(s >== ": tree not found");
 
       // check that rcv_ got rejected (no execution going on)
 

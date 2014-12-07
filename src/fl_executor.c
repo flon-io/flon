@@ -172,7 +172,7 @@ static void handle_order(char order, fdja_value *msg)
 
   if (tree == NULL)
   {
-    flon_move_to_rejected(fname, "tree not found");
+    flon_move_to_rejected("var/spool/exe/%s", fname, "tree not found");
     goto _over;
   }
 
