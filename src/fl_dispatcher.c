@@ -274,7 +274,6 @@ static int do_trigger(const char *ns)
 
   int r = 0;
 
-  char *fep = NULL;
   fdja_value *sch = NULL;
   char *point = NULL;
   char *prefix = NULL;
@@ -301,7 +300,6 @@ static int do_trigger(const char *ns)
     move_to_rejected(t->fn, "couldn't parse"); goto _over;
   }
 
-  fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
   flon_move_to_processed("var/spool/tdis/%s", t->fn);
 
   fdja_value *msg = fdja_l(sch, "msg");
@@ -330,7 +328,7 @@ static int do_trigger(const char *ns)
 
 _over:
 
-  free(fep); free(fn); free(nid); free(exid); free(point);
+  free(fn); free(nid); free(exid); free(point);
   fdja_free(sch);
   if (r) flon_timer_free(t);
 
