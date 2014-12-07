@@ -155,26 +155,6 @@ static fdja_value *create_node(
   return node;
 }
 
-static void move_to_processed(fdja_value *msg)
-{
-  char *fname = fdja_ls(msg, "fname", NULL);
-  if (fname == NULL) return;
-
-  char *fep = execution_path;
-
-  if (flu_mkdir_p("var/run/%s/processed", fep, 0755) != 0)
-  {
-    fgaj_r("failed to mkdir -p var/run/%s/processed", fep);
-  }
-
-  if (flu_move("var/spool/exe/%s", fname, "var/run/%s/processed/", fep) != 0)
-  {
-    fgaj_r("failed to move %s to var/run/%s/processed", fname, fep);
-  }
-
-  free(fname);
-}
-
 static void do_log(fdja_value *msg)
 {
   if (msgs_log == NULL) return;
@@ -204,6 +184,7 @@ static void handle_order(char order, fdja_value *msg)
   fdja_value *tree = NULL;
   char *instruction = NULL;
   fdja_value *node = NULL;
+  char *fname = NULL;
 
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);
@@ -290,7 +271,9 @@ static void handle_order(char order, fdja_value *msg)
     flon_queue_msg("failed", nid, parent_nid, payload);
   }
 
-  move_to_processed(msg);
+  fname = fdja_ls(msg, "fname", NULL);
+  if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
+
   do_log(msg);
 
 _over:
@@ -298,6 +281,7 @@ _over:
   free(nid);
   free(parent_nid);
   free(instruction);
+  free(fname);
 }
 
 static void handle_event(char event, fdja_value *msg)

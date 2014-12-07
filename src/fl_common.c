@@ -249,7 +249,8 @@ int flon_move_to_processed(const char *path, ...)
   char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
   char *suf = dot ? dot + 1 : ".json";
 
-  char *d = (flu_fstat("var/run/%s/processed", fep) != 'd') ? "archive" : "run";
+  char *d = (flu_fstat("var/archive/%s", fep) == 'd') ?  "archive" : "run";
+
   if (flu_fstat("var/%s/%s/processed", d, fep) == 0)
   {
     if (flu_mkdir_p("var/%s/%s/processed", d, fep, 0755) != 0)

@@ -116,15 +116,13 @@ context "fl_common:"
       fep = flon_exid_path(exid);
 
       fn = flu_sprintf("var/spool/dis/exe_%s.json", exid);
-      puts(fn);
       flu_writeall(fn, "hello world");
 
       int r = flon_move_to_processed(fn);
 
       expect(r i== 0);
 
-      expect(
-        flu_fstat("var/archive/%s/processed/exe_%s.json", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
     }
 
     it "moves but doesn't overwrite"
@@ -145,10 +143,8 @@ context "fl_common:"
 
       expect(r i== 0);
 
-      expect(
-        flu_fstat("var/archive/%s/processed/exe_%s.json", fep, exid) == 'f');
-      expect(
-        flu_fstat("var/archive/%s/processed/exe_%s__1.json", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s__1.json", fep, exid) == 'f');
     }
 
     it "accepts not .json suffixes"
@@ -169,10 +165,8 @@ context "fl_common:"
 
       expect(r i== 0);
 
-      expect(
-        flu_fstat("var/archive/%s/processed/exe_%s.jon", fep, exid) == 'f');
-      expect(
-        flu_fstat("var/archive/%s/processed/exe_%s__1.jon", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s.jon", fep, exid) == 'f');
+      expect(flu_fstat("var/run/%s/processed/exe_%s__1.jon", fep, exid) == 'f');
     }
   }
 }
