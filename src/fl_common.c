@@ -334,6 +334,8 @@ static void move_to_rejected(const char *path, ...)
 
 int flon_move_to_rejected(const char *path, ...)
 {
+  if (path == NULL) { fgaj_e("path is NULL"); return 1; }
+
   va_list ap; va_start(ap, path);
   char *pa = flu_svprintf(path, ap);
   char *re = flu_svprintf(va_arg(ap, char *), ap);

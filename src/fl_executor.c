@@ -57,30 +57,6 @@ static flu_list *msgs = NULL;
 //static size_t counter = 0;
   // how many executions got carried out in this session?
 
-static void reject(const char *reason, const char *fname, fdja_value *j)
-{
-  fgaj_d("reason: %s", reason);
-
-  short own_fname = 0;
-
-  if (fname == NULL)
-  {
-    fname = fdja_lookup_string(j, "fname", NULL);
-    own_fname = 1;
-  }
-  if (fname == NULL)
-  {
-    fgaj_w("cannot reject msg without 'fname' key");
-    char *s = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
-    return;
-  }
-
-  flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
-  fgaj_i("%s, rejected %s", reason, fname);
-
-  if (own_fname) free((char *)fname);
-}
-
 void flon_queue_msg(
   const char *type, const char *nid, const char *from_nid, fdja_value *payload)
 {
@@ -186,12 +162,19 @@ static void handle_order(char order, fdja_value *msg)
   fdja_value *node = NULL;
   char *fname = NULL;
 
+  fname = fdja_ls(msg, "fname", NULL);
   nid = fdja_lsd(msg, "nid", "0");
   parent_nid = fdja_ls(msg, "parent", NULL);
 
   tree = fdja_l(msg, "tree");
+
   if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
-  if (tree == NULL) { reject("node not found", NULL, msg); goto _over; }
+
+  if (tree == NULL)
+  {
+    flon_move_to_rejected(fname, "tree not found");
+    goto _over;
+  }
 
   instruction = fdja_ls(tree, "0", NULL);
 
@@ -271,7 +254,6 @@ static void handle_order(char order, fdja_value *msg)
     flon_queue_msg("failed", nid, parent_nid, payload);
   }
 
-  fname = fdja_ls(msg, "fname", NULL);
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
 
   do_log(msg);
@@ -369,7 +351,11 @@ static void load_msgs()
 
     fdja_value *j = fdja_parse_f("var/spool/exe/%s", de->d_name);
 
-    if (j == NULL) { reject("couldn't parse", de->d_name, NULL); continue; }
+    if (j == NULL)
+    {
+      flon_move_to_rejected("var/spool/exe/%s", de->d_name, "couldn't parse");
+      continue;
+    }
 
     fdja_set(j, "fname", fdja_s(de->d_name));
 
@@ -450,11 +436,22 @@ static void execute()
       char p = point ? *fdja_srk(point) : 0;
 
       if (p == 'e' || p == 'r' || p == 'c') // execute, receive or cancel
+      {
         handle_order(p, j);
+      }
       else if (p)
+      {
         handle_event(p, j);
+      }
       else
-        reject("no 'point' key", NULL, j);
+      {
+        char *fname = fdja_ls(j, "fname", NULL);
+        if (fname)
+          flon_move_to_rejected(fname, "no 'point' key");
+        else
+          fgaj_w("no 'point' key in message, discarding.");
+        free(fname);
+      }
 
       fdja_free(j);
     }
