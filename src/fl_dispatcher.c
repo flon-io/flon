@@ -191,22 +191,6 @@ static void move_to_rejected(const char *path, ...)
   free(re);
 }
 
-static void move_to_processed(char *fep, const char *dformat, const char *fn)
-{
-  //printf("%s, %s, %s\n", fep, dformat, fn);
-
-  char *d = flu_fstat("var/run/%s/processed", fep) != 'd' ? "archive" : "run";
-
-  int r = flu_move(dformat, fn, "var/%s/%s/processed", d, fep);
-  if (r == 0) return;
-
-  fgaj_r(
-    "failed to move %s to var/%s/%s/processed/", fn, d, fep);
-
-  move_to_rejected(
-    dformat, fn, "couldn't move to var/%s/%s/processed/", d, fep);
-}
-
 static short schedule(const char *fname, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
@@ -268,7 +252,7 @@ static short schedule(const char *fname, fdja_value *msg)
 
   // move to processed/
 
-  move_to_processed(fep, "var/spool/dis/%s", fname); // ignore result
+  flon_move_to_processed("var/spool/dis/%s", fname); // ignore result
 
   r = 2; // success
 
@@ -318,7 +302,7 @@ static int do_trigger(const char *ns)
   }
 
   fep = strdup(t->fn); *(strrchr(fep, '/')) = 0;
-  move_to_processed(fep, "var/spool/tdis/%s", t->fn);
+  flon_move_to_processed("var/spool/tdis/%s", t->fn);
 
   fdja_value *msg = fdja_l(sch, "msg");
 

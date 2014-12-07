@@ -139,6 +139,10 @@ context "fl_ids:"
         flon_parse_exid(
           "http://x.flon.io/i/executions/org.nada-u0-20141118.1201.latsakocheba") ===f ""
         "org.nada-u0-20141118.1201.latsakocheba");
+    }
+
+    it "extracts an exid from a msg filename"
+    {
       expect(
         flon_parse_exid(
           "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json") ===f ""
@@ -151,6 +155,15 @@ context "fl_ids:"
         flon_parse_exid(
           "exe_nada.pn-u0-20141021.0803.karako.jon") ===f ""
         "nada.pn-u0-20141021.0803.karako");
+    }
+
+    it "extracts an exid from a schedule msg filename"
+    {
+      expect(
+        flon_parse_exid(
+          "at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json"
+        ) ===f ""
+        "dtest.trig-u0-20141207.0156.kagemusha");
     }
   }
 

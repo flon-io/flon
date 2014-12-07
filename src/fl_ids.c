@@ -71,6 +71,8 @@ char *flon_generate_exid(const char *domain)
 
 static fabr_parser *flon_nid_parser = NULL;
 
+// at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json
+
 static void flon_nid_parser_init()
 {
   fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
@@ -104,9 +106,9 @@ static void flon_nid_parser_init()
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
 
   fabr_parser *msg =
-    fabr_n_rex("msg", "(exe|inv|rcv|ret|sch|can)_");
+    fabr_n_rex("msg", "((exe|inv|rcv|ret|sch|can)_|at-[^-]+-)");
   fabr_parser *ftype =
-    fabr_n_rex("ftype", "\\.[^\.]+");
+    fabr_n_rex("ftype", "\\.[^\\.]+");
 
   flon_nid_parser =
     fabr_alt(

@@ -222,16 +222,27 @@ _over:
   return r;
 }
 
-int flon_move_to_rejected(const char *path, const char *reason)
+int flon_move_to_rejected(const char *path, ...)
 {
+  va_list ap; va_start(ap, path);
+  char *p = flu_svprintf(path, ap);
+  char *reason = va_arg(ap, char *);
+  char *r = flu_svprintf(reason, ap);
+  va_end(ap);
+
+  free(p);
+  free(r);
+
   return -1; // TODO
 }
 
-int flon_move_to_processed(const char *path)
+int flon_move_to_processed(const char *path, ...)
 {
+  va_list ap; va_start(ap, path); char *p = flu_svprintf(path, ap); va_end(ap);
+
   int r = 0; // success
 
-  char *fn = strdup(strrchr(path, '/') + 1);
+  char *fn = strdup(strrchr(p, '/') + 1);
   char *exid = flon_parse_exid(fn);
   char *fep = flon_exid_path(exid);
 
@@ -263,9 +274,9 @@ int flon_move_to_processed(const char *path)
 
     if (flu_fstat(t) == 0)
     {
-      if (flu_move(path, t) != 0)
+      if (flu_move(p, t) != 0)
       {
-        fgaj_r("failed to move %s to %s", path, t);
+        fgaj_r("failed to move %s to %s", p, t);
 
         // MAYBE move to rejected???
       }
@@ -277,6 +288,7 @@ int flon_move_to_processed(const char *path)
 
 _over:
 
+  free(p);
   free(fn);
   free(exid);
   free(fep);
