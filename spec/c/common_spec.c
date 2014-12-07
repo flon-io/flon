@@ -204,52 +204,52 @@ context "fl_common:"
       expect(r i== 0);
 
       expect(flu_fstat(fn) == 0);
-      expect(flu_fstat("var/spool/rejected/exe_%s.json", fep, exid) == 'f');
+      expect(flu_fstat("var/spool/rejected/exe_%s.json", exid) == 'f');
     }
 
-//    it "moves but doesn't overwrite"
-//    {
-//      exid = flon_generate_exid("c.mtproc.1");
-//      fep = flon_exid_path(exid);
-//
-//      fn = flu_sprintf("var/spool/dis/exe_%s.json", exid);
-//      flu_writeall(fn, "hello world 1");
-//
-//      int r = flon_move_to_processed(fn);
-//
-//      expect(r i== 0);
-//
-//      flu_writeall(fn, "hello world 1b");
-//
-//      r = flon_move_to_processed(fn);
-//
-//      expect(r i== 0);
-//
-//      expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
-//      expect(flu_fstat("var/run/%s/processed/exe_%s__1.json", fep, exid) == 'f');
-//    }
-//
-//    it "accepts not .json suffixes"
-//    {
-//      exid = flon_generate_exid("c.mtproc.2");
-//      fep = flon_exid_path(exid);
-//
-//      fn = flu_sprintf("var/spool/dis/exe_%s.jon", exid);
-//      flu_writeall(fn, "hello world 2");
-//
-//      int r = flon_move_to_processed(fn);
-//
-//      expect(r i== 0);
-//
-//      flu_writeall(fn, "hello world 2b");
-//
-//      r = flon_move_to_processed(fn);
-//
-//      expect(r i== 0);
-//
-//      expect(flu_fstat("var/run/%s/processed/exe_%s.jon", fep, exid) == 'f');
-//      expect(flu_fstat("var/run/%s/processed/exe_%s__1.jon", fep, exid) == 'f');
-//    }
+    it "moves but doesn't overwrite"
+    {
+      exid = flon_generate_exid("c.mtrej.1");
+      fep = flon_exid_path(exid);
+
+      fn = flu_sprintf("var/spool/dis/exe_%s.json", exid);
+      flu_writeall(fn, "hello world 1");
+
+      int r = flon_move_to_rejected(fn);
+
+      expect(r i== 0);
+
+      flu_writeall(fn, "hello world 1b");
+
+      r = flon_move_to_rejected(fn);
+
+      expect(r i== 0);
+
+      expect(flu_fstat("var/spool/rejected/exe_%s.json", exid) == 'f');
+      expect(flu_fstat("var/spool/rejected/exe_%s__1.json", exid) == 'f');
+    }
+
+    it "accepts not .json suffixes"
+    {
+      exid = flon_generate_exid("c.mtrej.2");
+      fep = flon_exid_path(exid);
+
+      fn = flu_sprintf("var/spool/dis/exe_%s.jon", exid);
+      flu_writeall(fn, "hello world 2");
+
+      int r = flon_move_to_rejected(fn);
+
+      expect(r i== 0);
+
+      flu_writeall(fn, "hello world 2b");
+
+      r = flon_move_to_rejected(fn);
+
+      expect(r i== 0);
+
+      expect(flu_fstat("var/spool/rejected/exe_%s.jon", exid) == 'f');
+      expect(flu_fstat("var/spool/rejected/exe_%s__1.jon", exid) == 'f');
+    }
   }
 }
 

@@ -32,6 +32,7 @@
 #include <sys/file.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "djan.h"
 #include "gajeta.h"
 #include "fl_ids.h"
@@ -338,10 +339,27 @@ int flon_move_to_rejected(const char *path, ...)
   char *re = flu_svprintf(va_arg(ap, char *), ap);
   va_end(ap);
 
+  int r = 0; // success so far
+
+  FILE *f = fopen(pa, "a");
+  if (f)
+  {
+    char *ts = flu_tstamp(NULL, 1, 'u');
+    fprintf(f, "\n# reason: %s (%s Z)\n", re, ts);
+    fclose(f);
+    free(ts);
+  }
+  else
+  {
+    fgaj_r("couldn't write reason '%s' to %s", re, pa);
+  }
+
+  r = move_to(pa, "var/spool/rejected/");
+
   free(pa);
   free(re);
 
-  return -1; // TODO
+  return r;
 }
 
 int flon_move_to_processed(const char *path, ...)
@@ -353,9 +371,6 @@ int flon_move_to_processed(const char *path, ...)
   char *fn = strdup(strrchr(p, '/') + 1);
   char *exid = flon_parse_exid(fn);
   char *fep = flon_exid_path(exid);
-
-  //char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
-  //char *suf = dot ? dot + 1 : ".json";
 
   char *d = (flu_fstat("var/archive/%s", fep) == 'd') ?  "archive" : "run";
 
@@ -369,7 +384,7 @@ int flon_move_to_processed(const char *path, ...)
     }
   }
 
-  move_to(p, "var/%s/%s/processed/", d, fep);
+  r = move_to(p, "var/%s/%s/processed/", d, fep);
 
 _over:
 
