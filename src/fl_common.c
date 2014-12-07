@@ -222,16 +222,124 @@ _over:
   return r;
 }
 
+static int move_to(const char *fname, const char *todir, ...)
+{
+  va_list ap; va_start(ap, todir);
+  char *td = flu_svprintf(todir, ap);
+  va_end(ap);
+
+  int r = 0; // success so far
+
+  char *fn = strdup(strrchr(fname, '/') + 1);
+  char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
+  char *suf = dot ? dot + 1 : ".json";
+
+  char *t = NULL;
+  char *extra = NULL;
+
+  for (size_t i = 0; ; ++i)
+  {
+    if ((i + 1) % 100 == 0) fgaj_w("cycling like mad: %s", t);
+
+    free(extra);
+    extra = flu_sprintf("__%zu", i); if (i == 0) *extra = 0;
+    free(t);
+    t = flu_path("%s/%s%s.%s", td, fn, extra, suf);
+
+    if (flu_fstat(t) == 0)
+    {
+      if (flu_move(fname, t) != 0)
+      {
+        fgaj_r("failed to move %s to %s", fname, t);
+        r = 1;
+        // MAYBE move to rejected???
+      }
+      break;
+    }
+  }
+
+  free(t);
+  free(extra);
+
+  free(td);
+  free(fn);
+
+  return r;
+}
+
+/*
+ * executor
+ *
+static void reject(const char *reason, const char *fname, fdja_value *j)
+{
+  fgaj_d("reason: %s", reason);
+
+  short own_fname = 0;
+
+  if (fname == NULL)
+  {
+    fname = fdja_lookup_string(j, "fname", NULL);
+    own_fname = 1;
+  }
+  if (fname == NULL)
+  {
+    fgaj_w("cannot reject msg without 'fname' key");
+    char *s = fdja_to_json(j); fgaj_d("no fname in: %s", s); free(s);
+    return;
+  }
+
+  flu_move("var/spool/exe/%s", fname, "var/spool/rejected/%s", fname);
+  fgaj_i("%s, rejected %s", reason, fname);
+
+  if (own_fname) free((char *)fname);
+}
+ *
+ *
+ * dispatcher
+ *
+static void move_to_rejected(const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  char *pa = flu_svprintf(path, ap);
+  char *re = flu_svprintf(va_arg(ap, char *), ap);
+  va_end(ap);
+
+  if (strncmp(pa, "var/", 4) != 0)
+  {
+    char *opa = pa; pa = flu_path("var/spool/dis/%s", pa); free(opa);
+  }
+
+  FILE *f = fopen(pa, "a");
+  if (f)
+  {
+    char *ts = flu_tstamp(NULL, 1, 'u');
+    fprintf(f, "\n# reason: %s (%s Z)\n", re, ts);
+    fclose(f);
+    free(ts);
+  }
+
+  int mr = flu_move(pa, "var/spool/rejected/");
+
+  if (mr == 0)
+    fgaj_i("%s, reason is: %s", pa, re);
+  else
+    fgaj_r("failed moving %s to var/spool/rejected, reason was: %s", pa, re);
+
+  free(pa);
+  free(re);
+}
+ *
+ */
+
 int flon_move_to_rejected(const char *path, ...)
 {
   va_list ap; va_start(ap, path);
-  char *p = flu_svprintf(path, ap);
-  char *reason = va_arg(ap, char *);
-  char *r = flu_svprintf(reason, ap);
+  char *pa = flu_svprintf(path, ap);
+  char *re = flu_svprintf(va_arg(ap, char *), ap);
   va_end(ap);
 
-  free(p);
-  free(r);
+  free(pa);
+  free(re);
 
   return -1; // TODO
 }
@@ -246,8 +354,8 @@ int flon_move_to_processed(const char *path, ...)
   char *exid = flon_parse_exid(fn);
   char *fep = flon_exid_path(exid);
 
-  char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
-  char *suf = dot ? dot + 1 : ".json";
+  //char *dot = strrchr(fn, '.'); if (dot) *dot = 0;
+  //char *suf = dot ? dot + 1 : ".json";
 
   char *d = (flu_fstat("var/archive/%s", fep) == 'd') ?  "archive" : "run";
 
@@ -261,31 +369,7 @@ int flon_move_to_processed(const char *path, ...)
     }
   }
 
-  char *t = NULL;
-  char *extra = NULL;
-
-  for (size_t i = 0; ; ++i)
-  {
-    if ((i + 1) % 100 == 0) fgaj_w("cycling like mad: %s", t);
-
-    free(extra);
-    extra = flu_sprintf("__%zu", i); if (i == 0) *extra = 0;
-    free(t);
-    t = flu_sprintf("var/%s/%s/processed/%s%s.%s", d, fep, fn, extra, suf);
-
-    if (flu_fstat(t) == 0)
-    {
-      if (flu_move(p, t) != 0)
-      {
-        fgaj_r("failed to move %s to %s", p, t);
-
-        // MAYBE move to rejected???
-      }
-      break;
-    }
-  }
-  free(t);
-  free(extra);
+  move_to(p, "var/%s/%s/processed/", d, fep);
 
 _over:
 
