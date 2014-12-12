@@ -49,11 +49,11 @@ context "flon-listener (vs executions)"
   after each
   {
     free(exid);
-    if (req) shv_request_free(req);
-    if (params) flu_list_free(params);
-    if (v) fdja_free(v);
-    //if (v1) fdja_free(v1);
-    if (res) shv_response_free(res);
+    shv_request_free(req);
+    flu_list_free(params);
+    fdja_free(v);
+    //fdja_free(v1);
+    shv_response_free(res);
   }
 
   describe "flon_exes_handler() /executions"

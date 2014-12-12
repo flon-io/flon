@@ -40,9 +40,9 @@ context "flon-listener (vs metrics)"
 
   after each
   {
-    if (req) shv_request_free(req);
-    if (params) flu_list_free(params);
-    if (res) shv_response_free(res);
+    shv_request_free(req);
+    flu_list_free(params);
+    shv_response_free(res);
   }
 
   describe "flon_metrics_handler() /metrics"
