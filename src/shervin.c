@@ -45,9 +45,9 @@
 #include "shv_protected.h"
 
 
-static void shv_close(struct ev_loop *l, struct ev_io *eio)
+static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 {
-  shv_con_free((shv_con *)eio->data);
+  fshv_con_free((fshv_con *)eio->data);
 
   ev_io_stop(l, eio);
   close(eio->fd);
@@ -55,23 +55,23 @@ static void shv_close(struct ev_loop *l, struct ev_io *eio)
   free(eio);
 }
 
-static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
+static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
 
   if (fcntl(eio->fd, F_SETFL, fcntl(eio->fd, F_GETFL) | O_NONBLOCK) == -1)
   {
     fgaj_tr("couldn't set nonblock (i%p fd %i)", eio, eio->fd);
-    shv_close(l, eio);
+    fshv_close(l, eio);
     return;
   }
   //fgaj_t("eio->fd flags: %i", fcntl(eio->fd, F_GETFL));
 
-  shv_con *con = (shv_con *)eio->data;
+  fshv_con *con = (fshv_con *)eio->data;
 
-  char buffer[SHV_BUFFER_SIZE + 1];
+  char buffer[FSHV_BUFFER_SIZE + 1];
 
-  ssize_t r = recv(eio->fd, buffer, SHV_BUFFER_SIZE, 0);
+  ssize_t r = recv(eio->fd, buffer, FSHV_BUFFER_SIZE, 0);
 
   fgaj_d("read: %li (i%p fd %i)", r, eio, eio->fd);
 
@@ -79,7 +79,7 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   else if (r <= 0) {
     if (r < 0) fgaj_r("read error (i%p fd %i)", eio, eio->fd);
-    shv_close(l, eio);
+    fshv_close(l, eio);
     return;
   }
 
@@ -124,8 +124,8 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->req = shv_parse_request_head(head);
-    con->req->startus = 1000 * 1000 * ev_now(l);
+    con->req = fshv_parse_request_head(head);
+    con->req->startus = ev_now(l) * 1000000;
     con->rqount++;
 
     free(head);
@@ -134,38 +134,38 @@ static void shv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
       "i%p r%i %s %s %s",
       eio, con->rqount,
       inet_ntoa(con->client->sin_addr),
-      shv_char_to_method(con->req->method),
+      fshv_char_to_method(con->req->method),
       con->req->uri);
 
     if (con->req->status_code != 200)
     {
       fgaj_d("c%p r%i couldn't parse request head", eio, con->rqount);
 
-      con->res = shv_response_malloc(con->req->status_code);
-      shv_respond(l, eio);
+      con->res = fshv_response_malloc(con->req->status_code);
+      fshv_respond(l, eio);
       return;
     }
   }
 
   //printf(
-  //  "con->req content-length %zd\n", shv_request_content_length(con->req));
+  //  "con->req content-length %zd\n", fshv_request_content_length(con->req));
 
   if (
     (con->req->method == 'p' || con->req->method == 'u') &&
-    (con->blen < shv_request_content_length(con->req))
+    (con->blen < fshv_request_content_length(con->req))
   ) return; // request body not yet complete
 
   con->req->body = flu_sbuffer_to_string(con->body);
   con->body = NULL;
 
-  shv_handle(l, eio);
+  fshv_handle(l, eio);
 }
 
-void shv_handle(struct ev_loop *l, struct ev_io *eio)
+void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 {
-  shv_con *con = (shv_con *)eio->data;
+  fshv_con *con = (fshv_con *)eio->data;
 
-  con->res = shv_response_malloc(404);
+  con->res = fshv_response_malloc(404);
 
   int filtering = 0;
   int guarded = 0;
@@ -173,15 +173,15 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
 
   for (size_t i = 0; ; ++i)
   {
-    shv_route *route = con->routes[i];
+    fshv_route *route = con->routes[i];
 
     if (route == NULL) break; // end reached
 
-    if ((void *)route->guard == (void *)shv_filter_guard) filtering = 1;
+    if ((void *)route->guard == (void *)fshv_filter_guard) filtering = 1;
 
     if (handled && ! filtering) continue;
 
-    if (route->guard && (void *)route->guard != (void *)shv_filter_guard)
+    if (route->guard && (void *)route->guard != (void *)fshv_filter_guard)
     {
       filtering = 0;
 
@@ -199,10 +199,10 @@ void shv_handle(struct ev_loop *l, struct ev_io *eio)
     }
   }
 
-  shv_respond(l, eio);
+  fshv_respond(l, eio);
 }
 
-static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
+static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
 
@@ -217,15 +217,15 @@ static void shv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  shv_con *con = shv_con_malloc(ca, (shv_route **)eio->data);
+  fshv_con *con = fshv_con_malloc(ca, (fshv_route **)eio->data);
   con->startus = 1000 * 1000 * ev_now(l);
   ceio->data = con;
 
-  ev_io_init(ceio, shv_handle_cb, csd, EV_READ);
+  ev_io_init(ceio, fshv_handle_cb, csd, EV_READ);
   ev_io_start(l, ceio);
 }
 
-void shv_serve(int port, shv_route **routes)
+void fshv_serve(int port, fshv_route **routes)
 {
   int r;
 
@@ -256,7 +256,7 @@ void shv_serve(int port, shv_route **routes)
   r = listen(sd, 2);
   if (r < 0) { fgaj_r("listen error"); exit(3); }
 
-  ev_io_init(eio, shv_accept_cb, sd, EV_READ);
+  ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
   eio->data = routes;
   ev_io_start(l, eio);
 
@@ -269,13 +269,13 @@ void shv_serve(int port, shv_route **routes)
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }
 
-shv_route *shv_route_malloc(shv_handler *guard, shv_handler *handler, ...)
+fshv_route *fshv_route_malloc(fshv_handler *guard, fshv_handler *handler, ...)
 {
   va_list ap; va_start(ap, handler);
   flu_dict *params = flu_vd(ap);
   va_end(ap);
 
-  shv_route *r = calloc(1, sizeof(shv_route));
+  fshv_route *r = calloc(1, sizeof(fshv_route));
 
   r->guard = guard;
   r->handler = handler;
@@ -284,7 +284,7 @@ shv_route *shv_route_malloc(shv_handler *guard, shv_handler *handler, ...)
   return r;
 }
 
-shv_route *shv_rp(char *path, shv_handler *handler, ...)
+fshv_route *fshv_rp(char *path, fshv_handler *handler, ...)
 {
   va_list ap; va_start(ap, handler);
   flu_dict *params = flu_vd(ap);
@@ -292,9 +292,9 @@ shv_route *shv_rp(char *path, shv_handler *handler, ...)
 
   flu_list_set(params, "path", path);
 
-  shv_route *r = calloc(1, sizeof(shv_route));
+  fshv_route *r = calloc(1, sizeof(fshv_route));
 
-  r->guard = shv_path_guard;
+  r->guard = fshv_path_guard;
   r->handler = handler;
   r->params = params;
 

@@ -351,7 +351,7 @@ static char *flu_simplify_path(const char *s)
     {
       *(rr - 1) = 0;
       rr = strrchr(r, '/');
-      rr = rr ? rr + 1 : r + 1;
+      rr = rr ? rr + 1 : r;
     }
     else if (dots < 1)
     {
@@ -412,6 +412,10 @@ char *flu_dirname(const char *path, ...)
   va_list ap; va_start(ap, path);
   char *s = flu_svprintf(path, ap);
   va_end(ap);
+
+  size_t l = strlen(s);
+
+  if (l > 0 && s[l - 1] == '/') { s[l - 1] = 0; return s; }
 
   char *dn = dirname(s);
   char *ddn = strdup(dn);
@@ -636,6 +640,19 @@ flu_list *flu_list_malloc()
   return l;
 }
 
+flu_list *flu_l(void *elt0, ...)
+{
+  va_list ap; va_start(ap, elt0);
+
+  flu_list *r = flu_list_malloc();
+
+  for (void *e = elt0; e; e = va_arg(ap, void *)) flu_list_add(r, e);
+
+  va_end(ap);
+
+  return r;
+}
+
 void flu_list_free(flu_list *l)
 {
   if (l == NULL) return;
@@ -767,9 +784,53 @@ void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *))
   free(ll);
 }
 
+void flu_list_concat(flu_list *to, flu_list *from)
+{
+  for (flu_node *n = from->first; n; n = n->next)
+  {
+    flu_list_add(to, n->item);
+    if (n->key) to->last->key = strdup(n->key);
+  }
+}
+
+static char *list_to_s(flu_list *l, char mode)
+{
+  if (l == NULL) return strdup("(null flu_list)");
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  short isdict = (l->first && l->first->key);
+
+  flu_sbputc(b, isdict ? '{' : '[');
+  for (flu_node *n = l->first; n; n = n->next)
+  {
+    if (n != l->first) flu_sbputc(b, ',');
+    if (isdict) flu_sbprintf(b, "%s:", n->key);
+    if (mode == 's') flu_sbputs(b, (char *)n->item);
+    else flu_sbprintf(b, "%p", n->item);
+  }
+  flu_sbputc(b, isdict ? '}' : ']');
+
+  return flu_sbuffer_to_string(b);
+}
+char *flu_list_to_s(flu_list *l) { return list_to_s(l, 's'); }
+char *flu_list_to_sp(flu_list *l) { return list_to_s(l, 'p'); }
+
 void flu_list_set(flu_list *l, const char *key, void *item)
 {
-  flu_list_unshift(l, item); l->first->key = strdup(key);
+  flu_list_setk(l, strdup(key), item, 0);
+}
+
+void flu_list_setk(flu_list *l, char *key, void *item, int set_as_last)
+{
+  if (set_as_last)
+  {
+    flu_list_add(l, item); l->last->key = key;
+  }
+  else
+  {
+    flu_list_unshift(l, item); l->first->key = key;
+  }
 }
 
 void flu_list_set_last(flu_list *l, const char *key, void *item)
@@ -846,9 +907,7 @@ flu_list *flu_vsd(va_list ap)
     char *vf = va_arg(ap, char *);
     char *v = vf ? flu_svprintf(vf, ap) : NULL;
 
-    flu_list_set(d, k, v);
-
-    free(k);
+    flu_list_setk(d, k, v, 0);
   }
 
   return d;
@@ -864,10 +923,10 @@ flu_list *flu_sd(char *kf0, ...)
   char *v0 = vf0 ? flu_svprintf(vf0, ap) : NULL;
 
   flu_list *d = flu_vsd(ap);
+
   va_end(ap);
 
-  flu_list_set(d, k0, v0);
-  free(k0);
+  flu_list_setk(d, k0, v0, 0);
 
   return d;
 }

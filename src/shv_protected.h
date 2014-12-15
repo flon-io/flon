@@ -38,31 +38,33 @@
 //
 // request
 
-shv_request *shv_parse_request_head(char *s);
+fshv_request *fshv_parse_request_head(char *s);
 
-void shv_request_free(shv_request *r);
-ssize_t shv_request_content_length(shv_request *r);
+void fshv_request_free(fshv_request *r);
+ssize_t fshv_request_content_length(fshv_request *r);
 
-void shv_handle(struct ev_loop *l, struct ev_io *eio);
+void fshv_handle(struct ev_loop *l, struct ev_io *eio);
+
+int fshv_request_is_https(fshv_request *r);
 
 //
 // response
 
-shv_response *shv_response_malloc(short status_code);
-void shv_response_free(shv_response *r);
+fshv_response *fshv_response_malloc(short status_code);
+void fshv_response_free(fshv_response *r);
 
-void shv_respond(struct ev_loop *l, struct ev_io *eio);
+void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 
 
 //
 // connection
 
-typedef struct shv_con {
+typedef struct {
 
   struct sockaddr_in *client;
   long long startus;
 
-  shv_route **routes;
+  fshv_route **routes;
 
   flu_sbuffer *head;
   short hend;
@@ -71,35 +73,57 @@ typedef struct shv_con {
   size_t blen;
 
   ssize_t rqount;
-  shv_request *req;
-  shv_response *res;
-} shv_con;
+  fshv_request *req;
+  fshv_response *res;
+} fshv_con;
 
-shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes);
-void shv_con_reset(shv_con *c);
-void shv_con_free(shv_con *c);
+fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes);
+void fshv_con_reset(fshv_con *c);
+void fshv_con_free(fshv_con *c);
 
 
 //
 // uri
 
-flu_dict *shv_parse_uri(char *uri);
-flu_dict *shv_parse_host_and_path(char *host, char *path);
+flu_dict *fshv_parse_uri(char *uri);
+flu_dict *fshv_parse_host_and_path(char *host, char *path);
 
 /* Renders the uri_d as an absolute URI. When ssl is set to 1, the
  * scheme will be "https://".
  */
-char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
+char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
 
-#define shv_abs(ssl, uri_d) shv_absolute_uri(ssl, uri_d, NULL)
-#define shv_rel(ssl, uri_d, ...) shv_absolute_uri(ssl, uri_d, __VA_ARGS__)
+#define fshv_abs(ssl, uri_d) fshv_absolute_uri(ssl, uri_d, NULL)
+#define fshv_rel(ssl, uri_d, ...) fshv_absolute_uri(ssl, uri_d, __VA_ARGS__)
+
+
+//
+// auth
+
+typedef struct {
+  char *sid;
+  char *user;
+  char *id;
+  long long mtimeus; // microseconds
+} fshv_session;
+
+char *fshv_session_to_s(fshv_session *s);
+
+// auth, default (memory) session store
+
+flu_list *fshv_session_store();
+
+void fshv_session_add(
+  const char *user, const char *id, const char *sid, long long nowus);
+
+void fshv_session_store_reset();
 
 
 //
 // spec tools
 
-shv_request *shv_parse_request_head_f(const char *s, ...);
-int shv_do_route(char *path, shv_request *req);
+fshv_request *fshv_parse_request_head_f(const char *s, ...);
+int fshv_do_route(char *path, fshv_request *req);
 
 #endif // FLON_SHV_PROTECTED_H
 

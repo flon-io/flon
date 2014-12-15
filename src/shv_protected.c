@@ -38,7 +38,7 @@
 //
 // request
 
-char shv_method_to_char(char *s)
+char fshv_method_to_char(char *s)
 {
   if (strncmp(s, "GET", 3) == 0) return 'g';
   if (strncmp(s, "PUT", 3) == 0) return 'u';
@@ -51,7 +51,7 @@ char shv_method_to_char(char *s)
   return '?';
 }
 
-char *shv_char_to_method(char c)
+char *fshv_char_to_method(char c)
 {
   if (c == 'g') return "GET";
   if (c == 'u') return "PUT";
@@ -72,18 +72,18 @@ char *shv_char_to_method(char c)
 //
 // connection
 
-shv_con *shv_con_malloc(struct sockaddr_in *client, shv_route **routes)
+fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
 {
-  shv_con *c = calloc(1, sizeof(shv_con));
+  fshv_con *c = calloc(1, sizeof(fshv_con));
   c->client = client;
   //c->startus = flu_gets('u');
   c->routes = routes;
-  shv_con_reset(c);
+  fshv_con_reset(c);
   c->rqount = -1;
   return c;
 }
 
-void shv_con_reset(shv_con *c)
+void fshv_con_reset(fshv_con *c)
 {
   if (c->head) flu_sbuffer_free(c->head);
   c->head = NULL;
@@ -93,16 +93,18 @@ void shv_con_reset(shv_con *c)
   c->body = NULL;
   c->blen = 0;
 
-  if (c->req) shv_request_free(c->req);
+  if (c->req) fshv_request_free(c->req);
   c->req = NULL;
 
-  if (c->res) shv_response_free(c->res);
+  if (c->res) fshv_response_free(c->res);
   c->res = NULL;
 }
 
-void shv_con_free(shv_con *c)
+void fshv_con_free(fshv_con *c)
 {
-  shv_con_reset(c);
+  if (c == NULL) return;
+
+  fshv_con_reset(c);
   free(c->client);
   free(c);
 }

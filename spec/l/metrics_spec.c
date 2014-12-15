@@ -33,16 +33,16 @@ context "flon-listener (vs metrics)"
 
   before each
   {
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(404);
+    fshv_response *res = fshv_response_malloc(404);
   }
 
   after each
   {
-    shv_request_free(req);
+    fshv_request_free(req);
     flu_list_free(params);
-    shv_response_free(res);
+    fshv_response_free(res);
   }
 
   describe "flon_metrics_handler() /metrics"

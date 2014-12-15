@@ -83,21 +83,21 @@ int main(int argc, char *argv[])
 
   char *cp = flu_canopath(dir); fgaj_i("-d %s", cp); free(cp);
 
-  shv_route *routes[] =
+  fshv_route *routes[] =
   {
-    shv_r(
-      shv_any_guard,
-      shv_basic_auth_filter,
+    fshv_r(
+      fshv_any_guard,
+      fshv_basic_auth_filter,
       "func", flon_auth_enticate, "realm", "flon", NULL),
 
-    shv_rp("GET /i", flon_i_handler, NULL),
-    shv_rp("POST /i/in", flon_in_handler, NULL),
-    shv_rp("GET /i/executions", flon_exes_handler, NULL),
-    shv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
-    shv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
-    shv_rp("GET /i/msgs/:id", flon_msg_handler, NULL),
-    shv_rp("GET /i/metrics", flon_metrics_handler, NULL),
-    shv_rp("GET /**", shv_dir_handler, "r", "var/www", NULL),
+    fshv_rp("GET /i", flon_i_handler, NULL),
+    fshv_rp("POST /i/in", flon_in_handler, NULL),
+    fshv_rp("GET /i/executions", flon_exes_handler, NULL),
+    fshv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
+    fshv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
+    fshv_rp("GET /i/msgs/:id", flon_msg_handler, NULL),
+    fshv_rp("GET /i/metrics", flon_metrics_handler, NULL),
+    fshv_rp("GET /**", fshv_dir_handler, "r", "var/www", NULL),
 
     NULL
   };
@@ -106,6 +106,6 @@ int main(int argc, char *argv[])
 
   if (port < 0) port = 1980;
 
-  shv_serve(port, routes);
+  fshv_serve(port, routes);
 }
 

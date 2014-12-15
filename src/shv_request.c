@@ -40,7 +40,7 @@
 fabr_parser *request_parser = NULL;
 
 
-static void shv_init_parser()
+static void fshv_init_parser()
 {
   fabr_parser *sp = fabr_string(" ");
   fabr_parser *crlf = fabr_string("\r\n");
@@ -95,19 +95,19 @@ static void shv_init_parser()
   //puts(fabr_parser_to_string(request_parser));
 }
 
-shv_request *shv_parse_request_head(char *s)
+fshv_request *fshv_parse_request_head(char *s)
 {
   //
   // parse
 
-  if (request_parser == NULL) shv_init_parser();
+  if (request_parser == NULL) fshv_init_parser();
 
   fabr_tree *r = fabr_parse(s, 0, request_parser);
   //fabr_tree *r = fabr_parse_f(s, 0, request_parser, ABR_F_ALL);
 
   //puts(fabr_tree_to_string_with_leaves(s, r));
 
-  shv_request *req = calloc(1, sizeof(shv_request));
+  fshv_request *req = calloc(1, sizeof(fshv_request));
   //req->startus = flu_gets('u');
   req->status_code = 400; // Bad Request
 
@@ -120,7 +120,7 @@ shv_request *shv_parse_request_head(char *s)
   // method
 
   t = fabr_tree_lookup(r, "method");
-  req->method = shv_method_to_char(fabr_tree_str(s, t));
+  req->method = fshv_method_to_char(fabr_tree_str(s, t));
 
   // uri
 
@@ -165,7 +165,7 @@ shv_request *shv_parse_request_head(char *s)
   flu_list_free(hs);
 
   req->uri_d =
-    shv_parse_host_and_path(
+    fshv_parse_host_and_path(
       flu_list_get(req->headers, "host"),
       req->uri);
 
@@ -180,14 +180,14 @@ shv_request *shv_parse_request_head(char *s)
   return req;
 }
 
-ssize_t shv_request_content_length(shv_request *r)
+ssize_t fshv_request_content_length(fshv_request *r)
 {
   char *cl = flu_list_get(r->headers, "content-length");
 
   return (cl == NULL) ? -1 : atol(cl);
 }
 
-void shv_request_free(shv_request *r)
+void fshv_request_free(fshv_request *r)
 {
   if (r == NULL) return;
 
@@ -198,28 +198,41 @@ void shv_request_free(shv_request *r)
   free(r);
 }
 
+int fshv_request_is_https(fshv_request *r)
+{
+  if (strcmp(flu_list_getd(r->uri_d, "_scheme", ""), "https") == 0) return 1;
+
+  char *s = flu_list_getd(r->headers, "forwarded", "");
+  if (strstr(s, "proto=https")) return 1;
+
+  s = flu_list_getd(r->headers, "x-forwarded-proto", "");
+  if (strstr(s, "https")) return 1;
+
+  return 0;
+}
+
 
 //
 // spec helpers (the specs of the projects using shervin)
 
-shv_request *shv_parse_request_head_f(const char *s, ...)
+fshv_request *fshv_parse_request_head_f(const char *s, ...)
 {
   va_list ap; va_start(ap, s);
   char *ss = flu_svprintf(s, ap);
   va_end(ap);
 
-  shv_request *r = shv_parse_request_head(ss);
+  fshv_request *r = fshv_parse_request_head(ss);
   free(ss);
 
   return r;
 }
 
-int shv_do_route(char *path, shv_request *req)
+int fshv_do_route(char *path, fshv_request *req)
 {
   flu_dict *params = flu_list_malloc();
   flu_list_set(params, "path", path);
 
-  int r = shv_path_guard(req, NULL, params);
+  int r = fshv_path_guard(req, NULL, params);
 
   flu_list_free(params);
 

@@ -24,26 +24,26 @@ context "flon-listener"
 
   before each
   {
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(404);
+    fshv_response *res = fshv_response_malloc(404);
     fdja_value *v = NULL;
     fdja_value *v1 = NULL;
   }
   after each
   {
-    shv_request_free(req);
+    fshv_request_free(req);
     flu_list_free(params);
     fdja_free(v);
     fdja_free(v1);
-    shv_response_free(res);
+    fshv_response_free(res);
   }
 
   describe "flon_i_handler() /i"
   {
     it "lists the resources available"
     {
-      req = shv_parse_request_head(""
+      req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
@@ -85,7 +85,7 @@ context "flon-listener"
     {
       it "accepts launch requests"
       {
-        req = shv_parse_request_head(
+        req = fshv_parse_request_head(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
@@ -135,7 +135,7 @@ context "flon-listener"
 
       it "links to self and home"
       {
-        req = shv_parse_request_head(""
+        req = fshv_parse_request_head(""
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
@@ -159,7 +159,7 @@ context "flon-listener"
 
       it "rejects invalid launch requests"
       {
-        req = shv_parse_request_head(""
+        req = fshv_parse_request_head(""
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
@@ -173,7 +173,7 @@ context "flon-listener"
 
       it "rejects launch requests for unauthorized domains"
       {
-        req = shv_parse_request_head(""
+        req = fshv_parse_request_head(""
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");

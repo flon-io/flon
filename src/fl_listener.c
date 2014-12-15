@@ -57,19 +57,19 @@ static void expand_rels(fdja_value *doc)
   }
 }
 
-static fdja_value *link(shv_request *req, char meth, const char *path, ...)
+static fdja_value *link(fshv_request *req, char meth, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);
   va_end(ap);
 
-  char *uri = shv_abs(0, req->uri_d);
+  char *uri = fshv_abs(0, req->uri_d);
   char *i = strstr(uri, "/i/");
   if (i) *(i + 2) = 0;
 
   fdja_value *r = fdja_v("{ href: \"%s/%s\" }", uri, p);
 
-  if (meth != 'g') fdja_psetv(r, "method", shv_char_to_method(meth));
+  if (meth != 'g') fdja_psetv(r, "method", fshv_char_to_method(meth));
   if (strchr(p, '{')) fdja_psetv(r, "templated", "true");
 
   free(uri);
@@ -78,7 +78,7 @@ static fdja_value *link(shv_request *req, char meth, const char *path, ...)
   return r;
 }
 
-static int respond(shv_request *req, shv_response *res, fdja_value *r)
+static int respond(fshv_request *req, fshv_response *res, fdja_value *r)
 {
   flu_list_set(
     res->headers, "content-type", strdup("application/json; charset=UTF-8"));
@@ -89,10 +89,11 @@ static int respond(shv_request *req, shv_response *res, fdja_value *r)
 
   // add home and self links
 
-  char *uri = shv_abs(0, req->uri_d);
+  char *uri = fshv_abs(0, req->uri_d);
   fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", uri));
-  if (req->method != 'g') {
-    fdja_psetv(r, "_links.self.method", shv_char_to_method(req->method));
+  if (req->method != 'g')
+  {
+    fdja_psetv(r, "_links.self.method", fshv_char_to_method(req->method));
   }
   free(uri);
 
@@ -106,8 +107,8 @@ static int respond(shv_request *req, shv_response *res, fdja_value *r)
 }
 
 static void in_handle_launch(
-  shv_request *req, fdja_value *v, char *dom,
-  shv_response *res, fdja_value *r)
+  fshv_request *req, fdja_value *v, char *dom,
+  fshv_response *res, fdja_value *r)
 {
   if ( ! flon_may_r('l', req, dom))
   {
@@ -137,7 +138,7 @@ static void in_handle_launch(
   free(i);
 }
 
-int flon_in_handler(shv_request *req, shv_response *res, flu_dict *params)
+int flon_in_handler(fshv_request *req, fshv_response *res, flu_dict *params)
 {
   char *dom = NULL;
 
@@ -248,7 +249,7 @@ flu_list *flon_list_executions(
   return r;
 }
 
-static fdja_value *embed_exe(shv_request *req, const char *path, fdja_value *r)
+static fdja_value *embed_exe(fshv_request *req, const char *path, fdja_value *r)
 {
   if (r == NULL) r = fdja_v("{}");
   if (fdja_l(r, "_links") == NULL) fdja_set(r, "_links", fdja_v("{}"));
@@ -270,7 +271,7 @@ static fdja_value *embed_exe(shv_request *req, const char *path, fdja_value *r)
 }
 
 static int list_exes(
-  shv_request *req, shv_response *res, flu_dict *params, const char *dom)
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *dom)
 {
   res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {}, _embedded: { executions: [] } }");
@@ -297,7 +298,7 @@ static int list_exes(
 }
 
 int flon_exes_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   return list_exes(req, res, params, NULL);
 }
@@ -306,7 +307,7 @@ int flon_exes_handler(
 // /i/executions/:domain or /:exid
 
 static int exe_handler_dom(
-  shv_request *req, shv_response *res, flu_dict *params, const char *dom)
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *dom)
 {
   //if ( ! flon_may_r('r', req, dom)) return 0;
     // the user might be allowed to see some subdomain of dom, so let it go
@@ -315,7 +316,7 @@ static int exe_handler_dom(
 }
 
 static int exe_handler_exid(
-  shv_request *req, shv_response *res, fdja_value *nid)
+  fshv_request *req, fshv_response *res, fdja_value *nid)
 {
   char *dom = fdja_ls(nid, "domain", NULL);
   char *path = NULL;
@@ -344,7 +345,7 @@ _over:
 }
 
 int flon_exe_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
@@ -362,7 +363,8 @@ int flon_exe_handler(
 // /i/executions/:exid/log /msg-log /msgs
 
 static int sub_handler_msgs(
-  shv_request *req, shv_response *res, flu_dict *params, char *exid, char *sub)
+  fshv_request *req, fshv_response *res,
+  flu_dict *params, char *exid, char *sub)
 {
   char *pa = flon_exid_path(exid);
   char *d = flu_path("var/run/%s/processed", pa);
@@ -395,14 +397,15 @@ static int sub_handler_msgs(
 }
 
 static int sub_handler_log(
-  shv_request *req, shv_response *res, flu_dict *params, char *exid, char *sub)
+  fshv_request *req, fshv_response *res,
+  flu_dict *params, char *exid, char *sub)
 {
   char *path = flon_exid_path(exid);
 
   char *file = "exe.log";
   if (strcmp(sub, "msg-log") == 0) file = "msgs.log";
 
-  ssize_t s = shv_serve_file(res, params, "var/run/%s/%s", path, file);
+  ssize_t s = fshv_serve_file(res, params, "var/run/%s/%s", path, file);
 
   free(path);
 
@@ -410,7 +413,7 @@ static int sub_handler_log(
 }
 
 int flon_exe_sub_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   char *exid = flu_list_get(req->routing_d, "id");
   char *sub = flu_list_get(req->routing_d, "sub");
@@ -426,7 +429,7 @@ int flon_exe_sub_handler(
 // /i/msgs/:id
 
 int flon_msg_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   char *id = flu_list_get(req->routing_d, "id");
   char *exid = flon_parse_exid(id);
@@ -437,7 +440,7 @@ int flon_msg_handler(
   char *path = flon_exid_path(exid);
   char *fpath = flu_path("var/run/%s/processed/%s", path, id);
 
-  ssize_t s = shv_serve_file(res, params, fpath);
+  ssize_t s = fshv_serve_file(res, params, fpath);
 
   free(path);
   free(fpath);
@@ -450,7 +453,7 @@ int flon_msg_handler(
 // /i/metrics
 
 int flon_metrics_handler(
-  shv_request *req, shv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, flu_dict *params)
 {
   return 1;
 }
@@ -458,7 +461,7 @@ int flon_metrics_handler(
 //
 // /i
 
-int flon_i_handler(shv_request *req, shv_response *res, flu_dict *params)
+int flon_i_handler(fshv_request *req, fshv_response *res, flu_dict *params)
 {
   res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {} }");

@@ -20,12 +20,12 @@ context "flon-listener auth"
     flon_configure(".");
   }
 
-  describe "shv_auth_filter() (was flon_auth_filter())"
+  describe "fshv_auth_filter() (was flon_auth_filter())"
   {
     before each
     {
-      shv_request *req = NULL;
-      shv_response *res = shv_response_malloc(200);
+      fshv_request *req = NULL;
+      fshv_response *res = fshv_response_malloc(200);
       fdja_value *v = NULL;
       fdja_value *v1 = NULL;
 
@@ -34,21 +34,21 @@ context "flon-listener auth"
     }
     after each
     {
-      shv_request_free(req);
+      fshv_request_free(req);
       fdja_free(v);
       fdja_free(v1);
-      shv_response_free(res);
+      fshv_response_free(res);
       flu_list_free(params);
     }
 
     it "returns 1 and 401 if auth fails (no authorization header)"
     {
-      req = shv_parse_request_head(""
+      req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -60,13 +60,13 @@ context "flon-listener auth"
 
     it "returns 1 and 401 if auth fails (wrong credentials)"
     {
-      req = shv_parse_request_head(""
+      req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic nada\r\n"
         "\r\n");
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -78,13 +78,13 @@ context "flon-listener auth"
 
     it "returns 1 and 401 if ?logout"
     {
-      req = shv_parse_request_head(""
+      req = fshv_parse_request_head(""
         "GET /i?logout=1 HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 1);
 
@@ -96,13 +96,13 @@ context "flon-listener auth"
 
     it "returns 0 if auth succeeds"
     {
-      req = shv_parse_request_head(""
+      req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = shv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, params);
 
       expect(r i== 0);
       expect(flu_list_get(req->routing_d, "_user") === "john");

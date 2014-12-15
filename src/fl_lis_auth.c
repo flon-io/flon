@@ -175,7 +175,7 @@ _over:
   return result;
 }
 
-int flon_may_r(char right, shv_request *req, const char *dom)
+int flon_may_r(char right, fshv_request *req, const char *dom)
 {
   return flon_may(right, flu_list_get(req->routing_d, "_user"), dom);
 }

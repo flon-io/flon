@@ -39,9 +39,9 @@ context "flon-listener (vs executions)"
   before each
   {
     char *exid = NULL;
-    shv_request *req = NULL;
+    fshv_request *req = NULL;
     flu_dict *params = NULL;
-    shv_response *res = shv_response_malloc(404);
+    fshv_response *res = fshv_response_malloc(404);
     fdja_value *v = NULL;
     //fdja_value *v1 = NULL;
   }
@@ -49,18 +49,18 @@ context "flon-listener (vs executions)"
   after each
   {
     free(exid);
-    shv_request_free(req);
+    fshv_request_free(req);
     flu_list_free(params);
     fdja_free(v);
     //fdja_free(v1);
-    shv_response_free(res);
+    fshv_response_free(res);
   }
 
   describe "flon_exes_handler() /executions"
   {
     it "lists executions (in readable domains)"
     {
-      req = shv_parse_request_head(
+      req = fshv_parse_request_head(
         "GET /i/executions HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
@@ -107,11 +107,11 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example.a", 0);
       //printf("exid: %s\n", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/org.example.a HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
-      shv_do_route("GET /i/executions/:id", req);
+      fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
       int r = flon_exe_handler(req, res, NULL);
@@ -130,11 +130,11 @@ context "flon-listener (vs executions)"
 
     it "doesn't list executions in an off-limits domain"
     {
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/org.sample HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
-      shv_do_route("GET /i/executions/:id", req);
+      fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
       int r = flon_exe_handler(req, res, NULL);
@@ -158,12 +158,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       //printf("exid: %s\n", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id", req);
+      fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
       int r = flon_exe_handler(req, res, NULL);
@@ -185,12 +185,12 @@ context "flon-listener (vs executions)"
     {
       exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id", req);
+      fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
       int r = flon_exe_handler(req, res, NULL);
@@ -206,12 +206,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       //printf("exid: %s\n", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -225,7 +225,7 @@ context "flon-listener (vs executions)"
 
       expect(flu_list_get(res->headers, "content-type") === "text/plain");
 
-      char *f = flu_list_get(res->headers, "shv_file");
+      char *f = flu_list_get(res->headers, "fshv_file");
       expect(flu_fstat(f) == 'f');
       expect(f $=== "/exe.log");
 
@@ -242,12 +242,12 @@ context "flon-listener (vs executions)"
     {
       exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -264,12 +264,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example.a", 0);
       //printf("exid: %s\n", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -283,7 +283,7 @@ context "flon-listener (vs executions)"
 
       expect(flu_list_get(res->headers, "content-type") === "text/plain");
 
-      char *f = flu_list_get(res->headers, "shv_file");
+      char *f = flu_list_get(res->headers, "fshv_file");
       expect(flu_fstat(f) == 'f');
       expect(f $=== "/msgs.log");
 
@@ -300,12 +300,12 @@ context "flon-listener (vs executions)"
     {
       exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/msg-log HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -322,12 +322,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       //printf("exid: %s\n", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/msgs HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -352,12 +352,12 @@ context "flon-listener (vs executions)"
     {
       exid = hlp_lookup_exid(NULL, "org.sample", 0);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/executions/%s/msgs HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         exid);
-      shv_do_route("GET /i/executions/:id/:sub", req);
+      fshv_do_route("GET /i/executions/:id/:sub", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -374,12 +374,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       char *mid = flu_sprintf("exe_%s.json", exid);
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/msgs/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         mid);
-      shv_do_route("GET /i/msgs/:id", req);
+      fshv_do_route("GET /i/msgs/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
@@ -394,7 +394,7 @@ context "flon-listener (vs executions)"
         //"application/json; charset=utf-8"); // TODO
         "application/json");
 
-      char *f = flu_list_get(res->headers, "shv_file");
+      char *f = flu_list_get(res->headers, "fshv_file");
       expect(flu_fstat(f) == 'f');
       expect(f $=== mid);
 
@@ -417,12 +417,12 @@ context "flon-listener (vs executions)"
       //puts(mid);
       expect(mid $=== ".json");
 
-      req = shv_parse_request_head_f(
+      req = fshv_parse_request_head_f(
         "GET /i/msgs/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
         mid);
-      shv_do_route("GET /i/msgs/:id", req);
+      fshv_do_route("GET /i/msgs/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 

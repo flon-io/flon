@@ -37,28 +37,28 @@ int flon_dom_matches(const char *dom, const char *pat);
 int flon_is_subdomain(const char *root, const char *dom);
 
 int flon_may(char right, const char *user, const char *dom);
-int flon_may_r(char right, shv_request *req, const char *dom);
+int flon_may_r(char right, fshv_request *req, const char *dom);
 
 flu_list *flon_list_executions(
   const char *user, const char *path, const char *dom);
 
 int flon_i_handler( // /i
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
 int flon_in_handler( // /i/in
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
 int flon_exes_handler( // /i/executions
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 int flon_exe_handler( // /i/executions/:domain or /:exid
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 int flon_exe_sub_handler( // /i/executions/:exid/log or /msg-log or /msgs
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 int flon_msg_handler( // /i/executions/:exid/msgs/:mid
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
 int flon_metrics_handler( // /i/metrics
-  shv_request *req, shv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
 #endif // FL_LISTENER_H
 

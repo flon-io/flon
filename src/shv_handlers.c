@@ -38,7 +38,7 @@
 #include "shv_protected.h"
 
 
-static char *shv_determine_content_type(const char *path)
+static char *fshv_determine_content_type(const char *path)
 {
   // TODO: utf-8? "text/html; charset=UTF-8"
   // TODO: manage that with a conf file
@@ -58,8 +58,8 @@ static char *shv_determine_content_type(const char *path)
   return strdup(r);
 }
 
-ssize_t shv_serve_file(
-  shv_response *res, flu_dict *params, const char *path, ...)
+ssize_t fshv_serve_file(
+  fshv_response *res, flu_dict *params, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
   char *pa = flu_vpath(path, ap);
@@ -76,23 +76,43 @@ ssize_t shv_serve_file(
   if (h == NULL) h = "X-Accel-Redirect";
 
   flu_list_set(
-    res->headers, "shv_content_length", flu_sprintf("%zu", sta.st_size));
+    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
 
   flu_list_set(
-    res->headers, "content-type", shv_determine_content_type(pa));
+    res->headers, "content-type", fshv_determine_content_type(pa));
 
   flu_list_set(
-    res->headers, "shv_file", strdup(pa));
+    res->headers, "fshv_file", strdup(pa));
   flu_list_set(
     res->headers, h, pa);
 
   return sta.st_size;
 }
 
-int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
+int fshv_dir_handler(fshv_request *req, fshv_response *res, flu_dict *params)
 {
   char *p = flu_list_get(req->routing_d, "**");
-  if (p == NULL) return 0;
+  if (p == NULL)
+  {
+    char *path = (char *)flu_list_get(params, "path");
+    char *rpath = (char *)flu_list_get(req->uri_d, "_path");
+
+    if (path && strstr(path, "**")) return 0;
+
+    char *s = (char *)flu_list_get(params, "start");
+    if (s == NULL) s = (char *)flu_list_get(params, "s");
+
+    if (s)
+    {
+      size_t sl = strlen(s);
+      if (strncmp(rpath, s, sl) != 0) return 0;
+      p = rpath + sl;
+    }
+    else
+    {
+      p = rpath;
+    }
+  }
 
   //fgaj_d("p: %s", p);
 
@@ -105,7 +125,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
 
   char *path = flu_path("%s/%s", r, p);
 
-  ssize_t s = shv_serve_file(res, params, path);
+  ssize_t s = fshv_serve_file(res, params, path);
 
   if (s < 0) { free(path); return 0; }
 
@@ -117,7 +137,7 @@ int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params)
     for (flu_node *n = is->first; n; n = n->next)
     {
       char *p = flu_path("%s/%s", path, (char *)n->item);
-      s = shv_serve_file(res, params, p);
+      s = fshv_serve_file(res, params, p);
       free(p);
       if (s > 0) break;
     }

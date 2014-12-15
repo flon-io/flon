@@ -38,7 +38,7 @@
 fabr_parser *uri_parser = NULL;
 
 
-static void shv_init_uri_parser()
+static void fshv_init_uri_parser()
 {
   fabr_parser *scheme =
     fabr_n_rex("scheme", "https?");
@@ -79,9 +79,9 @@ static void shv_init_uri_parser()
       NULL);
 }
 
-flu_dict *shv_parse_uri(char *uri)
+flu_dict *fshv_parse_uri(char *uri)
 {
-  if (uri_parser == NULL) shv_init_uri_parser();
+  if (uri_parser == NULL) fshv_init_uri_parser();
 
   fabr_tree *r = fabr_parse(uri, 0, uri_parser);
   //fabr_tree *r = fabr_parse_f(uri, 0, uri_parser, ABR_F_ALL);
@@ -132,9 +132,9 @@ flu_dict *shv_parse_uri(char *uri)
   return d;
 }
 
-flu_dict *shv_parse_host_and_path(char *host, char *path)
+flu_dict *fshv_parse_host_and_path(char *host, char *path)
 {
-  if (host == NULL) return shv_parse_uri(path);
+  if (host == NULL) return fshv_parse_uri(path);
 
   char *s = NULL;
 
@@ -143,14 +143,14 @@ flu_dict *shv_parse_host_and_path(char *host, char *path)
   else
     s = flu_sprintf("http://%s%s", host, path);
 
-  flu_dict *d = shv_parse_uri(s);
+  flu_dict *d = fshv_parse_uri(s);
 
   free(s);
 
   return d;
 }
 
-char *shv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
+char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
 {
   //for (flu_node *n = uri_d->first; n; n = n->next)
   //  printf("      * %s: %s\n", n->key, (char *)n->item);

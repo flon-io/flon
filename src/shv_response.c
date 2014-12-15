@@ -43,11 +43,11 @@
 
 
 //
-// shv_response
+// fshv_response
 
-shv_response *shv_response_malloc(short status_code)
+fshv_response *fshv_response_malloc(short status_code)
 {
-  shv_response *r = calloc(1, sizeof(shv_response));
+  fshv_response *r = calloc(1, sizeof(fshv_response));
   r->status_code = status_code;
   r->headers = flu_list_malloc();
   r->body = flu_list_malloc();
@@ -55,7 +55,7 @@ shv_response *shv_response_malloc(short status_code)
   return r;
 }
 
-void shv_response_free(shv_response *r)
+void fshv_response_free(fshv_response *r)
 {
   if (r == NULL) return;
 
@@ -65,9 +65,9 @@ void shv_response_free(shv_response *r)
 }
 
 //
-// shv_respond
+// fshv_respond
 
-static char *shv_reason(short status_code)
+static char *fshv_reason(short status_code)
 {
   if (status_code == 200) return "OK";
 
@@ -115,16 +115,16 @@ static char *shv_reason(short status_code)
   return "(no reason-phrase)";
 }
 
-static char *shv_low_reason(short status_code)
+static char *fshv_low_reason(short status_code)
 {
-  char *s = shv_reason(status_code);
+  char *s = fshv_reason(status_code);
   char *r = calloc(strlen(s) + 1, sizeof(char));
   for (char *rr = r; *s; ++rr, ++s) *rr = tolower(*s);
 
   return r;
 }
 
-static void shv_lower_keys(flu_dict *d)
+static void fshv_lower_keys(flu_dict *d)
 {
   for (flu_node *n = d->first; n != NULL; n = n->next)
   {
@@ -132,9 +132,9 @@ static void shv_lower_keys(flu_dict *d)
   }
 }
 
-static void shv_set_content_length(shv_con *con)
+static void fshv_set_content_length(fshv_con *con)
 {
-  char *s = flu_list_get(con->res->headers, "shv_content_length");
+  char *s = flu_list_get(con->res->headers, "fshv_content_length");
 
   if (s)
   {
@@ -163,23 +163,23 @@ static int pipe_file(char *path, FILE *dst)
   FILE *src = fopen(path, "r");
   if (src == NULL) return 1;
 
-  char buffer[SHV_BUFFER_SIZE + 1];
+  char buffer[FSHV_BUFFER_SIZE + 1];
   size_t rl, wl;
 
   while (1)
   {
-    rl = fread(buffer, sizeof(char), SHV_BUFFER_SIZE, src);
+    rl = fread(buffer, sizeof(char), FSHV_BUFFER_SIZE, src);
     if (rl > 0)
     {
       wl = fwrite(buffer, sizeof(char), rl, dst);
       if (wl < rl) fgaj_w("wrote %zu of %zu chars :-(", wl, rl);
     }
 
-    if (rl < SHV_BUFFER_SIZE)
+    if (rl < FSHV_BUFFER_SIZE)
     {
       if (feof(src)) break;
 
-      fgaj_w("read only %zu of %zu chars, but not eof", rl, SHV_BUFFER_SIZE);
+      fgaj_w("read only %zu of %zu chars, but not eof", rl, FSHV_BUFFER_SIZE);
       r = 1; break;
     }
   }
@@ -189,9 +189,9 @@ static int pipe_file(char *path, FILE *dst)
   return r;
 }
 
-void shv_respond(struct ev_loop *l, struct ev_io *eio)
+void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 {
-  shv_con *con = (shv_con *)eio->data;
+  fshv_con *con = (fshv_con *)eio->data;
 
   // prepare headers
 
@@ -199,7 +199,7 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
     con->res->headers, "date", flu_sstamp(l ? ev_now(l) : 0, 1, 'r'));
 
   flu_list_set_last(
-    con->res->headers, "server", flu_sprintf("shervin %s", SHV_VERSION));
+    con->res->headers, "server", flu_sprintf("shervin %s", FSHV_VERSION));
   flu_list_set_last(
     con->res->headers, "content-type", strdup("text/plain; charset=utf-8"));
 
@@ -221,13 +221,13 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
     con->res->body->size == 0 &&
     con->res->status_code >= 400 &&
     con->res->status_code < 600 &&
-    flu_list_get(con->res->headers, "shv_content_length") == NULL)
+    flu_list_get(con->res->headers, "fshv_content_length") == NULL)
   {
     // set 4xx or 5xx reason as body
-    flu_list_add(con->res->body, shv_low_reason(con->res->status_code));
+    flu_list_add(con->res->body, fshv_low_reason(con->res->status_code));
   }
 
-  shv_set_content_length(con);
+  fshv_set_content_length(con);
 
   // write to eio->fd (if there is one)
 
@@ -243,20 +243,20 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
     f,
     "HTTP/1.1 %i %s\r\n",
     con->res->status_code,
-    shv_reason(con->res->status_code));
+    fshv_reason(con->res->status_code));
 
   char *xsf = NULL;
 
-  shv_lower_keys(con->res->headers);
+  fshv_lower_keys(con->res->headers);
   flu_list *ths = flu_list_dtrim(con->res->headers);
   //
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
     //printf("* %s: %s\n", n->key, (char *)n->item);
 
-    if (strcmp(n->key, "shv_file") == 0) xsf = (char *)n->item;
+    if (strcmp(n->key, "fshv_file") == 0) xsf = (char *)n->item;
 
-    if (strncmp(n->key, "shv_", 4) == 0) continue;
+    if (strncmp(n->key, "fshv_", 4) == 0) continue;
 
     fprintf(f, "%s: %s\r\n", n->key, (char *)n->item);
   }
@@ -288,13 +288,13 @@ void shv_respond(struct ev_loop *l, struct ev_io *eio)
     "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
     eio, con->rqount,
     inet_ntoa(con->client->sin_addr),
-    shv_char_to_method(con->req->method),
+    fshv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
     flu_list_get(con->res->headers, "content-length"),
     (now - con->startus) / 1000.0,
     (now - con->req->startus) / 1000.0);
 
-  shv_con_reset(con);
+  fshv_con_reset(con);
 }
 

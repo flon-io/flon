@@ -33,14 +33,14 @@
 #include "flutil.h"
 
 
-#define SHV_VERSION "1.0.0"
+#define FSHV_VERSION "1.0.0"
 
-#define SHV_BUFFER_SIZE 4096
+#define FSHV_BUFFER_SIZE 4096
 
 
 // request
 
-typedef struct shv_request {
+typedef struct {
   long long startus; // microseconds since the Epoch
   char method;
   char *uri;
@@ -49,69 +49,71 @@ typedef struct shv_request {
   char *body;
   short status_code; // 4xx code set by shervin, 200 else
   flu_dict *routing_d; // used by guards to pass info to handlers
-} shv_request;
+} fshv_request;
 
-char shv_method_to_char(char *s);
-char *shv_char_to_method(char c);
+char fshv_method_to_char(char *s);
+char *fshv_char_to_method(char c);
 
 // response
 
-typedef struct shv_response {
+typedef struct {
   short status_code; // 200, 404, 500, ...
   flu_dict *headers;
   flu_list *body;
-} shv_response;
+} fshv_response;
 
 // route
 
-typedef int shv_handler(shv_request *req, shv_response *res, flu_dict *params);
+typedef int fshv_handler(
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
-typedef struct shv_route {
-  shv_handler *guard;
-  shv_handler *handler;
+typedef struct {
+  fshv_handler *guard;
+  fshv_handler *handler;
   flu_dict *params;
-} shv_route;
+} fshv_route;
 
-shv_route *shv_route_malloc(shv_handler *guard, shv_handler *handler, ...);
-#define shv_r(...) shv_route_malloc(__VA_ARGS__)
+fshv_route *fshv_route_malloc(fshv_handler *guard, fshv_handler *handler, ...);
+#define fshv_r(...) fshv_route_malloc(__VA_ARGS__)
 
-shv_route *shv_rp(char *path, shv_handler *handler, ...);
+fshv_route *fshv_rp(char *path, fshv_handler *handler, ...);
 
 
 // guards
 
 /* Merely a marker function, corresponding handlers are called as filters.
  */
-int shv_filter_guard(shv_request *req, shv_response *res, flu_dict *params);
+int fshv_filter_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 
-int shv_any_guard(shv_request *req, shv_response *res, flu_dict *params);
-int shv_path_guard(shv_request *req, shv_response *res, flu_dict *params);
+int fshv_any_guard(fshv_request *req, fshv_response *res, flu_dict *params);
+int fshv_path_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 
 // handlers
 
 /* Used by shv_dir_handler(), public since it could get useful on its own.
  */
-ssize_t shv_serve_file(
-  shv_response *res, flu_dict *params, const char *path, ...);
+ssize_t fshv_serve_file(
+  fshv_response *res, flu_dict *params, const char *path, ...);
 
-int shv_dir_handler(shv_request *req, shv_response *res, flu_dict *params);
+int fshv_dir_handler(fshv_request *req, fshv_response *res, flu_dict *params);
 
 // filters
 
-typedef int shv_authenticate(
+typedef int fshv_authenticate(
   const char *user, const char *path, flu_dict *params);
 
-int shv_basic_auth_filter(
-  shv_request *req, shv_response *res, flu_dict *params);
-//int shv_session_auth_filter(
-//  shv_request *req, shv_response *res, flu_dict *params);
+int fshv_basic_auth_filter(
+  fshv_request *req, fshv_response *res, flu_dict *params);
+
+int fshv_session_auth_filter(
+  fshv_request *req, fshv_response *res, flu_dict *params);
 
 // serving
 
-void shv_serve(int port, shv_route **routes);
+void fshv_serve(int port, fshv_route **routes);
   // NULL terminated route array
 
-// TODO: shv_stop_serve?
+// TODO: fshv_stop_serve?
 
 #endif // FLON_SHERVIN_H
 

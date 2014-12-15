@@ -228,6 +228,12 @@ typedef struct flu_list {
  */
 flu_list *flu_list_malloc();
 
+/* Creates a new list, with all the given elements.
+ * Expects a NULL to stop the list of elements. Yes, no NULL elements when
+ * weaving a list from this method.
+ */
+flu_list *flu_l(void *elt0, ...);
+
 /* Frees a flu_list and all its nodes. But doesn't attempt freeing the
  * items in the nodes.
  */
@@ -303,6 +309,21 @@ void flu_list_oinsert(
  */
 void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *));
 
+/* Adds [links to] the elements of from at the end of to.
+ */
+void flu_list_concat(flu_list *to, flu_list *from);
+
+/* Returns a string representation of the given flu_list.
+ * Warning: only works when all the values are strings.
+ */
+char *flu_list_to_s(flu_list *l);
+
+/* Returns a string representation of the given flu_list.
+ * Instead of displaying the string values, displays their pointer info,
+ * so it works with any value (well pointers).
+ */
+char *flu_list_to_sp(flu_list *l);
+
 //
 // flu_list dictionary functions
 //
@@ -313,6 +334,10 @@ void flu_list_isort(flu_list *l, int (*cmp)(const void *, const void *));
  * Unshifts the new binding (O(1)).
  */
 void flu_list_set(flu_list *l, const char *key, void *item);
+
+/* Like flu_list_set() but doesn't duplicate the string key, uses it as is.
+ */
+void flu_list_setk(flu_list *l, char *key, void *item, int set_as_last);
 
 /* Sets an item under a given key, but at then end of the list.
  * Useful for "defaults".
