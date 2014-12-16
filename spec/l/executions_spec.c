@@ -66,7 +66,7 @@ context "flon-listener (vs executions)"
         "\r\n");
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-      int r = flon_exes_handler(req, res, NULL);
+      int r = flon_exes_handler(req, res, 0, NULL);
 
       expect(r i== 1);
 
@@ -114,7 +114,7 @@ context "flon-listener (vs executions)"
       fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, NULL);
+      int r = flon_exe_handler(req, res, 0, NULL);
 
       expect(r i== 1);
 
@@ -137,7 +137,7 @@ context "flon-listener (vs executions)"
       fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, NULL);
+      int r = flon_exe_handler(req, res, 0, NULL);
 
       expect(r i== 1);
 
@@ -166,7 +166,7 @@ context "flon-listener (vs executions)"
       fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, NULL);
+      int r = flon_exe_handler(req, res, 0, NULL);
 
       expect(r i== 1);
 
@@ -193,7 +193,7 @@ context "flon-listener (vs executions)"
       fshv_do_route("GET /i/executions/:id", req);
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, NULL);
+      int r = flon_exe_handler(req, res, 0, NULL);
 
       expect(r i== 0);
     }
@@ -215,7 +215,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 1);
       expect(res->status_code i== 200);
@@ -251,7 +251,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -273,7 +273,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 1);
       expect(res->status_code i== 200);
@@ -309,7 +309,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -331,7 +331,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -361,7 +361,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_exe_sub_handler(req, res, params);
+      int r = flon_exe_sub_handler(req, res, 0, params);
 
       expect(r i== 0);
     }
@@ -383,7 +383,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_msg_handler(req, res, params);
+      int r = flon_msg_handler(req, res, 0, params);
 
       expect(r i== 1);
 
@@ -426,7 +426,7 @@ context "flon-listener (vs executions)"
       flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
       params = flu_list_malloc();
 
-      int r = flon_msg_handler(req, res, params);
+      int r = flon_msg_handler(req, res, 0, params);
 
       expect(r i== 0);
 

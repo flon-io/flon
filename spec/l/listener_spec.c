@@ -48,7 +48,7 @@ context "flon-listener"
         "Host: x.flon.io\r\n"
         "\r\n");
 
-      int r = flon_i_handler(req, res, NULL);
+      int r = flon_i_handler(req, res, 0, NULL);
 
       expect(r i== 1);
       expect(res->status_code i== 200);
@@ -97,7 +97,7 @@ context "flon-listener"
           "}\n";
         flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-        int r = flon_in_handler(req, res, NULL);
+        int r = flon_in_handler(req, res, 0, NULL);
 
         //puts((char *)res->body->first->item);
 
@@ -141,7 +141,7 @@ context "flon-listener"
           "\r\n");
         req->body = "NADA\n";
 
-        int r = flon_in_handler(req, res, NULL);
+        int r = flon_in_handler(req, res, 0, NULL);
 
         expect(r i== 1);
 
@@ -165,7 +165,7 @@ context "flon-listener"
           "\r\n");
         req->body = "NADA\n";
 
-        int r = flon_in_handler(req, res, NULL);
+        int r = flon_in_handler(req, res, 0, NULL);
 
         expect(r i== 1);
         expect(res->status_code i== 400);
@@ -185,7 +185,7 @@ context "flon-listener"
           "}\n";
         flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
-        int r = flon_in_handler(req, res, NULL);
+        int r = flon_in_handler(req, res, 0, NULL);
 
         expect(r i== 1);
         expect(res->status_code i== 403);

@@ -41,16 +41,16 @@ context "flon-listener auth"
       flu_list_free(params);
     }
 
-    it "returns 1 and 401 if auth fails (no authorization header)"
+    it "says 401 if auth fails (no authorization header)"
     {
       req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
-      expect(r i== 1);
+      expect(r i== 0);
 
       expect(res->status_code i== 401);
 
@@ -58,7 +58,7 @@ context "flon-listener auth"
         "Basic realm=\"flon\"");
     }
 
-    it "returns 1 and 401 if auth fails (wrong credentials)"
+    it "says 401 if auth fails (wrong credentials)"
     {
       req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
@@ -66,9 +66,9 @@ context "flon-listener auth"
         "Authorization: Basic nada\r\n"
         "\r\n");
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
-      expect(r i== 1);
+      expect(r i== 0);
 
       expect(res->status_code i== 401);
 
@@ -76,7 +76,7 @@ context "flon-listener auth"
         "Basic realm=\"flon\"");
     }
 
-    it "returns 1 and 401 if ?logout"
+    it "says 401 if ?logout"
     {
       req = fshv_parse_request_head(""
         "GET /i?logout=1 HTTP/1.1\r\n"
@@ -84,9 +84,9 @@ context "flon-listener auth"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
-      expect(r i== 1);
+      expect(r i== 0);
 
       expect(res->status_code i== 401);
 
@@ -94,7 +94,7 @@ context "flon-listener auth"
         "Basic realm=\"flon\"");
     }
 
-    it "returns 0 if auth succeeds"
+    it "sets _basic_user if auth succeeds"
     {
       req = fshv_parse_request_head(""
         "GET /i HTTP/1.1\r\n"
@@ -102,10 +102,10 @@ context "flon-listener auth"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
         "\r\n");
 
-      int r = fshv_basic_auth_filter(req, res, params);
+      int r = fshv_basic_auth_filter(req, res, 0, params);
 
       expect(r i== 0);
-      expect(flu_list_get(req->routing_d, "_user") === "john");
+      expect(flu_list_get(req->routing_d, "_basic_user") === "john");
     }
   }
 

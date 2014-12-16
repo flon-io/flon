@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
   fshv_route *routes[] =
   {
     fshv_r(
-      fshv_any_guard,
+      NULL,
       fshv_basic_auth_filter,
       "func", flon_auth_enticate, "realm", "flon", NULL),
 

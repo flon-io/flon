@@ -138,7 +138,8 @@ static void in_handle_launch(
   free(i);
 }
 
-int flon_in_handler(fshv_request *req, fshv_response *res, flu_dict *params)
+int flon_in_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *dom = NULL;
 
@@ -279,8 +280,7 @@ static int list_exes(
   // list running executions
 
   flu_list *l =
-    flon_list_executions(
-      flu_list_get(req->routing_d, "_user"), "var/run", dom);
+    flon_list_executions(fshv_get_user(req, NULL), "var/run", dom);
 
   for (flu_node *n = l->first; n; n = n->next)
   {
@@ -298,7 +298,7 @@ static int list_exes(
 }
 
 int flon_exes_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   return list_exes(req, res, params, NULL);
 }
@@ -345,7 +345,7 @@ _over:
 }
 
 int flon_exe_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *id = flu_list_get(req->routing_d, "id");
   fdja_value *vid = flon_parse_nid(id);
@@ -413,7 +413,7 @@ static int sub_handler_log(
 }
 
 int flon_exe_sub_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *exid = flu_list_get(req->routing_d, "id");
   char *sub = flu_list_get(req->routing_d, "sub");
@@ -429,7 +429,7 @@ int flon_exe_sub_handler(
 // /i/msgs/:id
 
 int flon_msg_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *id = flu_list_get(req->routing_d, "id");
   char *exid = flon_parse_exid(id);
@@ -453,7 +453,7 @@ int flon_msg_handler(
 // /i/metrics
 
 int flon_metrics_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   return 1;
 }
@@ -461,7 +461,8 @@ int flon_metrics_handler(
 //
 // /i
 
-int flon_i_handler(fshv_request *req, fshv_response *res, flu_dict *params)
+int flon_i_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {} }");
