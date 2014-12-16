@@ -167,8 +167,6 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
   con->res = fshv_response_malloc(404);
 
-  int filtering = 0;
-  int guarded = 0;
   int handled = 0;
 
   for (size_t i = 0; ; ++i)
@@ -177,27 +175,26 @@ void fshv_handle(struct ev_loop *l, struct ev_io *eio)
 
     if (route == NULL) break; // end reached
 
-    if ((void *)route->guard == (void *)fshv_filter_guard) filtering = 1;
+    int flags = 0;
+    if (handled) flags |= FSHV_F_HANDLED;
 
-    if (handled && ! filtering) continue;
+    int guarded = 0;
+    //
+    if (route->guard == NULL)
+      guarded = 1;
+    else if (handled == 0)
+      guarded = route->guard(con->req, con->res, flags, route->params);
+    //else if (handled == 1)
+      //guarded = 0;
 
-    if (route->guard && (void *)route->guard != (void *)fshv_filter_guard)
-    {
-      filtering = 0;
+    if (guarded == 0) continue;
 
-      if (handled) continue;
+    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
 
-      guarded = route->guard(con->req, con->res, route->params);
-    }
-
-    if ( ! (filtering || guarded)) continue;
-
-    if (route->handler)
-    {
-      int h = route->handler(con->req, con->res, route->params);
-      if (filtering != 1 && guarded != -1) handled = h;
-    }
+    handled = route->handler(con->req, con->res, flags, route->params);
   }
+
+  if (handled == 0) con->res->status_code = 404;
 
   fshv_respond(l, eio);
 }

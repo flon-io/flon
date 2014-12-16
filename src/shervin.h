@@ -65,7 +65,7 @@ typedef struct {
 // route
 
 typedef int fshv_handler(
-  fshv_request *req, fshv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
 typedef struct {
   fshv_handler *guard;
@@ -79,14 +79,24 @@ fshv_route *fshv_route_malloc(fshv_handler *guard, fshv_handler *handler, ...);
 fshv_route *fshv_rp(char *path, fshv_handler *handler, ...);
 
 
+enum // flags guards and handlers "mode"
+{
+  FSHV_F_NULL_GUARD = 1 << 0, // only for handlers, set when guard was NULL
+  FSHV_F_HANDLED    = 1 << 1, // set when a previous "handled" the request
+};
+
 // guards
 
 /* Merely a marker function, corresponding handlers are called as filters.
  */
-int fshv_filter_guard(fshv_request *req, fshv_response *res, flu_dict *params);
+int fshv_filter_guard(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
-int fshv_any_guard(fshv_request *req, fshv_response *res, flu_dict *params);
-int fshv_path_guard(fshv_request *req, fshv_response *res, flu_dict *params);
+int fshv_any_guard(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+int fshv_path_guard(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+
 
 // handlers
 
@@ -95,18 +105,29 @@ int fshv_path_guard(fshv_request *req, fshv_response *res, flu_dict *params);
 ssize_t fshv_serve_file(
   fshv_response *res, flu_dict *params, const char *path, ...);
 
-int fshv_dir_handler(fshv_request *req, fshv_response *res, flu_dict *params);
+int fshv_dir_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+
 
 // filters
 
 typedef int fshv_authenticate(
   const char *user, const char *path, flu_dict *params);
 
+void fshv_set_user(fshv_request *req, const char *auth, const char *user);
+char *fshv_get_user(fshv_request *req, const char *auth);
+
 int fshv_basic_auth_filter(
-  fshv_request *req, fshv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
 int fshv_session_auth_filter(
-  fshv_request *req, fshv_response *res, flu_dict *params);
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+
+void fshv_start_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+void fshv_stop_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid);
+
 
 // serving
 

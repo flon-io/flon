@@ -232,7 +232,7 @@ int fshv_do_route(char *path, fshv_request *req)
   flu_dict *params = flu_list_malloc();
   flu_list_set(params, "path", path);
 
-  int r = fshv_path_guard(req, NULL, params);
+  int r = fshv_path_guard(req, NULL, 0, params);
 
   flu_list_free(params);
 

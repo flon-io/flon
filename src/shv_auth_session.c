@@ -29,6 +29,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
 
 #include "flutil.h"
 #include "flutim.h"
@@ -40,6 +42,12 @@
 //
 // session (cookie) authentication
 
+#define SHV_SA_RANDSIZE 48
+#define SHV_SA_EXPIRY (long)24 * 3600 * 1000 * 1000
+
+flu_list *session_store;
+char *spid;
+
 static fshv_session *fshv_session_malloc(
   char *user, char *id, char *sid, long long mtimeus)
 {
@@ -50,6 +58,7 @@ static fshv_session *fshv_session_malloc(
   r->user = user;
   r->id = id;
   r->mtimeus = mtimeus;
+  r->used = 0;
 
   return r;
 }
@@ -60,8 +69,8 @@ char *fshv_session_to_s(fshv_session *s)
 
   char *ts = flu_sstamp(s->mtimeus / 1000000, 1, 's');
   char *r = flu_sprintf(
-    "(fshv_session '%s', '%s', '%s', %lli (%s))",
-    s->user, s->id, s->sid, s->mtimeus, ts);
+    "(fshv_session '%s', '%s', '%s', %lli (%s), u%i)",
+    s->user, s->id, s->sid, s->mtimeus, ts, s->used);
   free(ts);
 
   return r;
@@ -77,21 +86,37 @@ static void fshv_session_free(fshv_session *s)
   free(s);
 }
 
-flu_list *session_store;
-
 flu_list *fshv_session_store()
 {
   return session_store;
 }
 
-void fshv_session_add(
+char *fshv_session_store_to_s()
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbputc(b, '{');
+  for (flu_node *fn = session_store->first; fn; fn = fn->next)
+  {
+    flu_sbputs(b, "\n  * ");
+    char *s = fshv_session_to_s(fn->item); flu_sbputs(b, s); free(s);
+  }
+  flu_sbputs(b, "\n}");
+
+  return flu_sbuffer_to_string(b);
+}
+
+fshv_session *fshv_session_add(
   const char *user, const char *id, const char *sid, long long nowus)
 {
   if (session_store == NULL) session_store = flu_list_malloc();
 
-  flu_list_unshift(
-    session_store,
-    fshv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus));
+  fshv_session *ses =
+    fshv_session_malloc(strdup(user), strdup(id), strdup(sid), nowus);
+
+  flu_list_unshift(session_store, ses);
+
+  return ses;
 }
 
 void fshv_session_store_reset()
@@ -99,8 +124,6 @@ void fshv_session_store_reset()
   flu_list_and_items_free(session_store, (void (*)(void *))fshv_session_free);
   session_store = NULL;
 }
-
-#define SHV_SA_RANDSIZE 48
 
 static char *generate_sid(fshv_request *req, flu_dict *params)
 {
@@ -117,7 +140,7 @@ static char *generate_sid(fshv_request *req, flu_dict *params)
 
   if (fclose(f) != 0) return NULL;
 
-  return flu64_encode(
+  return flu64_encode_for_url(
     rand,
     SHV_SA_RANDSIZE - (req->startus / 1000000) % 10);
 }
@@ -136,11 +159,19 @@ static fshv_session *lookup_session(
   {
     fshv_session *s = fn->item;
 
-    if (req->startus > s->mtimeus + expus) break;
+    if (expus > 0 && req->startus > s->mtimeus + expus) break;
+    if (s->used) continue;
 
     if (strcmp(s->sid, sid) == 0) { r = s; break; }
 
     last = fn; ++count;
+  }
+
+  if (expus == 0)
+  {
+    if (r) r->used = 1;
+
+    return NULL;
   }
 
   if (r)
@@ -159,6 +190,8 @@ static fshv_session *lookup_session(
         fshv_session_malloc(strdup(r->id), strdup(r->user), sid, req->startus);
 
       flu_list_unshift(session_store, s);
+
+      r->used = 1;
 
       r = s;
     }
@@ -182,15 +215,25 @@ static fshv_session *lookup_session(
   return NULL;
 }
 
-static void set_session_cookie(
-  fshv_request *req, fshv_response *res, fshv_session *ses, long expiry)
+static char *get_cookie_name(flu_dict *params)
 {
-  //flu_putf(flu_sstamp(ses->mtimeus / 1000000 , 1, 'g'));
+  char *r = flu_list_get(params, "name");
+  if (r == NULL) r = flu_list_get(params, "n");
+  if (r == NULL) r = "flon.io.shervin";
+
+  return r;
+}
+
+static void set_session_cookie(
+  fshv_request *req, fshv_response *res, flu_dict *params,
+  fshv_session *ses, long expiry)
+{
+  char *cn = get_cookie_name(params);
   char *ts = flu_sstamp((ses->mtimeus + expiry) / 1000000 , 1, 'g');
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
-  flu_sbputs(b, ses->sid);
+  flu_sbputs(b, cn); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
   flu_sbputs(b, ";Expires="); flu_sbputs(b, ts);
   flu_sbputs(b, ";HttpOnly");
   if (fshv_request_is_https(req)) flu_sbputs(b, ";Secure");
@@ -200,19 +243,40 @@ static void set_session_cookie(
   free(ts);
 }
 
-#define SHV_SA_EXPIRY (long)24 * 3600 * 1000 * 1000
+void fshv_start_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *user)
+{
+  if (spid == NULL) spid = flu_sprintf("%lli_%lli", getppid(), getpid());
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  flu_sbputs(b, user); flu_sbputc(b, ':');
+  flu_sbputs(b, spid); flu_sbputc(b, ':');
+  flu_sbputs(b, flu_list_getd(req->uri_d, "_port", "80"));
+  char *id = flu_sbuffer_to_string(b);
+
+  char *sid = generate_sid(req, params);
+
+  fshv_session *ses = fshv_session_add(user, id, sid, req->startus);
+
+  set_session_cookie(req, res, params, ses, SHV_SA_EXPIRY);
+}
+
+void fshv_stop_session(
+  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid)
+{
+  lookup_session(req, params, sid, 0);
+    // 0 forces to forget the session
+}
 
 int fshv_session_auth_filter(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
-  int r = 1; // handled (do not got to the next route)
-
-  char *cname = flu_list_get(params, "name");
-  if (cname == NULL) cname = flu_list_get(params, "n");
-  if (cname == NULL) cname = "flon.io.shervin";
+  int authentified = 0;
 
   char *cookies = flu_list_get(req->headers, "cookie");
-  if (cookies == NULL) return r;
+  if (cookies == NULL) goto _over;
+
+  char *cname = get_cookie_name(params);
 
   char *sid = NULL;
   for (char *cs = cookies; cs; cs = strchr(cs, ';'))
@@ -233,16 +297,18 @@ int fshv_session_auth_filter(
 
   free(sid);
 
-  if (s == NULL) return r;
+  if (s == NULL) goto _over;
 
-  //flu_putf(fshv_session_to_s(s));
+  authentified = 1;
 
-  r = 0; // success
+  fshv_set_user(req, "session", s->user);
 
-  flu_list_set(req->routing_d, "_user", strdup(s->user));
+  set_session_cookie(req, res, params, s, SHV_SA_EXPIRY);
 
-  set_session_cookie(req, res, s, SHV_SA_EXPIRY);
+_over:
 
-  return r;
+  if ( ! authentified) res->status_code = 401;
+
+  return 0;
 }
 

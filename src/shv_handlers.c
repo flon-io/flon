@@ -89,7 +89,8 @@ ssize_t fshv_serve_file(
   return sta.st_size;
 }
 
-int fshv_dir_handler(fshv_request *req, fshv_response *res, flu_dict *params)
+int fshv_dir_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *p = flu_list_get(req->routing_d, "**");
   if (p == NULL)

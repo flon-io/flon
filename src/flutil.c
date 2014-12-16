@@ -27,6 +27,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -797,6 +798,9 @@ static char *list_to_s(flu_list *l, char mode)
 {
   if (l == NULL) return strdup("(null flu_list)");
 
+  int multi = (mode == 'S');
+  mode = tolower(mode);
+
   flu_sbuffer *b = flu_sbuffer_malloc();
 
   short isdict = (l->first && l->first->key);
@@ -805,15 +809,19 @@ static char *list_to_s(flu_list *l, char mode)
   for (flu_node *n = l->first; n; n = n->next)
   {
     if (n != l->first) flu_sbputc(b, ',');
+    if (multi) flu_sbputs(b, "\n  ");
     if (isdict) flu_sbprintf(b, "%s:", n->key);
+    if (multi) flu_sbputc(b, ' ');
     if (mode == 's') flu_sbputs(b, (char *)n->item);
     else flu_sbprintf(b, "%p", n->item);
   }
+  if (multi && l->first) flu_sbputc(b, '\n');
   flu_sbputc(b, isdict ? '}' : ']');
 
   return flu_sbuffer_to_string(b);
 }
 char *flu_list_to_s(flu_list *l) { return list_to_s(l, 's'); }
+char *flu_list_to_sm(flu_list *l) { return list_to_s(l, 'S'); }
 char *flu_list_to_sp(flu_list *l) { return list_to_s(l, 'p'); }
 
 void flu_list_set(flu_list *l, const char *key, void *item)

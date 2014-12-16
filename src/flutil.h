@@ -318,6 +318,10 @@ void flu_list_concat(flu_list *to, flu_list *from);
  */
 char *flu_list_to_s(flu_list *l);
 
+/* Same as flu_list_to_s() but one line per entry.
+ */
+char *flu_list_to_sm(flu_list *l);
+
 /* Returns a string representation of the given flu_list.
  * Instead of displaying the string values, displays their pointer info,
  * so it works with any value (well pointers).

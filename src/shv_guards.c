@@ -37,17 +37,20 @@
 #include "shv_protected.h"
 
 
-int fshv_filter_guard(fshv_request *req, fshv_response *res, flu_dict *params)
+//int fshv_filter_guard(
+//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+//{
+//  return 1;
+//}
+
+int fshv_any_guard(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   return 1;
 }
 
-int fshv_any_guard(fshv_request *req, fshv_response *res, flu_dict *params)
-{
-  return 1;
-}
-
-int fshv_path_guard(fshv_request *req, fshv_response *res, flu_dict *params)
+int fshv_path_guard(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *path = (char *)flu_list_get(params, "path");
   char *rpath = (char *)flu_list_get(req->uri_d, "_path");

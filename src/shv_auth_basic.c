@@ -46,9 +46,9 @@ static int no_auth(const char *user, const char *path, flu_dict *params)
 // basic authentication
 
 int fshv_basic_auth_filter(
-  fshv_request *req, fshv_response *res, flu_dict *params)
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
-  int r = 1;
+  int authentified = 0;
   char *user = NULL;
 
   if (params == NULL) goto _over;
@@ -73,12 +73,12 @@ int fshv_basic_auth_filter(
 
   if (a(user, pass, params) == 0) goto _over;
 
-  r = 0; // success
-  flu_list_set(req->routing_d, "_user", strdup(user));
+  authentified = 1;
+  fshv_set_user(req, "basic", user);
 
 _over:
 
-  if (r == 1)
+  if ( ! authentified)
   {
     flu_list_set(
       res->headers,
@@ -91,6 +91,6 @@ _over:
 
   free(user);
 
-  return r;
+  return 0;
 }
 
