@@ -241,6 +241,7 @@ void fgaj_color_file_logger(char level, const char *pref, const char *msg)
     fgaj_white(c), msg,
     fgaj_clear(c)
   );
+  if (fgaj__conf->flush) fflush(f);
 
   free(now);
   fgaj_level_string_free(lstr);

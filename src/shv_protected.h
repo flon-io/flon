@@ -104,21 +104,26 @@ typedef struct {
   char *sid;
   char *user;
   char *id;
-  long long mtimeus; // microseconds
+  long long expus; // microseconds, expiration point
   short used;
 } fshv_session;
 
 char *fshv_session_to_s(fshv_session *s);
 
-// auth, default (memory) session store
+void fshv_session_free(fshv_session *s);
 
-flu_list *fshv_session_store();
-char *fshv_session_store_to_s();
-
-fshv_session *fshv_session_add(
-  const char *user, const char *id, const char *sid, long long nowus);
-
-void fshv_session_store_reset();
+/* * pushing will all the parameters set and expiry time: start
+ *   or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * * pushing with only the sid set and now: queries and expires
+ *   returns a session in case of success, NULL else
+ * * pushing with only the sid set and -1: stops the session
+ *   returns NULL
+ * * pushing with all NULL and -1: resets the store
+ *   returns NULL
+ */
+typedef fshv_session *fshv_session_push(
+  const char *sid, const char *user, const char *id, long long tus);
 
 
 //
@@ -126,6 +131,13 @@ void fshv_session_store_reset();
 
 fshv_request *fshv_parse_request_head_f(const char *s, ...);
 int fshv_do_route(char *path, fshv_request *req);
+
+
+//
+// misc handlers
+
+int fshv_debug_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
 #endif // FLON_SHV_PROTECTED_H
 

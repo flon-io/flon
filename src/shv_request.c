@@ -195,6 +195,7 @@ void fshv_request_free(fshv_request *r)
   flu_list_free_all(r->uri_d);
   flu_list_free_all(r->headers);
   flu_list_free_all(r->routing_d);
+  free(r->body);
   free(r);
 }
 

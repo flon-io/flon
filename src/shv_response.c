@@ -203,18 +203,22 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   flu_list_set_last(
     con->res->headers, "content-type", strdup("text/plain; charset=utf-8"));
 
-  flu_list_set(
-    con->res->headers, "location", strdup("northpole")); // FIXME
+  if (flu_list_get(con->res->headers, "location") == NULL)
+  {
+    flu_list_set(
+      con->res->headers, "location", strdup("northpole")); // FIXME
+  }
 
-  long long now = l ? ev_now(l) : flu_gets('u');
+  //long long nowus = l ? ev_now(l) * 1000000 : flu_gets('u');
+  long long nowus = flu_gets('u');
   //
   flu_list_set(
     con->res->headers,
     "x-flon-shervin",
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
-      (now - con->startus) / 1000.0,
-      (now - con->req->startus) / 1000.0,
+      (nowus - con->startus) / 1000.0,
+      (nowus - con->req->startus) / 1000.0,
       con->rqount));
 
   if (
@@ -282,18 +286,28 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 
   // done
 
-  now = flu_gets('u');
-  //
+  char asrc = 'i'; char *addr = flu_list_get(con->req->headers, "x-real-ip");
+  if (addr == NULL)
+  {
+    asrc = 'f'; addr = flu_list_get(con->req->headers, "x-forwarded-for");
+  }
+  if (addr == NULL)
+  {
+    asrc = 'a'; addr = inet_ntoa(con->client->sin_addr);
+  }
+
+  nowus = flu_gets('u');
+
   fgaj_i(
-    "i%p r%i %s %s %s %i l%s c%.3fms r%.3fms",
+    "i%p r%i %c%s %s %s %i l%s c%.3fms r%.3fms",
     eio, con->rqount,
-    inet_ntoa(con->client->sin_addr),
+    asrc, addr,
     fshv_char_to_method(con->req->method),
     con->req->uri,
     con->res->status_code,
     flu_list_get(con->res->headers, "content-length"),
-    (now - con->startus) / 1000.0,
-    (now - con->req->startus) / 1000.0);
+    (nowus - con->startus) / 1000.0,
+    (nowus - con->req->startus) / 1000.0);
 
   fshv_con_reset(con);
 }

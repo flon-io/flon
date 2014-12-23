@@ -60,6 +60,7 @@ typedef struct fgaj_conf {
   char *host;  // defaults to result of gethostname()
   fgaj_logger *logger;  // logger function
   void *out;            // logging destination
+  short flush;          // defaults to 0, when 1 will flush after each log
   void *params;         // whatever suits the logger func
 } fgaj_conf;
 

@@ -71,7 +71,7 @@ int fshv_basic_auth_filter(
   if (a == NULL) a = flu_list_get(params, "a");
   if (a == NULL) a = no_auth;
 
-  if (a(user, pass, params) == 0) goto _over;
+  if (a(user, pass, req, params) == 0) goto _over;
 
   authentified = 1;
   fshv_set_user(req, "basic", user);

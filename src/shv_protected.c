@@ -85,18 +85,18 @@ fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
 
 void fshv_con_reset(fshv_con *c)
 {
-  if (c->head) flu_sbuffer_free(c->head);
+  flu_sbuffer_free(c->head);
   c->head = NULL;
   c->hend = 0;
 
-  if (c->body) flu_sbuffer_free(c->body);
+  flu_sbuffer_free(c->body);
   c->body = NULL;
   c->blen = 0;
 
-  if (c->req) fshv_request_free(c->req);
+  fshv_request_free(c->req);
   c->req = NULL;
 
-  if (c->res) fshv_response_free(c->res);
+  fshv_response_free(c->res);
   c->res = NULL;
 }
 

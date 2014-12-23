@@ -112,7 +112,7 @@ int fshv_dir_handler(
 // filters
 
 typedef int fshv_authenticate(
-  const char *user, const char *path, flu_dict *params);
+  const char *user, const char *pass, fshv_request *req, flu_dict *params);
 
 void fshv_set_user(fshv_request *req, const char *auth, const char *user);
 char *fshv_get_user(fshv_request *req, const char *auth);
@@ -123,8 +123,13 @@ int fshv_basic_auth_filter(
 int fshv_session_auth_filter(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params);
 
+/* Used by login endpoints to start a session.
+ */
 void fshv_start_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+
+/* Used by logout endpoints to leave a session.
+ */
 void fshv_stop_session(
   fshv_request *req, fshv_response *res, flu_dict *params, const char *sid);
 

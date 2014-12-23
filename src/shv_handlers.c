@@ -33,6 +33,7 @@
 #include <string.h>
 
 #include "flutil.h"
+#include "flutim.h"
 #include "gajeta.h"
 #include "shervin.h"
 #include "shv_protected.h"
@@ -130,7 +131,7 @@ int fshv_dir_handler(
 
   if (s < 0) { free(path); return 0; }
 
-  if (s == 0)
+  if (s == 0 && flu_list_get(res->headers, "fshv_file") == NULL)
   {
     char *i = flu_list_getd(params, "index", "index.html");
     flu_list *is = flu_split(i, ",");
@@ -148,6 +149,63 @@ int fshv_dir_handler(
 
   free(path);
 
-  return s < 1 ? 0 : 1;
+  return (s > 0 || flu_list_get(res->headers, "fshv_file") != NULL);
+}
+
+int fshv_debug_handler(
+  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+{
+  res->status_code = 200;
+  //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
+
+  char *suri = flu_list_to_s(req->uri_d);
+
+  // prepare response body
+
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbprintf(
+    b, "%s %s HTTP/1.1\r\n", fshv_char_to_method(req->method), req->uri);
+
+  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  {
+    flu_sbprintf(b, "%s: %s\r\n", fn->key, fn->item);
+  }
+  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
+  flu_sbprintf(b, "path: %s\r\n", req->uri);
+  flu_sbprintf(b, "uri_d: %s\r\n", suri);
+  flu_sbputs(b, "\r\n");
+  if (req->body) flu_sbputs(b, req->body);
+
+  flu_list_add(res->body, flu_sbuffer_to_string(b));
+
+  // log request
+
+  long long us = flu_gets('u') % 1000000;
+
+  fgaj_d(
+    "|%05x| %s %s HTTP/1.1\r\n",
+    us, fshv_char_to_method(req->method), req->uri);
+  fgaj_d(
+    "|%05x| uri_d: %s",
+    us, suri);
+
+  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  {
+    fgaj_d("|%05x|  * %s: \"%s\"", us, fn->key, fn->item);
+  }
+
+  ssize_t l = req->body ? strlen(req->body) : -1;
+  size_t maxl = 35;
+  if (l > maxl)
+    fgaj_d("|%05x| body: >%.*s...< l%lli", us, maxl, req->body, l);
+  else
+    fgaj_d("|%05x| body: >%s< l%lli", us, req->body, l);
+
+  // done
+
+  free(suri);
+
+  return 1;
 }
 
