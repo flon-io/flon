@@ -89,12 +89,12 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
-        req->body =
+        req->body = rdz_strdup(
           "{\n"
             "domain: org.example\n"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
             "payload: {}\n"
-          "}\n";
+          "}\n");
         flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
         int r = flon_in_handler(req, res, 0, NULL);
@@ -139,7 +139,7 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
-        req->body = "NADA\n";
+        req->body = rdz_strdup("NADA\n");
 
         int r = flon_in_handler(req, res, 0, NULL);
 
@@ -163,7 +163,7 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
-        req->body = "NADA\n";
+        req->body = rdz_strdup("NADA\n");
 
         int r = flon_in_handler(req, res, 0, NULL);
 
@@ -177,12 +177,12 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n");
-        req->body = ""
+        req->body = rdz_strdup(
           "{\n"
             "domain: org.sample\n"
             "execute: [ invoke, { _0: stamp }, [] ]\n"
             "payload: {}\n"
-          "}\n";
+          "}\n");
         flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
 
         int r = flon_in_handler(req, res, 0, NULL);
