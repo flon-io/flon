@@ -1,4 +1,6 @@
 
+NAME=flon
+
 #default: $(NAME).o
 
 .DEFAULT spec clean dispatcher executor listener:
@@ -6,6 +8,8 @@
 
 # copy up-to-date versions of dep libs into src/
 #
+stamp:
+	cd $(REP) && git log -n 1 | sed 's/^/\/\//' >> ../$(NAME)/$(FIL)
 upgrade:
 	cp -v ../shervin/src/*.[ch] src/
 	cp -v ../gajeta/src/*.[ch] src/
@@ -15,6 +19,13 @@ upgrade:
 	cp -v ../tsifro/src/*.[ch] src/
 	cp -v ../dollar/src/dollar.[ch] src/
 	rm src/todjan.c # no
+	find src/sh*.[ch] -exec $(MAKE) --quiet stamp REP=../shervin FIL={} \;
+	find src/gaj*.[ch] -exec $(MAKE) --quiet stamp REP=../gajeta FIL={} \;
+	find src/djan.[ch] -exec $(MAKE) --quiet stamp REP=../djan FIL={} \;
+	find src/flu*.[ch] -exec $(MAKE) --quiet stamp REP=../flutil FIL={} \;
+	find src/mnemo.[ch] -exec $(MAKE) --quiet stamp REP=../mnemo FIL={} \;
+	find src/tsifro.[ch] -exec $(MAKE) --quiet stamp REP=../tsifro FIL={} \;
+	find src/dollar.[ch] -exec $(MAKE) --quiet stamp REP=../dollar FIL={} \;
 
 ctst:
 	rm -f tst/var/spool/dis/*.json
