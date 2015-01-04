@@ -1470,3 +1470,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
+//commit 8edc6ef4282cf03dbdff46bc1c980bbfbb7b015d
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Thu Dec 4 14:51:38 2014 +0900
+//
+//    simplify fdja_pset()

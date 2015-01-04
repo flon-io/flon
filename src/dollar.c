@@ -331,3 +331,8 @@ char *fdol_dlup(void *data, const char *path)
   return r ? strdup(r) : NULL;
 }
 
+//commit fd33b39bff3ee5fe7849e599e6841e2c02cf859a
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Mon Nov 17 09:46:34 2014 +0900
+//
+//    escape when quoting

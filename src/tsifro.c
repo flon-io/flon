@@ -92,3 +92,8 @@ int ftsi_bc_verify(const char *pass, const char *hash)
   return r;
 }
 
+//commit d005450e9235deff0d7a0af48ac58f5e057eaaa9
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Thu Nov 13 17:17:29 2014 +0900
+//
+//    fix issue with ftsi_bc_verify() and short hashes

@@ -49,3 +49,8 @@ char *fdol_dlup(void *data, const char *path);
 
 #endif // FLON_DOLLAR_H
 
+//commit fd33b39bff3ee5fe7849e599e6841e2c02cf859a
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Mon Nov 17 09:46:34 2014 +0900
+//
+//    escape when quoting

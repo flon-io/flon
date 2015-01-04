@@ -143,3 +143,8 @@ char *flu64_decode_from_url(char *in, ssize_t l)
   return r;
 }
 
+//commit 8bd26914eb363198989a82f404ee5ffe692c4a63
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Wed Dec 31 06:44:19 2014 +0900
+//
+//    implement flu_zero_and_free()

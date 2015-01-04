@@ -209,3 +209,8 @@ _over:
   return 0;
 }
 
+//commit bbf5177a47f469da4e5f4f03c09b16e4d2b0e2b5
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Tue Dec 23 17:40:30 2014 +0900
+//
+//    pass the request to fshv_authenticate()

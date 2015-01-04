@@ -178,3 +178,8 @@ char *fgaj_now();
 
 #endif // FLON_GAJETA_H
 
+//commit c9df05e3ba11ea6c705a22f45af4efbe7093aa6b
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Thu Dec 18 15:21:10 2014 +0900
+//
+//    add ->flush to fgaj_conf

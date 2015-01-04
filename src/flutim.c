@@ -114,9 +114,7 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     ts = &tss;
   }
 
-  if (
-    format == 'z' || format == 'Z' || format == 'r' || format == 'g'
-  ) utc = 1;
+  if (strchr("zZrgT", format)) utc = 1;
 
   struct tm *tm = utc ? gmtime(&ts->tv_sec) : localtime(&ts->tv_sec);
 
@@ -129,7 +127,11 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
     strftime(r, 32, "%Y-%m-%dT%H:%M:%SZ", tm);
     return r;
   }
-
+  if (format == 'T')
+  {
+    strftime(r, 32, "%Y%m%dT%H%M%SZ", tm);
+    return r;
+  }
   if (format == 'r' || format == 'g' || format == '2')
   {
     char *loc = strdup(setlocale(LC_TIME, NULL)); setlocale(LC_TIME, "en_US");
@@ -146,6 +148,7 @@ char *flu_tstamp(struct timespec *ts, int utc, char format)
   strftime(r, 32, "%Y%m%d.%H%M%S", tm);
   size_t l = strlen(r);
 
+  if (format == 'd') { *(r + l - 7) = '\0'; return r; }
   if (format == 'h') { *(r + l - 2) = '\0'; return r; }
   if (format == 's') { return r; }
 
@@ -392,3 +395,8 @@ double flu_parse_d(const char *s)
   return r;
 }
 
+//commit 8bd26914eb363198989a82f404ee5ffe692c4a63
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Wed Dec 31 06:44:19 2014 +0900
+//
+//    implement flu_zero_and_free()

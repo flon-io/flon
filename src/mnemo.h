@@ -47,3 +47,8 @@ int fmne_is_mnemo(char *s);
 
 #endif // FLON_MNEMO_H
 
+//commit 83e4560c70fd6dff8f5bcad019eb0d815eeb75af
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Sat Oct 25 19:08:14 2014 +0900
+//
+//    make readme clearer (hopefully)

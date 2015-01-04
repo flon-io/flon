@@ -58,6 +58,7 @@ long long flu_do_msleep(long long milliseconds);
 /* Formats the given time into a string.
  *
  * 'z' --> "2014-11-01T16:34:01Z"
+ * 'd' --> "20141101"
  * 'h' --> "20141101.1634"
  * 's' --> "20141101.163401"
  * 'm' --> "20141101.163401.001"  // milliseconds
@@ -68,6 +69,8 @@ long long flu_do_msleep(long long milliseconds);
  * 'g' --> "Fri, 30 Oct 2014 16:34:01 GMT"
  *
  * '2' --> "Fri, 30 Oct 2014 16:34:01 +0000" // rfc-822
+ *
+ * 'T' --> "20141101T163401Z" // ISO8601
  *
  * If the tm arg is NULL, the function will grab the time thanks to
  * clock_gettime(CLOCK_REALTIME, &ts).
@@ -114,3 +117,8 @@ double flu_parse_d(const char *s);
 
 #endif // FLON_FLUTIM_H
 
+//commit 8bd26914eb363198989a82f404ee5ffe692c4a63
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Wed Dec 31 06:44:19 2014 +0900
+//
+//    implement flu_zero_and_free()
