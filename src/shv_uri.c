@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -214,8 +214,8 @@ char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
   return s;
 }
 
-//commit bbf5177a47f469da4e5f4f03c09b16e4d2b0e2b5
+//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Dec 23 17:40:30 2014 +0900
+//Date:   Mon Jan 5 07:04:24 2015 +0900
 //
-//    pass the request to fshv_authenticate()
+//    adapt no_auth() to new fshv_autenticate() sig
