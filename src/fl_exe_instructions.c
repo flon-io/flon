@@ -114,12 +114,14 @@ static fdja_value *tree(fdja_value *node, fdja_value *msg)
   return r;
 }
 
-// TODO: split into payload() and payload_clone()
-static fdja_value *payload(fdja_value *msg, int clone)
+static fdja_value *payload(fdja_value *msg)
 {
-  fdja_value *pl = fdja_l(msg, "payload");
-  if (pl == NULL) return NULL;
-  return clone ? fdja_clone(pl) : pl;
+  return fdja_l(msg, "payload");
+}
+
+static fdja_value *payload_clone(fdja_value *msg)
+{
+  return fdja_clone(fdja_l(msg, "payload"));
 }
 
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
@@ -151,7 +153,7 @@ static char *lookup(void *data, const char *path)
 {
   lup *lu = data;
 
-  fdja_value *pl = payload(lu->msg, 0);
+  fdja_value *pl = payload(lu->msg);
   fdja_value *v = fdja_l(pl, path);
 
   if (v == NULL) return strdup("");
@@ -282,7 +284,7 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
   fdja_psetv(inv, "point", "invoke");
   fdja_set(inv, "tree", fdja_lc(exe, "tree"));
-  fdja_set(inv, "payload", payload(exe, 1));
+  fdja_set(inv, "payload", payload_clone(exe));
 
   fdja_value *args = fdja_lc(exe, "tree.1");
   expand(args, node, exe);
@@ -323,7 +325,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
   fdja_value *t = next ? flon_node_tree(next) : NULL;
 
   if (t)
-    flon_queue_msg("execute", next, nid, payload(rcv, 0));
+    flon_queue_msg("execute", next, nid, payload(rcv));
   else
     r = 'v'; // over
 
@@ -379,7 +381,7 @@ static char exe_concurrence(fdja_value *node, fdja_value *exe)
   {
     char *cnid = flu_sprintf("%s_%zu", nid, i);
     fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
-    flon_queue_msg("execute", cnid, nid, payload(exe, 1));
+    flon_queue_msg("execute", cnid, nid, payload_clone(exe));
     fdja_push(children, fdja_s(cnid));
   }
 
@@ -393,7 +395,7 @@ static char exe_concurrence(fdja_value *node, fdja_value *exe)
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
-  fdja_value *pl = payload(exe, 0);
+  fdja_value *pl = payload(exe);
 
   if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
@@ -413,7 +415,7 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
 
 static char exe_set(fdja_value *node, fdja_value *exe)
 {
-  fdja_value *pl = payload(exe, 0);
+  fdja_value *pl = payload(exe);
 
   fdja_value *atts = attributes(node, exe);
 
