@@ -36,7 +36,7 @@ context "instruction:"
 
       hlp_launch(
         exid,
-        "concurrence\n"
+        "concurrence override\n"
         "  trace a\n"
         "  trace b\n"
         "",
@@ -44,7 +44,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 1);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
 
@@ -56,7 +56,8 @@ context "instruction:"
       fdja_value *pl = fdja_l(result, "payload");
 
       expect(fdja_tod(pl) ===f ""
-        "{ hello: world, trace: [ a, b ] }");
+        "{ hello: world, trace: [ b ] }");
+        //"{ hello: world, trace: [ a, b ] }");
     }
 
     it "runs ok when empty"
@@ -71,7 +72,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 1);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
 
