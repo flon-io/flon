@@ -114,6 +114,7 @@ static fdja_value *tree(fdja_value *node, fdja_value *msg)
   return r;
 }
 
+// TODO: split into payload() and payload_clone()
 static fdja_value *payload(fdja_value *msg, int clone)
 {
   fdja_value *pl = fdja_l(msg, "payload");
@@ -328,7 +329,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   free(nid);
   free(next);
-  if (from) free(from);
+  free(from);
 
   return r;
 }
@@ -337,6 +338,53 @@ static char exe_sequence(fdja_value *node, fdja_value *exe)
 {
   if (child_count(node, exe) < 1) return 'v';
   return rcv_sequence(node, exe);
+}
+
+
+//
+// *** CONCURRENCE
+
+static char rcv_concurrence(fdja_value *node, fdja_value *rcv)
+{
+  // TODO: focus immediately on "merge participants (invokers)"
+
+  char *from = fdja_ls(rcv, "from", NULL);
+  fdja_value *children = fdja_l(node, "children");
+
+  //flu_putf(fdja_todc(children));
+  //flu_putf(fdja_todc(rcv));
+
+  int found = fdja_unpush(children, from);
+
+  if (found) // merge
+  {
+    // TODO merge
+  }
+
+  //if (found == 0) // not found...
+  if (fdja_size(children) == 0) return 'v'; // over
+  return 'k';
+}
+
+static char exe_concurrence(fdja_value *node, fdja_value *exe)
+{
+  //flu_putf(fdja_todc(node));
+  //flu_putf(fdja_todc(exe));
+
+  char *nid = fdja_ls(node, "nid", NULL);
+
+  fdja_value *children = fdja_set(node, "children", fdja_v("[]"));
+
+  for (size_t i = 0; ; ++i)
+  {
+    char *cnid = flu_sprintf("%s_%zu", nid, i);
+    fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
+    flon_queue_msg("execute", cnid, nid, payload(exe, 1));
+    fdja_push(children, fdja_s(cnid));
+  }
+
+  if (fdja_size(children) == 0) return 'v'; // already over
+  return 'k'; // ok
 }
 
 
@@ -450,6 +498,7 @@ typedef struct {
 static flon_ni *instructions[] = {
   &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence, can_ },
+  &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },
   &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "set", exe_set, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },

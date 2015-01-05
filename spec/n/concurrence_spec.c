@@ -2,7 +2,7 @@
 //
 // specifying flon-dispatcher
 //
-// Fri Oct 24 12:45:24 JST 2014
+// Mon Jan  5 07:18:28 JST 2015
 //
 
 #include "fl_ids.h"
@@ -28,31 +28,30 @@ context "instruction:"
     fdja_free(result);
   }
 
-  describe "sequence"
+  describe "concurrence"
   {
     it "chains two instructions"
     {
-      exid = flon_generate_exid("n.sequence.2t");
+      exid = flon_generate_exid("n.concurrence.2t");
 
       hlp_launch(
         exid,
-        "sequence\n"
+        "concurrence\n"
         "  trace a\n"
         "  trace b\n"
         "",
         "{ hello: world }");
 
-      result = hlp_wait(exid, "receive", "0", 2);
+      result = hlp_wait(exid, "terminated", NULL, 1);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
 
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_ls(result, "point", NULL) ===f "receive");
+      expect(fdja_ls(result, "point", NULL) ===f "terminated");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0_1");
 
       fdja_value *pl = fdja_l(result, "payload");
 
@@ -62,23 +61,22 @@ context "instruction:"
 
     it "runs ok when empty"
     {
-      exid = flon_generate_exid("n.sequence.0t");
+      exid = flon_generate_exid("n.concurrence.0t");
 
       hlp_launch(
         exid,
-        "sequence\n"
+        "concurrence\n"
         "",
         "{ hello: emptiness }");
 
-      result = hlp_wait(exid, "receive", "0", 10);
+      result = hlp_wait(exid, "terminated", NULL, 1);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
 
-      expect(fdja_ld(result, "point", NULL) ===f "receive");
+      expect(fdja_ld(result, "point", NULL) ===f "terminated");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0");
 
       fdja_value *pl = fdja_l(result, "payload");
 

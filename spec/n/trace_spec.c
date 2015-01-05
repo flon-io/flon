@@ -23,8 +23,8 @@ context "instruction:"
   }
   after each
   {
-    if (exid) free(exid);
-    if (result) fdja_free(result);
+    free(exid);
+    fdja_free(result);
   }
 
   describe "trace"
