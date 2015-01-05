@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -152,6 +152,16 @@ long double fdja_to_double(fdja_value *v);
 
 size_t fdja_size(fdja_value *v);
 
+/* Returns 0 if the values are the same. Returns 0 if the values have
+ * the same JSON representation.
+ *
+ * Returns strcmp(to_json(a), to_json(b)) else.
+ *
+ * Returns 0 if the two pointers hold NULL, returns -1 if one of the pointers
+ * hold NULL.
+ */
+int fdja_cmp(fdja_value *a, fdja_value *b);
+
 fdja_value *fdja_value_at(fdja_value *v, long n);
 
 fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap);
@@ -176,7 +186,16 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 char *fdja_lj(fdja_value *v, const char *path, ...);
 char *fdja_ld(fdja_value *v, const char *path, ...);
 
+/* Adds a value at the end of the array.
+ */
 fdja_value *fdja_push(fdja_value *array, fdja_value *v);
+
+/* Combines val into a fdja_value then removes its first occurence
+ * from the array.
+ * Returns 1 if an occurence was found (and removed), 0 else.
+ * Returns -1 if it couldn't turn val, ... into a fdja_value.
+ */
+int fdja_unpush(fdja_value *array, const char* val, ...);
 
 /* Sets a value in an object.
  * If the key is prefixed with \b (backslash b), the entry is placed
@@ -223,8 +242,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 8edc6ef4282cf03dbdff46bc1c980bbfbb7b015d
+//commit 085cd7391d2fe2dfd1b72f85f6483a8442e7cbca
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Dec 4 14:51:38 2014 +0900
+//Date:   Mon Jan 5 14:45:45 2015 +0900
 //
-//    simplify fdja_pset()
+//    finalize fdja_unpush()

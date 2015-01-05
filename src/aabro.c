@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -1154,6 +1154,13 @@ fabr_tree *fabr_subtree_lookup(fabr_tree *t, const char *name)
   return NULL;
 }
 
+char *fabr_lookup_string(const char *input, fabr_tree *t, const char *name)
+{
+  fabr_tree *tt = fabr_tree_lookup(t, name);
+
+  return tt ? fabr_tree_string(input, tt) : NULL;
+}
+
 static void fabr_t_list(flu_list *l, fabr_tree *t, fabr_tree_func *f)
 {
   short r = f(t);
@@ -1515,3 +1522,8 @@ static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n)
   return p;
 }
 
+//commit 2e6b6c066af4c429f9cada525b26dfc93b3e98ae
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Mon Jan 5 06:38:33 2015 +0900
+//
+//    2015

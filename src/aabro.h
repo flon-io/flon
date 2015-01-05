@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -189,6 +189,12 @@ fabr_tree *fabr_tree_lookup(fabr_tree *t, const char *name);
  */
 fabr_tree *fabr_subtree_lookup(fabr_tree *t, const char *name);
 
+/* Like fabr_tree_lookup(), but returns a copy of the resulting tree's
+ * string.
+ * Returns NULL if it didn't find the subtree.
+ */
+char *fabr_lookup_string(const char *input, fabr_tree *t, const char *name);
+
 /* The model for a function that, given a tree, returns an integer.
  *
  * -1: no, don't go on with my children
@@ -221,3 +227,8 @@ fabr_tree *fabr_t_child(fabr_tree *t, size_t index);
 
 #endif // FLON_AABRO_H
 
+//commit 2e6b6c066af4c429f9cada525b26dfc93b3e98ae
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Mon Jan 5 06:38:33 2015 +0900
+//
+//    2015

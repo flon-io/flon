@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -1004,6 +1004,23 @@ size_t fdja_size(fdja_value *v)
   return i;
 }
 
+int fdja_cmp(fdja_value *a, fdja_value *b)
+{
+  if (a == NULL && b == NULL) return 0;
+  if (a == NULL || b == NULL) return -1;
+  if (a == b) return 0;
+
+  char *ja = fdja_to_json(a);
+  char *jb = fdja_to_json(b);
+
+  int r = strcmp(ja, jb);
+
+  free(ja);
+  free(jb);
+
+  return r;
+}
+
 fdja_value *fdja_value_at(fdja_value *v, long n)
 {
   if (n < 0)
@@ -1189,11 +1206,44 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v)
 {
   if (array->type != 'a') return NULL;
 
-  for (fdja_value **s = &array->child; ; s = &(*s)->sibling)
+  for (fdja_value **l = &array->child; ; l = &(*l)->sibling)
   {
-    if (*s == NULL) { *s = v; break; }
+    if (*l == NULL) { *l = v; break; }
   }
   return v;
+}
+
+int fdja_unpush(fdja_value *array, const char* val, ...)
+{
+  if (array->type != 'a') return 0;
+
+  int r = -1; // "couldn't parse" for now
+  fdja_value *v = NULL;
+
+  va_list ap; va_start(ap, val); char *s = flu_svprintf(val, ap); va_end(ap);
+
+  v = fdja_v(s); if (v == NULL) goto _over;
+
+  r = 0; // "not found" for now
+
+  for (fdja_value **l = &array->child; ; l = &(*l)->sibling)
+  {
+    if (*l == NULL) goto _over;
+    if (fdja_cmp(*l, v) != 0) continue;
+    fdja_value *rem = *l;
+    *l = (*l)->sibling;
+    fdja_free(rem);
+    break;
+  }
+
+  r = 1; // "success"
+
+_over:
+
+  fdja_free(v);
+  free(s);
+
+  return r;
 }
 
 fdja_value *fdja_set(fdja_value *object, const char *key, ...)
@@ -1470,8 +1520,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 8edc6ef4282cf03dbdff46bc1c980bbfbb7b015d
+//commit 085cd7391d2fe2dfd1b72f85f6483a8442e7cbca
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Dec 4 14:51:38 2014 +0900
+//Date:   Mon Jan 5 14:45:45 2015 +0900
 //
-//    simplify fdja_pset()
+//    finalize fdja_unpush()
