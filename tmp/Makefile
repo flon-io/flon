@@ -1,10 +1,10 @@
 
+VPATH=src
 #CFLAGS=-I../src -g -Wall -O3 -lrt
-CFLAGS=-I../src -g -Wall -lrt -lev
 #CFLAGS=-I../src -g -Wall -lrt -lev -D_POSIX_C_SOURCE=200809L
+CFLAGS=-I$(VPATH) -g -Wall -lrt -lev
 LDLIBS=
 CC=c99
-VPATH=../src
 
 VAL=valgrind --leak-check=full -v
 #VAL=valgrind --leak-check=full -v --num-callers=50
@@ -23,13 +23,7 @@ TSI_OS=\
 clean:
 	rm -f *.o
 	rm -f *.so
-	rm -f *.c
-	rm -f [cdxnil]s
-	rm -f feu_helpers.[ch]
-	rm -f l_helpers.[ch]
-
-feu_helpers.o: feu_helpers.c
-l_helpers.o: l_helpers.c
+	rm -f [cdxnilkz]s
 
 DEPS=\
   flutil.o flutim.o \
@@ -42,23 +36,26 @@ IDEPS=$(DEPS) dollar.o fl_invoker.o
 #
 LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
-feu_hlp:
-	cp ../spec/feu_helpers.[ch] .
+tmpsrc:
+	cp -u ../src/*.[ch] src/
+	cp -u ../src/lib/*.[ch] src/
+	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
+tmpsrcclean:
+	rm -f src/*.[ch]
 
-cs.c: ../spec/c/*_spec.c
+cs.c: tmpsrc ../spec/c/*_spec.c
 	$(RODZO) ../spec/c/*_spec.c -o cs.c
-ds.c: ../spec/d/*_spec.c feu_hlp
+ds.c: tmpsrc ../spec/d/*_spec.c
 	$(RODZO) ../spec/d/*_spec.c -o ds.c
-xs.c: ../spec/x/*_spec.c
+xs.c: tmpsrc ../spec/x/*_spec.c
 	$(RODZO) ../spec/x/*_spec.c -o xs.c
-is.c: ../spec/i/*_spec.c
+is.c: tmpsrc ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
-ls.c: ../spec/l/*_spec.c feu_hlp
+ls.c: tmpsrc ../spec/l/*_spec.c
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
-	cp ../spec/l/l_helpers.[ch] .
-ns.c: ../spec/n/*_spec.c feu_hlp
+ns.c: tmpsrc ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
-zs.c: ../spec/z/*_spec.c feu_hlp
+zs.c: tmpsrc ../spec/z/*_spec.c
 	$(RODZO) ../spec/z/*_spec.c -o zs.c
 
 cs: $(DEPS)
@@ -182,5 +179,5 @@ spec:
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean
+.PHONY: clean tmpsrc
 
