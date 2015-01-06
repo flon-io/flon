@@ -38,10 +38,14 @@ LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
 tmpsrc:
 	cp -u ../src/*.[ch] src/
+	cp -u ../src/n/*.[ch] src/
 	cp -u ../src/lib/*.[ch] src/
 	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
 tmpsrcclean:
 	rm -f src/*.[ch]
+
+fl_exe_instructions.o: $(wildcard $(VPATH)/fl_n_*.c)
+  # so that each time there is a change in fl_n_*.c, that .o gets rebuilt
 
 cs.c: tmpsrc ../spec/c/*_spec.c
 	$(RODZO) ../spec/c/*_spec.c -o cs.c

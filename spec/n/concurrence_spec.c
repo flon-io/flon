@@ -72,7 +72,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 1);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
 
