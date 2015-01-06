@@ -44,6 +44,8 @@ static char rcv_concurrence(fdja_value *node, fdja_value *rcv)
     // TODO merge
   }
 
+  free(from);
+
   //if (found == 0) // not found...
   if (fdja_size(children) == 0) return 'v'; // over
   return 'k';
@@ -58,13 +60,18 @@ static char exe_concurrence(fdja_value *node, fdja_value *exe)
 
   fdja_value *children = fdja_set(node, "children", fdja_v("[]"));
 
+  char *cnid = NULL;
+
   for (size_t i = 0; ; ++i)
   {
-    char *cnid = flu_sprintf("%s_%zu", nid, i);
+    free(cnid); cnid = flu_sprintf("%s_%zu", nid, i);
     fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
-    flon_queue_msg("execute", cnid, nid, payload_clone(exe));
+    flon_queue_msg("execute", cnid, nid, payload(exe));
     fdja_push(children, fdja_s(cnid));
   }
+
+  free(cnid);
+  free(nid);
 
   if (fdja_size(children) == 0) return 'v'; // already over
   return 'k'; // ok
