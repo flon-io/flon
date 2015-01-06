@@ -24,6 +24,7 @@ clean:
 	rm -f *.o
 	rm -f *.so
 	rm -f [cdxnilkz]s
+	rm -f [cdxnilkz]s.c
 
 DEPS=\
   flutil.o flutim.o \
@@ -41,25 +42,23 @@ _tmpsrc:
 	cp -u ../src/n/*.[ch] src/
 	cp -u ../src/lib/*.[ch] src/
 	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
-_tmpsrc_clean:
-	rm -f src/*.[ch]
 
 fl_exe_instructions.o: $(wildcard $(VPATH)/fl_n_*.c)
   # so that each time there is a change in fl_n_*.c, that .o gets rebuilt
 
-cs.c: _tmpsrc ../spec/c/*_spec.c
+cs.c: ../spec/c/*_spec.c
 	$(RODZO) ../spec/c/*_spec.c -o cs.c
-ds.c: _tmpsrc ../spec/d/*_spec.c
+ds.c: ../spec/d/*_spec.c
 	$(RODZO) ../spec/d/*_spec.c -o ds.c
-xs.c: _tmpsrc ../spec/x/*_spec.c
+xs.c: ../spec/x/*_spec.c
 	$(RODZO) ../spec/x/*_spec.c -o xs.c
-is.c: _tmpsrc ../spec/i/*_spec.c
+is.c: ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
-ls.c: _tmpsrc ../spec/l/*_spec.c
+ls.c: ../spec/l/*_spec.c
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
-ns.c: _tmpsrc ../spec/n/*_spec.c
+ns.c: ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
-zs.c: _tmpsrc ../spec/z/*_spec.c
+zs.c: ../spec/z/*_spec.c
 	$(RODZO) ../spec/z/*_spec.c -o zs.c
 
 cs: $(DEPS)
@@ -74,16 +73,16 @@ s: cs ds xs is ls ns zs
 warn:
 	$(MAKE) clean cs ds xs is ls ns zs  2>&1 | . ./spec_filter.sh
 
-sc: cs
+sc: _tmpsrc cs
 	@echo "\n--- make sc ---common------------------------------------------\n"
 	time ./cs
 sd: ds invoker executor
 	@echo "\n--- make sd ---dispatcher--------------------------------------\n"
 	time ./ds
-sx: xs
+sx: _tmpsrc xs
 	@echo "\n--- make sx ---executor----------------------------------------\n"
 	time ./xs
-si: is
+si: _tmpsrc is
 	@echo "\n--- make si ---invoker-----------------------------------------\n"
 	time ./is
 sl: ls invoker executor dispatcher
@@ -99,37 +98,37 @@ sz: zs invoker executor dispatcher
 sum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	@echo "\n--- make sc ---common-------------------------------------------"
-	@./cs 2>&1 | . ./spec_filter.sh
+	@./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sd ---dispatcher---------------------------------------"
-	@./ds 2>&1 | . ./spec_filter.sh
+	@./ds 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sx ---executor-----------------------------------------"
-	@./xs 2>&1 | . ./spec_filter.sh
+	@./xs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make si ---invoker------------------------------------------"
-	@./is 2>&1 | . ./spec_filter.sh
+	@./is 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sl ---listener-----------------------------------------"
-	@./ls 2>&1 | . ./spec_filter.sh
+	@./ls 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sn ---instructions-------------------------------------"
-	@./ns 2>&1 | . ./spec_filter.sh
+	@./ns 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sz ---a-to-z-------------------------------------------"
-	@./zs 2>&1 | . ./spec_filter.sh
+	@./zs 2>&1 | ./spec_filter.sh
 	@echo ""
 
 vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	@echo "\n--- make vsc ---common------------------------------------------"
-	$(VAL) ./cs 2>&1 | . ./spec_filter.sh
+	$(VAL) ./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsd ---dispatcher--------------------------------------"
-	$(VAL) ./ds 2>&1 | . ./spec_filter.sh
+	$(VAL) ./ds 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsx ---executor----------------------------------------"
-	$(VAL) ./xs 2>&1 | . ./spec_filter.sh
+	$(VAL) ./xs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsi ---invoker-----------------------------------------"
-	$(VAL) ./is 2>&1 | . ./spec_filter.sh
+	$(VAL) ./is 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsl ---listener----------------------------------------"
-	$(VAL) ./ls 2>&1 | . ./spec_filter.sh
+	$(VAL) ./ls 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsn ---instructions------------------------------------"
-	$(VAL) ./ns 2>&1 | . ./spec_filter.sh
+	$(VAL) ./ns 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsz ---a-to-z------------------------------------------"
-	$(VAL) ./zs 2>&1 | . ./spec_filter.sh
+	$(VAL) ./zs 2>&1 | ./spec_filter.sh
 	@echo ""
 
 vsc: cs
@@ -177,17 +176,17 @@ flon-listener: $(LDEPS)
 flon-scope: $(DEPS)
 flon-flon: $(DEPS) $(TSI_OS) flu64.o
 
-executor: flon-executor
+executor: _tmpsrc flon-executor
 	mv flon-executor ../tst/bin/
-invoker: flon-invoker
+invoker: _tmpsrc flon-invoker
 	mv flon-invoker ../tst/bin/
-dispatcher: flon-dispatcher
+dispatcher: _tmpsrc flon-dispatcher
 	mv flon-dispatcher ../tst/bin/
-listener: flon-listener
+listener: _tmpsrc flon-listener
 	mv flon-listener ../tst/bin/
-scope: flon-scope
+scope: _tmpsrc flon-scope
 	mv flon-scope ../tst/bin/
-fflon: flon-flon
+fflon: _tmpsrc flon-flon
 	mv flon-flon ../tst/bin/
 
 spec:
@@ -195,5 +194,5 @@ spec:
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean _tmpsrc _tmpsrc_clean _specfilter
+.PHONY: clean _tmpsrc _specfilter
 

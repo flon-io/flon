@@ -109,7 +109,7 @@ context "instruction:"
 
         expect(result != NULL);
 
-        int r = hlp_queue_cancel_msg(exid, "0");
+        int r = hlp_cancel(exid, "0");
         expect(r i== 1);
 
         fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);

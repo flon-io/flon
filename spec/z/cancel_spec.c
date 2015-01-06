@@ -44,16 +44,25 @@ context "flon and cancel:"
         "",
         "{ hello: cancel.0 }");
 
-      res = hlp_wait(exid, "execute", "0_1", 2);
+      res = hlp_wait(exid, "execute", "0_1", 3);
 
       //flon_pp_execution(exid);
 
       expect(res != NULL);
-      flu_putf(fdja_todc(res));
+      //flu_putf(fdja_todc(res));
 
       expect(fdja_lj(res, "payload.trace") ===F fdja_vj("[ x ]"));
 
-      expect(0 == 1);
+      fdja_free(res);
+
+      hlp_cancel(exid, NULL);
+
+      res = hlp_wait(exid, "terminated", NULL, 3);
+
+      flon_pp_execution(exid);
+
+      expect(res != NULL);
+      flu_putf(fdja_todc(res));
     }
   }
 }
