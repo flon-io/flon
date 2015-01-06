@@ -36,30 +36,30 @@ IDEPS=$(DEPS) dollar.o fl_invoker.o
 #
 LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
 
-tmpsrc:
+_tmpsrc:
 	cp -u ../src/*.[ch] src/
 	cp -u ../src/n/*.[ch] src/
 	cp -u ../src/lib/*.[ch] src/
 	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
-tmpsrcclean:
+_tmpsrc_clean:
 	rm -f src/*.[ch]
 
 fl_exe_instructions.o: $(wildcard $(VPATH)/fl_n_*.c)
   # so that each time there is a change in fl_n_*.c, that .o gets rebuilt
 
-cs.c: tmpsrc ../spec/c/*_spec.c
+cs.c: _tmpsrc ../spec/c/*_spec.c
 	$(RODZO) ../spec/c/*_spec.c -o cs.c
-ds.c: tmpsrc ../spec/d/*_spec.c
+ds.c: _tmpsrc ../spec/d/*_spec.c
 	$(RODZO) ../spec/d/*_spec.c -o ds.c
-xs.c: tmpsrc ../spec/x/*_spec.c
+xs.c: _tmpsrc ../spec/x/*_spec.c
 	$(RODZO) ../spec/x/*_spec.c -o xs.c
-is.c: tmpsrc ../spec/i/*_spec.c
+is.c: _tmpsrc ../spec/i/*_spec.c
 	$(RODZO) ../spec/i/*_spec.c -o is.c
-ls.c: tmpsrc ../spec/l/*_spec.c
+ls.c: _tmpsrc ../spec/l/*_spec.c
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
-ns.c: tmpsrc ../spec/n/*_spec.c
+ns.c: _tmpsrc ../spec/n/*_spec.c
 	$(RODZO) ../spec/n/*_spec.c -o ns.c
-zs.c: tmpsrc ../spec/z/*_spec.c
+zs.c: _tmpsrc ../spec/z/*_spec.c
 	$(RODZO) ../spec/z/*_spec.c -o zs.c
 
 cs: $(DEPS)
@@ -147,6 +147,18 @@ vsn: ns invoker executor dispatcher
 vsz: zs invoker executor dispatcher
 	$(VAL) ./zs
 
+_specfilter:
+	@echo ""
+	@echo "** $(FIL):"
+	@echo "*"
+	@cat $(FIL) | ./spec_filter.sh x
+vesn: ns invoker executor dispatcher
+	FLONVAL=exe $(MAKE) sn
+	find ../tst/var/archive -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+vesz: ns invoker executor dispatcher
+	FLONVAL=exe $(MAKE) sz
+	find ../tst/var/archive -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+
 ssi: is
 	strace -r ./is
 ssd: ds executor invoker
@@ -183,5 +195,5 @@ spec:
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean tmpsrc
+.PHONY: clean _tmpsrc _tmpsrc_clean _specfilter
 
