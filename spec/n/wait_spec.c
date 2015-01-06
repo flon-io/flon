@@ -53,7 +53,7 @@ context "instruction:"
         "{ hello: wait }");
 
       result = hlp_wait(exid, "launched", NULL, 5);
-      flu_msleep(140);
+      flu_msleep(504);
 
       expect(result != NULL);
 

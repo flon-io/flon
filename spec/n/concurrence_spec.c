@@ -42,7 +42,7 @@ context "instruction:"
         "",
         "{ hello: world }");
 
-      result = hlp_wait(exid, "terminated", NULL, 1);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
       //flon_pp_execution(exid);
 
@@ -70,9 +70,9 @@ context "instruction:"
         "",
         "{ hello: emptiness }");
 
-      result = hlp_wait(exid, "terminated", NULL, 1);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
 

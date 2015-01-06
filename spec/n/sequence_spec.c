@@ -42,7 +42,7 @@ context "instruction:"
         "",
         "{ hello: world }");
 
-      result = hlp_wait(exid, "receive", "0", 2);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
       //flon_pp_execution(exid);
 
@@ -50,9 +50,8 @@ context "instruction:"
 
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_ls(result, "point", NULL) ===f "receive");
+      expect(fdja_ls(result, "point", NULL) ===f "terminated");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0_1");
 
       fdja_value *pl = fdja_l(result, "payload");
 
@@ -70,15 +69,14 @@ context "instruction:"
         "",
         "{ hello: emptiness }");
 
-      result = hlp_wait(exid, "receive", "0", 10);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
       //flon_pp_execution(exid);
 
       expect(result != NULL);
 
-      expect(fdja_ld(result, "point", NULL) ===f "receive");
+      expect(fdja_ld(result, "point", NULL) ===f "terminated");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
-      expect(fdja_ls(result, "from", NULL) ===f "0");
 
       fdja_value *pl = fdja_l(result, "payload");
 
