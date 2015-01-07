@@ -45,6 +45,7 @@ static char exe_define(fdja_value *node, fdja_value *exe)
 
   set_var(node, name, val);
 
+  free(name);
   fdja_free(atts);
 
   return 'v'; // over
