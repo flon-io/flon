@@ -26,16 +26,26 @@
 
 static char exe_define(fdja_value *node, fdja_value *exe)
 {
-//  fdja_value *pl = payload(exe);
-//
-//  if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
-//  fdja_value *trace = fdja_l(pl, "trace");
-//
-//  fdja_value *atts = attributes(node, exe);
-//
-//  fdja_push(trace, fdja_lc(atts, "_0"));
-//
-//  fdja_free(atts);
+  fdja_value *tree = tree_clone(node, exe);
+  fdja_value *atts = attributes(node, exe);
+
+  char *name = fdja_to_string(atts->child);
+
+  fdja_value *val = fdja_v("{}");
+  fdja_value *args = fdja_set(val, "args", fdja_v("[]"));
+  fdja_set(val, "tree", tree);
+
+  for (fdja_value *v = atts->child->sibling; v; v = v->sibling)
+  {
+    fdja_push(args, fdja_clone(v));
+  }
+
+  fdja_psetv(val, "tree.0", "sequence");
+  fdja_psetv(val, "tree.1", "{ _0: scope }");
+
+  set_var(node, name, val);
+
+  fdja_free(atts);
 
   return 'v'; // over
 }

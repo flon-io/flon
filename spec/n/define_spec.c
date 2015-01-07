@@ -40,9 +40,9 @@ context "instruction:"
       hlp_launch(
         exid,
         "sequence\n"
-        "  define sub\n"
-        "    trace b\n"
+        "  define sub a0, a1\n"
         "    trace a\n"
+        "    trace b\n"
         "  error 'stop here'\n"
         "",
         "{}");
@@ -56,12 +56,28 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       v = hlp_read_run_json(exid);
+      //flu_putf(fdja_todc(v));
+
+      fdja_value *v1 = NULL;
+
+      v1 = fdja_l(v, "nodes.0.vars");
+      expect(fdja_size(v1) zu== 1);
+
       flu_putf(fdja_todc(v));
 
-      fdja_value *vars = fdja_l(v, "nodes.0.vars");
+      v1 = fdja_l(v, "nodes.0.vars.sub.args");
+      expect(fdja_tod(v1) ===f ""
+        "[ a0, a1 ]");
 
-      expect(fdja_size(vars) zu== 1);
+      v1 = fdja_l(v, "nodes.0.vars.sub.tree");
+      expect(fdja_tod(v1) ===f ""
+        "[ sequence, { _0: scope }, [ "
+          "[ trace, { _0: a }, [] ], "
+          "[ trace, { _0: b }, [] ]"
+        " ] ]");
     }
+
+    it "returns 'anonymous functions'"
   }
 }
 

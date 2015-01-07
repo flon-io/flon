@@ -114,6 +114,11 @@ static fdja_value *tree(fdja_value *node, fdja_value *msg)
   return r;
 }
 
+static fdja_value *tree_clone(fdja_value *node, fdja_value *msg)
+{
+  return fdja_clone(tree(node, msg));
+}
+
 static fdja_value *payload(fdja_value *msg)
 {
   return fdja_l(msg, "payload");
@@ -168,6 +173,8 @@ static void set_var(fdja_value *node, char *key, fdja_value *val)
   fdja_value *vars = lookup_vars(node);
 
   if (vars) fdja_pset(vars, key, val);
+
+  // TODO: update the "mtime" of the node holding the "vars"
 }
 
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
