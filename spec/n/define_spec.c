@@ -43,11 +43,11 @@ context "instruction:"
         "  define sub a0, a1\n"
         "    trace a\n"
         "    trace b\n"
-        "  error 'stop here'\n"
+        "  stall\n"
         "",
         "{}");
 
-      result = hlp_wait(exid, "failed", NULL, 3);
+      result = hlp_wait(exid, "execute", "0_1", 3);
 
       //flon_pp_execution(exid);
 
@@ -84,11 +84,11 @@ context "instruction:"
         "sequence\n"
         "  define sub\n"
         "    trace a\n"
-        "  error 'stop here'\n"
+        "  stall\n"
         "",
         "{}");
 
-      result = hlp_wait(exid, "failed", NULL, 3);
+      result = hlp_wait(exid, "execute", "0_1", 3);
 
       //flon_pp_execution(exid);
 
@@ -119,11 +119,11 @@ context "instruction:"
         "sequence\n"
         "  define $(sname) $(aname)\n"
         "    trace a\n"
-        "  error 'stop here'\n"
+        "  stall\n"
         "",
         "{ sname: sub0, aname: arg0 }");
 
-      result = hlp_wait(exid, "failed", NULL, 3);
+      result = hlp_wait(exid, "execute", "0_1", 3);
 
       //flon_pp_execution(exid);
 

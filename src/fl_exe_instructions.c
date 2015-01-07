@@ -361,6 +361,7 @@ static char can_(fdja_value *node, fdja_value *can)
 #include "fl_n_invoke.c"
 #include "fl_n_sequence.c"
 #include "fl_n_set.c"
+#include "fl_n_stall.c"
 #include "fl_n_trace.c"
 #include "fl_n_wait.c"
 
@@ -382,6 +383,7 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "define", exe_define, rcv_, can_ },
   &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "set", exe_set, rcv_, can_ },
+  &(flon_ni){ "stall", exe_stall, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
   NULL
 };
