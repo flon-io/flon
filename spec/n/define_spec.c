@@ -97,7 +97,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       v = hlp_read_run_json(exid);
-      flu_putf(fdja_todc(v));
+      //flu_putf(fdja_todc(v));
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub.args");
       expect(fdja_tod(v1) ===f ""
@@ -111,6 +111,39 @@ context "instruction:"
     }
 
     it "is OK when the name and args are extrapolated"
+    {
+      exid = flon_generate_exid("n.define.extrapo");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define $(sname) $(aname)\n"
+        "    trace a\n"
+        "  error 'stop here'\n"
+        "",
+        "{ sname: sub0, aname: arg0 }");
+
+      result = hlp_wait(exid, "failed", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+
+      //flu_putf(fdja_todc(result));
+
+      v = hlp_read_run_json(exid);
+      //flu_putf(fdja_todc(v));
+
+      fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub0.args");
+      expect(fdja_tod(v1) ===f ""
+        "[ arg0 ]");
+
+      v1 = fdja_l(v, "nodes.0.vars.sub0.tree");
+      expect(fdja_tod(v1) ===f ""
+        "[ sequence, { _0: scope }, [ "
+          "[ trace, { _0: a }, [] ]"
+        " ] ]");
+    }
 
     it "returns 'anonymous functions'"
   }
