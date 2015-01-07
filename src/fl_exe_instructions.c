@@ -259,15 +259,39 @@ static char rcv_(fdja_value *node, fdja_value *rcv)
   return 'v'; // over
 }
 
+static size_t cancel_dependents(fdja_value *node, char *type)
+{
+  fdja_value *array = fdja_l(node, type);
+  if (array == NULL) return 0;
+
+  char *nid = fdja_ls(node, "nid", NULL);
+
+  for (fdja_value *v = array->child; v; v = v->sibling)
+  {
+    char *cnid = fdja_to_string(v);
+    flon_queue_msg("cancel", cnid, nid, NULL);
+    free(cnid);
+  }
+
+  free(nid);
+
+  return fdja_size(array);
+}
+
 static char can_(fdja_value *node, fdja_value *can)
 {
-  // TODO: set self 'status' to "cancelling"
-  // TODO: cancel children if any...
+  fdja_set(node, "status", fdja_s("cancelling"));
+  //fdja_set(node, "flavor", fdja_s("normal")); // normal / kill ?
+
+  size_t count = 0;
+  count += cancel_dependents(node, "children");
+  count += cancel_dependents(node, "bastards");
+
   // if no children, return 'v';
 
   unschedule_timers(node, can);
 
-  return 'v'; // over
+  return count > 0 ? 'k' : 'v'; // over
 }
 
 

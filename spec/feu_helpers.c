@@ -269,6 +269,15 @@ fdja_value *hlp_read_run_json(char *exid)
   return v;
 }
 
+fdja_value *hlp_read_archive_run_json(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+  fdja_value *v = fdja_parse_f("var/archive/%s/run.json", fep);
+  free(fep);
+
+  return v;
+}
+
 fdja_value *hlp_read_node(char *exid, char *nid)
 {
   fdja_value *v = hlp_read_run_json(exid);

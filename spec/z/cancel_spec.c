@@ -22,11 +22,13 @@ context "flon and cancel:"
   {
     char *exid = NULL;
     fdja_value *res = NULL;
+    fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
     fdja_free(res);
+    fdja_free(v);
   }
 
   describe "an execution"
@@ -59,10 +61,20 @@ context "flon and cancel:"
 
       res = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(res != NULL);
-      flu_putf(fdja_todc(res));
+      //flu_putf(fdja_todc(res));
+
+      v = hlp_read_run_json(exid);
+      expect(v == NULL);
+
+      v = hlp_read_archive_run_json(exid);
+      expect(v != NULL);
+      //flu_putf(fdja_todc(v));
+
+      fdja_value *nodes = fdja_l(v, "nodes");
+      expect(fdja_size(nodes) zu== 0);
     }
   }
 }
