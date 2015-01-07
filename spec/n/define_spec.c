@@ -33,9 +33,9 @@ context "instruction:"
 
   describe "define"
   {
-    it "sets its tree in a variable"
+    it "sets its args and trees in a variable"
     {
-      exid = flon_generate_exid("n.define.0");
+      exid = flon_generate_exid("n.define.vanilla");
 
       hlp_launch(
         exid,
@@ -58,12 +58,10 @@ context "instruction:"
       v = hlp_read_run_json(exid);
       //flu_putf(fdja_todc(v));
 
-      fdja_value *v1 = NULL;
-
-      v1 = fdja_l(v, "nodes.0.vars");
+      fdja_value *v1 = fdja_l(v, "nodes.0.vars");
       expect(fdja_size(v1) zu== 1);
 
-      flu_putf(fdja_todc(v));
+      //flu_putf(fdja_todc(v));
 
       v1 = fdja_l(v, "nodes.0.vars.sub.args");
       expect(fdja_tod(v1) ===f ""
@@ -76,6 +74,43 @@ context "instruction:"
           "[ trace, { _0: b }, [] ]"
         " ] ]");
     }
+
+    it "is OK when there are no args"
+    {
+      exid = flon_generate_exid("n.define.noargs");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub\n"
+        "    trace a\n"
+        "  error 'stop here'\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+
+      //flu_putf(fdja_todc(result));
+
+      v = hlp_read_run_json(exid);
+      flu_putf(fdja_todc(v));
+
+      fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub.args");
+      expect(fdja_tod(v1) ===f ""
+        "[]");
+
+      v1 = fdja_l(v, "nodes.0.vars.sub.tree");
+      expect(fdja_tod(v1) ===f ""
+        "[ sequence, { _0: scope }, [ "
+          "[ trace, { _0: a }, [] ]"
+        " ] ]");
+    }
+
+    it "is OK when the name and args are extrapolated"
 
     it "returns 'anonymous functions'"
   }
