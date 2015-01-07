@@ -32,7 +32,7 @@ context "instruction:"
   {
     it "sets a field"
     {
-      exid = flon_generate_exid("n.set.0");
+      exid = flon_generate_exid("n.set.fld");
 
       hlp_launch(
         exid,
@@ -53,7 +53,7 @@ context "instruction:"
 
     it "sets a field, by default"
     {
-      exid = flon_generate_exid("n.set.0");
+      exid = flon_generate_exid("n.set.fld.default");
 
       hlp_launch(
         exid,
@@ -72,9 +72,9 @@ context "instruction:"
         "{ hello: set, a: 2 }"));
     }
 
-    it "sets via an expanded key"
+    it "sets a field, via an expanded key"
     {
-      exid = flon_generate_exid("n.set.0");
+      exid = flon_generate_exid("n.set.fld.expankey");
 
       hlp_launch(
         exid,
@@ -94,6 +94,27 @@ context "instruction:"
     }
 
     it "sets a variable"
+    {
+      exid = flon_generate_exid("n.set.var");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set v.a: 3\n"
+        "  trace $(v.a)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_lj(result, "payload") ===F fdja_vj(""
+        "{ trace: [ 3 ] }"));
+    }
   }
 }
 

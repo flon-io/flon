@@ -38,18 +38,20 @@ static char exe_set(fdja_value *node, fdja_value *exe)
     char *key = a->key;
     fdja_value *sibling = a->sibling;
 
-    fgaj_d("key: 0 >%s<", key);
+    //fgaj_d("key: 0 >%s<", key);
 
     char k = extract_prefix(a->key);
-    if (k == 'f' || k == 'v') key = strchr(key, '.') + 1;
+    if (k != 0) key = strchr(key, '.') + 1;
 
-    fgaj_d("key: 1 >%s<", key);
+    //fgaj_d("key: 1 >%s<", key);
 
-    if (k == 'f' || k == 'F') fdja_pset(pl, key, a);
-    //else if (k == 'v') // TODO
+    if (k == 'f' || k == 0) fdja_pset(pl, key, a);
+    else if (k == 'v') set_var(node, key, a);
 
     a = sibling;
   }
+
+  flu_putf(fdja_todc(execution));
 
   atts->child = NULL; fdja_free(atts);
 

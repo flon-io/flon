@@ -124,6 +124,52 @@ static fdja_value *payload_clone(fdja_value *msg)
   return fdja_clone(fdja_l(msg, "payload"));
 }
 
+static fdja_value *parent(fdja_value *node)
+{
+  char *nid = fdja_ls(node, "nid"); if (nid == NULL) return NULL;
+  char *pnid = flon_node_parent_nid(nid);
+  fdja_value *r = flon_node(pnid);
+
+  free(nid);
+  free(pnid);
+
+  return r;
+}
+
+static fdja_value *lookup_var(fdja_value *node, const char *key)
+{
+  if (node == NULL) return NULL;
+
+  fdja_value *vars = fdja_l(node, "vars");
+
+  if (vars)
+  {
+    fdja_value *val = fdja_l(vars, key);
+    if (val) return val;
+  }
+
+  return lookup_var(parent(node), key);
+}
+
+static fdja_value *lookup_vars(fdja_value *node)
+{
+  fdja_value *vars = fdja_l(node, "vars");
+
+  if (vars) return vars;
+
+  fdja_value *par = parent(node);
+  if (par) return lookup_vars(par);
+
+  return NULL;
+}
+
+static void set_var(fdja_value *node, char *key, fdja_value *val)
+{
+  fdja_value *vars = lookup_vars(node);
+
+  if (vars) fdja_pset(vars, key, val);
+}
+
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
 {
   fdja_value *t = tree(node, msg);
@@ -144,7 +190,9 @@ static char extract_prefix(const char *path)
   if (strncmp(path, "field.", 4) == 0) return 'f';
   if (strncmp(path, "variable.", 9) == 0) return 'v';
   //return *path; // no worky...
-  return 'F'; // default
+  return 0; // none
+
+  // TODO: "vf" vs "fv" ? or $(a||v.a) vs $(v.a||a)
 }
 
 typedef struct { fdja_value *node; fdja_value *msg; } lup;
@@ -152,12 +200,18 @@ typedef struct { fdja_value *node; fdja_value *msg; } lup;
 static char *lookup(void *data, const char *path)
 {
   lup *lu = data;
+  char k = extract_prefix(path);
 
-  fdja_value *pl = payload(lu->msg);
-  fdja_value *v = fdja_l(pl, path);
+  fdja_value *v = NULL;
 
-  if (v == NULL) return strdup("");
-  return fdja_to_string(v);
+  if (k != 0) path = strchr(path, '.') + 1;
+
+  if (k == 'v')
+    v = lookup_var(lu->node, path);
+  else
+    v = fdja_l(payload(lu->msg), path);
+
+  return v ? fdja_to_string(v) : strdup("");
 }
 
 static void expand(

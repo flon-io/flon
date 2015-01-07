@@ -122,7 +122,11 @@ static fdja_value *create_node(
   fdja_set(
     node, "parent", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
 
-  if (tree && strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
+  if (tree && strcmp(nid, "0") == 0)
+  {
+    fdja_set(node, "tree", fdja_clone(tree));
+    fdja_psetv(node, "vars", "{}");
+  }
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
