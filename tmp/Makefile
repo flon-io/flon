@@ -153,10 +153,10 @@ _specfilter:
 	@cat $(FIL) | ./spec_filter.sh x
 vesn: ns invoker executor dispatcher
 	FLONVAL=exe $(MAKE) sn
-	find ../tst/var/archive -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
 vesz: ns invoker executor dispatcher
 	FLONVAL=exe $(MAKE) sz
-	find ../tst/var/archive -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
 
 ssi: is
 	strace -r ./is
