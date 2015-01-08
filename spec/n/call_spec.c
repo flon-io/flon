@@ -46,7 +46,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       flu_putf(fdja_todc(result));
@@ -55,6 +55,24 @@ context "instruction:"
     }
 
     it "fails if there is no corresponding define"
+    {
+      exid = flon_generate_exid("n.call.vanilla");
+
+      hlp_launch(
+        exid,
+        "call sub\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 3);
+
+      flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+    }
+
+    it "maps arguments"
   }
 }
 

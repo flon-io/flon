@@ -26,29 +26,39 @@
 
 static char exe_call(fdja_value *node, fdja_value *exe)
 {
-  char *pnid = fdja_ls(node, "nid");
+  char r = 'k'; // ok for now
+
+  char *nid = NULL;
+  char *pnid = NULL;
+  char *cnid = NULL;
+
+  pnid = fdja_ls(node, "nid");
   fdja_value *atts = attributes(node, exe);
 
   char *name = fdja_to_string(atts->child);
   fdja_value *val = lookup_var(node, name);
 
+  if (val == NULL) { r = 'r'; goto _over; } // error
+
   //fdja_putdc(val);
 
-  char *nid = fdja_ls(val, "nid");
+  nid = fdja_ls(val, "nid");
   size_t counter = fdja_li(val, "counter") + 1;
-  char *cnid = flu_sprintf("%s-%x", nid, counter);
+  cnid = flu_sprintf("%s-%x", nid, counter);
   fdja_psetv(val, "counter", "%d", counter);
 
   fdja_psetv(node, "vars", "{}");
 
   flon_queue_msg("execute", cnid, pnid, payload(exe));
 
-  free(pnid);
+_over:
+
   free(nid);
+  free(pnid);
   free(cnid);
   free(name);
   fdja_free(atts);
 
-  return 'k'; // ok, not over
+  return r;
 }
 
