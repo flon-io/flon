@@ -333,6 +333,9 @@ static void unschedule_timers(fdja_value *node, fdja_value *msg)
 
 static char rcv_(fdja_value *node, fdja_value *rcv)
 {
+  // TODO: remove timers
+  // TODO: cancel bastards
+
   return 'v'; // over
 }
 

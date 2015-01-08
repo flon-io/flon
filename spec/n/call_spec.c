@@ -49,14 +49,14 @@ context "instruction:"
       //flon_pp_execution(exid);
 
       expect(result != NULL);
-      flu_putf(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f "{ trace: [ a ] }");
     }
 
     it "fails if there is no corresponding define"
     {
-      exid = flon_generate_exid("n.call.vanilla");
+      exid = flon_generate_exid("n.call.nosub");
 
       hlp_launch(
         exid,
@@ -66,13 +66,35 @@ context "instruction:"
 
       result = hlp_wait(exid, "failed", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
     }
 
     it "maps arguments"
+    {
+      exid = flon_generate_exid("n.call.maps");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub a0 a1\n"
+        "    trace '$(a1) $(a0)'\n"
+        "  call sub egg bacon\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ trace: [ \"bacon egg\" ] }");
+    }
 
     it "it accepts URIs"
   }
