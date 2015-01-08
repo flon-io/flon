@@ -64,15 +64,13 @@ context "instruction:"
       //flu_putf(fdja_todc(v));
 
       v1 = fdja_l(v, "nodes.0.vars.sub.args");
-      expect(fdja_tod(v1) ===f ""
-        "[ a0, a1 ]");
+      expect(fdja_tod(v1) ===f "[ a0, a1 ]");
 
-      v1 = fdja_l(v, "nodes.0.vars.sub.tree");
-      expect(fdja_tod(v1) ===f ""
-        "[ sequence, { _0: scope }, [ "
-          "[ trace, { _0: a }, [] ], "
-          "[ trace, { _0: b }, [] ]"
-        " ] ]");
+      v1 = fdja_l(v, "nodes.0.vars.sub.nid");
+      expect(fdja_tod(v1) ===f "0_0_0");
+
+      v1 = fdja_l(v, "nodes.0.vars.sub.counter");
+      expect(fdja_tod(v1) ===f "0");
     }
 
     it "is OK when there are no args"
@@ -100,14 +98,13 @@ context "instruction:"
       //flu_putf(fdja_todc(v));
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub.args");
-      expect(fdja_tod(v1) ===f ""
-        "[]");
+      expect(fdja_tod(v1) ===f "[]");
 
-      v1 = fdja_l(v, "nodes.0.vars.sub.tree");
-      expect(fdja_tod(v1) ===f ""
-        "[ sequence, { _0: scope }, [ "
-          "[ trace, { _0: a }, [] ]"
-        " ] ]");
+      v1 = fdja_l(v, "nodes.0.vars.sub.nid");
+      expect(fdja_tod(v1) ===f "0_0_0");
+
+      v1 = fdja_l(v, "nodes.0.vars.sub.counter");
+      expect(fdja_tod(v1) ===f "0");
     }
 
     it "is OK when the name and args are extrapolated"
@@ -135,14 +132,13 @@ context "instruction:"
       //flu_putf(fdja_todc(v));
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub0.args");
-      expect(fdja_tod(v1) ===f ""
-        "[ arg0 ]");
+      expect(fdja_tod(v1) ===f "[ arg0 ]");
 
-      v1 = fdja_l(v, "nodes.0.vars.sub0.tree");
-      expect(fdja_tod(v1) ===f ""
-        "[ sequence, { _0: scope }, [ "
-          "[ trace, { _0: a }, [] ]"
-        " ] ]");
+      v1 = fdja_l(v, "nodes.0.vars.sub0.nid");
+      expect(fdja_tod(v1) ===f "0_0_0");
+
+      v1 = fdja_l(v, "nodes.0.vars.sub0.counter");
+      expect(fdja_tod(v1) ===f "0");
     }
 
     it "returns 'anonymous functions'"

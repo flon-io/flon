@@ -355,7 +355,7 @@ static char can_(fdja_value *node, fdja_value *can)
   return count > 0 ? 'k' : 'v'; // over
 }
 
-
+#include "fl_n_call.c"
 #include "fl_n_concurrence.c"
 #include "fl_n_define.c"
 #include "fl_n_invoke.c"
@@ -377,12 +377,13 @@ typedef struct {
 } flon_ni;
 
 static flon_ni *instructions[] = {
-  &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence, can_ },
-  &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },
   &(flon_ni){ "define", exe_define, rcv_, can_ },
-  &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "set", exe_set, rcv_, can_ },
+  &(flon_ni){ "call", exe_call, rcv_, can_ },
+  &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
+  &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },
+  &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "stall", exe_stall, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
   NULL

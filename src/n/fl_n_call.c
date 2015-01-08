@@ -24,34 +24,31 @@
 //
 
 
-static char exe_define(fdja_value *node, fdja_value *exe)
+static char exe_call(fdja_value *node, fdja_value *exe)
 {
-  char *nid = fdja_ls(node, "nid");
-  //fdja_value *tree = tree_clone(node, exe);
+  char *pnid = fdja_ls(node, "nid");
   fdja_value *atts = attributes(node, exe);
 
   char *name = fdja_to_string(atts->child);
+  fdja_value *val = lookup_var(node, name);
 
-  fdja_value *val = fdja_v("{}");
-  fdja_value *args = fdja_set(val, "args", fdja_v("[]"));
-  //fdja_set(val, "tree", tree);
-  fdja_psetv(val, "nid", "%s_0", nid);
-  fdja_psetv(val, "counter", "0");
+  //fdja_putdc(val);
 
-  for (fdja_value *v = atts->child->sibling; v; v = v->sibling)
-  {
-    fdja_push(args, fdja_clone(v));
-  }
+  char *nid = fdja_ls(val, "nid");
+  size_t counter = fdja_li(val, "counter") + 1;
+  char *cnid = flu_sprintf("%s-%x", nid, counter);
+  fdja_psetv(val, "counter", "%d", counter);
 
-  fdja_psetv(val, "tree.0", "sequence");
-  fdja_psetv(val, "tree.1", "{}");
+  fdja_psetv(node, "vars", "{}");
 
-  set_var(node, name, val);
+  flon_queue_msg("execute", cnid, pnid, payload(exe));
 
+  free(pnid);
   free(nid);
+  free(cnid);
   free(name);
   fdja_free(atts);
 
-  return 'v'; // over
+  return 'k'; // ok, not over
 }
 
