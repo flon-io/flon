@@ -56,6 +56,25 @@ context "instruction:"
       expect(fdja_tod(pl) ===f ""
         "{ hello: trace, trace: [ a ] }");
     }
+
+    it "traces more than strings"
+    {
+      exid = flon_generate_exid("n.trace.more");
+
+      hlp_launch(
+        exid,
+        "trace [ 1, 2, trois ]\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f "[ [ 1, 2, trois ] ]");
+    }
   }
 }
 
