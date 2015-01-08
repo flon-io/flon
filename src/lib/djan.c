@@ -1520,8 +1520,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 085cd7391d2fe2dfd1b72f85f6483a8442e7cbca
+//commit b0d5d86e63d3c95ddffc00ba410c1f92151b3126
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 14:45:45 2015 +0900
+//Date:   Thu Jan 8 10:40:57 2015 +0900
 //
-//    finalize fdja_unpush()
+//    introduce fdja_put{j|d|dc}()
