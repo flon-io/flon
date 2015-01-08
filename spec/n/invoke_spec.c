@@ -59,6 +59,28 @@ context "instruction:"
       expect(fdja_l(result, "payload.args") == NULL);
     }
 
+    it "passes arguments"
+    {
+      exid = flon_generate_exid("n.invoke.expand");
+
+      hlp_launch(
+        exid,
+        "invoke copyargs\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 5);
+
+      //flu_putf(hlp_last_msg(exid));
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload.args1")) ===f ""
+        "{ _0: copyargs }");
+    }
+
     it "expands its arguments"
     {
       exid = flon_generate_exid("n.invoke.expand");
@@ -84,7 +106,7 @@ context "instruction:"
     }
 
     it "sets the node as 'failed' if the invoker doesn't exist"
-      // TODO: don't hurry with this one...
+      // TODO: don't hurry with this one... think about it [later]...
   }
 }
 
