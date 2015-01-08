@@ -24,8 +24,29 @@
 //
 
 
-//
-// *** TRACE
+static int is_index(char *key)
+{
+  if (*key != '_') return 0;
+  for (key = key + 1; *key; ++key) if (*key < '0' || *key > '9') return 0;
+  return 1;
+}
+
+static fdja_value *shrink_atts(fdja_value *atts)
+{
+  for (fdja_value *v = atts->child; v; v = v->sibling)
+  {
+    if ( ! is_index(v->key)) return fdja_clone(atts);
+  }
+
+  fdja_value *r = fdja_v("[]");
+
+  for (fdja_value *v = atts->child; v; v = v->sibling)
+  {
+    fdja_push(r, fdja_clone(v));
+  }
+
+  return r;
+}
 
 static char exe_trace(fdja_value *node, fdja_value *exe)
 {
@@ -36,7 +57,18 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
 
   fdja_value *atts = attributes(node, exe);
 
-  fdja_push(trace, fdja_lc(atts, "_0"));
+  if (atts->child == NULL)
+  {
+    fdja_push(trace, fdja_v("null"));
+  }
+  else if (atts->child && atts->child->sibling == NULL)
+  {
+    fdja_push(trace, fdja_lc(atts, "_0"));
+  }
+  else
+  {
+    fdja_push(trace, shrink_atts(atts));
+  }
 
   fdja_free(atts);
 

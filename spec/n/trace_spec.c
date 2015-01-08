@@ -75,6 +75,45 @@ context "instruction:"
 
       expect(fdja_ld(result, "payload.trace") ===f "[ [ 1, 2, trois ] ]");
     }
+
+    it "traces arg arrays"
+    {
+      exid = flon_generate_exid("n.trace.more");
+
+      hlp_launch(
+        exid,
+        "trace a, b, c\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f "[ [ a, b, c ] ]");
+    }
+
+    it "traces arg objects"
+    {
+      exid = flon_generate_exid("n.trace.more");
+
+      hlp_launch(
+        exid,
+        "trace 0, b: 1, 2\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f ""
+        "[ { _0: 0, b: 1, _2: 2 } ]");
+    }
   }
 }
 
