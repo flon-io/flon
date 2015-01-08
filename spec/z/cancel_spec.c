@@ -46,7 +46,7 @@ context "flon and cancel:"
         "",
         "{ hello: cancel.0 }");
 
-      res = hlp_wait(exid, "execute", "0_1", 3);
+      res = hlp_wait(exid, "execute", "0_1", 4);
 
       //flon_pp_execution(exid);
 
@@ -59,7 +59,7 @@ context "flon and cancel:"
 
       hlp_cancel(exid, NULL);
 
-      res = hlp_wait(exid, "terminated", NULL, 3);
+      res = hlp_wait(exid, "terminated", NULL, 4);
 
       //flon_pp_execution(exid);
 
