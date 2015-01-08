@@ -73,6 +73,8 @@ context "instruction:"
     }
 
     it "maps arguments"
+
+    it "it accepts URIs"
   }
 }
 
