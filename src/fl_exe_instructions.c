@@ -207,6 +207,22 @@ typedef struct { fdja_value *node; fdja_value *msg; } lup;
 static char *lookup(void *data, const char *path)
 {
   lup *lu = data;
+
+  // some shortcuts
+
+  if (strcmp(path, "nid") == 0) return fdja_ls(lu->node, "nid");
+  if (strcmp(path, "exid") == 0) return strdup(execution_id);
+
+  if (strcmp(path, "exnid") == 0 || strcmp(path, "enid") == 0)
+  {
+    char *nid = fdja_ls(lu->node, "nid");
+    char *r = flu_sprintf("%s-%s", execution_id, nid);
+    free(nid);
+    return r;
+  }
+
+  // regular case, var or fld
+
   char k = extract_prefix(path);
 
   fdja_value *v = NULL;

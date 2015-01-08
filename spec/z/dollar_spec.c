@@ -52,5 +52,106 @@ context "flon and $(dollar):"
         "[ 'green hornet' ]"));
     }
   }
+
+  describe "$(exid)"
+  {
+    it "is expanded to the execution id"
+    {
+      exid = flon_generate_exid("z.dollar.exid");
+
+      hlp_launch(
+        exid,
+        "trace $(exid)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f exid);
+    }
+  }
+
+  describe "$(nid)"
+  {
+    it "is expanded to the node id"
+    {
+      exid = flon_generate_exid("z.dollar.nid");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace $(nid)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f "0_0");
+    }
+
+    it "is expanded to the correct node id (subexecution)"
+    {
+      exid = flon_generate_exid("z.dollar.nid");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub\n"
+        "    trace $(nid)\n"
+        "  call sub\n"
+        "  call sub\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f "0_0_0-1");
+      expect(fdja_tod(fdja_l(result, "payload.trace.1")) ===f "0_0_0-2");
+    }
+  }
+
+  describe "$(exnid) or $(enid)"
+  {
+    it "is expanded to execution id + node id"
+    {
+      exid = flon_generate_exid("z.dollar.exnid");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace $(enid)\n"
+        "  trace $(exnid)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      char *exnid0 = flu_sprintf("%s-0_0", exid);
+      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===F exnid0);
+
+      char *exnid1 = flu_sprintf("%s-0_1", exid);
+      expect(fdja_tod(fdja_l(result, "payload.trace.1")) ===F exnid1);
+    }
+  }
 }
 
