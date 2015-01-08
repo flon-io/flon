@@ -29,9 +29,9 @@ context "flon and $(dollar):"
     fdja_free(result);
   }
 
-  describe "an execution"
+  describe "an instruction"
   {
-    it "expands $(stuff) when calling an instruction"
+    it "might expand $(stuff) when executed"
     {
       exid = flon_generate_exid("z.dollar.expand");
 
