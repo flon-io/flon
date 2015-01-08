@@ -59,6 +59,9 @@ static char rcv_invoke(fdja_value *node, fdja_value *rcv)
 {
   fdja_pset(rcv, "payload.args", NULL);
 
+  // TODO copy 'payload.ret' to 'vars.ret'
+  // TODO nuke 'payload.ret'
+
   return 'v'; // over
 }
 
