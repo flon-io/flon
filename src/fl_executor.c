@@ -278,6 +278,18 @@ static void handle_event(char event, fdja_value *msg)
   do_log(msg);
 }
 
+static void reject_or_discard_msg(char point, fdja_value *msg)
+{
+  char *fname = fdja_ls(msg, "fname", NULL);
+
+  if (fname)
+    flon_move_to_rejected(fname, "no 'point' key");
+  else
+    fgaj_w("no 'point' key in message, discarding.");
+
+  free(fname);
+}
+
 static void load_execution(const char *exid)
 {
   if (execution_id) return;
@@ -440,22 +452,11 @@ static void execute()
       char p = point ? *fdja_srk(point) : 0;
 
       if (p == 'e' || p == 'r' || p == 'c') // execute, receive or cancel
-      {
         handle_order(p, j);
-      }
       else if (p)
-      {
         handle_event(p, j);
-      }
       else
-      {
-        char *fname = fdja_ls(j, "fname", NULL);
-        if (fname)
-          flon_move_to_rejected(fname, "no 'point' key");
-        else
-          fgaj_w("no 'point' key in message, discarding.");
-        free(fname);
-      }
+        reject_or_discard_msg(p, j);
 
       fdja_free(j);
     }
