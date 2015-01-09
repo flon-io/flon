@@ -247,8 +247,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 5b838b9c4aeb1ce4ed6bd86c7d652e295f24efb1
+//commit 65b7ea5dde60e718e484d4e3c54a3c16ff892e57
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 9 16:54:54 2015 +0900
+//Date:   Fri Jan 9 17:02:18 2015 +0900
 //
-//    let _putd[c]() print "NULL" when given a NULL
+//    avoid "() around &" warning
