@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -504,8 +504,8 @@ void flu_zero_and_free(char *s, ssize_t n);
 
 #endif // FLON_FLUTIL_H
 
-//commit 8bd26914eb363198989a82f404ee5ffe692c4a63
+//commit 0eac13d402e3a06f15c3e850830b4f6bf0f9af57
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Dec 31 06:44:19 2014 +0900
+//Date:   Fri Jan 9 11:26:34 2015 +0900
 //
-//    implement flu_zero_and_free()
+//    implement flu_ts_to_hs()

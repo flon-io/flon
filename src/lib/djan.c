@@ -891,7 +891,12 @@ void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 
 char *fdja_to_djan(fdja_value *v, int flags)
 {
-  if (v == NULL) return NULL;
+  if (v == NULL)
+  {
+    if (flags & FDJA_F_NULL == 0) return NULL;
+    if (flags & FDJA_F_COLOR) return strdup("[0;31mNULL[0;0m");
+    return strdup("NULL");
+  }
 
   flu_sbuffer *b = flu_sbuffer_malloc();
   fdja_to_d(b->stream, v, flags, 0);
@@ -1520,8 +1525,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit b0d5d86e63d3c95ddffc00ba410c1f92151b3126
+//commit 5b838b9c4aeb1ce4ed6bd86c7d652e295f24efb1
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 8 10:40:57 2015 +0900
+//Date:   Fri Jan 9 16:54:54 2015 +0900
 //
-//    introduce fdja_put{j|d|dc}()
+//    let _putd[c]() print "NULL" when given a NULL

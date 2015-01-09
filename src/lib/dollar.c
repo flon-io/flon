@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -331,8 +331,8 @@ char *fdol_dlup(void *data, const char *path)
   return r ? strdup(r) : NULL;
 }
 
-//commit fd33b39bff3ee5fe7849e599e6841e2c02cf859a
+//commit 647ebfb04cb9f4a4ebfe2073ec7c6bb6a7228b3c
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Nov 17 09:46:34 2014 +0900
+//Date:   Fri Jan 9 14:37:59 2015 +0900
 //
-//    escape when quoting
+//    upgrade dependencies

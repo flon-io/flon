@@ -97,7 +97,8 @@ enum // flags for fdja_to_djan()
   FDJA_F_COLOR    = 1 << 0, // colour output
   FDJA_F_ONELINE  = 1 << 1, // result will come in one line
   FDJA_F_COMPACT  = 1 << 2, // outputs [1,2,3] instead of [ 1, 2, 3 ]
-  FDJA_F_OBJ      = 1 << 3  // do not output {} for top object
+  FDJA_F_OBJ      = 1 << 3, // do not output {} for top object
+  FDJA_F_NULL     = 1 << 4  // output NULL in uppercase [red]
 };
   // compact implies oneline...
 
@@ -112,8 +113,8 @@ char *fdja_to_djan(fdja_value *v, int flags);
 char *fdja_f_todc(const char *path, ...);
 
 #define fdja_putj(v) flu_putf(fdja_to_json(v));
-#define fdja_putd(v) flu_putf(fdja_to_djan(v, 2));
-#define fdja_putdc(v) flu_putf(fdja_to_djan(v, 1));
+#define fdja_putd(v) flu_putf(fdja_to_djan(v, 2 | 16));
+#define fdja_putdc(v) flu_putf(fdja_to_djan(v, 1 | 16));
 
 //char *fdja_to_radial(fdja_value *v);
 
@@ -246,8 +247,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit b0d5d86e63d3c95ddffc00ba410c1f92151b3126
+//commit 5b838b9c4aeb1ce4ed6bd86c7d652e295f24efb1
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 8 10:40:57 2015 +0900
+//Date:   Fri Jan 9 16:54:54 2015 +0900
 //
-//    introduce fdja_put{j|d|dc}()
+//    let _putd[c]() print "NULL" when given a NULL

@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -280,7 +280,7 @@ struct timespec *flu_tdiff(struct timespec *t1, struct timespec *t0)
 
 char *flu_ts_to_s(struct timespec *ts, char format)
 {
-  char *r = calloc(10 + 1 + 9 + 1, sizeof(char));
+  char *r = calloc(21 + 1 + 9 + 1, sizeof(char));
 
   snprintf(r, 20, "%lis%09li", ts->tv_sec, ts->tv_nsec);
 
@@ -290,6 +290,45 @@ char *flu_ts_to_s(struct timespec *ts, char format)
   else if (format == 'u') off = 6;
   //
   if (off > -1) *(strchr(r, 's') + 1 + off) = '\0';
+
+  return r;
+}
+
+char *flu_ts_to_hs(struct timespec *ts, char format)
+{
+  char *r = calloc(42 + 1 + 9 + 1, sizeof(char));
+  char *rr = r;
+
+  // sec and above
+
+  long l;
+  long s = ts->tv_sec;
+
+  l = s / (7 * 24 * 60 * 60); s = s % (7 * 24 * 60 * 60);
+  if (l > 0) rr += sprintf(rr, "%liw", l);
+
+  l = s / (24 * 60 * 60); s = s % (24 * 60 * 60);
+  if (l > 0) rr += sprintf(rr, "%lid", l);
+
+  l = s / (60 * 60); s = s % (60 * 60);
+  if (l > 0) rr += sprintf(rr, "%lih", l);
+
+  l = s / (60); s = s % (60);
+  if (l > 0) rr += sprintf(rr, "%lim", l);
+
+  if (s > 0) rr += sprintf(rr, "%lis", s);
+  else if (rr == r || format != 's') rr += sprintf(rr, "0s");
+
+  // subsec
+
+  snprintf(rr, 10, "%09li", ts->tv_nsec);
+
+  ssize_t off = -1;
+  if (format == 's') off = 0;
+  else if (format == 'm') off = 3;
+  else if (format == 'u') off = 6;
+  //
+  if (off > -1) *(rr + off) = '\0';
 
   return r;
 }
@@ -395,8 +434,8 @@ double flu_parse_d(const char *s)
   return r;
 }
 
-//commit 8bd26914eb363198989a82f404ee5ffe692c4a63
+//commit 0eac13d402e3a06f15c3e850830b4f6bf0f9af57
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Dec 31 06:44:19 2014 +0900
+//Date:   Fri Jan 9 11:26:34 2015 +0900
 //
-//    implement flu_zero_and_free()
+//    implement flu_ts_to_hs()
