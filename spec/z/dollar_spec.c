@@ -41,15 +41,42 @@ context "flon and $(dollar):"
         "",
         "{ msg: \"green hornet\" }");
 
-      result = hlp_wait(exid, "terminated", NULL, 2);
+      result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //fdja_putdc(result);
 
       expect(fdja_lj(result, "payload.trace") ===F fdja_vj(""
         "[ 'green hornet' ]"));
+    }
+  }
+
+  describe "a dollar expression"
+  {
+    it "might get expanded to a non-string value"
+    {
+      exid = flon_generate_exid("z.dollar.expand.nonstring");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set v.a: { x: 0, y: 1 }\n"
+        "  trace $(stuff.msg)\n"
+        "  trace $(v.a)\n"
+        "",
+        "{ stuff: { msg: [ a, b, c ] } }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f ""
+        "[ [ a, b, c ], { x: 0, y: 1 } ]");
     }
   }
 
