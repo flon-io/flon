@@ -96,6 +96,33 @@ context "instruction:"
         "{ a0: egg, a1: bacon, trace: [ [ sub, lettuce ] ] }");
     }
 
+    it "maps named arguments"
+    {
+      exid = flon_generate_exid("n.call.maps.named");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub a0 a1\n"
+        "    trace $(v.b)\n"
+        "    trace $(v.args)\n"
+        "  call sub a1: egg a0: bacon cheese a2: lettuce v.b: b\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      flon_pp_execution(exid);
+
+      expect(result != NULL);
+      flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ a1: egg, a0: bacon, a2: lettuce, trace: [ b, [ sub, cheese ] ] }");
+    }
+
+    it "maps arguments to fields"
+
     it "it accepts URIs"
   }
 }

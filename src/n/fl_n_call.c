@@ -84,7 +84,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
     {
       char p = extract_prefix(key);
       char *k = key; if (p != 0) k = strchr(key, '.') + 1;
-      if (p == 'v') fdja_set(targs, k, val);
+      if (p == 'v') fdja_pset(node, "vars.%s", k, val);
       else fdja_pset(exe, "payload.%s", k, val);
     }
     else // no more key, push to vars.args (targs)
@@ -93,7 +93,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
     }
   }
 
-  //fdja_putdc(node);
+  //fdja_putdc(targs);
   //fdja_putdc(exe);
 
   // trigger execution
