@@ -87,13 +87,13 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
-        "{ a0: egg, a1: bacon, trace: [ lettuce ] }");
+        "{ a0: egg, a1: bacon, trace: [ [ sub, lettuce ] ] }");
     }
 
     it "it accepts URIs"

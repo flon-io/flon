@@ -241,7 +241,13 @@ static char *lookup(void *data, const char *path)
   else
     v = fdja_l(payload(lu->msg), path);
 
-  return v ? fdja_to_string(v) : strdup("");
+  if (v == NULL)
+    return strdup("");
+
+  if (v->type == 's' || v->type == 'q' || v->type == 'y')
+    return fdja_to_string(v);
+
+  return fdja_tod(v);
 }
 
 static void expand(
