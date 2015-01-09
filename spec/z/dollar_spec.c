@@ -43,10 +43,10 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 2);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_lj(result, "payload.trace") ===F fdja_vj(""
         "[ 'green hornet' ]"));

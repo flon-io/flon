@@ -96,6 +96,13 @@ static void n_log(
 #define log_r(node, msg, ...) \
   n_log('r', node, msg, __FILE__, __LINE__, __func__, __VA_ARGS__)
 
+static int is_index(char *key)
+{
+  if (key == NULL || *key != '_') return 0;
+  for (key = key + 1; *key; ++key) if (*key < '0' || *key > '9') return 0;
+  return 1;
+}
+
 static fdja_value *tree(fdja_value *node, fdja_value *msg)
 {
   fdja_value *r =  NULL;
@@ -221,6 +228,8 @@ static char *lookup(void *data, const char *path)
     return r;
   }
 
+  printf("PATH >%s<\n", path);
+
   // regular case, var or fld
 
   char k = extract_prefix(path);
@@ -229,10 +238,14 @@ static char *lookup(void *data, const char *path)
 
   if (k != 0) path = strchr(path, '.') + 1;
 
+  printf("PATH '%c' >%s<\n", k, path);
+
   if (k == 'v')
     v = lookup_var(lu->node, path);
   else
     v = fdja_l(payload(lu->msg), path);
+
+  fdja_putdc(v);
 
   return v ? fdja_to_string(v) : strdup("");
 }

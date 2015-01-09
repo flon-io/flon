@@ -80,20 +80,20 @@ context "instruction:"
         exid,
         "sequence\n"
         "  define sub a0 a1\n"
-        "    trace '$(a1) $(a0)'\n"
-        "  call sub egg bacon\n"
+        "    trace $(v.args)\n"
+        "  call sub egg bacon lettuce\n"
         "",
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
+      flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
-        "{ trace: [ \"bacon egg\" ] }");
+        "{ a0: egg, a1: bacon, trace: [ lettuce ] }");
     }
 
     it "it accepts URIs"

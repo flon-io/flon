@@ -23,6 +23,8 @@
 // Made in Japan.
 //
 
+// * unmapped arguments go into `variables.args`
+// * mapped arguments go to fields, unless prefixed with "v."
 
 static char exe_call(fdja_value *node, fdja_value *exe)
 {
@@ -33,21 +35,68 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   char *cnid = NULL;
 
   pnid = fdja_ls(node, "nid");
-  fdja_value *atts = attributes(node, exe);
+  fdja_value *cargs = attributes(node, exe); // call args
 
-  char *name = fdja_to_string(atts->child);
+  char *name = fdja_to_string(cargs->child);
   fdja_value *val = lookup_var(node, name);
 
   if (val == NULL) { r = 'r'; goto _over; } // error
 
   //fdja_putdc(val);
 
+  // prepare new node's nid
+
   nid = fdja_ls(val, "nid");
   size_t counter = fdja_li(val, "counter") + 1;
   cnid = flu_sprintf("%s-%x", nid, counter);
   fdja_psetv(val, "counter", "%d", counter);
 
+  // map arguments
+
   fdja_psetv(node, "vars", "{}");
+  fdja_value *targs = fdja_psetv(node, "vars.args", "[]");
+
+  fdja_value *dargs = fdja_lc(val, "args"); // define args
+
+  fdja_push(targs, fdja_clone(cargs->child));
+
+  for (fdja_value *a = cargs->child->sibling; a; a = a->sibling)
+  {
+    char *key = NULL;
+    fdja_value *val = fdja_clone(a);
+
+    if (is_index(a->key)) // regular attribute
+    {
+      fdja_value *arg = dargs->child;
+      if (arg)
+      {
+        key = fdja_to_string(arg);
+        fdja_splice(dargs, 0, 1, NULL); // shift first elt...
+      }
+    }
+    else // named attribute
+    {
+      key = a->key;
+      fdja_unpush(dargs, a->key);
+    }
+
+    if (key)
+    {
+      char p = extract_prefix(key);
+      char *k = key; if (p != 0) k = strchr(key, '.') + 1;
+      if (p == 'v') fdja_set(targs, k, val);
+      else fdja_pset(exe, "payload.%s", k, val);
+    }
+    else // no more key, push to vars.args (targs)
+    {
+      fdja_push(targs, val);
+    }
+  }
+
+  //fdja_putdc(node);
+  //fdja_putdc(exe);
+
+  // trigger execution
 
   flon_queue_msg("execute", cnid, pnid, payload(exe));
 
@@ -57,7 +106,7 @@ _over:
   free(pnid);
   free(cnid);
   free(name);
-  fdja_free(atts);
+  fdja_free(cargs);
 
   return r;
 }

@@ -24,13 +24,6 @@
 //
 
 
-static int is_index(char *key)
-{
-  if (*key != '_') return 0;
-  for (key = key + 1; *key; ++key) if (*key < '0' || *key > '9') return 0;
-  return 1;
-}
-
 static fdja_value *shrink_atts(fdja_value *atts)
 {
   for (fdja_value *v = atts->child; v; v = v->sibling)
@@ -71,6 +64,9 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
   }
 
   fdja_free(atts);
+
+  //fdja_putdc(trace);
+  //fdja_putdc(lookup_var(node, "args"));
 
   return 'v'; // over
 }
