@@ -63,8 +63,8 @@ context "instruction:"
         exid,
         "sequence\n"
         "  define sub\n"
-        "    trace a\n"
-        "    trace b\n"
+        "    trace 'a $(nid)'\n"
+        "    trace 'b $(nid)'\n"
         "  call sub\n"
         "",
         "{}");
@@ -77,7 +77,32 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
-        "{ trace: [ a, b ] }");
+        "{ trace: [ \"a 0_0_0-1\", \"b 0_0_1-1\" ] }");
+    }
+
+    it "increments the counter"
+    {
+      exid = flon_generate_exid("n.call.vanilla");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub\n"
+        "    trace '$(f.x) $(nid)'\n"
+        "  call sub f.x: a\n"
+        "  call sub f.x: b\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ x: b, trace: [ \"a 0_0_0-1\", \"b 0_0_0-2\" ] }");
     }
 
     it "fails if there is no corresponding define"
@@ -146,8 +171,6 @@ context "instruction:"
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ a1: egg, a0: bacon, a2: lettuce, trace: [ b, [ sub, cheese ] ] }");
     }
-
-    it "maps arguments to fields"
 
     it "it accepts URIs"
   }
