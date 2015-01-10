@@ -27,15 +27,13 @@
 static char exe_define(fdja_value *node, fdja_value *exe)
 {
   char *nid = fdja_ls(node, "nid");
-  //fdja_value *tree = tree_clone(node, exe);
   fdja_value *atts = attributes(node, exe);
 
   char *name = fdja_to_string(atts->child);
 
   fdja_value *val = fdja_v("{}");
   fdja_value *args = fdja_set(val, "args", fdja_v("[]"));
-  //fdja_set(val, "tree", tree);
-  fdja_psetv(val, "nid", "%s_0", nid);
+  fdja_psetv(val, "nid", nid);
   fdja_psetv(val, "counter", "0");
 
   for (fdja_value *v = atts->child->sibling; v; v = v->sibling)

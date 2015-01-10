@@ -24,9 +24,6 @@
 //
 
 
-//
-// *** SEQUENCE
-
 static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 {
   //flu_putf(fdja_todc(node));
@@ -37,13 +34,13 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
   fdja_value *children = fdja_l(node, "children");
   fdja_splice(children, 0, 1, NULL); // empty children array
 
-  char *next = from ? flon_nid_next(from) : flu_sprintf("%s_0", nid);
+  char *next = from ? flon_nid_next(from) : flon_nid_child(nid, 0);
   fdja_value *t = next ? flon_node_tree(next) : NULL;
   char r = 'v'; // over, for now
 
   if (t)
   {
-    flon_queue_msg("execute", next, nid, payload(rcv));
+    flon_queue_msg("execute", next, nid, payload(rcv), NULL);
     fdja_push(children, fdja_s(next));
     r = 'k'; // ok, not yet over
   }

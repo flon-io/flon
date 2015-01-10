@@ -39,7 +39,7 @@ context "instruction:"
         exid,
         "sequence\n"
         "  define sub\n"
-        "    trace a\n"
+        "    trace $(nid)\n"
         "  call sub\n"
         "",
         "{}");
@@ -51,7 +51,33 @@ context "instruction:"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_tod(fdja_l(result, "payload")) ===f "{ trace: [ a ] }");
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ trace: [ 0_0_0-1 ] }");
+    }
+
+    it "calls (wrapping the define in a sequence)"
+    {
+      exid = flon_generate_exid("n.call.vanilla");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub\n"
+        "    trace a\n"
+        "    trace b\n"
+        "  call sub\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ trace: [ a, b ] }");
     }
 
     it "fails if there is no corresponding define"
@@ -112,10 +138,10 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      flu_putf(fdja_todc(result));
+      //flu_putf(fdja_todc(result));
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ a1: egg, a0: bacon, a2: lettuce, trace: [ b, [ sub, cheese ] ] }");

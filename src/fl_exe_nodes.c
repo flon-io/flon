@@ -62,7 +62,7 @@ fdja_value *flon_node_tree(const char *nid)
   return node_tree(nid, 0);
 }
 
-fdja_value *flon_node_tree_c(const char *nid)
+fdja_value *flon_node_tree_clone(const char *nid)
 {
   return node_tree(nid, 1);
 }

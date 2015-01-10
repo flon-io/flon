@@ -121,10 +121,10 @@ static fdja_value *tree(fdja_value *node, fdja_value *msg)
   return r;
 }
 
-static fdja_value *tree_clone(fdja_value *node, fdja_value *msg)
-{
-  return fdja_clone(tree(node, msg));
-}
+//static fdja_value *tree_clone(fdja_value *node, fdja_value *msg)
+//{
+//  return fdja_clone(tree(node, msg));
+//}
 
 static fdja_value *payload(fdja_value *msg)
 {
@@ -362,7 +362,7 @@ static size_t cancel_dependents(fdja_value *node, char *type)
   for (fdja_value *v = array->child; v; v = v->sibling)
   {
     char *cnid = fdja_to_string(v);
-    flon_queue_msg("cancel", cnid, nid, NULL);
+    flon_queue_msg("cancel", cnid, nid, NULL, NULL);
     free(cnid);
   }
 

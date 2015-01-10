@@ -41,7 +41,7 @@ int flon_execute(const char *exid);
 
 void flon_queue_msg(
   const char *type, const char *nid, const char *from_nid,
-  fdja_value *payload);
+  fdja_value *payload, fdja_value *tree);
 
 void flon_schedule_msg(
   const char *type, const char *ts, const char *nid,
@@ -68,7 +68,7 @@ char flon_call_instruction(
 
 fdja_value *flon_node(const char *nid);
 fdja_value *flon_node_tree(const char *nid);
-fdja_value *flon_node_tree_c(const char *nid);
+fdja_value *flon_node_tree_clone(const char *nid);
 
 char *flon_node_parent_nid(const char *nid);
 

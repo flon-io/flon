@@ -33,7 +33,7 @@ context "instruction:"
 
   describe "define"
   {
-    it "sets its args and trees in a variable"
+    it "sets args, nid and counter in a variable"
     {
       exid = flon_generate_exid("n.define.vanilla");
 
@@ -67,7 +67,7 @@ context "instruction:"
       expect(fdja_tod(v1) ===f "[ a0, a1 ]");
 
       v1 = fdja_l(v, "nodes.0.vars.sub.nid");
-      expect(fdja_tod(v1) ===f "0_0_0");
+      expect(fdja_tod(v1) ===f "0_0");
 
       v1 = fdja_l(v, "nodes.0.vars.sub.counter");
       expect(fdja_tod(v1) ===f "0");
@@ -101,7 +101,7 @@ context "instruction:"
       expect(fdja_tod(v1) ===f "[]");
 
       v1 = fdja_l(v, "nodes.0.vars.sub.nid");
-      expect(fdja_tod(v1) ===f "0_0_0");
+      expect(fdja_tod(v1) ===f "0_0");
 
       v1 = fdja_l(v, "nodes.0.vars.sub.counter");
       expect(fdja_tod(v1) ===f "0");
@@ -135,7 +135,7 @@ context "instruction:"
       expect(fdja_tod(v1) ===f "[ arg0 ]");
 
       v1 = fdja_l(v, "nodes.0.vars.sub0.nid");
-      expect(fdja_tod(v1) ===f "0_0_0");
+      expect(fdja_tod(v1) ===f "0_0");
 
       v1 = fdja_l(v, "nodes.0.vars.sub0.counter");
       expect(fdja_tod(v1) ===f "0");

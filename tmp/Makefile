@@ -131,13 +131,13 @@ vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	$(VAL) ./zs 2>&1 | ./spec_filter.sh
 	@echo ""
 
-vsc: cs
+vsc: _tmpsrc cs
 	$(VAL) ./cs
 vsd: ds executor invoker
 	$(VAL) ./ds
-vsx: xs
+vsx: _tmpsrc xs
 	$(VAL) --num-callers=50 ./xs
-vsi: is
+vsi: _tmpsrc is
 	$(VAL) ./is
 vsl: ls invoker executor dispatcher
 	$(VAL) --num-callers=50 ./ls
@@ -158,7 +158,7 @@ vesz: ns invoker executor dispatcher
 	FLONVAL=exe $(MAKE) sz
 	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
 
-ssi: is
+ssi: _tmpsrc is
 	strace -r ./is
 ssd: ds executor invoker
 	strace -r ./ds

@@ -51,6 +51,12 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   cnid = flu_sprintf("%s-%x", nid, counter);
   fdja_psetv(val, "counter", "%d", counter);
 
+  // prepare tree
+
+  fdja_value *tree = flon_node_tree_clone(nid);
+  fdja_psetv(tree, "0", "sequence");
+  fdja_psetv(tree, "1", "{}");
+
   // map arguments
 
   fdja_psetv(node, "vars", "{}");
@@ -98,7 +104,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // trigger execution
 
-  flon_queue_msg("execute", cnid, pnid, payload(exe));
+  flon_queue_msg("execute", cnid, pnid, payload(exe), tree);
 
 _over:
 
@@ -107,6 +113,7 @@ _over:
   free(cnid);
   free(name);
   fdja_free(cargs);
+  fdja_free(dargs);
 
   return r;
 }
