@@ -42,8 +42,6 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   if (val == NULL) { r = 'r'; goto _over; } // error
 
-  //fdja_putdc(val);
-
   // prepare new node's nid
 
   nid = fdja_ls(val, "nid");
@@ -99,8 +97,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
     }
   }
 
-  //fdja_putdc(targs);
-  //fdja_putdc(exe);
+  fdja_free(dargs);
 
   // trigger execution
 
@@ -113,7 +110,6 @@ _over:
   free(cnid);
   free(name);
   fdja_free(cargs);
-  fdja_free(dargs);
 
   return r;
 }
