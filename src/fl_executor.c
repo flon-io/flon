@@ -157,6 +157,22 @@ static void do_log(fdja_value *msg)
   free(now);
 }
 
+static void log_delta(fdja_value *node)
+{
+  char *tsp = fdja_ls(node, "created", NULL);
+  //fgaj_d("tsp: %s", tsp);
+  struct timespec *tsc = flu_parse_tstamp(tsp, 1);
+  struct timespec *delta = flu_tdiff(NULL, tsc);
+  char *sdelta = flu_ts_to_hs(delta, 'n');
+
+  fgaj_d("delta: %s", sdelta);
+
+  free(sdelta);
+  free(delta);
+  free(tsc);
+  free(tsp);
+}
+
 static void handle_order(char order, fdja_value *msg)
 {
   fgaj_i("%c", order);
@@ -176,7 +192,10 @@ static void handle_order(char order, fdja_value *msg)
 
   tree = fdja_l(msg, "tree");
 
-  if (tree == NULL || tree->type != 'a') tree = flon_node_tree(nid);
+  if (tree == NULL || tree->type != 'a')
+  {
+    tree = flon_node_tree(nid);
+  }
 
   if (tree == NULL)
   {
@@ -184,13 +203,13 @@ static void handle_order(char order, fdja_value *msg)
     goto _over;
   }
 
-  instruction = fdja_ls(tree, "0", NULL);
-
   fdja_value *payload = fdja_l(msg, "payload");
 
   if (order == 'e')
   {
+    instruction = fdja_ls(tree, "0", NULL);
     node = create_node(nid, parent_nid, instruction, tree);
+
     fdja_set(msg, "tree", fdja_clone(tree));
 
     if (parent_nid == NULL && strcmp(nid, "0") == 0)
@@ -201,7 +220,7 @@ static void handle_order(char order, fdja_value *msg)
   else // order == 'r' || order == 'c'
   {
     node = fdja_l(execution, "nodes.%s", nid);
-    free(instruction); instruction = fdja_ls(node, "inst", NULL);
+    instruction = fdja_ls(node, "inst", NULL);
   }
 
   //fgaj_d("%c %s", order, instruction);
@@ -233,17 +252,7 @@ static void handle_order(char order, fdja_value *msg)
       }
       else
       {
-        char *tsp = fdja_ls(node, "created", NULL);
-        //fgaj_d("tsp: %s", tsp);
-        struct timespec *tsc = flu_parse_tstamp(tsp, 1);
-        struct timespec *delta = flu_tdiff(NULL, tsc);
-        char *sdelta = flu_ts_to_s(delta, 'n');
-        fgaj_d("delta: %s", sdelta);
-        free(sdelta);
-        free(delta);
-        free(tsc);
-        free(tsp);
-          // TODO: package most of that into a flu_ method
+        log_delta(node); // log (debug) the age of the execution
 
         if (strcmp(nid, "0") == 0)
           flon_queue_msg("terminated", nid, NULL, payload, NULL);
@@ -256,7 +265,7 @@ static void handle_order(char order, fdja_value *msg)
   }
   else if (r == 'k') // ok
   {
-    // TODO
+    // nichts
   }
   else // error, 'r' or '?'
   {
