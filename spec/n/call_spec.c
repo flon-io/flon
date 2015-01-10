@@ -172,6 +172,31 @@ context "instruction:"
         "{ a1: egg, a0: bacon, a2: lettuce, trace: [ b, [ sub, cheese ] ] }");
     }
 
+    it "maps to variables when the define requires it"
+    {
+      exid = flon_generate_exid("n.call.maps.defvars");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub v.a0 v.a1\n"
+        "    trace '$(v.a0) $(v.a1)'\n"
+        "  call sub red green\n"
+        "  call sub v.a1: red, v.a0: green\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_tod(fdja_l(result, "payload")) ===f ""
+        "{ trace: [ \"red green\", \"green red\" ] }");
+    }
+
     it "it accepts URIs"
   }
 }
