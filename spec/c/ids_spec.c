@@ -167,26 +167,6 @@ context "fl_ids:"
     }
   }
 
-  // in the fridge for now
-  //
-//  describe "flon_stamp()"
-//  {
-//    it "time-stamps the given object"
-//    {
-//      fdja_value *v = fdja_v("{ question: \"what time is it?\" }");
-//
-//      flon_stamp(v, "seen");
-//
-//      //puts(fdja_todc(v));
-//      expect(fdja_ls(v, "question", NULL) ===f "what time is it?");
-//      expect(fdja_l(v, "seen") != NULL);
-//      expect(fdja_l(v, "seen.u") != NULL);
-//      expect(fdja_l(v, "seen.l") != NULL);
-//
-//      fdja_free(v);
-//    }
-//  }
-
   describe "flon_nid_depth()"
   {
     it "returns the depth of a nid"
@@ -205,6 +185,17 @@ context "fl_ids:"
     }
   }
 
+  describe "flon_nid_child()"
+  {
+    it "returns the nid for the nth child"
+    {
+      expect(flon_nid_child("0", 0) ===f "0_0");
+      expect(flon_nid_child("0", 2) ===f "0_2");
+
+      expect(flon_nid_child("0_1-7", 2) ===f "0_1_2-7");
+    }
+  }
+
   describe "flon_nid_next()"
   {
     it "returns the next nid"
@@ -213,6 +204,8 @@ context "fl_ids:"
       expect(flon_nid_next("0_1") ===f "0_2");
       expect(flon_nid_next("1_2") ===f "1_3");
       expect(flon_nid_next("1_2_3") ===f "1_2_4");
+
+      expect(flon_nid_next("1_2_3-2") ===f "1_2_4-2");
     }
   }
 }

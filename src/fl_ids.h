@@ -35,6 +35,7 @@ fdja_value *flon_parse_nid(const char *s);
 char *flon_parse_exid(const char *s);
 
 char *flon_nid_next(const char *nid);
+char *flon_nid_child(const char *nid, int n);
 size_t flon_nid_depth(const char *nid);
 
 //void flon_stamp(fdja_value *o, const char *key);

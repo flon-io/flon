@@ -173,27 +173,43 @@ char *flon_parse_exid(const char *s)
 char *flon_nid_next(const char *nid)
 {
   char *r = NULL;
-  char *n = NULL;
+  char *node = NULL;
+  char *counter = NULL;
 
   fdja_value *i = flon_parse_nid(nid);
   if (i == NULL) goto _over;
 
-  n = fdja_ls(i, "node", NULL);
-  if (n == NULL) goto _over;
+  node = fdja_ls(i, "node", NULL);
+  if (node == NULL) goto _over;
 
-  char *u = strrchr(n, '_');
+  char *u = strrchr(node, '_');
   if (u == NULL) goto _over;
+
+  counter = fdja_ls(i, "counter", NULL);
 
   *u = '\0';
   long l = strtol(u + 1, NULL, 16);
-  r = flu_sprintf("%s_%x", n, l + 1);
+
+  if (counter && strcmp(counter, "0") != 0)
+    r = flu_sprintf("%s_%x-%s", node, l + 1, counter);
+  else
+    r = flu_sprintf("%s_%x", node, l + 1);
 
 _over:
 
-  if (n) free(n);
-  if (i) fdja_free(i);
+  free(node);
+  free(counter);
+  fdja_free(i);
 
   return r;
+}
+
+char *flon_nid_child(const char *nid, int n)
+{
+  char *dash = strchr(nid, '-');
+
+  if (dash) return flu_sprintf("%.*s_%x-%s", dash - nid, nid, n, dash + 1);
+  return flu_sprintf("%s_%x", nid, n);
 }
 
 size_t flon_nid_depth(const char *nid)
@@ -224,31 +240,6 @@ size_t flon_nid_depth(const char *nid)
 
   return r;
 }
-
-  // in the fridge for now
-  //
-//void flon_stamp(fdja_value *o, const char *key)
-//{
-//  fdja_value *entry = fdja_v("{}");
-//  fdja_set(o, key, entry);
-//
-//  struct timeval tv;
-//  struct tm *tm;
-//  char t[28];
-//
-//  gettimeofday(&tv, NULL);
-//
-//  tm = gmtime(&tv.tv_sec);
-//  strftime(t, 20, "%Y%m%d.%H%M%S.", tm);
-//  sprintf(t + 16, "%li", tv.tv_usec);
-//
-//  fdja_set(entry, "u", fdja_s(t));
-//
-//  tm = localtime(&tv.tv_sec);
-//  strftime(t, 20, "%Y%m%d.%H%M%S", tm);
-//
-//  fdja_set(entry, "l", fdja_s(t));
-//}
 
 char *flon_point_to_prefix(const char *point)
 {
