@@ -95,6 +95,8 @@ static char exe_call(fdja_value *node, fdja_value *exe)
     {
       fdja_push(targs, val);
     }
+
+    if (key != a->key) free(key);
   }
 
   fdja_free(dargs);
