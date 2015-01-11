@@ -99,7 +99,7 @@ context "flon and $(dollar):"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f exid);
+      expect(fdja_ld(result, "payload.trace.0") ===f exid);
     }
   }
 
@@ -123,7 +123,7 @@ context "flon and $(dollar):"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f "0_0");
+      expect(fdja_ld(result, "payload.trace.0") ===f "0_0");
     }
 
     it "is expanded to the correct node id (subexecution)"
@@ -147,8 +147,29 @@ context "flon and $(dollar):"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===f "0_0_0-1");
-      expect(fdja_tod(fdja_l(result, "payload.trace.1")) ===f "0_0_0-2");
+      expect(fdja_ld(result, "payload.trace.0") ===f "0_0_0-1");
+      expect(fdja_ld(result, "payload.trace.1") ===f "0_0_0-2");
+    }
+
+    it "is expanded as part of a string"
+    {
+      exid = flon_generate_exid("z.dollar.exid");
+
+      hlp_launch(
+        exid,
+        "trace '$(colour) $(nid)'\n"
+        "",
+        "{ colour: yellow }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ls(result, "payload.trace.0") ===f ""
+        "yellow 0");
     }
   }
 
@@ -174,10 +195,10 @@ context "flon and $(dollar):"
       //flu_putf(fdja_todc(result));
 
       char *exnid0 = flu_sprintf("%s-0_0", exid);
-      expect(fdja_tod(fdja_l(result, "payload.trace.0")) ===F exnid0);
+      expect(fdja_ld(result, "payload.trace.0") ===F exnid0);
 
       char *exnid1 = flu_sprintf("%s-0_1", exid);
-      expect(fdja_tod(fdja_l(result, "payload.trace.1")) ===F exnid1);
+      expect(fdja_ld(result, "payload.trace.1") ===F exnid1);
     }
   }
 }
