@@ -157,6 +157,72 @@ static void do_log(fdja_value *msg)
   free(now);
 }
 
+static void handle_execute(char order, fdja_value *msg)
+{
+  fgaj_i("%c", order);
+
+  char *fname = fdja_ls(msg, "fname", NULL);
+  char *nid = fdja_lsd(msg, "nid", "0");
+  fdja_value *tree = fdja_l(msg, "tree");
+
+  if (tree == NULL || tree->type != 'a')
+  {
+    tree = flon_node_tree(nid);
+  }
+  if (tree == NULL)
+  {
+    flon_move_to_rejected("var/spool/exe/%s", fname, "tree not found");
+
+    free(nid); free(fname);
+
+    return;
+  }
+
+  char *parent_nid = fdja_ls(msg, "parent", NULL);
+  char *instruction = fdja_ls(tree, "0", NULL);
+  fdja_value *payload = fdja_l(msg, "payload");
+  fdja_value *node = create_node(nid, parent_nid, instruction, tree);
+
+  fdja_set(msg, "tree", fdja_clone(tree));
+
+  if (parent_nid == NULL && strcmp(nid, "0") == 0)
+  {
+    flon_queue_msg("launched", nid, NULL, payload, NULL);
+  }
+
+  //
+  // perform instruction
+
+  char r = flon_call_instruction(order, instruction, node, msg);
+
+  fgaj_d("%c %s --> %c", order, instruction, r);
+
+  //
+  // v, k, r, handle instruction result
+
+  if (r == 'v') // over
+  {
+    flon_queue_msg("receive", nid, nid, payload, NULL);
+  }
+  else if (r == 'k') // ok
+  {
+    // nichts
+  }
+  else // error, 'r' or '?'
+  {
+    flon_queue_msg("failed", nid, parent_nid, payload, NULL);
+  }
+
+  if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
+
+  do_log(msg);
+
+  free(fname);
+  free(nid);
+  free(parent_nid);
+  free(instruction);
+}
+
 static void log_delta(fdja_value *node)
 {
   char *tsp = fdja_ls(node, "created", NULL);
@@ -173,55 +239,16 @@ static void log_delta(fdja_value *node)
   free(tsp);
 }
 
-static void handle_order(char order, fdja_value *msg)
+static void handle_return(char order, fdja_value *msg)
 {
   fgaj_i("%c", order);
-  //fgaj_i("%s", fdja_tod(msg));
-  //flu_putf(fdja_todc(msg));
 
-  char *nid = NULL;
-  char *parent_nid = NULL;
-  fdja_value *tree = NULL;
-  char *instruction = NULL;
-  fdja_value *node = NULL;
-  char *fname = NULL;
-
-  fname = fdja_ls(msg, "fname", NULL);
-  nid = fdja_lsd(msg, "nid", "0");
-  parent_nid = fdja_ls(msg, "parent", NULL);
-
-  tree = fdja_l(msg, "tree");
-
-  if (tree == NULL || tree->type != 'a')
-  {
-    tree = flon_node_tree(nid);
-  }
-
-  if (tree == NULL)
-  {
-    flon_move_to_rejected("var/spool/exe/%s", fname, "tree not found");
-    goto _over;
-  }
-
+  char *fname = fdja_ls(msg, "fname", NULL);
+  char *nid = fdja_lsd(msg, "nid", "0");
+  char *parent_nid = fdja_ls(msg, "parent", NULL);
+  fdja_value *node = fdja_l(execution, "nodes.%s", nid);
   fdja_value *payload = fdja_l(msg, "payload");
-
-  if (order == 'e')
-  {
-    instruction = fdja_ls(tree, "0", NULL);
-    node = create_node(nid, parent_nid, instruction, tree);
-
-    fdja_set(msg, "tree", fdja_clone(tree));
-
-    if (parent_nid == NULL && strcmp(nid, "0") == 0)
-    {
-      flon_queue_msg("launched", nid, NULL, payload, NULL);
-    }
-  }
-  else // order == 'r' || order == 'c'
-  {
-    node = fdja_l(execution, "nodes.%s", nid);
-    instruction = fdja_ls(node, "inst", NULL);
-  }
+  char *instruction = fdja_ls(node, "inst", NULL);
 
   //fgaj_d("%c %s", order, instruction);
 
@@ -237,31 +264,24 @@ static void handle_order(char order, fdja_value *msg)
 
   if (r == 'v') // over
   {
-    if (order == 'e')
-    {
-      flon_queue_msg("receive", nid, nid, payload, NULL);
-    }
-    else // (order == 'r' || order == 'c')
-    {
-      free(parent_nid);
-      parent_nid = flon_node_parent_nid(nid);
+    free(parent_nid);
+    parent_nid = flon_node_parent_nid(nid);
 
-      if (parent_nid)
-      {
-        flon_queue_msg("receive", parent_nid, nid, payload, NULL);
-      }
+    if (parent_nid)
+    {
+      flon_queue_msg("receive", parent_nid, nid, payload, NULL);
+    }
+    else
+    {
+      log_delta(node); // log (debug) the age of the execution
+
+      if (strcmp(nid, "0") == 0)
+        flon_queue_msg("terminated", nid, NULL, payload, NULL);
       else
-      {
-        log_delta(node); // log (debug) the age of the execution
-
-        if (strcmp(nid, "0") == 0)
-          flon_queue_msg("terminated", nid, NULL, payload, NULL);
-        else
-          flon_queue_msg("ceased", nid, NULL, payload, NULL);
-      }
-
-      fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
+        flon_queue_msg("ceased", nid, NULL, payload, NULL);
     }
+
+    fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
   }
   else if (r == 'k') // ok
   {
@@ -275,8 +295,6 @@ static void handle_order(char order, fdja_value *msg)
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
 
   do_log(msg);
-
-_over:
 
   free(nid);
   free(parent_nid);
@@ -465,8 +483,10 @@ static void execute()
       fdja_value *point = fdja_l(j, "point");
       char p = point ? *fdja_srk(point) : 0;
 
-      if (p == 'e' || p == 'r' || p == 'c') // execute, receive or cancel
-        handle_order(p, j);
+      if (p == 'e')
+        handle_execute(p, j);
+      else if (p == 'r' || p == 'c') // receive or cancel
+        handle_return(p, j);
       else if (p)
         handle_event(p, j);
       else
