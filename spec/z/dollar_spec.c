@@ -159,7 +159,7 @@ context "flon and $(dollar):"
         exid,
         "trace '$(colour) $(nid)'\n"
         "",
-        "{ colour: yellow }");
+        "{ colour: '' }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
@@ -169,7 +169,7 @@ context "flon and $(dollar):"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ls(result, "payload.trace.0") ===f ""
-        "yellow 0");
+        " 0");
     }
   }
 

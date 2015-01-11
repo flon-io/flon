@@ -213,6 +213,7 @@ typedef struct { fdja_value *node; fdja_value *msg; } lup;
 
 static char *lookup(void *data, const char *path)
 {
+printf("lookup() path >%s<\n", path);
   lup *lu = data;
 
   // some shortcuts
@@ -250,6 +251,11 @@ static char *lookup(void *data, const char *path)
   return fdja_tod(v);
 }
 
+static int is_blank(char c)
+{
+  return c == ' ' || c == '\t' || c == '\n' || c == '\r';
+}
+
 static void expand(
   fdja_value *v, fdja_value *node, fdja_value *msg)
 {
@@ -263,11 +269,15 @@ static void expand(
   if (v->type == 's' || v->type == 'q' || v->type == 'y')
   {
     char *s = fdja_to_string(v);
-    if (strstr(s, "$("))
+    char *dol = strstr(s, "$(");
+
+    if (dol)
     {
       char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
 
-      fdja_value *vv = fdja_v(ss);
+      fdja_value *vv = NULL;
+      if (is_blank(*ss) || is_blank(*(ss + strlen(ss) - 1))) vv = fdja_s(ss);
+      if (vv == NULL) vv = fdja_v(ss);
       if (vv == NULL) vv = fdja_s(ss);
 
       fdja_replace(v, vv);
