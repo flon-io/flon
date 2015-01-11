@@ -24,9 +24,6 @@
 //
 
 
-//
-// *** WAIT
-
 static char exe_wait(fdja_value *node, fdja_value *exe)
 {
   fdja_value *atts = attributes(node, exe);

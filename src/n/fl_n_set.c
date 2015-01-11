@@ -24,9 +24,6 @@
 //
 
 
-//
-// *** SET
-
 static char exe_set(fdja_value *node, fdja_value *exe)
 {
   fdja_value *pl = payload(exe);

@@ -24,9 +24,6 @@
 //
 
 
-//
-// *** INVOKE
-
 static char exe_invoke(fdja_value *node, fdja_value *exe)
 {
   char r = 'k'; // for now, ok

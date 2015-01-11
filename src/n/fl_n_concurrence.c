@@ -24,9 +24,6 @@
 //
 
 
-//
-// *** CONCURRENCE
-
 static char rcv_concurrence(fdja_value *node, fdja_value *rcv)
 {
   // TODO: focus immediately on "merge participants (invokers)"
