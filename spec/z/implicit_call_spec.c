@@ -47,13 +47,13 @@ context "flon and definitions:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ trace: [ \"yellow 0_0_0-1\" ] }");
+        "{ color: yellow, trace: [ \"yellow 0_0_0-1\" ] }");
     }
   }
 }

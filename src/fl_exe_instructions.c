@@ -211,9 +211,8 @@ static char extract_prefix(const char *path)
 
 typedef struct { fdja_value *node; fdja_value *msg; } lup;
 
-static char *lookup(void *data, const char *path)
+static char *dol_lookup(void *data, const char *path)
 {
-printf("lookup() path >%s<\n", path);
   lup *lu = data;
 
   // some shortcuts
@@ -262,7 +261,7 @@ static void expand(
   if (v->key && strstr(v->key, "$("))
   {
     char *k = v->key;
-    v->key = fdol_expand(k, &(lup){ node, msg }, lookup);
+    v->key = fdol_expand(k, &(lup){ node, msg }, dol_lookup);
     free(k);
   }
 
@@ -273,7 +272,7 @@ static void expand(
 
     if (dol)
     {
-      char *ss = fdol_expand(s, &(lup){ node, msg }, lookup);
+      char *ss = fdol_expand(s, &(lup){ node, msg }, dol_lookup);
 
       fdja_value *vv = NULL;
       if (is_blank(*ss) || is_blank(*(ss + strlen(ss) - 1))) vv = fdja_s(ss);

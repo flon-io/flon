@@ -51,7 +51,9 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   pnid = fdja_ls(node, "nid");
   fdja_value *cargs = attributes(node, exe); // call args
 
-  if (strncmp(fdja_srk(fdja_l(exe, "tree.0")), "call", 4) == 0)
+  int explicit = strncmp(fdja_srk(fdja_l(exe, "tree.0")), "call", 4) == 0;
+
+  if (explicit)
     name = fdja_to_string(cargs->child);
   else
     name = fdja_ls(exe, "tree.0");
@@ -90,7 +92,10 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   fdja_push(targs, fdja_clone(cargs->child));
 
-  for (fdja_value *a = cargs->child->sibling; a; a = a->sibling)
+  fdja_value *carg0 = cargs->child;
+  if (explicit) carg0 = carg0->sibling;
+
+  for (fdja_value *a = carg0; a; a = a->sibling)
   {
     char *key = NULL;
     fdja_value *val = fdja_clone(a);
