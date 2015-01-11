@@ -26,6 +26,19 @@
 // * unmapped arguments go into `variables.args`
 // * mapped arguments go to fields, unless prefixed with "v."
 
+static int is_callable(fdja_value *val)
+{
+  return (
+    val != NULL &&
+    val->type == 'o' &&
+    fdja_l(val, "nid") &&
+    fdja_l(val, "counter") &&
+    fdja_l(val, "args")
+  );
+}
+  //
+  // is used in fl_exe_instructions.c as well...
+
 static char exe_call(fdja_value *node, fdja_value *exe)
 {
   char r = 'k'; // ok for now
@@ -33,14 +46,27 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   char *nid = NULL;
   char *pnid = NULL;
   char *cnid = NULL;
+  char *name = NULL;
 
   pnid = fdja_ls(node, "nid");
   fdja_value *cargs = attributes(node, exe); // call args
 
-  char *name = fdja_to_string(cargs->child);
+  if (strncmp(fdja_srk(fdja_l(exe, "tree.0")), "call", 4) == 0)
+    name = fdja_to_string(cargs->child);
+  else
+    name = fdja_ls(exe, "tree.0");
+
   fdja_value *val = lookup_var(node, name);
 
-  if (val == NULL) { r = 'r'; goto _over; } // error
+  if ( ! is_callable(val))
+  {
+    char *sval =
+      fdja_to_djan(val, FDJA_F_ONELINE | FDJA_F_COMPACT | FDJA_F_NULL);
+    fdja_set(node, "note", fdja_s("cannot call: %s", sval));
+    free(sval);
+
+    r = 'r'; goto _over;
+  } // error
 
   // prepare new node's nid
 

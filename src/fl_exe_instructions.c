@@ -425,15 +425,6 @@ static flon_ni *instructions[] = {
 //
 // call instruction
 
-static char unknown_instruction(
-  char dir, const char *name, fdja_value *node, fdja_value *msg)
-{
-  fdja_set(node, "status", fdja_s("failed"));
-  fdja_set(node, "note", fdja_s("unknown instruction '%s'", name));
-
-  return '?';
-}
-
 char flon_call_instruction(
   char dir, const char *name, fdja_value *node, fdja_value *msg)
 {
@@ -455,11 +446,33 @@ char flon_call_instruction(
     break;
   }
 
-  if (i == NULL) return unknown_instruction(dir, name, node, msg);
+  if (i == NULL)
+  {
+    fdja_value *v = lookup_var(node, name);
+
+    if (is_callable(v))
+    {
+      fdja_psetv(node, "inst", "call");
+
+      return flon_call_instruction(dir, "call", node, msg);
+    }
+  }
+
+  if (i == NULL)
+  {
+    fdja_set(node, "status", fdja_s("failed"));
+    fdja_set(node, "note", fdja_s("unknown instruction '%s'", name));
+
+    return '?';
+  }
 
   char r = i(node, msg);
 
-  // TODO: handle other kinds of errors
+  if (r == 'r')
+  {
+    fdja_set(node, "status", fdja_s("failed"));
+    //fdja_set(node, "note", fdja_s("xxx")); // set by the instruction itself
+  }
 
   return r;
 }

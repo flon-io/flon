@@ -50,7 +50,10 @@ context "flon and definitions:"
       flon_pp_execution(exid);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ \"yellow 0_0_0-1\" ] }");
     }
   }
 }
