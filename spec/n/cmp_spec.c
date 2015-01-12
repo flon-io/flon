@@ -41,12 +41,10 @@ context "instruction:"
         "{ x: 4 }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
-
-      fdja_value *pl = fdja_l(result, "payload");
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ x: 4, ret: true }");
