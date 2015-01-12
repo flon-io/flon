@@ -43,6 +43,7 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   if (flon_lock_write(inv, "var/spool/dis/inv_%s-%s.json", exid, nid) != 1)
   {
     fgaj_r("failed writing to var/spool/dis/inv_%s-%s.json", exid, nid);
+    set_error_note(node, "failed to write invocation file", NULL);
     r = 'r';
   }
 

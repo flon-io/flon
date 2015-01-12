@@ -62,13 +62,8 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   if ( ! is_callable(val))
   {
-    char *sval =
-      fdja_to_djan(val, FDJA_F_ONELINE | FDJA_F_COMPACT | FDJA_F_NULL);
-    fdja_set(node, "note", fdja_s("cannot call: %s", sval));
-    free(sval);
-
-    r = 'r'; goto _over;
-  } // error
+    set_error_note(node, "cannot call", val); r = 'r'; goto _over;
+  }
 
   // prepare new node's nid
 

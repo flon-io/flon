@@ -184,6 +184,27 @@ static void set_var(fdja_value *node, char *key, fdja_value *val)
   // TODO: update the "mtime" of the node holding the "vars"
 }
 
+static void set_error_note(fdja_value *node, char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *t = flu_svprintf(format, ap);
+  fdja_value *v = va_arg(ap, fdja_value *);
+  va_end(ap);
+
+  if (v == NULL)
+  {
+    fdja_set(node, "note", fdja_s(t));
+  }
+  else
+  {
+    //char *sv = fdja_to_djan(v, FDJA_F_ONELINE | FDJA_F_COMPACT | FDJA_F_NULL);
+    char *sv = fdja_to_djan(v, FDJA_F_ONELINE | FDJA_F_NULL);
+    fdja_set(node, "note", fdja_s("%s: %s", t, sv));
+    free(sv);
+    free(t);
+  }
+}
+
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
 {
   fdja_value *t = tree(node, msg);
@@ -397,6 +418,7 @@ static char can_(fdja_value *node, fdja_value *can)
 }
 
 #include "fl_n_call.c"
+#include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
 #include "fl_n_define.c"
 #include "fl_n_invoke.c"
@@ -423,6 +445,7 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "set", exe_set, rcv_, can_ },
   &(flon_ni){ "call", exe_call, rcv_, can_ },
   &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
+  &(flon_ni){ "cmp", exe_cmp, rcv_, can_ },
   &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },
   &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "stall", exe_stall, rcv_, can_ },
