@@ -11,6 +11,7 @@
 #include "fl_paths.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
+#include "fl_tools.h"
 
 
 context "flon-dispatcher"
@@ -69,10 +70,10 @@ context "flon-dispatcher"
 
       sleep(1);
 
-      fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
+      fdja_value *v = fdja_parse_f("var/spool/rejected/rcv_%s-0_2.json", exid);
       expect(v != NULL);
-      //flu_putf(fdja_todc(v));
-      expect(fdja_l(v, "stamp", NULL) != NULL);
+      //fdja_putdc(v);
+      expect(fdja_l(v, "payload.stamp", NULL) != NULL);
       fdja_free(v);
 
       s = flu_readall("var/log/%s/inv_%s-0_2.log", fep, exid);
@@ -170,55 +171,17 @@ context "flon-dispatcher"
 
       sleep(1);
 
+      //flon_pp_execution(exid);
+
       expect(flu_fstat("var/spool/inv/inv_%s-0_7-f.json", exid) == 0);
       expect(flu_fstat("var/spool/dis/ret_%s-0_7-f.json", exid) == 0);
-
-      expect(flu_fstat("var/spool/dis/rcv_%s-0_7-f.json", exid) == 'f');
-
-      // dispatch for the rcv_
-
-      free(name);
-      name = flu_sprintf("rcv_%s-0_7-f.json", exid);
-
-      r = flon_dispatch(name);
-      expect(r i== 2);
-
-      sleep(1);
-
-      s = flu_readall("var/archive/%s/exe.log", fep);
-      //printf("exe.log >>>\n%s\n<<<\n", s);
-      expect(s >== ": tree not found");
-
-      // check that rcv_ got rejected (no execution going on)
+      expect(flu_fstat("var/spool/dis/rcv_%s-0_7-f.json", exid) == 0);
 
       expect(flu_fstat("var/spool/rejected/rcv_%s-0_7-f.json", exid) == 'f');
-    }
 
-//    it "writes down the executor pid in var/run/{exid}.pid"
-//    {
-//      int r;
-//      exid = flon_generate_exid("d_test.pid");
-//      name = flu_sprintf("exe_%s.json", exid);
-//
-//      r = flu_writeall(
-//        "var/spool/dis/exe_%s.json", exid,
-//        "{"
-//          "point: execute\n"
-//          "tree:"
-//            "[ sequence {} [ [ sequence {} [ [ trace { _0: a } [] ] ] ] ] ]\n"
-//          "exid: %s\n"
-//          "payload: {\n"
-//            "hello: d_test.pid\n"
-//          "}\n"
-//        "}", exid
-//      );
-//      expect(r i== 1);
-//
-//      r = flon_dispatch(name);
-//      expect(r i== 0);
-//
-//      // too fast, already gone...
-//    }
+      s = flu_readall("var/spool/rejected/rcv_%s-0_7-f.json", exid);
+      expect(s >== ": node not found");
+    }
 
     it "doesn't launch a new executor if the previous is still here"
     {

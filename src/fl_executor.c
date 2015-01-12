@@ -243,12 +243,23 @@ static void handle_return(char order, fdja_value *msg)
 {
   fgaj_i("%c", order);
 
-  char *fname = fdja_ls(msg, "fname", NULL);
   char *nid = fdja_lsd(msg, "nid", "0");
-  char *parent_nid = fdja_ls(msg, "parent", NULL);
+  char *fname = fdja_ls(msg, "fname", NULL);
+  char *parent_nid = NULL;
+  char *instruction = NULL;
+
   fdja_value *node = fdja_l(execution, "nodes.%s", nid);
+
+  if (node == NULL)
+  {
+    flon_move_to_rejected("var/spool/exe/%s", fname, "node not found");
+    goto _over;
+  }
+
+  parent_nid = fdja_ls(msg, "parent", NULL);
+  instruction = fdja_ls(node, "inst", NULL);
+
   fdja_value *payload = fdja_l(msg, "payload");
-  char *instruction = fdja_ls(node, "inst", NULL);
 
   //fgaj_d("%c %s", order, instruction);
 
@@ -295,6 +306,8 @@ static void handle_return(char order, fdja_value *msg)
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
 
   do_log(msg);
+
+_over:
 
   free(nid);
   free(parent_nid);
