@@ -77,7 +77,7 @@ context "flon-dispatcher and schedules:"
 
       //flu_system("tree var/ -I www");
 
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       expect(flu_fstat("var/spool/dis/%s", name) c== 0);
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
@@ -132,7 +132,7 @@ context "flon-dispatcher and schedules:"
 
       //flu_system("tree var/ -I www");
 
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       expect(flu_fstat("var/spool/dis/%s", name) c== 0);
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
@@ -182,7 +182,7 @@ context "flon-dispatcher and schedules:"
       expect(r i== 1);
       //
       r = flon_dispatch(name);
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       r = flu_writeall(
         "var/spool/dis/%s", name,
@@ -199,7 +199,7 @@ context "flon-dispatcher and schedules:"
 
       flu_system("tree var/ -I www");
 
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       expect(flu_fstat("var/spool/dis/%s", name) c== 0);
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');
@@ -235,7 +235,7 @@ context "flon-dispatcher and schedules:"
       expect(r i== 1);
       //
       r = flon_dispatch(name);
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       r = flu_writeall(
         "var/spool/dis/%s", name,
@@ -252,7 +252,7 @@ context "flon-dispatcher and schedules:"
 
       flu_system("tree var/ -I www");
 
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       expect(flu_fstat("var/spool/dis/%s", name) c== 0);
       expect(flu_fstat("var/run/%s/processed/%s", fep, name) c== 'f');

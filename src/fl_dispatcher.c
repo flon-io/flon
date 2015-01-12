@@ -592,8 +592,8 @@ _over:
 // returns
 //
 //   -1 rejected
-//    0 error
-//    1 dispatched
+//    1 seen, failed
+//    2 dispatched
 //
 short flon_dispatch(const char *fname)
 {

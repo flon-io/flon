@@ -66,7 +66,7 @@ context "flon-dispatcher"
       expect(r i== 1);
 
       r = flon_dispatch(name);
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       sleep(1);
 
@@ -99,7 +99,7 @@ context "flon-dispatcher"
       expect(r i== 1);
 
       r = flon_dispatch(name);
-      expect(r i== -1);
+      expect(r i== -1); // -1 rejected / 1 seen, failed / 2 dispatched
 
       s = flu_readall("var/spool/rejected/inv_%s.json", exid);
       expect(s >== "NADA");
@@ -127,7 +127,7 @@ context "flon-dispatcher"
       expect(r i== 1);
 
       r = flon_dispatch(name);
-      expect(r i== -1);
+      expect(r i== -1); // -1 rejected / 1 seen, failed / 2 dispatched
 
       s = flu_readall("var/spool/rejected/inv_%s.json", exid);
       expect(s ^== "{nada: [ stamp");
@@ -167,7 +167,7 @@ context "flon-dispatcher"
       // dispatch for the ret_
 
       r = flon_dispatch(name);
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       sleep(1);
 
@@ -204,14 +204,14 @@ context "flon-dispatcher"
       );
       expect(r i== 1);
 
-      flu_writeall("var/run/%s.pid", exid, "%i", getpid());
-      //flu_system("cat var/run/%s.pid", exid);
+      r = flu_writeall("var/run/%s.pid", exid, "%i", getpid());
+      expect(r i== 1);
         //
         // pass the current pid (existing process to prevent executor from
         // being forked...
 
       r = flon_dispatch(name);
-      expect(r i== 2);
+      expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
       //printf("var/run/%s\n", fep);
       expect(flu_fstat("var/run/%s", fep) == 0);
