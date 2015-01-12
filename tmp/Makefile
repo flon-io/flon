@@ -62,7 +62,7 @@ zs.c: ../spec/z/*_spec.c
 	$(RODZO) ../spec/z/*_spec.c -o zs.c
 
 cs: $(DEPS)
-ds: $(DDEPS) feu_helpers.o
+ds: $(DDEPS) flon_helpers.o feu_helpers.o
 xs: $(XDEPS)
 is: $(IDEPS)
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o

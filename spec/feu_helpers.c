@@ -1,9 +1,10 @@
 
 //
-// helpers for n/ specs
+// helpers for n/ and z/ specs
 //
 // Fri Oct 24 12:53:40 JST 2014
 //
+
 
 #define _POSIX_C_SOURCE 200809L
 

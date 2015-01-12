@@ -1,10 +1,11 @@
 
 //
-// helpers for feu specs
+// helpers for n/ and z/ specs
 // (specs that run a dispatcher)
 //
 // Fri Oct 24 12:53:40 JST 2014
 //
+
 
 #include "djan.h"
 
