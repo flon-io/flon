@@ -457,10 +457,11 @@ static flon_ni *instructions[] = {
 //
 // call instruction
 
-char flon_call_instruction(
-  char dir, const char *name, fdja_value *node, fdja_value *msg)
+char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
-  fgaj_d("dir: %c, inst: %s", dir, name);
+  char *inst = fdja_ls(node, "inst");
+
+  fgaj_d("dir: %c, inst: %s", dir, inst);
 
   flon_instruction *i = NULL;
 
@@ -469,7 +470,7 @@ char flon_call_instruction(
     flon_ni *ni = instructions[j];
 
     if (ni == NULL) break;
-    if (strcmp(ni->name, name) != 0) continue;
+    if (strcmp(ni->name, inst) != 0) continue;
 
     i = ni->exe;
     if (dir == 'r') i = ni->rcv;
@@ -478,33 +479,39 @@ char flon_call_instruction(
     break;
   }
 
-  if (i == NULL)
-  {
-    fdja_value *v = lookup_var(node, name);
+  //if (i == NULL)
+  //{
+  //  fdja_value *v = lookup_var(node, inst);
+  //
+  //  if (is_callable(v))
+  //  {
+  //    fdja_psetv(node, "inst", "call");
+  //
+  //    return flon_call_instruction(dir, "call", node, msg);
+  //  }
+  //}
 
-    if (is_callable(v))
-    {
-      fdja_psetv(node, "inst", "call");
-
-      return flon_call_instruction(dir, "call", node, msg);
-    }
-  }
+  char r = '?'; // 'unknown' for now
 
   if (i == NULL)
   {
     fdja_set(node, "status", fdja_s("failed"));
-    fdja_set(node, "note", fdja_s("unknown instruction '%s'", name));
+    fdja_set(node, "note", fdja_s("unknown instruction '%s'", inst));
 
-    return '?';
+    goto _over;
   }
 
-  char r = i(node, msg);
+  r = i(node, msg);
 
-  if (r == 'r')
+  if (r == 'r') // error
   {
     fdja_set(node, "status", fdja_s("failed"));
     //fdja_set(node, "note", fdja_s("xxx")); // set by the instruction itself
   }
+
+_over:
+
+  free(inst);
 
   return r;
 }

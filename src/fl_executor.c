@@ -113,20 +113,20 @@ void flon_unschedule_msg(
 }
 
 static fdja_value *create_node(
-  const char *nid,
-  const char *parent_nid,
-  const char *instruction,
-  fdja_value *tree)
+  const char *nid, const char *parent_nid, fdja_value *tree)
 {
-  fdja_value *node = fdja_v("{ inst: %s }", instruction);
-  fdja_set(node, "nid", fdja_s(nid));
+  fdja_value *node = fdja_v("{}");
 
+  fdja_set(
+    node, "inst", fdja_lc(tree, "0"));
+  fdja_set(
+    node, "nid", fdja_s(nid));
   fdja_set(
     node, "created", fdja_sym(flu_tstamp(NULL, 1, 'u')));
   fdja_set(
     node, "parent", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
 
-  if (tree && strcmp(nid, "0") == 0)
+  if (strcmp(nid, "0") == 0)
   {
     fdja_set(node, "tree", fdja_clone(tree));
     fdja_psetv(node, "vars", "{}");
@@ -175,10 +175,11 @@ static void handle_execute(char order, fdja_value *msg)
     goto _over;
   }
 
+  // TODO: rewrite tree
+
   char *parent_nid = fdja_ls(msg, "parent", NULL);
-  char *instruction = fdja_ls(tree, "0", NULL);
   fdja_value *payload = fdja_l(msg, "payload");
-  fdja_value *node = create_node(nid, parent_nid, instruction, tree);
+  fdja_value *node = create_node(nid, parent_nid, tree);
 
   fdja_set(msg, "tree", fdja_clone(tree));
 
@@ -190,9 +191,7 @@ static void handle_execute(char order, fdja_value *msg)
   //
   // perform instruction
 
-  char r = flon_call_instruction(order, instruction, node, msg);
-
-  fgaj_d("%c %s --> %c", order, instruction, r);
+  char r = flon_call_instruction(order, node, msg);
 
   //
   // v, k, r, handle instruction result
@@ -219,7 +218,6 @@ _over:
   free(fname);
   free(nid);
   free(parent_nid);
-  free(instruction);
 }
 
 static void log_delta(fdja_value *node)
@@ -245,7 +243,6 @@ static void handle_return(char order, fdja_value *msg)
   char *nid = fdja_lsd(msg, "nid", "0");
   char *fname = fdja_ls(msg, "fname", NULL);
   char *parent_nid = NULL;
-  char *instruction = NULL;
 
   fdja_value *node = fdja_l(execution, "nodes.%s", nid);
 
@@ -256,7 +253,6 @@ static void handle_return(char order, fdja_value *msg)
   }
 
   parent_nid = fdja_ls(msg, "parent", NULL);
-  instruction = fdja_ls(node, "inst", NULL);
 
   fdja_value *payload = fdja_l(msg, "payload");
 
@@ -265,9 +261,7 @@ static void handle_return(char order, fdja_value *msg)
   //
   // perform instruction
 
-  char r = flon_call_instruction(order, instruction, node, msg);
-
-  fgaj_d("%c %s --> %c", order, instruction, r);
+  char r = flon_call_instruction(order, node, msg);
 
   //
   // v, k, r, handle instruction result
@@ -310,7 +304,6 @@ _over:
 
   free(nid);
   free(parent_nid);
-  free(instruction);
   free(fname);
 }
 
