@@ -23,9 +23,9 @@ int hlp_wait_for_file(char filetype, const char *path, ...)
   char t = 0;
   int r = 0; // failure for now
 
-  for (size_t i = 0; i < maxsec * 10; ++i) // approx...
+  for (size_t i = 0; i < maxsec * 50; ++i) // approx...
   {
-    flu_msleep(100);
+    flu_msleep(20);
 
     t = flu_fstat(p);
 

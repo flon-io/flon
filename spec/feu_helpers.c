@@ -224,9 +224,9 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 
   fdja_value *r = NULL;
 
-  for (size_t i = 0; i < maxsec * 10; ++i) // approx...
+  for (size_t i = 0; i < maxsec * 50; ++i) // approx...
   {
-    flu_msleep(100);
+    flu_msleep(20);
 
     char *path = flu_sprintf("var/archive/%s/msgs.log", fep);
     if (flu_fstat(path) != 'f') { free(path); path = NULL; }
