@@ -172,10 +172,7 @@ static void handle_execute(char order, fdja_value *msg)
   if (tree == NULL)
   {
     flon_move_to_rejected("var/spool/exe/%s", fname, "tree not found");
-
-    free(nid); free(fname);
-
-    return;
+    goto _over;
   }
 
   char *parent_nid = fdja_ls(msg, "parent", NULL);
@@ -216,6 +213,8 @@ static void handle_execute(char order, fdja_value *msg)
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
 
   do_log(msg);
+
+_over:
 
   free(fname);
   free(nid);
