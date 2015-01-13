@@ -50,6 +50,7 @@ typedef struct fdja_value {
   short sowner; // if 1 then this fdja_value "owns" the source (has to free it)
   struct fdja_value *sibling;
   struct fdja_value *child;
+  long ind; // only used by radial
 } fdja_value;
 
 fdja_value *fdja_parse(char *input);
@@ -247,8 +248,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 65b7ea5dde60e718e484d4e3c54a3c16ff892e57
+//commit cb0fe1a11b0ede17459dbe48b97c2d6b9497963d
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 9 17:02:18 2015 +0900
+//Date:   Tue Jan 13 16:04:00 2015 +0900
 //
-//    avoid "() around &" warning
+//    allow for single values on a line in radial
