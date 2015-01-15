@@ -277,8 +277,7 @@ static int is_blank(char c)
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
-static void expand(
-  fdja_value *v, fdja_value *node, fdja_value *msg)
+static fdja_value *expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 {
   if (v->key && strstr(v->key, "$("))
   {
@@ -312,6 +311,8 @@ static void expand(
     for (fdja_value *c = v->child; c; c = c->sibling) expand(c, node, msg);
   }
   //else // do not expand
+
+  return v;
 }
 
 static fdja_value *attributes(fdja_value *node, fdja_value *msg)
