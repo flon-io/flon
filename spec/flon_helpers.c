@@ -8,9 +8,10 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
+#include <stdlib.h>
 
 #include "flutil.h"
+#include "flutim.h"
 
 
 int hlp_wait_for_file(char filetype, const char *path, ...)
@@ -21,7 +22,6 @@ int hlp_wait_for_file(char filetype, const char *path, ...)
   va_end(ap);
 
   char t = 0;
-  int r = 0; // failure for now
 
   for (size_t i = 0; i < maxsec * 50; ++i) // approx...
   {
