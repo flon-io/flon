@@ -89,6 +89,10 @@ fdja_value *fdja_c(const char *input, ...);
 
 fdja_value *fdja_clone(fdja_value *v);
 
+/* Returns 1 if v is a string, a sqstring or a symbol.
+ */
+int fdja_is_stringy(fdja_value *v);
+
 char *fdja_to_json(fdja_value *v);
 
 int fdja_to_json_f(fdja_value *v, const char *path, ...);
@@ -248,8 +252,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 72db68a10e3140adf7dc339b402449615d9b918b
+//commit 0a3cde1aa5bc8917157e3c8f87d5c67d25acbcaf
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 15 11:19:31 2015 +0900
+//Date:   Thu Jan 15 22:33:28 2015 +0900
 //
-//    add spec for rad_p and $(dollar)
+//    implement fdja_is_sringy()

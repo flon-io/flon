@@ -198,47 +198,6 @@ static void fdja_parser_init()
 
   // radial
 
-//  fabr_parser *dol =
-//    fabr_n_seq(
-//      "d", fabr_string("$("), fabr_n("p"), fabr_string(")"), NULL);
-//  fabr_parser *str =
-//    fabr_n_rex(
-//      "s",
-//      "("
-//        "\\\\\\)" "|"
-//        "[^\\$\\)]" "|"
-//        "\\$[^\\(]"
-//      ")+");
-//  //fabr_parser *span =
-//    fabr_n_rep(
-//      "p", fabr_alt(dol, str, NULL), 0, -1);
-//  fabr_parser *outerstr =
-//    fabr_n_rex(
-//      "s",
-//      "("
-//        "[^\\$]" "|" // doesn't mind ")"
-//        "\\$[^\\(]"
-//      ")+");
-//  fdol_parser =
-//    fabr_n_rep(
-//      "r", fabr_alt(dol, outerstr, NULL), 0, -1);
-  //
-//  fabr_parser *sy_dol =
-//    fabr_seq(
-//      fabr_string("$("), fabr_n("sy_spa"), fabr_string(")"), NULL);
-//  //fabr_parser *sy_spa =
-//    fabr_n_rep(
-//      "sy_spa", fabr_alt(sy_dol, sy_str, NULL), 0, -1);
-//  fabr_parser *sy_out =
-//    fabr_rex(
-//      "("
-//        "[^\\$ \b\f\n\r\t\"':,\\[\\]\\{\\}#\\\\]" "|"
-//        "\\$[^\\( \b\f\n\r\t\"':,\\[\\]\\{\\}#\\\\]"
-//      ")+");
-//  fabr_parser *symbol =
-//    fabr_n_rep(
-//      "symbol", fabr_alt(sy_dol, sy_out, NULL), 0, -1);
-
   fabr_parser *syk_dol =
     fabr_seq(
       fabr_string("$("), fabr_n("symk"), fabr_string(")"), NULL);
@@ -615,7 +574,6 @@ static void fdja_stack_radl(flu_list *values, fdja_value *v)
 
 static int is_stringy(fabr_tree *t)
 {
-  //printf("is_stringy() %s\n", fabr_tree_to_string(t, NULL, 0));
   if (t->name == NULL) return 0;
   if (*t->name == 's') return 1; // string, sqstring, symbol
   return 0;
@@ -639,23 +597,22 @@ static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
   fabr_tree *radh = fabr_tree_lookup(radg, "rad_h");
   flu_list *es = fabr_tree_list_named(radg->child->sibling, "rad_e");
 
-  fdja_value *r = NULL;
+  fdja_value *r = fdja_value_malloc('a', NULL, 0, 0, 0);
+  fdja_value *vname = NULL;
+  fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0, 0);
+  fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0, 0);
 
   if (es->first == NULL && ! (is_stringy(radh->child->child)))
   {
     // single value
 
-    r = fdja_extract_value(input, radh->child->child);
+    vname = fdja_s("val");
+
+    fdja_set(vatts, "_0", fdja_extract_value(input, radh->child->child));
   }
   else
   {
-    // [ "sequence", {}, [] ]
-
-    r = fdja_value_malloc('a', NULL, 0, 0, 0);
-
-    fdja_value *vname = NULL;
-    fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0, 0);
-    fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0, 0);
+    // vanilla tree node
 
     vname = parse_radv(input, radh->child);
     if (ind == -1)
@@ -679,11 +636,11 @@ static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
       free(k);
       j++;
     }
-
-    r->child = vname; // [ name,
-    vname->sibling = vatts; // {},
-    vatts->sibling = vchildren; // [] ]
   }
+
+  r->child = vname; // [ name,
+  vname->sibling = vatts; // {},
+  vatts->sibling = vchildren; // [] ]
 
   flu_list_free(es);
 
@@ -824,6 +781,11 @@ fdja_value *fdja_c(const char *format, ...)
 fdja_value *fdja_clone(fdja_value *v)
 {
   return v ? fdja_parse(fdja_to_json(v)) : NULL;
+}
+
+int fdja_is_stringy(fdja_value *v)
+{
+  return v->type == 's' || v->type == 'q' || v->type == 'y';
 }
 
 
@@ -1674,8 +1636,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 72db68a10e3140adf7dc339b402449615d9b918b
+//commit 0a3cde1aa5bc8917157e3c8f87d5c67d25acbcaf
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 15 11:19:31 2015 +0900
+//Date:   Thu Jan 15 22:33:28 2015 +0900
 //
-//    add spec for rad_p and $(dollar)
+//    implement fdja_is_sringy()
