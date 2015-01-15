@@ -27,7 +27,7 @@ context "flon-dispatcher and schedules:"
     flon_configure(".");
 
     flon_empty_timers();
-    //hlp_reset_tst();
+    //hlp_reset_tst('t');
 
     char *exid = NULL;
     char *fep = NULL;
@@ -323,7 +323,7 @@ context "flon-dispatcher and schedules:"
   {
     before each
     {
-      hlp_reset_tst();
+      hlp_reset_tst('t');
 
       long long nows = 1417381080; // 20141130.205800 utc
       char *ns = flu_sstamp(nows, 1, 's');

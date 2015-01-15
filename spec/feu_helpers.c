@@ -343,22 +343,12 @@ char *hlp_last_msg(char *exid)
   return s;
 }
 
-void hlp_reset_tst()
+void hlp_reset_tst(char flavour)
 {
-  //flu_rm_files("var/spool/dis/*.json");
-  //flu_rm_files("var/spool/exe/*.json");
-  //flu_rm_files("var/spool/inv/*.json");
-  //flu_rm_files("var/spool/rejected/*.json");
-  //flu_empty_dir("var/spool/tdis");
-  //flu_empty_dir("var/run");
-  //flu_empty_dir("var/archive");
-  //flu_empty_dir("var/log");
-
-  flu_system("make -C .. ctst 2>&1 > /dev/null");
-
-  // don't maintain two lists
-
-  //hlp_dispatcher_sighup();
+  if (flavour == 't')
+    flu_system("make -C .. clean-tst-time 2>&1 > /dev/null");
+  else
+    flu_system("make -C .. ctst 2>&1 > /dev/null");
 }
 
 size_t hlp_count_jsons(const char *path, ...)

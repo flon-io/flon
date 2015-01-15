@@ -31,7 +31,7 @@ double hlp_determine_delta(char *exid);
 void hlp_cat_inv_log(char *exid);
 char *hlp_last_msg(char *exid);
 
-void hlp_reset_tst();
+void hlp_reset_tst(char flavour);
 
 size_t hlp_count_jsons(const char *path, ...);
 

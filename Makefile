@@ -27,7 +27,9 @@ upgrade:
 	find src/lib/tsifro.[ch] -exec $(MAKE) --quiet stamp REP=../tsifro FIL={} \;
 	find src/lib/dollar.[ch] -exec $(MAKE) --quiet stamp REP=../dollar FIL={} \;
 
-ctst:
+clean-tst-time:
+	find tst/var/spool/tdis/ -mindepth 1 -maxdepth 1 -type d | xargs rm -fR
+clean-tst-basic:
 	rm -f tst/var/spool/dis/*.json
 	rm -f tst/var/spool/exe/*.json
 	rm -f tst/var/spool/inv/*.json
@@ -41,6 +43,7 @@ ctst:
 	rm -f tst/var/run/*.pid
 	#rm -f tst/var/log/dispatcher.log
 	echo "" > tst/var/log/dispatcher.log
+ctst: clean-tst-basic clean-tst-time
 
 dis:
 	make clean dispatcher && \
@@ -55,17 +58,6 @@ vlis:
 	make clean listener && \
     valgrind --leak-check=full -v ./tst/bin/flon-listener -d tst/
 
-vesnn:
-	$(MAKE) ctst vesn E=call
-	$(MAKE) ctst vesn E=cmp
-	$(MAKE) ctst vesn E=concurrence
-	$(MAKE) ctst vesn E=define
-	$(MAKE) ctst vesn E=invoke
-	$(MAKE) ctst vesn E=sequence
-	$(MAKE) ctst vesn E=set
-	$(MAKE) ctst vesn E=trace
-	$(MAKE) ctst vesn E=val
-	$(MAKE) ctst vesn E=wait
-
-.PHONY: spec clean upgrade ctst dis vdis lis vlis vesnn
+.PHONY: \
+  spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis
 
