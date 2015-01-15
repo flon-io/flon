@@ -201,8 +201,9 @@ static void set_error_note(fdja_value *node, char *format, ...)
     char *sv = fdja_to_djan(v, FDJA_F_ONELINE | FDJA_F_NULL);
     fdja_set(node, "note", fdja_s("%s: %s", t, sv));
     free(sv);
-    free(t);
   }
+
+  free(t);
 }
 
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
