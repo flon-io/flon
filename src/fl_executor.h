@@ -54,6 +54,10 @@ void flon_unschedule_msg(
 //
 // instructions
 
+typedef char flon_instruction(fdja_value *, fdja_value *);
+
+flon_instruction *flon_lookup_instruction(char dir, const char *name);
+
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg);
   //
   // return codes:

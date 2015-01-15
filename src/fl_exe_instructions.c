@@ -42,12 +42,6 @@
 
 
 //
-// declarations
-
-typedef char flon_instruction(fdja_value *, fdja_value *);
-
-
-//
 // helpers
 
 //static char *node_id(fdja_value *node, fdja_value *msg)
@@ -461,27 +455,32 @@ static flon_ni *instructions[] = {
 //
 // call instruction
 
+flon_instruction *flon_lookup_instruction(char dir, const char *name)
+{
+  for (size_t i = 0; ; ++i)
+  {
+    flon_ni *ni = instructions[i];
+
+    if (ni == NULL) break;
+    if (strcmp(ni->name, name) != 0) continue;
+
+    flon_instruction *inst = ni->exe;
+    if (dir == 'r') inst = ni->rcv;
+    else if (dir == 'c') inst = ni->can;
+
+    return inst;
+  }
+
+  return NULL;
+}
+
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
   char *inst = fdja_ls(node, "inst");
 
   fgaj_d("dir: %c, inst: %s", dir, inst);
 
-  flon_instruction *i = NULL;
-
-  for (size_t j = 0; ; ++j)
-  {
-    flon_ni *ni = instructions[j];
-
-    if (ni == NULL) break;
-    if (strcmp(ni->name, inst) != 0) continue;
-
-    i = ni->exe;
-    if (dir == 'r') i = ni->rcv;
-    else if (dir == 'c') i = ni->can;
-
-    break;
-  }
+  flon_instruction *i = flon_lookup_instruction(dir, inst);
 
   //if (i == NULL)
   //{
