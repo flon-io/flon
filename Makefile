@@ -55,5 +55,17 @@ vlis:
 	make clean listener && \
     valgrind --leak-check=full -v ./tst/bin/flon-listener -d tst/
 
-.PHONY: spec clean upgrade ctst dis vdis lis vlis
+vesnn:
+	$(MAKE) ctst vesn E=call
+	$(MAKE) ctst vesn E=cmp
+	$(MAKE) ctst vesn E=concurrence
+	$(MAKE) ctst vesn E=define
+	$(MAKE) ctst vesn E=invoke
+	$(MAKE) ctst vesn E=sequence
+	$(MAKE) ctst vesn E=set
+	$(MAKE) ctst vesn E=trace
+	$(MAKE) ctst vesn E=val
+	$(MAKE) ctst vesn E=wait
+
+.PHONY: spec clean upgrade ctst dis vdis lis vlis vesnn
 
