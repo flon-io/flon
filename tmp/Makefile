@@ -26,16 +26,22 @@ clean:
 	rm -f [cdxnilkz]s
 	rm -f [cdxnilkz]s.c
 
-DEPS=\
+DEPS= \
   flutil.o flutim.o \
   gajeta.o aabro.o djan.o mnemo.o \
   fl_common.o fl_paths.o fl_ids.o fl_tools.o
-#
-DDEPS=$(DEPS) flu64.o fl_dispatcher.o
-XDEPS=$(DEPS) dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
-IDEPS=$(DEPS) dollar.o fl_invoker.o
-#
-LDEPS=$(DEPS) $(SHV_OS) $(TSI_OS) flu64.o fl_listener.o fl_lis_auth.o
+DDEPS= \
+  $(DEPS) \
+  flu64.o fl_dispatcher.o
+XDEPS= \
+  $(DEPS) \
+  dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o fl_exe_rewrite.o
+IDEPS= \
+  $(DEPS) \
+  dollar.o fl_invoker.o
+LDEPS= \
+  $(DEPS) $(SHV_OS) $(TSI_OS) \
+  flu64.o fl_listener.o fl_lis_auth.o
 
 _tmpsrc:
 	cp -u ../src/*.[ch] src/

@@ -175,7 +175,7 @@ static void handle_execute(char order, fdja_value *msg)
     goto _over;
   }
 
-  // TODO: rewrite tree
+  tree = flon_rewrite(tree, msg);
 
   char *parent_nid = fdja_ls(msg, "parent", NULL);
   fdja_value *payload = fdja_l(msg, "payload");

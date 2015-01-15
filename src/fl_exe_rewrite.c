@@ -23,55 +23,17 @@
 // Made in Japan.
 //
 
-// for specs
+#define _POSIX_C_SOURCE 200809L
 
-#ifndef FL_EXECUTOR_H
-#define FL_EXECUTOR_H
+//#include <stdlib.h>
+//#include <string.h>
 
-#include "aabro.h"
 #include "djan.h"
+#include "fl_executor.h"
 
 
-extern char *execution_id;
-extern char *execution_path;
-extern fdja_value *execution;
-
-
-int flon_execute(const char *exid);
-
-void flon_queue_msg(
-  const char *type, const char *nid, const char *from_nid,
-  fdja_value *payload, fdja_value *tree);
-
-void flon_schedule_msg(
-  const char *type, const char *ts, const char *nid,
-  fdja_value *tree0, fdja_value *tree1,
-  fdja_value *msg);
-
-void flon_unschedule_msg(
-  const char *type, const char *ts, const char *nid);
-
-//
-// instructions
-
-char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg);
-  //
-  // return codes:
-  //
-  // 'k' ok
-  // 'v' over, reply to parent
-  // 'r' error
-
-//
-// nodes
-
-fdja_value *flon_node(const char *nid);
-fdja_value *flon_node_tree(const char *nid);
-fdja_value *flon_node_tree_clone(const char *nid);
-
-char *flon_node_parent_nid(const char *nid);
-
-fdja_value *flon_rewrite(fdja_value *tree, fdja_value *msg);
-
-#endif // FL_EXECUTOR_H
+fdja_value *flon_rewrite(fdja_value *tree, fdja_value *msg)
+{
+  return tree;
+}
 
