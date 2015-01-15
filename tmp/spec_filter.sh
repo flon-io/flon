@@ -28,6 +28,7 @@ while read LINE; do
   fi
 
   echo $LINE | grep -E -i "segmentation fault" || :
+  echo $LINE | grep -E -i "signal [0-9]+" || :
 
   echo $LINE | grep -E ": warning: " || :
 done

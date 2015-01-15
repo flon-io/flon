@@ -6,6 +6,7 @@
 //
 
 #include "flutil.h"
+#include "flutim.h"
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
@@ -73,7 +74,10 @@ context "flon-dispatcher"
       r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-0_2.json", exid, 2);
       expect(r i== 1); // ret file found
 
+      flu_msleep(100); // give it time to write the file
+
       fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
+      expect(v != NULL);
       //flu_putf(fdja_todc(v));
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
