@@ -99,8 +99,8 @@ context "fl_ids:"
         " feu: u0,"
         " tid: 20141118.1201.latsakocheba,"
         " uri: "
-          "\"http://x.flon.io/i/executions/"
-          "org.nada-u0-20141118.1201.latsakocheba\" "
+          "http://x.flon.io/i/executions/"
+            "org.nada-u0-20141118.1201.latsakocheba "
         "}");
     }
 
