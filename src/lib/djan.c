@@ -1638,13 +1638,17 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   old->soff = new->soff;
   old->slen = new->slen;
 
-  fdja_free(old->child); old->child = new->child; new->child = NULL;
+  for (fdja_value *c = old->child; c; )
+  {
+    fdja_value *sibling = c->sibling; fdja_free(c); c = sibling;
+  }
+  old->child = new->child; new->child = NULL;
 
   fdja_free(new);
 }
 
-//commit cc81268ef2a927ec3b4117ca53f13ec62925c7e5
+//commit 637770deaa122b79d85e2e41c795db5a987435fd
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 16 15:12:42 2015 +0900
+//Date:   Sat Jan 17 06:37:38 2015 +0900
 //
-//    add warning to fdja_strcmp() description
+//    fix leak in fdja_replace()
