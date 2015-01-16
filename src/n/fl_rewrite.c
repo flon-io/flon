@@ -47,6 +47,8 @@ void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
   fdja_value *vname = fdja_l(tree, "0");
   char *name = NULL;
 
+  expand(vname, node, msg);
+
   //fdja_putdc(node);
   //fdja_putdc(msg);
   //fdja_putdc(tree);

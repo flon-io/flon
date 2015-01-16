@@ -34,7 +34,7 @@ context "flon and definitions:"
   {
     it "calls it"
     {
-      exid = flon_generate_exid("z.implicit_call");
+      exid = flon_generate_exid("z.icall");
 
       hlp_launch(
         exid,
@@ -47,13 +47,37 @@ context "flon and definitions:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ color: yellow, trace: [ \"yellow 0_0_0-1\" ] }");
+    }
+
+    it "expands and call"
+    {
+      exid = flon_generate_exid("z.icall.expand");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub color\n"
+        "    trace '$(color) $(nid)'\n"
+        "  $(x) green\n"
+        "",
+        "{ x: sub }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ x: sub, color: green, trace: [ \"green 0_0_0-1\" ] }");
     }
   }
 }
