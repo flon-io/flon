@@ -258,6 +258,8 @@ static int is_blank(char c)
 
 static fdja_value *expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 {
+  if (v == NULL) return NULL;
+
   if (v->key && strstr(v->key, "$("))
   {
     char *k = v->key;

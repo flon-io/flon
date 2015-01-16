@@ -41,21 +41,49 @@ static void unshift_attribute(char *name, fdja_value *tree)
   }
 }
 
-static int is_operator(fdja_value *v)
+static int is_comparator(fdja_value *v)
 {
-  return 0;
+  if (v == NULL) return 0;
+
+  char *s = fdja_to_string(v);
+
+  int r =
+    strcmp(s, ">") == 0 ||
+    strcmp(s, "<") == 0 ||
+    strcmp(s, ">=") == 0 ||
+    strcmp(s, "<=") == 0;
+
+  free(s);
+
+  return r;
 }
 
-static void rewrite_operation(
-  fdja_value *vatt0, fdja_value *node, fdja_value *msg)
+static fdja_value *to_tree(fdja_value *v)
 {
-  // TODO
+  fdja_value *r = fdja_v("[]");
+  fdja_push(r, fdja_clone(v));
+  fdja_push(r, fdja_v("{}"));
+  fdja_push(r, fdja_v("[]"));
+
+  return r;
+}
+
+static void rewrite_comparison(
+  fdja_value *vatt0, fdja_value *tree, fdja_value *node, fdja_value *msg)
+{
+  fdja_value *t = fdja_v("[]");
+  fdja_push(t, fdja_clone(vatt0));
+  fdja_push(t, fdja_v("{}"));
+  fdja_value *children = fdja_push(t, fdja_v("[]"));
+  fdja_push(children, to_tree(fdja_l(tree, "0")));
+  fdja_push(children, to_tree(fdja_l(tree, "1._1")));
+
+  fdja_replace(tree, t);
 }
 
 static void rewrite_as_call_or_invoke(
-  fdja_value *vname, fdja_value *node, fdja_value *msg)
+  fdja_value *vname, fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
-  fdja_value *tree = fdja_l(msg, "tree");
   char *name = fdja_to_string(vname);
 
   flon_instruction *inst = lookup_instruction('e', name);
@@ -77,14 +105,19 @@ static void rewrite_as_call_or_invoke(
 
 void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
-  fdja_value *vname = fdja_l(msg, "tree.0"); expand(vname, node, msg);
-  //fdja_value *vatt0 = fdja_l(msg, "tree.1._0"); expand(vatt0, node, msg);
+  fdja_value *tree = fdja_l(msg, "tree");
+
+  fdja_value *vname = fdja_l(tree, "0"); expand(vname, node, msg);
+  fdja_value *vatt0 = fdja_l(tree, "1._0"); expand(vatt0, node, msg);
 
   //fdja_putdc(node);
   //fdja_putdc(msg);
   //fdja_putdc(vname);
 
-  if (fdja_is_stringy(vname)) rewrite_as_call_or_invoke(vname, node, msg);
-  //if (is_operator(vatt0)) rewrite_operation(vatt0, node, msg);
+  if (fdja_is_stringy(vname))
+    rewrite_as_call_or_invoke(vname, tree, node, msg);
+
+  if (is_comparator(vatt0))
+    rewrite_comparison(vatt0, tree, node, msg);
 }
 

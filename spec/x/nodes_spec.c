@@ -14,6 +14,7 @@ context "fl_exe_nodes"
 {
   before each
   {
+    fdja_free(execution);
     execution = fdja_c(
       "exid: xtest.pn-u0-20141020.0754.chipeduzuba\n"
       "nodes: {\n"
@@ -35,7 +36,7 @@ context "fl_exe_nodes"
   }
   after each
   {
-    fdja_free(execution);
+    fdja_free(execution); execution = NULL;
   }
 
   describe "flon_node_tree()"

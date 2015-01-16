@@ -16,7 +16,7 @@ context "flon-executor"
     fdja_value *r = fdja_v("{ point: execute }");
     fdja_value *t = fdja_parse_radial(rdz_strdup(s));
     fdja_set(r, "tree", t);
-    fdja_putdc(t);
+    //fdja_putdc(t);
 
     return r;
   }
@@ -30,6 +30,7 @@ context "flon-executor"
   }
   after each
   {
+    fdja_free(execution); execution = NULL;
     fdja_free(node);
     fdja_free(msg);
   }
