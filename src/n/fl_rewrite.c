@@ -41,7 +41,32 @@ static void unshift_attribute(char *name, fdja_value *tree)
   }
 }
 
-static fdja_value *to_tree(flu_list *l)
+static void rewrite_as_call_or_invoke(
+  fdja_value *vname, fdja_value *tree, fdja_value *node, fdja_value *msg)
+{
+  char *name = fdja_to_string(vname);
+
+  flon_instruction *inst = lookup_instruction('e', name);
+  if (inst) { free(name); return; }
+
+  fdja_value *v = lookup_var(node, name);
+
+  if (is_callable(v))
+  {
+    //printf("***\n"); fdja_putdc(tree);
+    fdja_psetv(node, "inst", "call");
+    fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
+    unshift_attribute(name, tree);
+    //fdja_putdc(tree);
+  }
+
+  free(name);
+}
+
+static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg);
+  // forward ...
+
+static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
 {
   fdja_value *r = fdja_v("[]");
 
@@ -64,6 +89,8 @@ static fdja_value *to_tree(flu_list *l)
 
   fdja_push(r, fdja_v("[]"));
 
+  rewrite_tree(r, node, msg);
+
   return r;
 }
 
@@ -73,7 +100,8 @@ static int is_op(fdja_value *v, const char *op)
   return fdja_strcmp(v, op) == 0;
 }
 
-static void rewrite(fdja_value *tree, const char *op)
+static void rewrite(
+  fdja_value *tree, const char *op, fdja_value *node, fdja_value *msg)
 {
   if (fdja_strcmp(fdja_l(tree, "0"), op) == 0) return;
 
@@ -101,7 +129,7 @@ static void rewrite(fdja_value *tree, const char *op)
 
     if (a && ! is_op(a, op)) { flu_list_add(l, a); continue; }
 
-    fdja_push(children, to_tree(l)); flu_list_free(l); l = NULL;
+    fdja_push(children, to_tree(l, node, msg)); flu_list_free(l); l = NULL;
 
     if (a == NULL) break;
   }
@@ -109,31 +137,8 @@ static void rewrite(fdja_value *tree, const char *op)
   fdja_replace(tree, t);
 }
 
-static void rewrite_as_call_or_invoke(
-  fdja_value *vname, fdja_value *tree, fdja_value *node, fdja_value *msg)
+static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
-  char *name = fdja_to_string(vname);
-
-  flon_instruction *inst = lookup_instruction('e', name);
-  if (inst) { free(name); return; }
-
-  fdja_value *v = lookup_var(node, name);
-
-  if (is_callable(v))
-  {
-    //printf("***\n"); fdja_putdc(tree);
-    fdja_psetv(node, "inst", "call");
-    fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
-    unshift_attribute(name, tree);
-    //fdja_putdc(tree);
-  }
-
-  free(name);
-}
-
-void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
-{
-  fdja_value *tree = fdja_l(msg, "tree");
 
   fdja_value *vname = fdja_l(tree, "0"); expand(vname, node, msg);
   fdja_value *vatt0 = fdja_l(tree, "1._0"); expand(vatt0, node, msg);
@@ -148,13 +153,21 @@ void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
   //if (is_comparator(vatt0))
   //  rewrite_comparison(vatt0, tree, node, msg);
 
-  rewrite(tree, "or");
-  rewrite(tree, "and");
-  rewrite(tree, "=="); rewrite(tree, "!=");
-  rewrite(tree, ">"); rewrite(tree, ">=");
-  rewrite(tree, "<"); rewrite(tree, "<=");
-  rewrite(tree, "+"); rewrite(tree, "-");
-  rewrite(tree, "*"); rewrite(tree, "/"); rewrite(tree, "%");
-  rewrite(tree, "!");
+  // in precedence order
+  //
+  rewrite(tree, "or", node, msg);
+  rewrite(tree, "and", node, msg);
+  rewrite(tree, "==", node, msg); rewrite(tree, "!=", node, msg);
+  rewrite(tree, ">", node, msg); rewrite(tree, ">=", node, msg);
+  rewrite(tree, "<", node, msg); rewrite(tree, "<=", node, msg);
+  rewrite(tree, "+", node, msg); rewrite(tree, "-", node, msg);
+  rewrite(tree, "*", node, msg); rewrite(tree, "/", node, msg);
+    rewrite(tree, "%", node, msg);
+  rewrite(tree, "!", node, msg);
+}
+
+void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
+{
+  rewrite_tree(fdja_l(msg, "tree"), node, msg);
 }
 
