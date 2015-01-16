@@ -105,11 +105,6 @@ static fdja_value *tree(fdja_value *node, fdja_value *msg)
   return r;
 }
 
-//static fdja_value *tree_clone(fdja_value *node, fdja_value *msg)
-//{
-//  return fdja_clone(tree(node, msg));
-//}
-
 static fdja_value *payload(fdja_value *msg)
 {
   return fdja_l(msg, "payload");

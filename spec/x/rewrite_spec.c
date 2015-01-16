@@ -1,0 +1,53 @@
+
+//
+// specifying flon-executor
+//
+// Fri Jan 16 12:54:48 JST 2015
+//
+
+#include "djan.h"
+#include "fl_executor.h"
+
+
+context "flon-executor"
+{
+  fdja_value *mrad(char *s)
+  {
+    fdja_value *r = fdja_v("{ point: execute }");
+    fdja_value *t = fdja_parse_radial(rdz_strdup(s));
+    fdja_set(r, "tree", t);
+    fdja_putdc(t);
+
+    return r;
+  }
+
+  before each
+  {
+    fdja_free(execution); execution = fdja_v("{}");
+
+    fdja_value *node = fdja_v("{ nid: 0_1, vars: {} }");
+    fdja_value *msg = NULL;
+  }
+  after each
+  {
+    fdja_free(node);
+    fdja_free(msg);
+  }
+
+  describe "flon_rewrite_tree()"
+  {
+    it "rewrites a > b"
+    {
+      msg = mrad("a > b");
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+        "[ >, {}, [ "
+          "[ a, {}, [] ], "
+          "[ b, {}, [] ] "
+        "] ]");
+    }
+  }
+}
+
