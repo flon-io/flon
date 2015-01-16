@@ -41,42 +41,70 @@ static void unshift_attribute(char *name, fdja_value *tree)
   }
 }
 
-static int is_comparator(fdja_value *v)
-{
-  if (v == NULL) return 0;
-
-  char *s = fdja_to_string(v);
-
-  int r =
-    strcmp(s, ">") == 0 ||
-    strcmp(s, "<") == 0 ||
-    strcmp(s, ">=") == 0 ||
-    strcmp(s, "<=") == 0;
-
-  free(s);
-
-  return r;
-}
-
-static fdja_value *to_tree(fdja_value *v)
+static fdja_value *to_tree(flu_list *l)
 {
   fdja_value *r = fdja_v("[]");
-  fdja_push(r, fdja_clone(v));
-  fdja_push(r, fdja_v("{}"));
+
+  if (l->size == 1 && ! fdja_is_stringy(l->first->item))
+  {
+    fdja_push(r, fdja_s("val"));
+    fdja_value *atts = fdja_push(r, fdja_s("{}"));
+    fdja_set(atts, "_0", fdja_clone(l->first->item));
+  }
+  else
+  {
+    fdja_push(r, fdja_clone(l->first->item));
+    fdja_value *atts = fdja_push(r, fdja_v("{}"));
+    for (flu_node *n = l->first->next; n; n = n->next)
+    {
+      fdja_value *v = n->item;
+      fdja_set(atts, v->key, fdja_clone(v));
+    }
+  }
+
   fdja_push(r, fdja_v("[]"));
 
   return r;
 }
 
-static void rewrite_comparison(
-  fdja_value *vatt0, fdja_value *tree, fdja_value *node, fdja_value *msg)
+static int is_op(fdja_value *v, const char *op)
 {
+  if (v->type == 'q') return 0;
+  return fdja_strcmp(v, op) == 0;
+}
+
+static void rewrite(fdja_value *tree, const char *op)
+{
+  if (fdja_strcmp(fdja_l(tree, "0"), op) == 0) return;
+
+  fdja_value *atts = fdja_l(tree, "1");
+
+  int seen = 0;
+  for (fdja_value *a = atts->child; a; a = a->sibling)
+  {
+    if (is_op(a, op)) { seen = 1; break; }
+  }
+  if ( ! seen) return;
+
   fdja_value *t = fdja_v("[]");
-  fdja_push(t, fdja_clone(vatt0));
+  fdja_push(t, fdja_s(op));
   fdja_push(t, fdja_v("{}"));
   fdja_value *children = fdja_push(t, fdja_v("[]"));
-  fdja_push(children, to_tree(fdja_l(tree, "0")));
-  fdja_push(children, to_tree(fdja_l(tree, "1._1")));
+
+  flu_list *l = flu_list_malloc();
+  flu_list_add(l, fdja_l(tree, "0"));
+
+  fdja_value *a = atts->child;
+  for (; ; a = a->sibling)
+  {
+    if (l == NULL) l = flu_list_malloc();
+
+    if (a && ! is_op(a, op)) { flu_list_add(l, a); continue; }
+
+    fdja_push(children, to_tree(l)); flu_list_free(l); l = NULL;
+
+    if (a == NULL) break;
+  }
 
   fdja_replace(tree, t);
 }
@@ -117,7 +145,16 @@ void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
   if (fdja_is_stringy(vname))
     rewrite_as_call_or_invoke(vname, tree, node, msg);
 
-  if (is_comparator(vatt0))
-    rewrite_comparison(vatt0, tree, node, msg);
+  //if (is_comparator(vatt0))
+  //  rewrite_comparison(vatt0, tree, node, msg);
+
+  rewrite(tree, "or");
+  rewrite(tree, "and");
+  rewrite(tree, "=="); rewrite(tree, "!=");
+  rewrite(tree, ">"); rewrite(tree, ">=");
+  rewrite(tree, "<"); rewrite(tree, "<=");
+  rewrite(tree, "+"); rewrite(tree, "-");
+  rewrite(tree, "*"); rewrite(tree, "/"); rewrite(tree, "%");
+  rewrite(tree, "!");
 }
 

@@ -49,6 +49,22 @@ context "flon-executor"
           "[ b, {}, [] ] "
         "] ]");
     }
+
+    it "rewrites a or b and c"
+    {
+      msg = mrad("a or b and c");
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+        "[ or, {}, [ "
+          "[ a, {}, [] ], "
+          "[ and, {}, [ "
+            "[ b, {}, [] ], "
+            "[ c, {}, [] ] "
+          "] ] "
+        "] ]");
+    }
   }
 }
 
