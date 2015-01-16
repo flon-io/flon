@@ -52,6 +52,11 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   pnid = fdja_ls(node, "nid");
   fdja_value *cargs = attributes(node, exe); // call args
 
+  if (cargs->child == NULL)
+  {
+    set_error_note(node, "nothing to call", cargs); r = 'r'; goto _over;
+  }
+
   name = fdja_to_string(cargs->child);
 
   fdja_value *val = lookup_var(node, name);

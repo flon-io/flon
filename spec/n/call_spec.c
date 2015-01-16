@@ -105,24 +105,6 @@ context "instruction:"
         "{ x: b, trace: [ \"a 0_0_0-1\", \"b 0_0_0-2\" ] }");
     }
 
-    it "fails if there is no corresponding define"
-    {
-      exid = flon_generate_exid("n.call.nosub");
-
-      hlp_launch(
-        exid,
-        "call sub\n"
-        "",
-        "{}");
-
-      result = hlp_wait(exid, "failed", NULL, 3);
-
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
-    }
-
     it "maps arguments"
     {
       exid = flon_generate_exid("n.call.maps");
@@ -195,6 +177,46 @@ context "instruction:"
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ trace: [ \"red green\", \"green red\" ] }");
+    }
+
+    it "fails if there is no corresponding define"
+    {
+      exid = flon_generate_exid("n.call.nosub");
+
+      hlp_launch(
+        exid,
+        "call sub\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      //expect(fdja_ls(result, "note", NULL) ===f "nothing to call: {}");
+    }
+
+    it "fails gracefully when given nothing to call"
+    {
+      exid = flon_generate_exid("n.call.nothing");
+
+      hlp_launch(
+        exid,
+        "call\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      //expect(fdja_ls(result, "note", NULL) ===f "nothing to call: {}");
     }
 
     it "it accepts URIs"
