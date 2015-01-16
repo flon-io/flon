@@ -41,40 +41,40 @@ static void unshift_attribute(char *name, fdja_value *tree)
   }
 }
 
-void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
+static void rewrite_as_call_or_invoke(
+  fdja_value *vname, fdja_value *node, fdja_value *msg)
 {
   fdja_value *tree = fdja_l(msg, "tree");
-  fdja_value *vname = fdja_l(tree, "0");
-  char *name = NULL;
+  char *name = fdja_to_string(vname);
+
+  flon_instruction *inst = lookup_instruction('e', name);
+  if (inst) { free(name); return; }
+
+  fdja_value *v = node ? lookup_var(node, name) : NULL;
+    // node is NULL when testing this method on its own...
+
+  if (is_callable(v))
+  {
+    //printf("***\n"); fdja_putdc(tree);
+    fdja_psetv(node, "inst", "call");
+    fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
+    unshift_attribute(name, tree);
+    //fdja_putdc(tree);
+  }
+
+  free(name);
+}
+
+void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
+{
+  fdja_value *vname = fdja_l(msg, "tree.0");
 
   expand(vname, node, msg);
 
   //fdja_putdc(node);
   //fdja_putdc(msg);
-  //fdja_putdc(tree);
   //fdja_putdc(vname);
 
-  if (fdja_is_stringy(vname))
-  {
-    name = fdja_to_string(vname);
-
-    flon_instruction *inst = lookup_instruction('e', name);
-    if (inst) goto _over;
-
-    fdja_value *v = lookup_var(node, name);
-
-    if (is_callable(v))
-    {
-      //printf("***\n"); fdja_putdc(tree);
-      fdja_psetv(node, "inst", "call");
-      fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
-      unshift_attribute(name, tree);
-      //fdja_putdc(tree);
-    }
-  }
-
-_over:
-
-  free(name);
+  if (fdja_is_stringy(vname)) rewrite_as_call_or_invoke(vname, node, msg);
 }
 
