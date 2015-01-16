@@ -73,7 +73,7 @@ static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
   if (l->size == 1 && ! fdja_is_stringy(l->first->item))
   {
     fdja_push(r, fdja_s("val"));
-    fdja_value *atts = fdja_push(r, fdja_s("{}"));
+    fdja_value *atts = fdja_push(r, fdja_v("{}"));
     fdja_set(atts, "_0", fdja_clone(l->first->item));
   }
   else
@@ -139,7 +139,6 @@ static void rewrite(
 
 static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
-
   fdja_value *vname = fdja_l(tree, "0"); expand(vname, node, msg);
   fdja_value *vatt0 = fdja_l(tree, "1._0"); expand(vatt0, node, msg);
 
@@ -168,6 +167,8 @@ static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg)
 
 void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
+  //fdja_putdc(fdja_l(msg, "tree"));
+
   rewrite_tree(fdja_l(msg, "tree"), node, msg);
 }
 

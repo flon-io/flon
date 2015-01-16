@@ -50,6 +50,8 @@ context "flon-executor"
         "] ]");
     }
 
+    it "rewrites a or b or c"
+
     it "rewrites a or b and c"
     {
       msg = mrad("a or b and c");
@@ -66,7 +68,39 @@ context "flon-executor"
         "] ]");
     }
 
-    it "deals with parentheses..."
+    it "rewrites if a > b"
+
+    it "rewrites a and (b or c)"
+    {
+      msg = mrad("a and (b or c)");
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+        "[ and, {}, [ "
+          "[ a, {}, [] ], "
+          "[ or, {}, [ "
+            "[ b, {}, [] ], "
+            "[ c, {}, [] ] "
+          "] ] "
+        "] ]");
+    }
+
+    it "rewrites (a or b) and c"
+//    {
+//      msg = mrad("(a or b) and c");
+//
+//      flon_rewrite_tree(node, msg);
+//
+//      expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+//        "[ and, {}, [ "
+//          "[ or, {}, [ "
+//            "[ a, {}, [] ], "
+//            "[ b, {}, [] ] "
+//          "] ], "
+//          "[ c, {}, [] ] "
+//        "] ]");
+//    }
   }
 }
 
