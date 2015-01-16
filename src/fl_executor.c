@@ -70,8 +70,12 @@ void flon_queue_msg(
   if (nid) fdja_set(msg, "nid", fdja_s(nid));
   else fdja_set(msg, "nid", fdja_v("null"));
 
-  fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
-  fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
+  fdja_set(
+    msg,
+    *type == 'e' ? "parent" : "from", fdja_s(from_nid));
+  fdja_set(
+    msg,
+    "payload", payload ? fdja_clone(payload) : fdja_object_malloc());
 
   //if (tree) fdja_set(msg, "tree", tree);
   if (key && val) fdja_set(msg, key, val);
@@ -88,7 +92,7 @@ void flon_schedule_msg(
 
   fgaj_i("%sschedule %s %s from -%s", msg ? "" : "un", type, ts, nid);
 
-  fdja_value *m = fdja_v("{}");
+  fdja_value *m = fdja_object_malloc();
   fdja_psetv(m, "point", msg ? "schedule" : "unschedule");
   fdja_set(m, type, fdja_s(ts));
   if (msg)
@@ -116,7 +120,7 @@ void flon_unschedule_msg(
 
 static fdja_value *create_node(char *nid, char *parent_nid, fdja_value *tree)
 {
-  fdja_value *node = fdja_v("{}");
+  fdja_value *node = fdja_object_malloc();
 
   fdja_set(
     node, "inst", fdja_lc(tree, "0"));

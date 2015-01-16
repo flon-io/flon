@@ -68,18 +68,18 @@ static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg);
 
 static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
 {
-  fdja_value *r = fdja_v("[]");
+  fdja_value *r = fdja_array_malloc();
 
   if (l->size == 1 && ! fdja_is_stringy(l->first->item))
   {
     fdja_push(r, fdja_s("val"));
-    fdja_value *atts = fdja_push(r, fdja_v("{}"));
+    fdja_value *atts = fdja_push(r, fdja_object_malloc());
     fdja_set(atts, "_0", fdja_clone(l->first->item));
   }
   else
   {
     fdja_push(r, fdja_clone(l->first->item));
-    fdja_value *atts = fdja_push(r, fdja_v("{}"));
+    fdja_value *atts = fdja_push(r, fdja_object_malloc());
     for (flu_node *n = l->first->next; n; n = n->next)
     {
       fdja_value *v = n->item;
@@ -87,7 +87,7 @@ static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
     }
   }
 
-  fdja_push(r, fdja_v("[]"));
+  fdja_push(r, fdja_array_malloc());
 
   rewrite_tree(r, node, msg);
 
@@ -114,10 +114,10 @@ static void rewrite(
   }
   if ( ! seen) return;
 
-  fdja_value *t = fdja_v("[]");
+  fdja_value *t = fdja_array_malloc();
   fdja_push(t, fdja_s(op));
-  fdja_push(t, fdja_v("{}"));
-  fdja_value *children = fdja_push(t, fdja_v("[]"));
+  fdja_push(t, fdja_object_malloc());
+  fdja_value *children = fdja_push(t, fdja_array_malloc());
 
   flu_list *l = flu_list_malloc();
   flu_list_add(l, fdja_l(tree, "0"));

@@ -46,7 +46,10 @@ static void expand_rels(fdja_value *doc)
 {
   // add FLON_RELS to #links
 
-  if (fdja_l(doc, "_links") == NULL) fdja_set(doc, "_links", fdja_v("{}"));
+  if (fdja_l(doc, "_links") == NULL)
+  {
+    fdja_set(doc, "_links", fdja_object_malloc());
+  }
 
   for (fdja_value *v = fdja_l(doc, "_links")->child; v; v = v->sibling)
   {
@@ -252,8 +255,8 @@ flu_list *flon_list_executions(
 
 static fdja_value *embed_exe(fshv_request *req, const char *path, fdja_value *r)
 {
-  if (r == NULL) r = fdja_v("{}");
-  if (fdja_l(r, "_links") == NULL) fdja_set(r, "_links", fdja_v("{}"));
+  if (r == NULL) r = fdja_object_malloc();
+  if (fdja_l(r, "_links") == NULL) fdja_set(r, "_links", fdja_object_malloc());
 
   char *exid = strrchr(path, '/');
   if (exid == NULL) return r;

@@ -299,7 +299,7 @@ static fdja_value *expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 static fdja_value *attributes(fdja_value *node, fdja_value *msg)
 {
   fdja_value *atts = fdja_l(tree(node, msg), "1");
-  fdja_value *r = fdja_v("{}");
+  fdja_value *r = fdja_object_malloc();
 
   if (atts == NULL || atts->type != 'o')
   {

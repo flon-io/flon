@@ -82,7 +82,7 @@ int flon_invoke(const char *path)
   }
 
   fdja_value *payload = fdja_lookup(inv, "payload");
-  if (payload == NULL) payload = fdja_v("{}");
+  if (payload == NULL) payload = fdja_object_malloc();
 
   char *exid = fdja_ls(inv, "exid", NULL);
   char *nid = fdja_ls(inv, "nid", NULL);

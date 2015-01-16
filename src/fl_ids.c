@@ -135,7 +135,7 @@ fdja_value *flon_parse_nid(const char *s)
   fabr_tree *t = fabr_parse_all(ss, 0, flon_nid_parser);
   if (t->result != 1) { fabr_tree_free(t); return NULL; }
 
-  fdja_value *r = fdja_v("{}");
+  fdja_value *r = fdja_object_malloc();
 
   char *keys[] = {
     "msg",

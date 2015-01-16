@@ -43,7 +43,7 @@
 //
 // fdja_value malloc/free
 
-static fdja_value *fdja_value_malloc(
+fdja_value *fdja_value_malloc(
   char type, char *input, size_t off, size_t len, short owner)
 {
   fdja_value *v = calloc(1, sizeof(fdja_value));
@@ -74,6 +74,16 @@ void fdja_value_free(fdja_value *v)
   }
 
   free(v);
+}
+
+fdja_value *fdja_array_malloc()
+{
+  return fdja_value_malloc('a', NULL, 0, 0, 0);
+}
+
+fdja_value *fdja_object_malloc()
+{
+  return fdja_value_malloc('o', NULL, 0, 0, 0);
 }
 
 
@@ -1647,8 +1657,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 637770deaa122b79d85e2e41c795db5a987435fd
+//commit c24303b0272f80eb893fd795a8ea02e48b12e141
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Jan 17 06:37:38 2015 +0900
+//Date:   Sat Jan 17 07:25:35 2015 +0900
 //
-//    fix leak in fdja_replace()
+//    rename to fdja_array_malloc() and _object_malloc()

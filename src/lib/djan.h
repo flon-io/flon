@@ -53,6 +53,9 @@ typedef struct fdja_value {
   ssize_t ind; // only used by radial
 } fdja_value;
 
+fdja_value *fdja_array_malloc();
+fdja_value *fdja_object_malloc();
+
 fdja_value *fdja_parse(char *input);
 fdja_value *fdja_dparse(char *input);
 fdja_value *fdja_fparse(FILE *f);
@@ -259,8 +262,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 637770deaa122b79d85e2e41c795db5a987435fd
+//commit c24303b0272f80eb893fd795a8ea02e48b12e141
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Jan 17 06:37:38 2015 +0900
+//Date:   Sat Jan 17 07:25:35 2015 +0900
 //
-//    fix leak in fdja_replace()
+//    rename to fdja_array_malloc() and _object_malloc()

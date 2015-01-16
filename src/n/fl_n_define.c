@@ -31,8 +31,8 @@ static char exe_define(fdja_value *node, fdja_value *exe)
 
   char *name = fdja_to_string(atts->child);
 
-  fdja_value *val = fdja_v("{}");
-  fdja_value *args = fdja_set(val, "args", fdja_v("[]"));
+  fdja_value *val = fdja_object_malloc();
+  fdja_value *args = fdja_set(val, "args", fdja_array_malloc());
   fdja_psetv(val, "nid", nid);
   fdja_psetv(val, "counter", "0");
 

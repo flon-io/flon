@@ -291,7 +291,7 @@ static int do_trigger(const char *ns)
 
   fn = flu_sprintf("var/spool/dis/%s%s-%s.json", prefix, exid, nid);
 
-  fdja_set(msg, "trigger", fdja_v("{}"));
+  fdja_set(msg, "trigger", fdja_object_malloc());
   fdja_pset(msg, "trigger.now", fdja_s(ns));
   fdja_pset(msg, "trigger.ts", fdja_s(t->ts));
   fdja_pset(msg, "trigger.fn", fdja_s(t->fn));

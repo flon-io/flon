@@ -37,7 +37,7 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   char *nid = fdja_ls(node, "nid", NULL);
   char *exid = fdja_ls(exe, "exid", NULL);
 
-  fdja_value *msg = fdja_v("{}");
+  fdja_value *msg = fdja_object_malloc();
   fdja_set(msg, "point", fdja_s("receive"));
   fdja_set(msg, "nid", fdja_s(nid));
   fdja_set(msg, "exid", fdja_s(exid));
@@ -47,7 +47,7 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_value *t1 = fdja_v("[]");
   fdja_push(t1, fdja_lc(node, "inst"));
   fdja_push(t1, atts);
-  fdja_push(t1, fdja_v("[]"));
+  fdja_push(t1, fdja_array_malloc());
   fdja_psetv(t1, "2.]", "%zu", fdja_size(fdja_l(t0, "2")));
   fdja_psetv(t0, "2", "[ %zu ]", fdja_size(fdja_l(t0, "2")));
 
