@@ -127,7 +127,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // trigger execution
 
-  flon_queue_msg("execute", cnid, pnid, payload(exe), tree);
+  flon_queue_msg("execute", cnid, pnid, payload(exe), "tree", tree);
 
 _over:
 

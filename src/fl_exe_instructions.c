@@ -378,7 +378,7 @@ static size_t cancel_dependents(fdja_value *node, char *type)
   for (fdja_value *v = array->child; v; v = v->sibling)
   {
     char *cnid = fdja_to_string(v);
-    flon_queue_msg("cancel", cnid, nid, NULL, NULL);
+    flon_queue_msg("cancel", cnid, nid, NULL, NULL, NULL);
     free(cnid);
   }
 

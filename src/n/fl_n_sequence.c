@@ -40,7 +40,7 @@ static char rcv_sequence(fdja_value *node, fdja_value *rcv)
 
   if (t)
   {
-    flon_queue_msg("execute", next, nid, payload(rcv), NULL);
+    flon_queue_msg("execute", next, nid, payload(rcv), NULL, NULL);
     fdja_push(children, fdja_s(next));
     r = 'k'; // ok, not yet over
   }

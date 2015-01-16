@@ -60,7 +60,8 @@ static flu_list *msgs = NULL;
 void flon_queue_msg(
   const char *type,
   const char *nid, const char *from_nid,
-  fdja_value *payload, fdja_value *tree)
+  fdja_value *payload,
+  char *key, fdja_value *val)
 {
   fgaj_i("%s %s from %s", type, nid, from_nid);
 
@@ -72,7 +73,8 @@ void flon_queue_msg(
   fdja_set(msg, *type == 'e' ? "parent" : "from", fdja_s(from_nid));
   fdja_set(msg, "payload", payload ? fdja_clone(payload) : fdja_v("{}"));
 
-  if (tree) fdja_set(msg, "tree", tree);
+  //if (tree) fdja_set(msg, "tree", tree);
+  if (key && val) fdja_set(msg, key, val);
 
   flu_list_add(msgs, msg);
 }
@@ -185,7 +187,7 @@ static void handle_execute(char order, fdja_value *msg)
 
   if (parent_nid == NULL && strcmp(nid, "0") == 0)
   {
-    flon_queue_msg("launched", nid, NULL, payload, NULL);
+    flon_queue_msg("launched", nid, NULL, payload, NULL, NULL);
   }
 
   //
@@ -198,7 +200,7 @@ static void handle_execute(char order, fdja_value *msg)
 
   if (r == 'v') // over
   {
-    flon_queue_msg("receive", nid, nid, payload, NULL);
+    flon_queue_msg("receive", nid, nid, payload, NULL, NULL);
   }
   else if (r == 'k') // ok
   {
@@ -206,7 +208,8 @@ static void handle_execute(char order, fdja_value *msg)
   }
   else // error, 'r' or '?'
   {
-    flon_queue_msg("failed", nid, parent_nid, payload, NULL);
+    flon_queue_msg(
+      "failed", nid, parent_nid, payload, "note", fdja_lc(node, "note"));
   }
 
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
@@ -273,16 +276,16 @@ static void handle_return(char order, fdja_value *msg)
 
     if (parent_nid)
     {
-      flon_queue_msg("receive", parent_nid, nid, payload, NULL);
+      flon_queue_msg("receive", parent_nid, nid, payload, NULL, NULL);
     }
     else
     {
       log_delta(node); // log (debug) the age of the execution
 
       if (strcmp(nid, "0") == 0)
-        flon_queue_msg("terminated", nid, NULL, payload, NULL);
+        flon_queue_msg("terminated", nid, NULL, payload, NULL, NULL);
       else
-        flon_queue_msg("ceased", nid, NULL, payload, NULL);
+        flon_queue_msg("ceased", nid, NULL, payload, NULL, NULL);
     }
 
     fdja_pset(execution, "nodes.%s", nid, NULL); // remove node
@@ -293,7 +296,8 @@ static void handle_return(char order, fdja_value *msg)
   }
   else // error, 'r' or '?'
   {
-    flon_queue_msg("failed", nid, parent_nid, payload, NULL);
+    flon_queue_msg(
+      "failed", nid, parent_nid, payload, "note", fdja_lc(node, "note"));
   }
 
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);

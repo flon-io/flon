@@ -63,7 +63,7 @@ static char exe_concurrence(fdja_value *node, fdja_value *exe)
   {
     free(cnid); cnid = flu_sprintf("%s_%zu", nid, i);
     fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
-    flon_queue_msg("execute", cnid, nid, payload(exe), NULL);
+    flon_queue_msg("execute", cnid, nid, payload(exe), NULL, NULL);
     fdja_push(children, fdja_s(cnid));
   }
 
