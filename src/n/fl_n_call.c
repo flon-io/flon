@@ -23,6 +23,7 @@
 // Made in Japan.
 //
 
+
 // * unmapped arguments go into `variables.args`
 // * mapped arguments go to fields, unless prefixed with "v."
 
@@ -51,12 +52,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   pnid = fdja_ls(node, "nid");
   fdja_value *cargs = attributes(node, exe); // call args
 
-  int explicit = strncmp(fdja_srk(fdja_l(exe, "tree.0")), "call", 4) == 0;
-
-  if (explicit)
-    name = fdja_to_string(cargs->child);
-  else
-    name = fdja_ls(exe, "tree.0");
+  name = fdja_to_string(cargs->child);
 
   fdja_value *val = lookup_var(node, name);
 
@@ -87,10 +83,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   fdja_push(targs, fdja_clone(cargs->child));
 
-  fdja_value *carg0 = cargs->child;
-  if (explicit) carg0 = carg0->sibling;
-
-  for (fdja_value *a = carg0; a; a = a->sibling)
+  for (fdja_value *a = cargs->child->sibling; a; a = a->sibling)
   {
     char *key = NULL;
     fdja_value *val = fdja_clone(a);
