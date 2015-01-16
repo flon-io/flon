@@ -1070,10 +1070,17 @@ char *fdja_src(fdja_value *v)
 
 char *fdja_srk(fdja_value *v)
 {
-  if (v->type == 's' || v->type == 'q')
-    return v->source + v->soff + 1;
-
+  if (v->type == 's' || v->type == 'q') return v->source + v->soff + 1;
   return v->source + v->soff;
+}
+
+int fdja_strcmp(fdja_value *v, const char *s)
+{
+  if (s == NULL) return -1;
+  if (v == NULL) return -1;
+  if ( ! fdja_is_stringy(v)) return -1;
+
+  return strncmp(fdja_srk(v), s, strlen(s));
 }
 
 char *fdja_value_to_s(fdja_value *v)
@@ -1636,8 +1643,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 0a3cde1aa5bc8917157e3c8f87d5c67d25acbcaf
+//commit cc81268ef2a927ec3b4117ca53f13ec62925c7e5
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 15 22:33:28 2015 +0900
+//Date:   Fri Jan 16 15:12:42 2015 +0900
 //
-//    implement fdja_is_sringy()
+//    add warning to fdja_strcmp() description

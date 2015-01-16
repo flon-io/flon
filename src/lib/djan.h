@@ -147,6 +147,13 @@ char *fdja_src(fdja_value *v);
  */
 char *fdja_srk(fdja_value *v);
 
+/* Returns 0 if v holds a string or a symbol and the text matches s.
+ * Returns what strcmp() would return else.
+ *
+ * Warning: the comparison is performed on the escaped version of the string!
+ */
+int fdja_strcmp(fdja_value *v, const char *s);
+
 /* Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.
@@ -252,8 +259,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 0a3cde1aa5bc8917157e3c8f87d5c67d25acbcaf
+//commit cc81268ef2a927ec3b4117ca53f13ec62925c7e5
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jan 15 22:33:28 2015 +0900
+//Date:   Fri Jan 16 15:12:42 2015 +0900
 //
-//    implement fdja_is_sringy()
+//    add warning to fdja_strcmp() description
