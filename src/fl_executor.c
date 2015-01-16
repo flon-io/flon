@@ -112,8 +112,7 @@ void flon_unschedule_msg(
   flon_schedule_msg(type, ts, nid, NULL, NULL, NULL);
 }
 
-static fdja_value *create_node(
-  const char *nid, const char *parent_nid, fdja_value *tree)
+static fdja_value *create_node(char *nid, char *parent_nid, fdja_value *tree)
 {
   fdja_value *node = fdja_v("{}");
 
@@ -124,7 +123,7 @@ static fdja_value *create_node(
   fdja_set(
     node, "created", fdja_sym(flu_tstamp(NULL, 1, 'u')));
   fdja_set(
-    node, "parent", parent_nid ? fdja_s((char *)parent_nid) : fdja_v("null"));
+    node, "parent", parent_nid ? fdja_s(parent_nid) : fdja_v("null"));
 
   if (strcmp(nid, "0") == 0)
   {
@@ -163,6 +162,7 @@ static void handle_execute(char order, fdja_value *msg)
 
   char *fname = fdja_ls(msg, "fname", NULL);
   char *nid = fdja_lsd(msg, "nid", "0");
+
   fdja_value *tree = fdja_l(msg, "tree");
 
   if (tree == NULL || tree->type != 'a')
@@ -175,13 +175,13 @@ static void handle_execute(char order, fdja_value *msg)
     goto _over;
   }
 
-  tree = flon_rewrite(tree, msg);
-
   char *parent_nid = fdja_ls(msg, "parent", NULL);
   fdja_value *payload = fdja_l(msg, "payload");
   fdja_value *node = create_node(nid, parent_nid, tree);
 
   fdja_set(msg, "tree", fdja_clone(tree));
+
+  flon_rewrite_tree(node, msg);
 
   if (parent_nid == NULL && strcmp(nid, "0") == 0)
   {

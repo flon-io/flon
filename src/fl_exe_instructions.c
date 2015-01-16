@@ -44,22 +44,6 @@
 //
 // helpers
 
-//static char *node_id(fdja_value *node, fdja_value *msg)
-//{
-//  //flu_putf(fdja_todc(node));
-//  //flu_putf(fdja_todc(msg));
-//
-//  char *nid = fdja_lsd(node, "nid", "nid?");
-//  char *exid = fdja_ls(node, "exid", NULL);
-//  if (exid == NULL) exid = fdja_lsd(msg, "exid", "exid?");
-//
-//  char *r = flu_sprintf("%s-%s", exid, nid);
-//
-//  free(nid); free(exid);
-//
-//  return r;
-//}
-
 static void n_log(
   char level,
   fdja_value *node, fdja_value *msg,
@@ -95,6 +79,12 @@ static int is_index(char *key)
   if (key == NULL || *key != '_') return 0;
   for (key = key + 1; *key; ++key) if (*key < '0' || *key > '9') return 0;
   return 1;
+}
+
+static ssize_t att_index(char *key)
+{
+  if ( ! is_index(key)) return -1;
+  return strtoll(key + 1, NULL, 10);
 }
 
 static fdja_value *tree(fdja_value *node, fdja_value *msg)
@@ -455,7 +445,7 @@ static flon_ni *instructions[] = {
 //
 // call instruction
 
-flon_instruction *flon_lookup_instruction(char dir, const char *name)
+static flon_instruction *lookup_instruction(char dir, const char *name)
 {
   for (size_t i = 0; ; ++i)
   {
@@ -474,25 +464,15 @@ flon_instruction *flon_lookup_instruction(char dir, const char *name)
   return NULL;
 }
 
+#include "fl_rewrite.c" // flon_rewrite_tree()
+
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
   char *inst = fdja_ls(node, "inst");
 
   fgaj_d("dir: %c, inst: %s", dir, inst);
 
-  flon_instruction *i = flon_lookup_instruction(dir, inst);
-
-  //if (i == NULL)
-  //{
-  //  fdja_value *v = lookup_var(node, inst);
-  //
-  //  if (is_callable(v))
-  //  {
-  //    fdja_psetv(node, "inst", "call");
-  //
-  //    return flon_call_instruction(dir, "call", node, msg);
-  //  }
-  //}
+  flon_instruction *i = lookup_instruction(dir, inst);
 
   char r = '?'; // 'unknown' for now
 

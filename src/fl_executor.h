@@ -56,7 +56,7 @@ void flon_unschedule_msg(
 
 typedef char flon_instruction(fdja_value *, fdja_value *);
 
-flon_instruction *flon_lookup_instruction(char dir, const char *name);
+void flon_rewrite_tree(fdja_value *node, fdja_value *msg);
 
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg);
   //
@@ -74,8 +74,6 @@ fdja_value *flon_node_tree(const char *nid);
 fdja_value *flon_node_tree_clone(const char *nid);
 
 char *flon_node_parent_nid(const char *nid);
-
-fdja_value *flon_rewrite(fdja_value *tree, fdja_value *msg);
 
 #endif // FL_EXECUTOR_H
 

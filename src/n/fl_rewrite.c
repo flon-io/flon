@@ -23,17 +23,56 @@
 // Made in Japan.
 //
 
-#define _POSIX_C_SOURCE 200809L
 
-//#include <stdlib.h>
-//#include <string.h>
-
-#include "djan.h"
-#include "fl_executor.h"
-
-
-fdja_value *flon_rewrite(fdja_value *tree, fdja_value *msg)
+static void unshift_attribute(char *name, fdja_value *tree)
 {
-  return tree;
+  fdja_value *atts = fdja_l(tree, "1");
+  fdja_value *att0 = atts->child;
+  fdja_value *natt = fdja_s(name);
+  atts->child = natt; natt->sibling = att0;
+  natt->key = strdup("_0");
+
+  for (fdja_value *e = natt->sibling; e; e = e->sibling)
+  {
+    ssize_t i = att_index(e->key);
+    if (i < 0) continue;
+    free(e->key);
+    e->key = flu_sprintf("_%d", i + 1);
+  }
+}
+
+void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
+{
+  fdja_value *tree = fdja_l(msg, "tree");
+  fdja_value *vname = fdja_l(tree, "0");
+  char *name = NULL;
+
+  //fdja_putdc(node);
+  //fdja_putdc(msg);
+  //fdja_putdc(tree);
+  //fdja_putdc(vname);
+
+  if (fdja_is_stringy(vname))
+  {
+    name = fdja_to_string(vname);
+
+    flon_instruction *inst = lookup_instruction('e', name);
+    if (inst) goto _over;
+
+    fdja_value *v = lookup_var(node, name);
+
+    if (is_callable(v))
+    {
+      //printf("***\n"); fdja_putdc(tree);
+      fdja_psetv(node, "inst", "call");
+      fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
+      unshift_attribute(name, tree);
+      //fdja_putdc(tree);
+    }
+  }
+
+_over:
+
+  free(name);
 }
 

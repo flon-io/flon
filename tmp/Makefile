@@ -35,7 +35,7 @@ DDEPS= \
   flu64.o fl_dispatcher.o
 XDEPS= \
   $(DEPS) \
-  dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o fl_exe_rewrite.o
+  dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 IDEPS= \
   $(DEPS) \
   dollar.o fl_invoker.o
@@ -48,6 +48,9 @@ _tmpsrc:
 	cp -u ../src/n/*.[ch] src/
 	cp -u ../src/lib/*.[ch] src/
 	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
+_tmpsrcc:
+	rm src/*.[ch]
+	$(MAKE) _tmpsrc
 
 fl_exe_instructions.o: $(wildcard $(VPATH)/fl_n_*.c)
   # so that each time there is a change in fl_n_*.c, that .o gets rebuilt
@@ -200,5 +203,5 @@ spec:
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean _tmpsrc _specfilter
+.PHONY: clean _tmpsrc _tmpsrcc _specfilter
 
