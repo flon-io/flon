@@ -1084,7 +1084,12 @@ int fdja_strcmp(fdja_value *v, const char *s)
   if (v == NULL) return -1;
   if ( ! fdja_is_stringy(v)) return -1;
 
-  return strncmp(fdja_srk(v), s, strlen(s));
+  char *sv = fdja_to_string(v);
+  int r = strcmp(sv, s);
+  free(sv);
+    // a bit costly but easier to follow
+
+  return r;
 }
 
 char *fdja_value_to_s(fdja_value *v)
@@ -1337,6 +1342,18 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v)
   {
     if (*l == NULL) { *l = v; break; }
   }
+
+  return v;
+}
+
+fdja_value *fdja_unshift(fdja_value *array, fdja_value *v)
+{
+  if (array->type != 'a') return NULL;
+
+  fdja_value *c = array->child;
+  array->child = v;
+  v->sibling = c;
+
   return v;
 }
 
@@ -1651,8 +1668,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 208fdca1d7855555cef319fa2467616c1ac810d7
+//commit 5afbc9118c280ac9ecc4ac18cbd5d830b13d0e03
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Jan 17 13:35:09 2015 +0900
+//Date:   Sun Jan 18 07:05:56 2015 +0900
 //
-//    drop the "(" concept (for now)
+//    simplify fdja_strcmp() (at a mem cost)
