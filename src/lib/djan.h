@@ -262,8 +262,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit c24303b0272f80eb893fd795a8ea02e48b12e141
+//commit 208fdca1d7855555cef319fa2467616c1ac810d7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Jan 17 07:25:35 2015 +0900
+//Date:   Sat Jan 17 13:35:09 2015 +0900
 //
-//    rename to fdja_array_malloc() and _object_malloc()
+//    drop the "(" concept (for now)

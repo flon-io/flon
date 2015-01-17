@@ -625,16 +625,10 @@ static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
     // vanilla tree node
 
     vname = parse_radv(input, radh->child);
-    if (ind == -1)
-    {
-      fdja_value *n = vname;
-      vname = fdja_s("(");
-      fdja_set(vatts, "_0", n);
-    }
 
     // attributes
 
-    size_t j = ind == -1 ? 1 : 0;
+    size_t j = 0;
     for (flu_node *n = es->first; n; n = n->next)
     {
       fabr_tree *ak = fabr_subtree_lookup(n->item, "rad_k");
@@ -1657,8 +1651,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit c24303b0272f80eb893fd795a8ea02e48b12e141
+//commit 208fdca1d7855555cef319fa2467616c1ac810d7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Jan 17 07:25:35 2015 +0900
+//Date:   Sat Jan 17 13:35:09 2015 +0900
 //
-//    rename to fdja_array_malloc() and _object_malloc()
+//    drop the "(" concept (for now)
