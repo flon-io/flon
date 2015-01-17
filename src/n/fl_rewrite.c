@@ -183,12 +183,13 @@ static void rewrite_head_if(
   atts->child = NULL;
 
   fdja_unshift(fdja_l(tree, "2"), to_tree(l, node, msg));
-  flu_list_free(l);
+  flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
 }
 
 static void rewrite_post_if(
   fdja_value *vname, fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
+  // TODO
 }
 
 static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg)
