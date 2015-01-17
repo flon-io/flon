@@ -156,7 +156,31 @@ context "flon-executor"
           "] ]");
       }
 
-      it "rewrites  call x if a > b"
+      it "rewrites  if a > b then c d"
+      it "rewrites  if a > b then c d else f g"
+
+      it "rewrites  if a > b \\ c d"
+      {
+        msg = mrad(
+          "if a > b\n"
+          "  c d"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+          "[ if, {}, [ "
+            "[ >, {}, [ "
+              "[ a, {}, [] ], "
+              "[ b, {}, [] ] "
+            "] ], "
+            "[ c, { _0: d }, [] ] "
+          "] ]");
+      }
+
+      it "rewrites  c d if a > b"
+      it "rewrites  c d unless a > b"
     }
   }
 }
