@@ -24,6 +24,38 @@
 //
 
 
+static int is_op(fdja_value *v, const char *op)
+{
+  if (v->type == 'q') return 0;
+  return fdja_strcmp(v, op) == 0;
+}
+
+static int is_tree(fdja_value *v)
+{
+  if (v == NULL) return 0;
+  if (v->type != 'a') return 0;
+
+  if (v->child == NULL) return 0;
+
+  if (v->child->sibling == NULL) return 0;
+  if (v->child->sibling->type != 'o') return 0;
+
+  if (v->child->sibling->sibling == NULL) return 0;
+  if (v->child->sibling->sibling->type != 'a') return 0;
+
+  if (v->child->sibling->sibling->sibling != NULL) return 0;
+
+  if (strchr("sqya", v->child->type) == NULL) return 0;
+  if (v->child->type == 'a' && ! is_tree(v->child)) return 0;
+
+  for (fdja_value *c = v->child->sibling->sibling->child; c; c = c->sibling)
+  {
+    if ( ! is_tree(c)) return 0;
+  }
+
+  return 1;
+}
+
 static void unshift_attribute(char *name, fdja_value *tree)
 {
   fdja_value *atts = fdja_l(tree, "1");
@@ -92,12 +124,6 @@ static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
   rewrite_tree(r, node, msg);
 
   return r;
-}
-
-static int is_op(fdja_value *v, const char *op)
-{
-  if (v->type == 'q') return 0;
-  return fdja_strcmp(v, op) == 0;
 }
 
 static void rewrite(
