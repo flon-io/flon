@@ -37,7 +37,7 @@ context "flon-executor"
 
   describe "flon_rewrite_tree()"
   {
-    it "rewrites a > b"
+    it "rewrites  a > b"
     {
       msg = mrad("a > b");
 
@@ -50,7 +50,7 @@ context "flon-executor"
         "] ]");
     }
 
-    it "rewrites a or b or c"
+    it "rewrites  a or b or c"
     {
       msg = mrad("a or b or c");
 
@@ -64,7 +64,7 @@ context "flon-executor"
         "] ]");
     }
 
-    it "rewrites a or b and c"
+    it "rewrites  a or b and c"
     {
       msg = mrad("a or b and c");
 
@@ -80,9 +80,7 @@ context "flon-executor"
         "] ]");
     }
 
-    it "rewrites if a > b"
-
-    it "rewrites a and (b or c)"
+    it "rewrites  a and (b or c)"
     {
       msg = mrad("a and (b or c)");
 
@@ -98,7 +96,7 @@ context "flon-executor"
         "] ]");
     }
 
-    it "rewrites (a or b) and c"
+    it "rewrites  (a or b) and c"
     {
       msg = mrad("(a or b) and c");
 
@@ -112,6 +110,53 @@ context "flon-executor"
           "] ], "
           "[ c, {}, [] ] "
         "] ]");
+    }
+
+    context "with 'if' or 'unless'"
+    {
+      it "rewrites  if a"
+      {
+        msg = mrad("if a");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+          "[ if, {}, [ "
+            "[ a, {}, [] ] "
+          "] ]");
+      }
+
+      it "rewrites  unless a"
+      {
+        msg = mrad("unless a");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+          "[ unless, {}, [ "
+            "[ a, {}, [] ] "
+          "] ]");
+      }
+
+      it "rewrites  if a > b"
+      {
+        msg = mrad("if a > b");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
+          "[ if, {}, [ "
+            "[ >, {}, [ "
+              "[ a, {}, [] ], "
+              "[ b, {}, [] ] "
+            "] ] "
+          "] ]");
+      }
+
+      it "rewrites  call x if a > b"
     }
   }
 }
