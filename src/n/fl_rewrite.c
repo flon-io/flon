@@ -162,7 +162,8 @@ static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg)
   rewrite(tree, "+", node, msg); rewrite(tree, "-", node, msg);
   rewrite(tree, "*", node, msg); rewrite(tree, "/", node, msg);
     rewrite(tree, "%", node, msg);
-  rewrite(tree, "!", node, msg);
+
+  //rewrite(tree, "!", node, msg); // TODO: it's an instruction
 }
 
 void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
