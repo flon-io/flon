@@ -100,16 +100,22 @@ static void rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg);
 
 static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
 {
-  fdja_value *r = fdja_array_malloc();
+  fdja_value *r = NULL;
 
-  if (l->size == 1 && ! fdja_is_stringy(l->first->item))
+  if (l->size == 1 && is_tree(l->first->item))
   {
+    r = fdja_clone(l->first->item);
+  }
+  else if (l->size == 1 && ! fdja_is_stringy(l->first->item))
+  {
+    r = fdja_array_malloc();
     fdja_push(r, fdja_s("val"));
     fdja_value *atts = fdja_push(r, fdja_object_malloc());
     fdja_set(atts, "_0", fdja_clone(l->first->item));
   }
   else
   {
+    r = fdja_array_malloc();
     fdja_push(r, fdja_clone(l->first->item));
     fdja_value *atts = fdja_push(r, fdja_object_malloc());
     for (flu_node *n = l->first->next; n; n = n->next)
