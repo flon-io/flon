@@ -48,6 +48,8 @@ context "flon-executor"
           "[ a, { _: g }, [] ], "
           "[ b, { _: h }, [] ] "
         "] ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f ">");
     }
 
     it "rewrites  a or b or c"
@@ -62,6 +64,8 @@ context "flon-executor"
           "[ b, { _: h }, [] ], "
           "[ c, { _: i }, [] ] "
         "] ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "or");
     }
 
     it "rewrites  a or b and c"
@@ -78,6 +82,8 @@ context "flon-executor"
             "[ c, { _: i }, [] ] "
           "] ] "
         "] ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "or");
     }
 
     it "rewrites  a and (b or c)"
@@ -94,6 +100,8 @@ context "flon-executor"
             "[ c, { _: i }, [] ] "
           "] ] "
         "] ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "and");
     }
 
     it "rewrites  (a or b) and c"
@@ -110,7 +118,11 @@ context "flon-executor"
           "] ], "
           "[ c, { _: j }, [] ] "
         "] ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "and");
     }
+
+    it "writes down the expanded inst   $(a) x"
 
     context "with 'if' or 'unless'"
     {
@@ -125,6 +137,8 @@ context "flon-executor"
           "[ if, {}, [ "
             "[ a, { _: g }, [] ] "
           "] ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "if");
       }
 
       it "rewrites  unless a"
@@ -138,6 +152,8 @@ context "flon-executor"
           "[ unless, {}, [ "
             "[ a, { _: g }, [] ] "
           "] ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "unless");
       }
 
       it "rewrites  if a > b"
@@ -154,6 +170,8 @@ context "flon-executor"
               "[ b, { _: h }, [] ] "
             "] ] "
           "] ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "if");
       }
 
       it "rewrites  if a > b then c d"
@@ -177,6 +195,8 @@ context "flon-executor"
             "] ], "
             "[ c, { _0: d }, [] ] "
           "] ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "if");
       }
 
       it "rewrites  c d if a > b"

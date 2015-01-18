@@ -25,6 +25,8 @@ clean:
 	rm -f *.so
 	rm -f [cdxnilkz]s
 	rm -f [cdxnilkz]s.c
+	rm -f src/*.[ch]
+	$(MAKE) _tmpsrc
 
 DEPS= \
   flutil.o flutim.o \
@@ -49,7 +51,7 @@ _tmpsrc:
 	cp -u ../src/lib/*.[ch] src/
 	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
 _tmpsrcc:
-	rm src/*.[ch]
+	rm -f src/*.[ch]
 	$(MAKE) _tmpsrc
 
 fl_exe_instructions.o: $(wildcard $(VPATH)/fl_n_*.c)

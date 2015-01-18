@@ -258,6 +258,8 @@ void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
   //fdja_putdc(fdja_l(msg, "tree"));
 
+  // TODO: expand head and attributes?
+
   fdja_value *tree = fdja_l(msg, "tree");
 
   if (fdja_l(tree, "1._")) return;
@@ -265,5 +267,7 @@ void flon_rewrite_tree(fdja_value *node, fdja_value *msg)
   ssize_t counter = -1;
 
   rewrite_tree(tree, &counter, node, msg);
+
+  fdja_set(node, "inst", fdja_lc(tree, "0"));
 }
 

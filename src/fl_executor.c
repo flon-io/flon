@@ -122,8 +122,10 @@ static fdja_value *create_node(char *nid, char *parent_nid, fdja_value *tree)
 {
   fdja_value *node = fdja_object_malloc();
 
-  fdja_set(
-    node, "inst", fdja_lc(tree, "0"));
+  //fdja_set(
+  //  node, "inst", fdja_lc(tree, "0"));
+    // done at the rewrite step now
+
   fdja_set(
     node, "nid", fdja_s(nid));
   fdja_set(
