@@ -223,7 +223,7 @@ static void rewrite_tree(
   fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
 {
   fdja_value *vname = fdja_l(tree, "0"); expand(vname, node, msg);
-  fdja_value *vatt0 = fdja_l(tree, "1._0"); expand(vatt0, node, msg);
+  //fdja_value *vatt0 = fdja_l(tree, "1._0"); expand(vatt0, node, msg);
 
   //fdja_putdc(node);
   //fdja_putdc(msg);

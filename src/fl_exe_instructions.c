@@ -400,6 +400,8 @@ static char can_(fdja_value *node, fdja_value *can)
   return count > 0 ? 'k' : 'v'; // over
 }
 
+#include "fl_seq_con.c"
+
 #include "fl_n_call.c"
 #include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
@@ -429,12 +431,19 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "set", exe_set, rcv_, can_ },
   &(flon_ni){ "call", exe_call, rcv_, can_ },
   &(flon_ni){ "invoke", exe_invoke, rcv_invoke, can_ },
-  &(flon_ni){ "cmp", exe_cmp, rcv_, can_ },
   &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },
   &(flon_ni){ "trace", exe_trace, rcv_, can_ },
   &(flon_ni){ "stall", exe_stall, rcv_, can_ },
   &(flon_ni){ "val", exe_val, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
+
+  &(flon_ni){ ">", exe_cmp, rcv_, can_ },
+  &(flon_ni){ ">=", exe_cmp, rcv_, can_ },
+  &(flon_ni){ "<", exe_cmp, rcv_, can_ },
+  &(flon_ni){ "<=", exe_cmp, rcv_, can_ },
+  &(flon_ni){ "==", exe_cmp, rcv_, can_ },
+  &(flon_ni){ "!=", exe_cmp, rcv_, can_ },
+
   NULL
 };
 

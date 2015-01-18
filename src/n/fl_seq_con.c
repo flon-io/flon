@@ -24,18 +24,52 @@
 //
 
 
-// the meat is in src/n/fl_seq_con.c
-
-
-static char rcv_sequence(fdja_value *node, fdja_value *rcv)
+static char seq_rcv(fdja_value *node, fdja_value *rcv)
 {
-  //fdja_putdc(node);
+  //flu_putf(fdja_todc(node));
 
-  return seq_rcv(node, rcv);
+  char *nid = fdja_ls(node, "nid", NULL);
+  char *from = fdja_ls(rcv, "from", NULL);
+
+  fdja_value *children = fdja_l(node, "children");
+  fdja_splice(children, 0, 1, NULL); // empty children array
+
+  fdja_value *rets = fdja_l(node, "rets");
+  if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
+
+  char *next = from ? flon_nid_next(from) : flon_nid_child(nid, 0);
+  fdja_value *t = next ? flon_node_tree(next) : NULL;
+  char r = 'v'; // over, for now
+
+  if (t)
+  {
+    flon_queue_msg("execute", next, nid, payload(rcv), NULL, NULL);
+    fdja_push(children, fdja_s(next));
+    r = 'k'; // ok, not yet over
+  }
+
+  free(nid);
+  free(next);
+  free(from);
+
+  return r;
 }
 
-static char exe_sequence(fdja_value *node, fdja_value *exe)
+static char seq_exe(fdja_value *node, fdja_value *exe, int track_ret)
 {
-  return seq_exe(node, exe, 0);
+  fdja_set(node, "children", fdja_array_malloc());
+  if (track_ret) fdja_set(node, "rets", fdja_array_malloc());
+
+  if (child_count(node, exe) < 1) return 'v';
+
+  return seq_rcv(node, exe);
+}
+
+static char con_exe(fdja_value *node, fdja_value *exe)
+{
+}
+
+static char con_rcv(fdja_value *node, fdja_value *rcv)
+{
 }
 

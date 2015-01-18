@@ -1,8 +1,8 @@
 
 //
-// specifying flon-dispatcher
+// specifying flon
 //
-// Mon Jan 12 11:41:31 JST 2015
+// Mon Jan 19 05:59:55 JST 2015
 //
 
 #include "fl_ids.h"
@@ -10,7 +10,7 @@
 #include "feu_helpers.h"
 
 
-context "instruction:"
+context "flon and tree rewrite:"
 {
   before all
   {
@@ -21,36 +21,39 @@ context "instruction:"
   {
     char *exid = NULL;
     fdja_value *result = NULL;
+    fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
     fdja_free(result);
+    fdja_free(v);
   }
 
-  describe "cmp"
+  describe "flon"
   {
-    it "compares two values"
+    it "rewrites and execute  $(a) > 3"
     {
-      exid = flon_generate_exid("n.cmp");
+      exid = flon_generate_exid("z.rewrite.cmp");
 
       hlp_launch(
         exid,
-        ">\n"
-        "  val $(x)\n"
-        "  val 3\n"
+        "$(a) > 3\n"
         "",
-        "{ x: 4 }");
+        "{ a: 4 }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
+
       flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ x: 4, ret: true }");
+        "{ ret: true, a: 4 }");
     }
+
+    it "rewrites and execute  $(a) $(op) 3"
   }
 }
 
