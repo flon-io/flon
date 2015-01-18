@@ -45,8 +45,8 @@ context "flon-executor"
 
       expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
         "[ >, {}, [ "
-          "[ a, {}, [] ], "
-          "[ b, {}, [] ] "
+          "[ a, { _: g }, [] ], "
+          "[ b, { _: h }, [] ] "
         "] ]");
     }
 
@@ -58,9 +58,9 @@ context "flon-executor"
 
       expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
         "[ or, {}, [ "
-          "[ a, {}, [] ], "
-          "[ b, {}, [] ], "
-          "[ c, {}, [] ] "
+          "[ a, { _: g }, [] ], "
+          "[ b, { _: h }, [] ], "
+          "[ c, { _: i }, [] ] "
         "] ]");
     }
 
@@ -72,10 +72,10 @@ context "flon-executor"
 
       expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
         "[ or, {}, [ "
-          "[ a, {}, [] ], "
-          "[ and, {}, [ "
-            "[ b, {}, [] ], "
-            "[ c, {}, [] ] "
+          "[ a, { _: g }, [] ], "
+          "[ and, { _: j }, [ "
+            "[ b, { _: h }, [] ], "
+            "[ c, { _: i }, [] ] "
           "] ] "
         "] ]");
     }
@@ -88,10 +88,10 @@ context "flon-executor"
 
       expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
         "[ and, {}, [ "
-          "[ a, {}, [] ], "
-          "[ or, {}, [ "
-            "[ b, {}, [] ], "
-            "[ c, {}, [] ] "
+          "[ a, { _: g }, [] ], "
+          "[ or, { _: j }, [ "
+            "[ b, { _: h }, [] ], "
+            "[ c, { _: i }, [] ] "
           "] ] "
         "] ]");
     }
@@ -104,11 +104,11 @@ context "flon-executor"
 
       expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
         "[ and, {}, [ "
-          "[ or, {}, [ "
-            "[ a, {}, [] ], "
-            "[ b, {}, [] ] "
+          "[ or, { _: i }, [ "
+            "[ a, { _: g }, [] ], "
+            "[ b, { _: h }, [] ] "
           "] ], "
-          "[ c, {}, [] ] "
+          "[ c, { _: j }, [] ] "
         "] ]");
     }
 
@@ -123,7 +123,7 @@ context "flon-executor"
 
         expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
           "[ if, {}, [ "
-            "[ a, {}, [] ] "
+            "[ a, { _: g }, [] ] "
           "] ]");
       }
 
@@ -136,7 +136,7 @@ context "flon-executor"
 
         expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
           "[ unless, {}, [ "
-            "[ a, {}, [] ] "
+            "[ a, { _: g }, [] ] "
           "] ]");
       }
 
@@ -149,9 +149,9 @@ context "flon-executor"
 
         expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
           "[ if, {}, [ "
-            "[ >, {}, [ "
-              "[ a, {}, [] ], "
-              "[ b, {}, [] ] "
+            "[ >, { _: i }, [ "
+              "[ a, { _: g }, [] ], "
+              "[ b, { _: h }, [] ] "
             "] ] "
           "] ]");
       }
@@ -171,9 +171,9 @@ context "flon-executor"
 
         expect(fdja_tod(fdja_l(msg, "tree")) ===f ""
           "[ if, {}, [ "
-            "[ >, {}, [ "
-              "[ a, {}, [] ], "
-              "[ b, {}, [] ] "
+            "[ >, { _: i }, [ "
+              "[ a, { _: g }, [] ], "
+              "[ b, { _: h }, [] ] "
             "] ], "
             "[ c, { _0: d }, [] ] "
           "] ]");
