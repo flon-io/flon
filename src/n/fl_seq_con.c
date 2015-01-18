@@ -67,9 +67,11 @@ static char seq_exe(fdja_value *node, fdja_value *exe, int track_ret)
 
 static char con_exe(fdja_value *node, fdja_value *exe)
 {
+  return '?'; // TODO
 }
 
 static char con_rcv(fdja_value *node, fdja_value *rcv)
 {
+  return '?'; // TODO
 }
 

@@ -60,6 +60,11 @@ static int cmp_number(char *op, char *l, char *r)
   return strchr(l, '.') ? cmp_double(op, l, r) : cmp_integer(op, l, r);
 }
 
+static char rcv_cmp(fdja_value *node, fdja_value *rcv)
+{
+  return '?'; // TODO
+}
+
 static char exe_cmp(fdja_value *node, fdja_value *exe)
 {
   char r = 'v'; // 'over' for now

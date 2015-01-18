@@ -437,12 +437,13 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "val", exe_val, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
 
-  &(flon_ni){ ">", exe_cmp, rcv_, can_ },
-  &(flon_ni){ ">=", exe_cmp, rcv_, can_ },
-  &(flon_ni){ "<", exe_cmp, rcv_, can_ },
-  &(flon_ni){ "<=", exe_cmp, rcv_, can_ },
-  &(flon_ni){ "==", exe_cmp, rcv_, can_ },
-  &(flon_ni){ "!=", exe_cmp, rcv_, can_ },
+  &(flon_ni){ ">", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ ">=", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "<", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "<=", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "==", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "!=", exe_cmp, rcv_cmp, can_ },
+  //&(flon_ni){ "c>", exe_cmp, rcv_cmp, can_ }, // TODO
 
   NULL
 };
