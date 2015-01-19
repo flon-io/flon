@@ -24,6 +24,8 @@
 //
 
 
+// TODO: move the core of it to src/n/fl_seq_con.c
+
 static char rcv_concurrence(fdja_value *node, fdja_value *rcv)
 {
   // TODO: focus immediately on "merge participants (invokers)"
