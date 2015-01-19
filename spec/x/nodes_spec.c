@@ -24,6 +24,7 @@ context "fl_exe_nodes"
         "    [ concurrence, {}, [\n"
         "      [ invoke, { _0: stamp, color: green }, [] ]\n"
         "      [ invoke, { _0: stamp, color: blue }, [] ]\n"
+        "      [ invoke, { _0: stamp, color: red }, [] ]\n"
         "    ] ]\n"
         "  ] ]\n"
         "}\n"
@@ -31,6 +32,7 @@ context "fl_exe_nodes"
         "0_1: {}\n"
         "0_1_0: {}\n"
         "0_1_0-1: {}\n"
+        "0_1_2: { tree: [ sequence, {}, [] ] }\n"
         "9_1_9: { parent: 9_0 }\n" // special
       "}");
   }
@@ -47,8 +49,8 @@ context "fl_exe_nodes"
 
       expect(t != NULL);
 
-      expect(fdja_to_json(t) ^==f ""
-        "[\"sequence\",{},[");
+      expect(fdja_tod(t) ^==f ""
+        "[ sequence, {}, [");
     }
 
     it "looks up a sub tree"
@@ -57,8 +59,18 @@ context "fl_exe_nodes"
 
       expect(t != NULL);
 
-      expect(fdja_to_json(t) ^==f ""
-        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"green\"},[]]");
+      expect(fdja_tod(t) ===f ""
+        "[ invoke, { _0: stamp, color: green }, [] ]");
+    }
+
+    it "looks up and returns updated trees"
+    {
+      fdja_value *t = flon_node_tree("0_1_2");
+
+      expect(t != NULL);
+
+      expect(fdja_tod(t) ===f ""
+        "[ sequence, {}, [] ]");
     }
   }
 

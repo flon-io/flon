@@ -43,18 +43,29 @@ fdja_value *flon_node(const char *nid)
 
 static fdja_value *node_tree(const char *nid, int clone)
 {
-  // TODO: this doesn't take updated "tree"s into account...
-
   fdja_value *t = fdja_l(execution, "nodes.0.tree");
 
   if (t == NULL) return NULL;
 
   flu_list *l = flu_split(nid, "_");
+
+  char *cnid = calloc(strlen(nid) + 1, sizeof(char));
+  char *ccnid = cnid + sprintf(cnid, l->first->item);
+
   if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
   {
-    t = fdja_l(t, "2.%lli", strtol((char *)n->item, NULL, 16));
+    ccnid += sprintf(ccnid, "_%s", n->item);
+
+    fdja_value *nt = fdja_l(execution, "nodes.%s.tree", cnid);
+
+    if (nt)
+      t = nt;
+    else
+      t = fdja_l(t, "2.%lli", strtoll((char *)n->item, NULL, 16));
   }
   flu_list_free_all(l);
+
+  free(cnid);
 
   return clone ? fdja_clone(t) : t;
     // fdja_clone(NULL) returns NULL
