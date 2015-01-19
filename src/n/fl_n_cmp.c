@@ -61,16 +61,47 @@ static int cmp_number(char *op, char *l, char *r)
   return strchr(l, '.') ? cmp_double(op, l, r) : cmp_integer(op, l, r);
 }
 
+static int cmp(char *op, fdja_value *l, fdja_value *r)
+{
+  char *jl = fdja_to_json(l);
+  char *jr = fdja_to_json(r);
+
+  int ret = 0;
+
+  if (l->type == 'n' && r->type == 'n')
+    ret = cmp_number(op, jl, jr);
+  else if (l->type == 'n')
+    ret = 0;
+  else
+    ret = cmp_object(op, jl, jr);
+
+  free(jl); free(jr);
+
+  return ret;
+}
+
 static char rcv_cmp(fdja_value *node, fdja_value *rcv)
 {
   char r = seq_rcv(node, rcv);
 
   if (r != 'v') return r;
 
-puts("<over");
-fdja_putdc(node);
-fdja_putdc(rcv);
-puts("</over");
+  char *op = fdja_ls(node, "inst", NULL);
+  fdja_value *rets = fdja_l(node, "rets");
+  size_t l = fdja_size(rets);
+
+  int ret = 1;
+
+  if (l > 1) for (fdja_value *r = rets->child; ; r = r->sibling)
+  {
+    if (--l == 0) break;
+    fdja_value *left = r;
+    fdja_value *right = r->sibling;
+    ret = cmp(op, left, right);
+    if (ret == 0) break;
+  }
+
+  fdja_psetv(rcv, "payload.ret", ret ? "true" : "false");
 
   return 'v';
 }
@@ -78,40 +109,5 @@ puts("</over");
 static char exe_cmp(fdja_value *node, fdja_value *exe)
 {
   return seq_exe(node, exe, 1); // 1 to collect the "ret"s
-//  char r = 'v'; // 'over' for now
-//
-//  fdja_value *atts = attributes(node, exe);
-//
-//  if (fdja_size(atts) != 3)
-//  {
-//    set_error_note(node, "needs exactly 3 atts", atts);
-//    r = 'r'; goto _over;
-//  }
-//
-//  fdja_value *left = atts->child;
-//  char *op = fdja_to_string(atts->child->sibling);
-//  fdja_value *right = atts->child->sibling->sibling;
-//
-//  char *jl = fdja_to_json(left);
-//  char *jr = fdja_to_json(right);
-//
-//  int ret = 0; //false for now
-//
-//  if (left->type == 'n' && right->type == 'n')
-//    ret = cmp_number(op, jl, jr);
-//  else if (left->type == 'n')
-//    ret = 0;
-//  else
-//    ret = cmp_object(op, jl, jr);
-//
-//  free(op); free(jl); free(jr);
-//
-//  fdja_psetv(exe, "payload.ret", ret ? "true" : "false");
-//
-//_over:
-//
-//  fdja_free(atts);
-//
-//  return r;
 }
 

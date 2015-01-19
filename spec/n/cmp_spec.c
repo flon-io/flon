@@ -30,9 +30,9 @@ context "instruction:"
 
   describe "cmp"
   {
-    it "compares two values"
+    it "compares numbers with > (hit)"
     {
-      exid = flon_generate_exid("n.cmp");
+      exid = flon_generate_exid("n.cmp.0");
 
       hlp_launch(
         exid,
@@ -43,13 +43,35 @@ context "instruction:"
         "{ x: 4 }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ x: 4, ret: true }");
+    }
+
+    it "compares numbers with > (miss)"
+    {
+      exid = flon_generate_exid("n.cmp.1");
+
+      hlp_launch(
+        exid,
+        ">\n"
+        "  val $(x)\n"
+        "  val 8\n"
+        "",
+        "{ x: 7 }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ x: 7, ret: false }");
     }
   }
 }
