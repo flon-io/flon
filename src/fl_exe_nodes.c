@@ -23,6 +23,7 @@
 // Made in Japan.
 //
 
+
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
@@ -42,6 +43,8 @@ fdja_value *flon_node(const char *nid)
 
 static fdja_value *node_tree(const char *nid, int clone)
 {
+  // TODO: this doesn't take updated "tree"s into account...
+
   fdja_value *t = fdja_l(execution, "nodes.0.tree");
 
   if (t == NULL) return NULL;
