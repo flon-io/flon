@@ -123,6 +123,25 @@ context "fl_ids:"
         " ftype: .json"
         " }");
     }
+
+    it "accepts rewritten nids"
+    {
+      v = flon_parse_nid(
+        "ret_xtest.pn-u0-20150119.1616.mojamoja-0_1_g-ff.json");
+
+      expect(fdja_tod(v) ===f ""
+        "{ "
+          "msg: ret_, "
+          "exid: xtest.pn-u0-20150119.1616.mojamoja, "
+          "domain: xtest.pn, "
+          "feu: u0, "
+          "tid: 20150119.1616.mojamoja, "
+          "nid: 0_1_g-ff, "
+          "node: 0_1_g, "
+          "counter: ff, "
+          "ftype: .json "
+        "}");
+    }
   }
 
   describe "flon_parse_exid()"
