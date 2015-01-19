@@ -402,6 +402,7 @@ static char can_(fdja_value *node, fdja_value *can)
 
 #include "fl_seq_con.c"
 
+#include "fl_n_and.c"
 #include "fl_n_call.c"
 #include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
@@ -444,6 +445,9 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "==", exe_cmp, rcv_cmp, can_ },
   &(flon_ni){ "!=", exe_cmp, rcv_cmp, can_ },
   //&(flon_ni){ "c>", exe_cmp, rcv_cmp, can_ }, // TODO
+
+  &(flon_ni){ "and", exe_and, rcv_and, can_ },
+  &(flon_ni){ "or", exe_and, rcv_and, can_ },
 
   NULL
 };

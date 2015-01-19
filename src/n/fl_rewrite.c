@@ -202,12 +202,13 @@ static int rewrite(
 }
 
 static int rewrite_head_if(
-  fdja_value *name, fdja_value *tree, ssize_t *nidsuf,
-  fdja_value *node, fdja_value *msg)
+  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
 {
+  fdja_value *vname = fdja_l(tree, "0");
+
   if (
-    fdja_strcmp(name, "if") != 0 &&
-    fdja_strcmp(name, "unless") != 0
+    fdja_strcmp(vname, "if") != 0 &&
+    fdja_strcmp(vname, "unless") != 0
   ) return 0;
 
   fdja_value *atts = fdja_l(tree, "1");
