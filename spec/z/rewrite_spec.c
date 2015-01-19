@@ -44,13 +44,13 @@ context "flon and tree rewrite:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: true, a: 4 }");
+        "{ a: 4, ret: true }");
     }
 
     it "rewrites and execute  $(a) $(op) 3"

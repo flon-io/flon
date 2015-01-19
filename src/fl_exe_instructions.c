@@ -475,7 +475,7 @@ static flon_instruction *lookup_instruction(char dir, const char *name)
 
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
-  char *inst = fdja_ls(node, "inst");
+  char *inst = fdja_ls(node, "inst", NULL);
 
   fgaj_d("dir: %c, inst: %s", dir, inst);
 

@@ -54,7 +54,7 @@ static fdja_value *node_tree(const char *nid, int clone)
 
   if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
   {
-    ccnid += sprintf(ccnid, "_%s", n->item);
+    ccnid += sprintf(ccnid, "_%s", (char *)n->item);
 
     fdja_value *nt = fdja_l(execution, "nodes.%s.tree", cnid);
 

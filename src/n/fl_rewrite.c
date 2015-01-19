@@ -87,9 +87,10 @@ static void unshift_attribute(char *name, fdja_value *tree)
 }
 
 static int rewrite_as_call_or_invoke(
-  fdja_value *vname, fdja_value *tree, ssize_t *nidsuf,
-  fdja_value *node, fdja_value *msg)
+  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
 {
+  fdja_value *vname = fdja_l(tree, "0");
+
   if ( ! fdja_is_stringy(vname)) return 0;
 
   char *name = fdja_to_string(vname);
@@ -145,7 +146,7 @@ static fdja_value *to_tree(
     }
   }
 
-  fdja_push(r, fdja_array_malloc());
+  fdja_push(r, fdja_array_malloc()); // no children
 
   rewrite_tree(r, nidsuf, node, msg);
 
@@ -227,8 +228,7 @@ static int rewrite_head_if(
 }
 
 static int rewrite_post_if(
-  fdja_value *vname, fdja_value *tree, ssize_t *nidsuf,
-  fdja_value *node, fdja_value *msg)
+  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
 {
   // TODO
 
@@ -240,12 +240,10 @@ static int rewrite_tree(
 {
   int rw = 0; // rewritten? not yet
 
-  fdja_value *vname = fdja_l(tree, "0"); expand(vname, node, msg);
+  rw |= rewrite_as_call_or_invoke(tree, nidsuf, node, msg);
 
-  rw |= rewrite_as_call_or_invoke(vname, tree, nidsuf, node, msg);
-
-  rw |= rewrite_head_if(vname, tree, nidsuf, node, msg);
-  rw |= rewrite_post_if(vname, tree, nidsuf, node, msg);
+  rw |= rewrite_head_if(tree, nidsuf, node, msg);
+  rw |= rewrite_post_if(tree, nidsuf, node, msg);
 
   // in precedence order
   //
@@ -270,20 +268,27 @@ static int rewrite_tree(
 
 int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
-  //fdja_putdc(fdja_l(msg, "tree"));
-
   // TODO: expand head and attributes?
 
   fdja_value *tree = fdja_l(msg, "tree");
+  //fdja_putdc(tree);
 
-  if (fdja_l(tree, "1._")) return;
+  expand(fdja_l(tree, "0"), node, msg); // name / head
+  expand(fdja_l(tree, "1"), node, msg); // attributes
+
+  fdja_set(node, "inst", fdja_lc(tree, "0"));
+
+  if (fdja_l(tree, "1._")) return 0;
 
   ssize_t counter = -1;
 
   int rewritten = rewrite_tree(tree, &counter, node, msg);
 
-  fdja_set(node, "inst", fdja_lc(tree, "0"));
-  if (rewritten) fdja_set(node, "tree", fdja_clone(tree));
+  if (rewritten)
+  {
+    fdja_set(node, "tree", fdja_clone(tree));
+    fdja_set(node, "inst", fdja_lc(tree, "0"));
+  }
 
   return rewritten;
 }

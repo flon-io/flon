@@ -41,7 +41,6 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
   fdja_value *t = next ? flon_node_tree(next) : NULL;
   char r = 'v'; // over, for now
 
-printf("t: %p\n", t);
   if (t)
   {
     flon_queue_msg("execute", next, nid, payload(rcv), NULL, NULL);

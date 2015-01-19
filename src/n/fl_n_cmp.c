@@ -103,6 +103,8 @@ static char rcv_cmp(fdja_value *node, fdja_value *rcv)
 
   fdja_psetv(rcv, "payload.ret", ret ? "true" : "false");
 
+  free(op);
+
   return 'v';
 }
 
