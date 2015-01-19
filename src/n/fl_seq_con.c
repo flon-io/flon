@@ -26,8 +26,6 @@
 
 static char seq_rcv(fdja_value *node, fdja_value *rcv)
 {
-  //fdja_putdc(node);
-
   char *nid = fdja_ls(node, "nid", NULL);
   char *from = fdja_ls(rcv, "from", NULL);
 
@@ -36,6 +34,10 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
 
   fdja_value *rets = fdja_l(node, "rets");
   if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
+
+//printf("<---->\n");
+//fdja_putdc(node);
+//printf("</--->\n");
 
   char *next = from ? flon_nid_next(from) : flon_nid_child(nid, 0);
   fdja_value *t = next ? flon_node_tree(next) : NULL;
