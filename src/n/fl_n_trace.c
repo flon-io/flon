@@ -28,14 +28,23 @@ static fdja_value *shrink_atts(fdja_value *atts)
 {
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
+    if (strcmp(v->key, "_") == 0) continue;
     if ( ! is_index(v->key)) return fdja_clone(atts);
   }
 
-  fdja_value *r = fdja_v("[]");
+  fdja_value *r = fdja_array_malloc();
+
+  int u_ = 0;
 
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
+    if (strcmp(v->key, "_") == 0) { u_ = 1; continue; }
     fdja_push(r, fdja_clone(v));
+  }
+
+  if (u_ && r->child && r->child->sibling == NULL)
+  {
+    fdja_value *rr = r->child; r->child = NULL; fdja_free(r); r = rr;
   }
 
   return r;

@@ -54,6 +54,29 @@ context "flon and tree rewrite:"
     }
 
     it "rewrites and execute  $(a) $(op) 3"
+
+    it "respects the '_' attribute"
+    {
+      exid = flon_generate_exid("z.rewrite.cmp");
+
+      hlp_launch(
+        exid,
+        "trace $(nid) or (trace $(nid) or trace $(nid))\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload.trace") ===f ""
+        "[ 0_g, 0_i, 0_j ]");
+    }
+
+    it "respects the '_' attribute also when -{counter}"
   }
 }
 
