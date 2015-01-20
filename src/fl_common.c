@@ -185,7 +185,7 @@ fdja_value *flon_try_parse(char mode, const char *path, ...)
   if (flock(fileno(f), LOCK_NB | LOCK_EX) != 0) goto _over;
 
   if (mode == 'o') r = fdja_fparse_obj(f);
-  else if (mode == 'r') r = fdja_fparse_radial(f);
+  else if (mode == 'r') r = fdja_fparse_radial(f, fname);
   else r = fdja_fparse(f);
 
 _over:

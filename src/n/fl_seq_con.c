@@ -24,6 +24,16 @@
 //
 
 
+static int is_msg_to_self(fdja_value *msg)
+{
+  char *nid = fdja_ls(msg, "nid");
+  char *from = fdja_ls(msg, "from");
+  int r = strcmp(nid, from) == 0;
+  free(nid); free(from);
+
+  return r;
+}
+
 static char seq_rcv(fdja_value *node, fdja_value *rcv)
 {
   char *nid = fdja_ls(node, "nid", NULL);
@@ -35,11 +45,12 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
   fdja_value *rets = fdja_l(node, "rets");
   if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
 
-//printf("<---->\n");
-//fdja_putdc(node);
-//printf("</--->\n");
+  char *next =
+    strcmp(from, nid) == 0 ?
+    //(from == NULL || strcmp(from, nid) == 0) ?
+    flon_nid_child(nid, 0) :
+    flon_nid_next(from);
 
-  char *next = from ? flon_nid_next(from) : flon_nid_child(nid, 0);
   fdja_value *t = next ? flon_node_tree(next) : NULL;
   char r = 'v'; // over, for now
 

@@ -44,16 +44,18 @@ static char exe_wait(fdja_value *node, fdja_value *exe)
   fdja_set(msg, "payload", fdja_lc(exe, "payload"));
 
   fdja_value *t0 = fdja_clone(tree(node, exe));
-  fdja_value *t1 = fdja_v("[]");
+  fdja_value *t1 = fdja_array_malloc();
   fdja_push(t1, fdja_lc(node, "inst"));
   fdja_push(t1, atts);
+  fdja_push(t1, fdja_lc(exe, "tree.2"));
   fdja_push(t1, fdja_array_malloc());
-  fdja_psetv(t1, "2.]", "%zu", fdja_size(fdja_l(t0, "2")));
-  fdja_psetv(t0, "2", "[ %zu ]", fdja_size(fdja_l(t0, "2")));
+  fdja_psetv(t1, "3.]", "%zu", fdja_size(fdja_value_at(t0, 3)));
+  fdja_psetv(t0, "3", "[ %zu ]", fdja_size(fdja_value_at(t0, 3)));
+  if (fdja_value_at(t0, 4)) fdja_push(t1, fdja_lc(t0, "4"));
 
   flon_schedule_msg("at", a, nid, t0, t1, msg);
 
-  if (fdja_l(node, "timers") == NULL) fdja_set(node, "timers", fdja_v("[]"));
+  if (fdja_l(node, "timers") == NULL) fdja_set(node, "timers", fdja_a(NULL));
   fdja_psetv(node, "timers.]", "{ at: \"%s\" }", a);
 
   free(f);

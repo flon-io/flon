@@ -52,7 +52,7 @@ static fdja_value *node_tree(const char *nid, int clone)
   char *cnid = calloc(strlen(nid) + 1, sizeof(char));
   char *ccnid = cnid + sprintf(cnid, l->first->item);
 
-  if (l->size > 1) for (flu_node *n = l->first->next; n != NULL; n = n->next)
+  if (l->size > 1) for (flu_node *n = l->first->next; n; n = n->next)
   {
     ccnid += sprintf(ccnid, "_%s", (char *)n->item);
 
@@ -61,7 +61,7 @@ static fdja_value *node_tree(const char *nid, int clone)
     if (nt)
       t = nt;
     else
-      t = fdja_l(t, "2.%lli", strtoll((char *)n->item, NULL, 16));
+      t = fdja_l(t, "3.%lli", strtoll((char *)n->item, NULL, 16));
   }
   flu_list_free_all(l);
 

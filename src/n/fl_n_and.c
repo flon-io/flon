@@ -38,6 +38,7 @@ static char rcv_and(fdja_value *node, fdja_value *rcv)
   char r = seq_rcv(node, rcv);
 
   if (r != 'v' && r != 'k') return r;
+  if (is_msg_to_self(rcv)) return r;
 
   fdja_value *vret = fdja_l(rcv, "payload.ret");
   char *op = fdja_ls(node, "inst", NULL);

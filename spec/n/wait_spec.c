@@ -56,7 +56,6 @@ context "instruction:"
       flu_msleep(504);
 
       expect(result != NULL);
-
       //flon_pp_execution(exid);
 
       v = hlp_read_node(exid, "0");
@@ -72,8 +71,10 @@ context "instruction:"
       //flu_putf(fdja_todc(v));
 
       expect(v != NULL);
-      expect(fdja_lj(v, "tree0") ===F fdja_vj("[ wait, { _0: 2s }, [ 0 ] ]"));
-      expect(fdja_lj(v, "tree1") ===F fdja_vj("[ wait, { _0: 2s }, [ 0 ] ]"));
+      expect(fdja_ld(v, "tree0") ===f ""
+        "[ wait, { _0: 2s }, 1, [ 0 ], sfeu ]");
+      expect(fdja_ld(v, "tree1") ===f ""
+        "[ wait, { _0: 2s }, 1, [ 0 ], sfeu ]");
 
       fdja_free(result);
       result = hlp_wait(exid, "terminated", NULL, 5);

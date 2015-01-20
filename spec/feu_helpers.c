@@ -137,7 +137,7 @@ void hlp_launch(char *exid, char *flow, char *payload)
 
   // launch
 
-  fdja_value *fl = fdja_parse_radial(strdup(flow));
+  fdja_value *fl = fdja_parse_radial(strdup(flow), "sfeu");
   if (fl == NULL) { nlog("couldn't parse radial flow..."); return; }
 
   fdja_value *pl = fdja_v(payload);
