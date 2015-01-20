@@ -23,19 +23,6 @@
 // Made in Japan.
 //
 
-char *suf_to_s(size_t c)
-{
-  char s[16]; s[15] = 0;
-
-  size_t i = 0; for (; i < 14; ++i)
-  {
-    s[14 - i] = 103 + (c % 20);
-    c = c / 20;
-    if (c == 0) break;
-  }
-
-  return strdup(s + 14 - i);
-}
 
 static int is_op(fdja_value *v, const char *op)
 {
@@ -87,7 +74,7 @@ static void unshift_attribute(char *name, fdja_value *tree)
 }
 
 static int rewrite_as_call_or_invoke(
-  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
+  fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
   fdja_value *vname = fdja_l(tree, "0");
 
@@ -114,12 +101,10 @@ static int rewrite_as_call_or_invoke(
   return 1;
 }
 
-static int rewrite_tree(
-  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg);
-    // declaration...
+static int rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg);
+  // declaration...
 
-static fdja_value *to_tree(
-  flu_list *l, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
+static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
 {
   fdja_value *r = NULL;
 
@@ -137,25 +122,30 @@ static fdja_value *to_tree(
   else
   {
     r = fdja_array_malloc();
+
     fdja_push(r, fdja_clone(l->first->item));
     fdja_value *atts = fdja_push(r, fdja_object_malloc());
+
+    size_t index = 0;
     for (flu_node *n = l->first->next; n; n = n->next)
     {
       fdja_value *v = n->item;
-      fdja_set(atts, v->key, fdja_clone(v));
+      char *key = v->key; if (is_index(key)) key = flu_sprintf("_%zu", index);
+      ++index;
+      fdja_set(atts, key, fdja_clone(v));
+      if (key != v->key) free(key);
     }
   }
 
   fdja_push(r, fdja_array_malloc()); // no children
 
-  rewrite_tree(r, nidsuf, node, msg);
+  rewrite_tree(r, node, msg);
 
   return r;
 }
 
 static int rewrite(
-  fdja_value *tree, const char *op, ssize_t *nidsuf,
-  fdja_value *node, fdja_value *msg)
+  fdja_value *tree, const char *op, fdja_value *node, fdja_value *msg)
 {
   if (fdja_strcmp(fdja_l(tree, "0"), op) == 0) return 0;
 
@@ -170,10 +160,8 @@ static int rewrite(
 
   fdja_value *t = fdja_array_malloc();
   fdja_push(t, fdja_s(op));
-  fdja_value *natts = fdja_push(t, fdja_object_malloc());
+  /*fdja_value *natts = */fdja_push(t, fdja_object_malloc());
   fdja_value *nchildren = fdja_push(t, fdja_array_malloc());
-
-  if (*nidsuf > -1) fdja_set(natts, "_", fdja_sym(suf_to_s(++*nidsuf)));
 
   flu_list *l = flu_list_malloc();
   flu_list_add(l, fdja_l(tree, "0"));
@@ -185,11 +173,7 @@ static int rewrite(
 
     if (a && ! is_op(a, op)) { flu_list_add(l, a); continue; }
 
-    fdja_value *c = fdja_push(nchildren, to_tree(l, nidsuf, node, msg));
-    if (fdja_l(c, "1._") == NULL)
-    {
-      fdja_set(fdja_l(c, "1"), "_", fdja_sym(suf_to_s(++*nidsuf)));
-    }
+    fdja_push(nchildren, to_tree(l, node, msg));
 
     flu_list_free(l); l = NULL;
 
@@ -202,7 +186,7 @@ static int rewrite(
 }
 
 static int rewrite_head_if(
-  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
+  fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
   fdja_value *vname = fdja_l(tree, "0");
 
@@ -219,9 +203,7 @@ static int rewrite_head_if(
   }
   atts->child = NULL;
 
-  fdja_value *c =
-    fdja_unshift(fdja_l(tree, "2"), to_tree(l, nidsuf, node, msg));
-  fdja_pset(c, "1._", fdja_sym(suf_to_s(++*nidsuf)));
+  fdja_unshift(fdja_l(tree, "2"), to_tree(l, node, msg));
 
   flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
 
@@ -229,7 +211,7 @@ static int rewrite_head_if(
 }
 
 static int rewrite_post_if(
-  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
+  fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
   // TODO
 
@@ -237,30 +219,30 @@ static int rewrite_post_if(
 }
 
 static int rewrite_tree(
-  fdja_value *tree, ssize_t *nidsuf, fdja_value *node, fdja_value *msg)
+  fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
   int rw = 0; // rewritten? not yet
 
-  rw |= rewrite_as_call_or_invoke(tree, nidsuf, node, msg);
+  rw |= rewrite_as_call_or_invoke(tree, node, msg);
 
-  rw |= rewrite_head_if(tree, nidsuf, node, msg);
-  rw |= rewrite_post_if(tree, nidsuf, node, msg);
+  rw |= rewrite_head_if(tree, node, msg);
+  rw |= rewrite_post_if(tree, node, msg);
 
   // in precedence order
   //
-  rw |= rewrite(tree, "or", nidsuf, node, msg);
-  rw |= rewrite(tree, "and", nidsuf, node, msg);
-  rw |= rewrite(tree, "==", nidsuf, node, msg);
-  rw |= rewrite(tree, "!=", nidsuf, node, msg);
-  rw |= rewrite(tree, ">", nidsuf, node, msg);
-  rw |= rewrite(tree, ">=", nidsuf, node, msg);
-  rw |= rewrite(tree, "<", nidsuf, node, msg);
-  rw |= rewrite(tree, "<=", nidsuf, node, msg);
-  rw |= rewrite(tree, "+", nidsuf, node, msg);
-  rw |= rewrite(tree, "-", nidsuf, node, msg);
-  rw |= rewrite(tree, "*", nidsuf, node, msg);
-  rw |= rewrite(tree, "/", nidsuf, node, msg);
-  rw |= rewrite(tree, "%", nidsuf, node, msg);
+  rw |= rewrite(tree, "or", node, msg);
+  rw |= rewrite(tree, "and", node, msg);
+  rw |= rewrite(tree, "==", node, msg);
+  rw |= rewrite(tree, "!=", node, msg);
+  rw |= rewrite(tree, ">", node, msg);
+  rw |= rewrite(tree, ">=", node, msg);
+  rw |= rewrite(tree, "<", node, msg);
+  rw |= rewrite(tree, "<=", node, msg);
+  rw |= rewrite(tree, "+", node, msg);
+  rw |= rewrite(tree, "-", node, msg);
+  rw |= rewrite(tree, "*", node, msg);
+  rw |= rewrite(tree, "/", node, msg);
+  rw |= rewrite(tree, "%", node, msg);
 
   //rw |= rewrite(tree, "!", node, msg); // TODO: it's an instruction
 
@@ -281,9 +263,7 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 
   if (fdja_l(tree, "1._")) return 0;
 
-  ssize_t counter = -1;
-
-  int rewritten = rewrite_tree(tree, &counter, node, msg);
+  int rewritten = rewrite_tree(tree, node, msg);
 
   if (rewritten)
   {

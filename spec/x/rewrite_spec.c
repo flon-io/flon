@@ -65,8 +65,8 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ >, {}, [ "
-          "[ a, { _: g }, [] ], "
-          "[ b, { _: h }, [] ] "
+          "[ a, {}, [] ], "
+          "[ b, {}, [] ] "
         "] ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f ">");
@@ -81,9 +81,9 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ or, {}, [ "
-          "[ a, { _: g }, [] ], "
-          "[ b, { _: h }, [] ], "
-          "[ c, { _: i }, [] ] "
+          "[ a, {}, [] ], "
+          "[ b, {}, [] ], "
+          "[ c, {}, [] ] "
         "] ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f "or");
@@ -98,10 +98,10 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ or, {}, [ "
-          "[ a, { _: g }, [] ], "
-          "[ and, { _: h }, [ "
-            "[ b, { _: i }, [] ], "
-            "[ c, { _: j }, [] ] "
+          "[ a, {}, [] ], "
+          "[ and, {}, [ "
+            "[ b, {}, [] ], "
+            "[ c, {}, [] ] "
           "] ] "
         "] ]");
 
@@ -117,10 +117,10 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ and, {}, [ "
-          "[ a, { _: g }, [] ], "
-          "[ or, { _: h }, [ "
-            "[ b, { _: i }, [] ], "
-            "[ c, { _: j }, [] ] "
+          "[ a, {}, [] ], "
+          "[ or, {}, [ "
+            "[ b, {}, [] ], "
+            "[ c, {}, [] ] "
           "] ] "
         "] ]");
 
@@ -136,11 +136,11 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ and, {}, [ "
-          "[ or, { _: i }, [ "
-            "[ a, { _: g }, [] ], "
-            "[ b, { _: h }, [] ] "
+          "[ or, {}, [ "
+            "[ a, {}, [] ], "
+            "[ b, {}, [] ] "
           "] ], "
-          "[ c, { _: j }, [] ] "
+          "[ c, {}, [] ] "
         "] ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f "and");
@@ -160,7 +160,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, [ "
-            "[ a, { _: g }, [] ] "
+            "[ a, {}, [] ] "
           "] ]");
 
         expect(fdja_ls(node, "inst", NULL) ===f "if");
@@ -176,7 +176,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ unless, {}, [ "
-            "[ a, { _: g }, [] ] "
+            "[ a, {}, [] ] "
           "] ]");
 
         expect(fdja_ls(node, "inst", NULL) ===f "unless");
@@ -192,9 +192,9 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, [ "
-            "[ >, { _: i }, [ "
-              "[ a, { _: g }, [] ], "
-              "[ b, { _: h }, [] ] "
+            "[ >, {}, [ "
+              "[ a, {}, [] ], "
+              "[ b, {}, [] ] "
             "] ] "
           "] ]");
 
@@ -217,9 +217,9 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, [ "
-            "[ >, { _: i }, [ "
-              "[ a, { _: g }, [] ], "
-              "[ b, { _: h }, [] ] "
+            "[ >, {}, [ "
+              "[ a, {}, [] ], "
+              "[ b, {}, [] ] "
             "] ], "
             "[ c, { _0: d }, [] ] "
           "] ]");
@@ -230,6 +230,26 @@ context "flon-executor"
 
       it "rewrites  c d if a > b"
       it "rewrites  c d unless a > b"
+
+      it "rewrites trace a or (trace b or trace c)"
+      {
+        msg = mrad("trace a or (trace b or trace c)");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ or, {}, [ "
+            "[ trace, { _0: a }, [] ], "
+            "[ or, {}, [ "
+              "[ trace, { _0: b }, [] ], "
+              "[ trace, { _0: c }, [] ] "
+            "] ] "
+          "] ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "or");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
   }
 }

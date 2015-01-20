@@ -55,9 +55,9 @@ context "flon and tree rewrite:"
 
     it "rewrites and execute  $(a) $(op) 3"
 
-    it "respects the '_' attribute"
+    it "rewrites a pack or'ed trace calls"
     {
-      exid = flon_generate_exid("z.rewrite.cmp");
+      exid = flon_generate_exid("z.rewrite.ortraces");
 
       hlp_launch(
         exid,
@@ -73,10 +73,8 @@ context "flon and tree rewrite:"
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload.trace") ===f ""
-        "[ 0_g, 0_i, 0_j ]");
+        "[ 0_0, 0_1_0, 0_1_1 ]");
     }
-
-    it "respects the '_' attribute also when -{counter}"
   }
 }
 

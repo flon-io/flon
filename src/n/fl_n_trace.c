@@ -28,23 +28,14 @@ static fdja_value *shrink_atts(fdja_value *atts)
 {
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
-    if (strcmp(v->key, "_") == 0) continue;
     if ( ! is_index(v->key)) return fdja_clone(atts);
   }
 
   fdja_value *r = fdja_array_malloc();
 
-  int u_ = 0;
-
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
-    if (strcmp(v->key, "_") == 0) { u_ = 1; continue; }
     fdja_push(r, fdja_clone(v));
-  }
-
-  if (u_ && r->child && r->child->sibling == NULL)
-  {
-    fdja_value *rr = r->child; r->child = NULL; fdja_free(r); r = rr;
   }
 
   return r;
@@ -54,8 +45,8 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
 {
   fdja_value *pl = payload(exe);
 
-  if (fdja_l(pl, "trace", NULL) == NULL) fdja_set(pl, "trace", fdja_v("[]"));
   fdja_value *trace = fdja_l(pl, "trace");
+  if (trace == NULL) trace = fdja_set(pl, "trace", fdja_array_malloc());
 
   fdja_value *atts = attributes(node, exe);
 
@@ -73,9 +64,6 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
   }
 
   fdja_free(atts);
-
-  //fdja_putdc(trace);
-  //fdja_putdc(lookup_var(node, "args"));
 
   return 'v'; // over
 }

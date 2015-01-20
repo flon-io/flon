@@ -76,13 +76,12 @@ static fabr_parser *flon_nid_parser = NULL;
 static void flon_nid_parser_init()
 {
   fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
-  fabr_parser *hex_g = fabr_alt(hex, fabr_rex("[g-z]+"), NULL);
   fabr_parser *symb = fabr_rex("[a-z0-9_]+");
   fabr_parser *dash = fabr_string("-");
   fabr_parser *dot = fabr_string(".");
 
   fabr_parser *node =
-    fabr_n_seq("node", hex, fabr_seq(fabr_string("_"), hex_g, fabr_r("*")), NULL);
+    fabr_n_seq("node", hex, fabr_seq(fabr_string("_"), hex, fabr_r("*")), NULL);
   fabr_parser *counter =
     fabr_name("counter", hex);
 
