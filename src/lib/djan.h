@@ -73,9 +73,18 @@ fdja_value *fdja_s(const char *format, ...);
  */
 fdja_value *fdja_sym(char *s);
 
-fdja_value *fdja_parse_radial(char *input);
+/* Composes an array from its args. Expects a final NULL.
+ */
+fdja_value *fdja_a(fdja_value *v0, ...);
+
+/* Composes an object. Expects a final NULL.
+ * May compose the keys as well.
+ */
+fdja_value *fdja_o(char *k0, ...);
+
+fdja_value *fdja_parse_radial(char *input, const char *origin);
 fdja_value *fdja_dparse_radial(char *input);
-fdja_value *fdja_fparse_radial(FILE *f);
+fdja_value *fdja_fparse_radial(FILE *fm, const char *origin);
 fdja_value *fdja_parse_radial_f(const char *path, ...);
 
 fdja_value *fdja_parse_obj(char *input);
@@ -268,8 +277,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 5afbc9118c280ac9ecc4ac18cbd5d830b13d0e03
+//commit 102a32f26f61a65f3a89bac8cdb777aa1a31fc9a
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Jan 18 07:05:56 2015 +0900
+//Date:   Tue Jan 20 15:55:35 2015 +0900
 //
-//    simplify fdja_strcmp() (at a mem cost)
+//    track the radial "origin"

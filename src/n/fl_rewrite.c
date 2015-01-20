@@ -261,7 +261,8 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 
   fdja_set(node, "inst", fdja_lc(tree, "0"));
 
-  if (fdja_l(tree, "1._")) return 0;
+  //if (fdja_l(tree, "1._")) return 0;
+    // TODO: replace with my line vs my child line check...
 
   int rewritten = rewrite_tree(tree, node, msg);
 

@@ -459,15 +459,20 @@ fdja_value *fdja_dparse(char *input)
 static fdja_value *fdja_do_parse(
   FILE *f, const char *path, va_list ap, char mode)
 {
-  char *s = f ? flu_freadall(f) : flu_vreadall(path, ap);
+  char *p = (char *)path; if (path && ap) p = flu_svprintf(path, ap);
+  char *s = f ? flu_freadall(f) : flu_readall(p);
 
-  if (s == NULL) return NULL;
+  if (s == NULL) { free(p); return NULL; }
 
   fdja_value *v = NULL;
-  if (mode == 'o') v = fdja_parse_obj(s);
-  else if (mode == 'r') v = fdja_parse_radial(s);
-  else v = fdja_parse(s);
+  if (mode == 'o')
+    v = fdja_parse_obj(s);
+  else if (mode == 'r')
+    v = fdja_parse_radial(s, p);
+  else
+    v = fdja_parse(s);
 
+  if (p != path) free(p);
   if (v == NULL) free(s);
 
   return v;
@@ -535,9 +540,39 @@ fdja_value *fdja_sym(char *s)
   return fdja_value_malloc('y', s, 0, strlen(s), 1);
 }
 
+fdja_value *fdja_a(fdja_value *v0, ...)
+{
+  fdja_value *r = fdja_array_malloc();
+
+  //if (v0 == NULL) return r;
+
+  va_list ap; va_start(ap, v0);
+  for (fdja_value *v = v0; v; v = va_arg(ap, fdja_value *)) fdja_push(r, v);
+  va_end(ap);
+
+  return r;
+}
+
+fdja_value *fdja_o(char *k0, ...)
+{
+  fdja_value *r = fdja_object_malloc();
+
+  va_list ap; va_start(ap, k0);
+  for (char *kf = k0; kf; kf = va_arg(ap, char *))
+  {
+    char *k = flu_svprintf(kf, ap);
+    fdja_value *v = va_arg(ap, fdja_value *);
+    fdja_set(r, k, v);
+    free(k);
+  }
+  va_end(ap);
+
+  return r;
+}
+
 static void fdja_add_radc(fdja_value *parent, fdja_value *child)
 {
-  parent = fdja_value_at(parent, 2);
+  parent = fdja_value_at(parent, 3);
 
   if (parent->child == NULL)
   {
@@ -600,6 +635,20 @@ static fdja_value *parse_radv(char *input, fabr_tree *radv)
   return parse_radg(input, -1, fabr_tree_lookup(c, "rad_g"));
 }
 
+static ssize_t count_lines(char *input, size_t offset)
+{
+  size_t r = 0;
+
+  for (size_t i = 0; i <= offset; ++i)
+  {
+    char c = input[i];
+    if (c == 0) return -1;
+    if (c == '\n' || c == '\r') ++r;
+  }
+
+  return r + 1;
+}
+
 static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
 {
   // rad_h rad_e*
@@ -610,6 +659,7 @@ static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
   fdja_value *r = fdja_value_malloc('a', NULL, 0, 0, 0);
   fdja_value *vname = NULL;
   fdja_value *vatts = fdja_value_malloc('o', NULL, 0, 0, 0);
+  fdja_value *vline = fdja_v("%zu", count_lines(input, radg->offset));
   fdja_value *vchildren = fdja_value_malloc('a', NULL, 0, 0, 0);
 
   if (es->first == NULL && ! (is_stringy(radh->child->child)))
@@ -642,9 +692,10 @@ static fdja_value *parse_radg(char *input, ssize_t ind, fabr_tree *radg)
     }
   }
 
-  r->child = vname; // [ name,
-  vname->sibling = vatts; // {},
-  vatts->sibling = vchildren; // [] ]
+  r->child = vname;
+  vname->sibling = vatts;
+  vatts->sibling = vline;
+  vline->sibling = vchildren;
 
   flu_list_free(es);
 
@@ -665,7 +716,7 @@ static void fdja_parse_radl(char *input, fabr_tree *radl, flu_list *values)
   fdja_stack_radl(values, v);
 }
 
-fdja_value *fdja_parse_radial(char *input)
+fdja_value *fdja_parse_radial(char *input, const char *origin)
 {
   if (fdja_parser == NULL) fdja_parser_init();
 
@@ -704,17 +755,19 @@ fdja_value *fdja_parse_radial(char *input)
   root->source = input;
   root->sowner = 1;
 
+  if (origin) fdja_push(root, fdja_s(origin));
+
   return root;
 }
 
 fdja_value *fdja_dparse_radial(char *input)
 {
-  return fdja_parse_radial(strdup(input));
+  return fdja_parse_radial(strdup(input), NULL);
 }
 
-fdja_value *fdja_fparse_radial(FILE *f)
+fdja_value *fdja_fparse_radial(FILE *f, const char *origin)
 {
-  return fdja_do_parse(f, NULL, NULL, 'r');
+  return fdja_do_parse(f, origin, NULL, 'r');
 }
 
 fdja_value *fdja_parse_radial_f(const char *path, ...)
@@ -1668,8 +1721,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 5afbc9118c280ac9ecc4ac18cbd5d830b13d0e03
+//commit 102a32f26f61a65f3a89bac8cdb777aa1a31fc9a
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Jan 18 07:05:56 2015 +0900
+//Date:   Tue Jan 20 15:55:35 2015 +0900
 //
-//    simplify fdja_strcmp() (at a mem cost)
+//    track the radial "origin"
