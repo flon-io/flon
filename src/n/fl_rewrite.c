@@ -105,9 +105,16 @@ static int rewrite_as_call_or_invoke(
 static int rewrite_tree(fdja_value *tree, fdja_value *node, fdja_value *msg);
   // declaration...
 
-static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
+static fdja_value *to_tree(
+  flu_list *l, fdja_value *lnumber, fdja_value *node, fdja_value *msg)
 {
   fdja_value *r = NULL;
+
+  //printf("to_tree(): l:%zu\n", l->size);
+  //size_t i = 0; for (flu_node *n = l->first; n; n = n->next)
+  //{
+  //  printf("%zu: ", i++); fdja_putdc(n->item);
+  //}
 
   if (l->size == 1 && is_tree(l->first->item))
   {
@@ -138,7 +145,7 @@ static fdja_value *to_tree(flu_list *l, fdja_value *node, fdja_value *msg)
     }
   }
 
-  fdja_push(r, fdja_lc(msg, "tree.2")); // line number
+  fdja_push(r, fdja_clone(lnumber)); // line number
   fdja_push(r, fdja_array_malloc()); // no children
 
   rewrite_tree(r, node, msg);
@@ -177,7 +184,7 @@ static int rewrite(
 
     if (a && ! is_op(a, op)) { flu_list_add(l, a); continue; }
 
-    fdja_push(nchildren, to_tree(l, node, msg));
+    fdja_push(nchildren, to_tree(l, fdja_value_at(tree, 2), node, msg));
 
     flu_list_free(l); l = NULL;
 
@@ -189,6 +196,19 @@ static int rewrite(
   return 1;
 }
 
+//static int rewrite_children(
+//  fdja_value *tree, fdja_value *node, fdja_value *msg)
+//{
+//  int r = 0;
+//
+//  for (fdja_value *c = fdja_value_at(tree, 3)->child; c; c = c->sibling)
+//  {
+//    r |= rewrite_tree(c, node, msg);
+//  }
+//
+//  return r;
+//}
+
 static int rewrite_head_if(
   fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
@@ -199,6 +219,8 @@ static int rewrite_head_if(
     fdja_strcmp(vname, "unless") != 0
   ) return 0;
 
+  //rewrite_children(tree, node, msg);
+
   fdja_value *atts = fdja_value_at(tree, 1);
   flu_list *l = flu_list_malloc();
   for (fdja_value *v = atts->child; v; v = v->sibling)
@@ -207,7 +229,12 @@ static int rewrite_head_if(
   }
   atts->child = NULL;
 
-  fdja_unshift(fdja_value_at(tree, 3), to_tree(l, node, msg));
+  if (l->size > 0)
+  {
+    fdja_unshift(
+      fdja_value_at(tree, 3),
+      to_tree(l, fdja_value_at(tree, 2), node, msg));
+  }
 
   flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
 
@@ -225,6 +252,8 @@ static int rewrite_post_if(
 static int rewrite_tree(
   fdja_value *tree, fdja_value *node, fdja_value *msg)
 {
+  //printf("rewrite_tree() "); fdja_putdc(tree);
+
   int rw = 0; // rewritten? not yet
 
   rw |= rewrite_as_call_or_invoke(tree, node, msg);
