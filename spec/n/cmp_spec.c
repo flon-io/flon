@@ -73,6 +73,8 @@ context "instruction:"
       expect(fdja_ld(result, "payload") ===f ""
         "{ x: 7, ret: false }");
     }
+
+    it "accepts a one-liner  > $(a) b"
   }
 }
 
