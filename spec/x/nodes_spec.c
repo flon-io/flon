@@ -19,13 +19,13 @@ context "fl_exe_nodes"
       "exid: xtest.pn-u0-20141020.0754.chipeduzuba\n"
       "nodes: {\n"
         "0: { tree:\n"
-        "  [ sequence, {}, [\n"
-        "    [ invoke, { _0: stamp, color: red }, [] ]\n"
-        "    [ concurrence, {}, [\n"
-        "      [ invoke, { _0: stamp, color: green }, [] ]\n"
-        "      [ invoke, { _0: stamp, color: blue }, [] ]\n"
-        "      [ invoke, { _0: stamp, color: red }, [] ]\n"
-        "      [ or, { _0: a, _1: b }, [] ]\n"
+        "  [ sequence, {}, 1, [\n"
+        "    [ invoke, { _0: stamp, color: red }, 2, [] ]\n"
+        "    [ concurrence, {}, 3, [\n"
+        "      [ invoke, { _0: stamp, color: green }, 4, [] ]\n"
+        "      [ invoke, { _0: stamp, color: blue }, 5, [] ]\n"
+        "      [ invoke, { _0: stamp, color: red }, 6, [] ]\n"
+        "      [ or, { _0: a, _1: b }, 7, [] ]\n"
         "    ] ]\n"
         "  ] ]\n"
         "}\n"
@@ -33,8 +33,8 @@ context "fl_exe_nodes"
         "0_1: {}\n"
         "0_1_0: {}\n"
         "0_1_0-1: {}\n"
-        "0_1_2: { tree: [ sequence, {}, [] ] }\n"
-        "0_1_3: { tree: [ or, {}, [ [ a, {}, [] ], [ b, {}, [] ] ] ] }\n"
+        "0_1_2: { tree: [ sequence, {}, -1, [] ] }\n"
+        "0_1_3: { tree: [ or, {}, 7, [ [ a, {}, 7, [] ], [ b, {}, 7, [] ] ] ] }\n"
         "9_1_9: { parent: 9_0 }\n" // special
       "}");
   }
@@ -52,7 +52,7 @@ context "fl_exe_nodes"
       expect(t != NULL);
 
       expect(fdja_tod(t) ^==f ""
-        "[ sequence, {}, [");
+        "[ sequence, {}, 1, [");
     }
 
     it "looks up a sub tree"
@@ -62,7 +62,7 @@ context "fl_exe_nodes"
       expect(t != NULL);
 
       expect(fdja_tod(t) ===f ""
-        "[ invoke, { _0: stamp, color: green }, [] ]");
+        "[ invoke, { _0: stamp, color: green }, 4, [] ]");
     }
 
     it "looks up and returns updated trees"
@@ -72,7 +72,7 @@ context "fl_exe_nodes"
       expect(t != NULL);
 
       expect(fdja_tod(t) ===f ""
-        "[ sequence, {}, [] ]");
+        "[ sequence, {}, -1, [] ]");
     }
 
     it "looks up and returns rewritten trees"
@@ -82,7 +82,7 @@ context "fl_exe_nodes"
       expect(t != NULL);
 
       expect(fdja_tod(t) ===f ""
-        "[ a, {}, [] ]");
+        "[ a, {}, 7, [] ]");
     }
   }
 

@@ -152,9 +152,9 @@ context "flon-executor"
         "{"
           "point: execute\n"
           "tree:\n"
-          "  [ sequence, {}, [\n"
-          "    [ invoke, { _0: stamp, color: blue }, [] ]\n"
-          "    [ invoke, { _0: stamp, color: green }, [] ]\n"
+          "  [ sequence, {}, 1, [\n"
+          "    [ invoke, { _0: stamp, color: blue }, 2, [] ]\n"
+          "    [ invoke, { _0: stamp, color: green }, 3, [] ]\n"
           "  ] ]\n"
           "exid: %s\n"
           "payload: {\n"
@@ -181,7 +181,7 @@ context "flon-executor"
       expect(fdja_ls(v, "point", NULL) ===f ""
         "invoke");
       expect(fdja_to_json(fdja_l(v, "tree", NULL)) ===F fdja_vj(""
-        "[ invoke, { _0: stamp, color: blue }, [] ]"));
+        "[ invoke, { _0: stamp, color: blue }, 2, [] ]"));
       expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
         "{ hello: xtest.pn, args: { _0: stamp, color: blue } }"));
 
@@ -239,7 +239,7 @@ context "flon-executor"
       expect(fdja_ls(v, "point", NULL) ===f ""
         "invoke");
       expect(fdja_lj(v, "tree", NULL) ===F fdja_vj(""
-        "[ invoke, { _0: stamp, color: green }, [] ]"));
+        "[ invoke, { _0: stamp, color: green }, 3, [] ]"));
       expect(fdja_lj(v, "payload", NULL) ===F fdja_vj(""
         "{ hello: chuugoku, args: { _0: stamp, color: green } }"));
 
