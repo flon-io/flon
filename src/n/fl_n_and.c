@@ -35,15 +35,13 @@ static int to_boolean(fdja_value *v)
 
 static char rcv_and(fdja_value *node, fdja_value *rcv)
 {
-  char r = seq_rcv(node, rcv);
-
-  if (r != 'v' && r != 'k') return r;
-  if (is_msg_to_self(rcv)) return r;
+  if (is_msg_to_self(rcv)) return seq_rcv(node, rcv);
 
   fdja_value *vret = fdja_l(rcv, "payload.ret");
+  int ret = to_boolean(vret);
   char *op = fdja_ls(node, "inst", NULL);
 
-  int ret = to_boolean(vret);
+  char r = 'k';
 
   if (strcmp(op, "or") == 0)
   {
@@ -58,7 +56,8 @@ static char rcv_and(fdja_value *node, fdja_value *rcv)
 
   fdja_psetv(rcv, "payload.ret", ret ? "true" : "false");
 
-  return r;
+  if (r != 'k') return r;
+  return seq_rcv(node, rcv);
 }
 
 static char exe_and(fdja_value *node, fdja_value *exe)
