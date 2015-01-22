@@ -45,11 +45,9 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   char r = 'k'; // ok for now
 
   char *nid = NULL;
-  char *pnid = NULL;
   char *cnid = NULL;
   char *name = NULL;
 
-  pnid = fdja_ls(node, "nid");
   fdja_value *cargs = attributes(node, exe); // call args
 
   if (cargs->child == NULL)
@@ -127,12 +125,12 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // trigger execution
 
-  flon_queue_msg("execute", cnid, pnid, payload(exe), "tree", tree);
+  //flon_queue_msg("execute", cnid, pnid, payload(exe), "tree", tree);
+  queue_child_execute(cnid, node, exe, tree);
 
 _over:
 
   free(nid);
-  free(pnid);
   free(cnid);
   free(name);
   fdja_free(cargs);
