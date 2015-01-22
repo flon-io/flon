@@ -6,6 +6,7 @@
 //
 
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_tools.h"
 #include "feu_helpers.h"
 
@@ -72,6 +73,40 @@ context "instruction:"
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: false }");
+    }
+
+    it "ands (miss 2/3)"
+    {
+      exid = flon_generate_exid("n.ao.and.1");
+
+      hlp_launch(
+        exid,
+        "and\n"
+        "  val true\n"
+        "  val false\n"
+        "  val true\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: false }");
+
+      char *fep = flon_exid_path(exid);
+      //flu_system("cat var/archive/%s/msgs.log", fep);
+      //flu_system("wc -l var/archive/%s/msgs.log", fep);
+
+      char *lc = flu_pline("wc -l var/archive/%s/msgs.log", fep);
+      *strchr(lc, ' ') = 0;
+
+      expect(lc ===f "10");
+
+      free(fep);
     }
   }
 
