@@ -256,6 +256,15 @@ static int is_blank(char c)
   return c == ' ' || c == '\t' || c == '\n' || c == '\r';
 }
 
+static int ret_to_boolean(fdja_value *v)
+{
+  if (v == NULL) return 0;
+  if (v->type == 'f') return 0;
+  if (v->type == '0') return 0;
+  //if (v->type == 't') return 1;
+  return 1;
+}
+
 static fdja_value *expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 {
   if (v == NULL) return NULL;

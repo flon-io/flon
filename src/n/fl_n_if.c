@@ -26,13 +26,49 @@
 
 static char rcv_if(fdja_value *node, fdja_value *rcv)
 {
-  return 'v';
+  fdja_putdc(rcv);
+
+  char r = 'k';
+
+  char *nid = fdja_ls(node, "nid", NULL);
+  char *from = fdja_ls(rcv, "from", NULL);
+
+  char *conditional = flon_nid_child(nid, 0);
+
+  if (strcmp(from, conditional) != 0) { r = 'v'; goto _over; }
+
+  int ret = ret_to_boolean(fdja_l(rcv, "payload.ret"));
+
+  char *next = flon_nid_next(from);
+  if (ret == 0) next = flon_nid_next(next);
+    //
+    // TODO: flond_nid_next(start, increment);
+    //
+  //char *next = flon_nid_next(from, ret ? 1 : 2);
+
+  queue_child_execute(next, node, rcv, NULL);
+
+  free(next);
+
+_over:
+
+  free(nid);
+  free(from);
+  free(conditional);
+
+  return r;
 }
 
 static char exe_if(fdja_value *node, fdja_value *exe)
 {
-  // TODO: trigger first child
+  char *nid = fdja_ls(node, "nid", NULL);
+  char *next = flon_nid_child(nid, 0);
 
-  return 'v';
+  queue_child_execute(next, node, exe, NULL);
+
+  free(nid);
+  free(next);
+
+  return 'k';
 }
 

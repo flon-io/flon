@@ -24,21 +24,12 @@
 //
 
 
-static int to_boolean(fdja_value *v)
-{
-  if (v == NULL) return 0;
-  if (v->type == 'f') return 0;
-  if (v->type == '0') return 0;
-  //if (v->type == 't') return 1;
-  return 1;
-}
-
 static char rcv_and(fdja_value *node, fdja_value *rcv)
 {
   if (is_msg_to_self(rcv)) return seq_rcv(node, rcv);
 
   fdja_value *vret = fdja_l(rcv, "payload.ret");
-  int ret = to_boolean(vret);
+  int ret = ret_to_boolean(vret);
   char *op = fdja_ls(node, "inst", NULL);
 
   char r = 'k';

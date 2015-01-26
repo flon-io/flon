@@ -30,6 +30,10 @@ context "instruction:"
 
   describe "if"
   {
+    it "goes on when empty"
+    it "goes on when true and no then branch"
+    it "goes on when false and no else branch"
+
     it "triggers the then branch"
     {
       exid = flon_generate_exid("n.if.then");
@@ -37,7 +41,7 @@ context "instruction:"
       hlp_launch(
         exid,
         "if\n"
-        "  4 > 5\n"
+        "  5 > 4\n"
         "  'then'\n"
         "  'else'\n"
         "",
