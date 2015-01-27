@@ -49,7 +49,7 @@ context "instruction:"
 
     it "goes on when true and no then branch"
     {
-      exid = flon_generate_exid("n.if.then");
+      exid = flon_generate_exid("n.if.then.no.then");
 
       hlp_launch(
         exid,
@@ -70,7 +70,7 @@ context "instruction:"
 
     it "goes on when false and no else branch"
     {
-      exid = flon_generate_exid("n.if.then");
+      exid = flon_generate_exid("n.if.else.no.else");
 
       hlp_launch(
         exid,
@@ -113,7 +113,27 @@ context "instruction:"
     }
 
     it "triggers the else branch"
-    it "returns if there is no else branch to trigger"
+    {
+      exid = flon_generate_exid("n.if.else");
+
+      hlp_launch(
+        exid,
+        "if\n"
+        "  3 > 4\n"
+        "  'then'\n"
+        "  'else'\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: else }");
+    }
   }
 }
 
