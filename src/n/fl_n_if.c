@@ -26,7 +26,7 @@
 
 static char rcv_if(fdja_value *node, fdja_value *rcv)
 {
-  fdja_putdc(rcv);
+  //fdja_putdc(rcv);
 
   char r = 'k';
 
@@ -61,6 +61,11 @@ _over:
 
 static char exe_if(fdja_value *node, fdja_value *exe)
 {
+  //fdja_putdc(exe);
+
+  if (fdja_size(fdja_l(exe, "tree.3")) < 1) return 'v';
+    // no children ? "if" over.
+
   char *nid = fdja_ls(node, "nid", NULL);
   char *next = flon_nid_child(nid, 0);
 

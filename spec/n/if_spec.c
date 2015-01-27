@@ -31,6 +31,22 @@ context "instruction:"
   describe "if"
   {
     it "goes on when empty"
+    {
+      exid = flon_generate_exid("n.if.empty");
+
+      hlp_launch(
+        exid,
+        "if\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+    }
+
     it "goes on when true and no then branch"
     it "goes on when false and no else branch"
 
@@ -48,7 +64,7 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      flon_pp_execution(exid);
+      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
