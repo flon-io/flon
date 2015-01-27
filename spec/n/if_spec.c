@@ -48,7 +48,46 @@ context "instruction:"
     }
 
     it "goes on when true and no then branch"
+    {
+      exid = flon_generate_exid("n.if.then");
+
+      hlp_launch(
+        exid,
+        "if\n"
+        "  5 > 4\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: true }");
+    }
+
     it "goes on when false and no else branch"
+    {
+      exid = flon_generate_exid("n.if.then");
+
+      hlp_launch(
+        exid,
+        "if\n"
+        "  3 > 4\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: false }");
+    }
 
     it "triggers the then branch"
     {

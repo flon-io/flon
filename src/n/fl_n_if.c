@@ -46,7 +46,8 @@ static char rcv_if(fdja_value *node, fdja_value *rcv)
     //
   //char *next = flon_nid_next(from, ret ? 1 : 2);
 
-  queue_child_execute(next, node, rcv, NULL);
+  if (flon_node_tree(next)) queue_child_execute(next, node, rcv, NULL);
+  else r = 'v';
 
   free(next);
 
