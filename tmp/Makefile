@@ -81,33 +81,51 @@ ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
 
 s: cs ds xs is ls ns zs
+
 warn:
+	$(MAKE) _tmpsrc
 	$(MAKE) clean cs ds xs is ls ns zs  2>&1 | . ./spec_filter.sh
 
-sc: _tmpsrc cs
-	@echo "\n--- make sc ---common------------------------------------------\n"
-	time ./cs
-sd: ds invoker executor
-	@echo "\n--- make sd ---dispatcher--------------------------------------\n"
-	time ./ds
-sx: _tmpsrc xs
-	@echo "\n--- make sx ---executor----------------------------------------\n"
-	time ./xs
-si: _tmpsrc is
-	@echo "\n--- make si ---invoker-----------------------------------------\n"
-	time ./is
-sl: ls invoker executor dispatcher
-	@echo "\n--- make sl ---listener----------------------------------------\n"
-	time ./ls
-sn: ns invoker executor dispatcher
-	@echo "\n--- make sn ---instructions------------------------------------\n"
-	time ./ns
-sz: zs invoker executor dispatcher
-	@echo "\n--- make sz ---a-to-z------------------------------------------\n"
-	time ./zs
+sX:
+	$(MAKE) _tmpsrc
+	$(MAKE) $(deps)
+	@echo "\n--- $(lastword $(deps)) ---------------------------------------\n"
+	$(val) ./$(lastword $(deps))
 
-sum: cs ds is ls ns xs zs invoker executor dispatcher
+sc: deps= cs
+sc: sX
+sd: deps= invoker executor ds
+sd: sX
+sx: deps= xs
+sx: sX
+si: deps= is
+si: sX
+sl: deps= invoker executor dispatcher ls
+sl: sX
+sn: deps= invoker executor dispatcher ns
+sn: sX
+sz: deps= invoker executor dispatcher zs
+sz: sX
+
+vsc: val= $(VAL)
+vsc: sc
+vsd: val= $(VAL)
+vsd: sd
+vsx: val= $(VAL)
+vsx: sx
+vsi: val= $(VAL)
+vsi: si
+vsl: val= $(VAL)
+vsl: sl
+vsn: val= $(VAL)
+vsn: sn
+vsz: val= $(VAL)
+vsz: sz
+
+sum:
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
+	$(MAKE) _tmpsrc
+	$(MAKE) invoker executor dispatcher cs ds is ls ns xs zs
 	@echo "\n--- make sc ---common-------------------------------------------"
 	@./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sd ---dispatcher---------------------------------------"
@@ -124,8 +142,10 @@ sum: cs ds is ls ns xs zs invoker executor dispatcher
 	@./zs 2>&1 | ./spec_filter.sh
 	@echo ""
 
-vsum: cs ds is ls ns xs zs invoker executor dispatcher
+vsum:
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
+	$(MAKE) _tmpsrc
+	$(MAKE) invoker executor dispatcher cs ds is ls ns xs zs
 	@echo "\n--- make vsc ---common------------------------------------------"
 	$(VAL) ./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsd ---dispatcher--------------------------------------"
@@ -141,21 +161,6 @@ vsum: cs ds is ls ns xs zs invoker executor dispatcher
 	@echo "\n--- make vsz ---a-to-z------------------------------------------"
 	$(VAL) ./zs 2>&1 | ./spec_filter.sh
 	@echo ""
-
-vsc: _tmpsrc cs
-	$(VAL) ./cs
-vsd: ds executor invoker
-	$(VAL) ./ds
-vsx: _tmpsrc xs
-	$(VAL) --num-callers=50 ./xs
-vsi: _tmpsrc is
-	$(VAL) ./is
-vsl: ls invoker executor dispatcher
-	$(VAL) --num-callers=50 ./ls
-vsn: ns invoker executor dispatcher
-	$(VAL) ./ns
-vsz: zs invoker executor dispatcher
-	$(VAL) ./zs
 
 _specfilter:
 	@echo ""
@@ -187,17 +192,23 @@ flon-listener: $(LDEPS)
 flon-scope: $(DEPS)
 flon-flon: $(DEPS) $(TSI_OS) flu64.o
 
-executor: _tmpsrc flon-executor
+executor:
+	$(MAKE) _tmpsrc; $(MAKE) flon-executor
 	mv flon-executor ../tst/bin/
-invoker: _tmpsrc flon-invoker
+invoker:
+	$(MAKE) _tmpsrc; $(MAKE) flon-invoker
 	mv flon-invoker ../tst/bin/
-dispatcher: _tmpsrc flon-dispatcher
+dispatcher:
+	$(MAKE) _tmpsrc; $(MAKE) flon-dispatcher
 	mv flon-dispatcher ../tst/bin/
-listener: _tmpsrc flon-listener
+listener:
+	$(MAKE) _tmpsrc; $(MAKE) flon-listener
 	mv flon-listener ../tst/bin/
-scope: _tmpsrc flon-scope
+scope:
+	$(MAKE) _tmpsrc; $(MAKE) flon-scope
 	mv flon-scope ../tst/bin/
-fflon: _tmpsrc flon-flon
+fflon:
+	$(MAKE) _tmpsrc; $(MAKE) flon-flon
 	mv flon-flon ../tst/bin/
 
 spec:
