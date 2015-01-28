@@ -184,7 +184,7 @@ static int rewrite_infix(
 
     if (a && ! is_op(a, op)) { flu_list_add(l, a); continue; }
 
-    fdja_push(nchildren, to_tree(l, fdja_value_at(tree, 2), node, msg));
+    fdja_push(nchildren, to_tree(l, line, node, msg));
 
     flu_list_free(l); l = NULL;
 
@@ -196,18 +196,41 @@ static int rewrite_infix(
   return 1;
 }
 
-//static int rewrite_children(
-//  fdja_value *tree, fdja_value *node, fdja_value *msg)
-//{
-//  int r = 0;
-//
-//  for (fdja_value *c = fdja_value_at(tree, 3)->child; c; c = c->sibling)
-//  {
-//    r |= rewrite_tree(c, node, msg);
-//  }
-//
-//  return r;
-//}
+static int rewrite_prefix(
+  fdja_value *tree, const char *op, fdja_value *node, fdja_value *msg)
+{
+  if (fdja_strcmp(fdja_value_at(tree, 0), op) != 0) return 0;
+
+  fdja_value *children = fdja_value_at(tree, 3);
+  if (children->child != NULL) return 0;
+
+  fdja_value *atts = fdja_value_at(tree, 1);
+  fdja_value *line = fdja_value_at(tree, 2);
+
+  fdja_value *t = fdja_array_malloc();
+  fdja_push(t, fdja_s(op));
+  /*fdja_value *natts = */fdja_push(t, fdja_object_malloc());
+  fdja_push(t, fdja_clone(line));
+  fdja_value *nchildren = fdja_push(t, fdja_array_malloc());
+
+  for (fdja_value *a = atts->child; a; a = a->sibling)
+  {
+    flu_list *l = flu_list_malloc(); flu_list_add(l, a);
+    fdja_push(nchildren, to_tree(l, line, node, msg));
+    flu_list_free(l);
+  }
+
+  fdja_replace(tree, t);
+
+  return 1;
+}
+
+static int rewrite(
+  fdja_value *tree, const char *op, fdja_value *node, fdja_value *msg)
+{
+  int r = rewrite_infix(tree, op, node, msg); if (r) return r;
+  return rewrite_prefix(tree, op, node, msg);
+}
 
 static int rewrite_head_if(
   fdja_value *tree, fdja_value *node, fdja_value *msg)
@@ -218,8 +241,6 @@ static int rewrite_head_if(
     fdja_strcmp(vname, "if") != 0 &&
     fdja_strcmp(vname, "unless") != 0
   ) return 0;
-
-  //rewrite_children(tree, node, msg);
 
   fdja_value *atts = fdja_value_at(tree, 1);
   flu_list *l = flu_list_malloc();
@@ -263,21 +284,21 @@ static int rewrite_tree(
 
   // in precedence order
   //
-  rw |= rewrite_infix(tree, "or", node, msg);
-  rw |= rewrite_infix(tree, "and", node, msg);
-  rw |= rewrite_infix(tree, "==", node, msg);
-  rw |= rewrite_infix(tree, "!=", node, msg);
-  rw |= rewrite_infix(tree, ">", node, msg);
-  rw |= rewrite_infix(tree, ">=", node, msg);
-  rw |= rewrite_infix(tree, "<", node, msg);
-  rw |= rewrite_infix(tree, "<=", node, msg);
-  rw |= rewrite_infix(tree, "+", node, msg);
-  rw |= rewrite_infix(tree, "-", node, msg);
-  rw |= rewrite_infix(tree, "*", node, msg);
-  rw |= rewrite_infix(tree, "/", node, msg);
-  rw |= rewrite_infix(tree, "%", node, msg);
+  rw |= rewrite(tree, "or", node, msg);
+  rw |= rewrite(tree, "and", node, msg);
+  rw |= rewrite(tree, "==", node, msg);
+  rw |= rewrite(tree, "!=", node, msg);
+  rw |= rewrite(tree, ">", node, msg);
+  rw |= rewrite(tree, ">=", node, msg);
+  rw |= rewrite(tree, "<", node, msg);
+  rw |= rewrite(tree, "<=", node, msg);
+  rw |= rewrite(tree, "+", node, msg);
+  rw |= rewrite(tree, "-", node, msg);
+  rw |= rewrite(tree, "*", node, msg);
+  rw |= rewrite(tree, "/", node, msg);
+  rw |= rewrite(tree, "%", node, msg);
 
-  //rw |= rewrite_infix(tree, "!", node, msg); // TODO: it's an instruction
+  //rw |= rewrite(tree, "!", node, msg); // TODO: it's an instruction
 
   return rw;
 }

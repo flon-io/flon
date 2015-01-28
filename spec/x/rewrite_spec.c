@@ -182,7 +182,7 @@ context "flon-executor"
           "[ y, {}, 1, [] ] "
         "], sx ]");
 
-      expect(fdja_ls(node, "inst", NULL) ===f "and");
+      expect(fdja_ls(node, "inst", NULL) ===f ">");
       expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
     }
 
