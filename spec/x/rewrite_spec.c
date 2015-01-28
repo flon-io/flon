@@ -187,6 +187,20 @@ context "flon-executor"
     }
 
     it "rewrites  x $(cmp) y"
+    {
+      msg = mradp("x $(cmp) y", fdja_v("{ cmp:  > }"));
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_ld(msg, "tree") ===f ""
+        "[ >, {}, 1, [ "
+          "[ x, {}, 1, [] ], "
+          "[ y, {}, 1, [] ] "
+        "], sx ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f ">");
+      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+    }
 
     context "with 'if' or 'unless'"
     {

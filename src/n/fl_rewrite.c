@@ -305,13 +305,10 @@ static int rewrite_tree(
 
 int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
-  // TODO: expand head and attributes?
-
   fdja_value *tree = fdja_l(msg, "tree");
-  //fdja_putdc(tree);
-
+  //
   expand(fdja_l(tree, "0"), node, msg); // name / head
-  //expand(fdja_l(tree, "1"), node, msg); // attributes
+  expand(fdja_l(tree, "1"), node, msg); // attributes
 
   fdja_set(node, "inst", fdja_lc(tree, "0"));
 
