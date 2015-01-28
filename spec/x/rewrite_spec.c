@@ -20,6 +20,13 @@ context "flon-executor"
 
     return r;
   }
+  fdja_value *mradp(char *s, fdja_value *p)
+  {
+    fdja_value *r = mrad(s);
+    fdja_set(r, "payload", p);
+
+    return r;
+  }
 
   before each
   {
@@ -60,6 +67,22 @@ context "flon-executor"
     it "rewrites  a > b"
     {
       msg = mrad("a > b");
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_ld(msg, "tree") ===f ""
+        "[ >, {}, 1, [ "
+          "[ a, {}, 1, [] ], "
+          "[ b, {}, 1, [] ] "
+        "], sx ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f ">");
+      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+    }
+
+    it "rewrites  > a b"
+    {
+      msg = mrad("> a b");
 
       flon_rewrite_tree(node, msg);
 
@@ -147,7 +170,23 @@ context "flon-executor"
       expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
     }
 
-    it "writes down the expanded inst   $(a) x"
+    it "rewrites  $(cmp) x y"
+    {
+      msg = mradp("$(cmp) x y", fdja_v("{ cmp:  > }"));
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_ld(msg, "tree") ===f ""
+        "[ >, {}, 1, [ "
+          "[ x, {}, 1, [] ], "
+          "[ y, {}, 1, [] ] "
+        "], sx ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "and");
+      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+    }
+
+    it "rewrites  x $(cmp) y"
 
     context "with 'if' or 'unless'"
     {
