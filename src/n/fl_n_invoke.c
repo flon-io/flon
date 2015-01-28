@@ -36,9 +36,7 @@ static char exe_invoke(fdja_value *node, fdja_value *exe)
   fdja_set(inv, "tree", fdja_lc(exe, "tree"));
   fdja_set(inv, "payload", payload_clone(exe));
 
-  //fdja_value *args = fdja_lc(exe, "tree.1");
-  //expand(args, node, exe);
-  fdja_value *args = expand(fdja_lc(exe, "tree.1"), node, exe);
+  fdja_value *args = expand(fdja_lc(exe, "tree.1"), node, exe, NULL);
   fdja_pset(inv, "payload.args", args);
 
   if (flon_lock_write(inv, "var/spool/dis/inv_%s-%s.json", exid, nid) != 1)

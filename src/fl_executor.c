@@ -190,7 +190,7 @@ static void handle_execute(char order, fdja_value *msg)
 
   fdja_set(msg, "tree", fdja_clone(tree));
 
-  flon_rewrite_tree(node, msg);
+  /*int rewritten = */flon_rewrite_tree(node, msg);
 
   if (parent_nid == NULL && strcmp(nid, "0") == 0)
   {

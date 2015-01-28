@@ -306,9 +306,10 @@ static int rewrite_tree(
 int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
   fdja_value *tree = fdja_l(msg, "tree");
-  //
-  expand(fdja_l(tree, "0"), node, msg); // name / head
-  expand(fdja_l(tree, "1"), node, msg); // attributes
+
+  int expanded = 0;
+  expand(fdja_l(tree, "0"), node, msg, &expanded); // name / head
+  expand(fdja_l(tree, "1"), node, msg, &expanded); // attributes
 
   fdja_set(node, "inst", fdja_lc(tree, "0"));
 
@@ -319,7 +320,7 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 
   int rewritten = rewrite_tree(tree, node, msg);
 
-  if (rewritten)
+  if (expanded || rewritten)
   {
     fdja_set(node, "inst", fdja_lc(tree, "0"));
 
@@ -332,6 +333,6 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 
   fdja_free(origin);
 
-  return rewritten;
+  return expanded || rewritten;
 }
 
