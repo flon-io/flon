@@ -88,39 +88,40 @@ warn:
 
 sX:
 	$(MAKE) _tmpsrc
-	$(MAKE) $(deps)
-	@echo "\n--- $(lastword $(deps)) ---------------------------------------\n"
-	$(val) ./$(lastword $(deps))
+	$(MAKE) $(_PREQ)
+	@echo "\n--- $(lastword $(_PREQ)) --------------------------------------\n"
+	$(_VAL) ./$(lastword $(_PREQ))
+#
+sc:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="cs"
+sd:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor ds"
+sx:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="xs"
+si:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="is"
+sl:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher ls"
+sn:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher ns"
+sz:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher zs"
+#
+vsc:
+	$(MAKE) sc _VAL="$(VAL)"
+vsd:
+	$(MAKE) sd _VAL="$(VAL)"
+vsx:
+	$(MAKE) sx _VAL="$(VAL)"
+vsi:
+	$(MAKE) si _VAL="$(VAL)"
+vsl:
+	$(MAKE) sl _VAL="$(VAL)"
+vsn:
+	$(MAKE) sn _VAL="$(VAL)"
+vsz:
+	$(MAKE) sz _VAL="$(VAL)"
 
-sc: deps= cs
-sc: sX
-sd: deps= invoker executor ds
-sd: sX
-sx: deps= xs
-sx: sX
-si: deps= is
-si: sX
-sl: deps= invoker executor dispatcher ls
-sl: sX
-sn: deps= invoker executor dispatcher ns
-sn: sX
-sz: deps= invoker executor dispatcher zs
-sz: sX
-
-vsc: val= $(VAL)
-vsc: sc
-vsd: val= $(VAL)
-vsd: sd
-vsx: val= $(VAL)
-vsx: sx
-vsi: val= $(VAL)
-vsi: si
-vsl: val= $(VAL)
-vsl: sl
-vsn: val= $(VAL)
-vsn: sn
-vsz: val= $(VAL)
-vsz: sz
 
 sum:
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
