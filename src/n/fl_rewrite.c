@@ -244,21 +244,39 @@ static int rewrite_head_if(
   ) return 0;
 
   fdja_value *atts = fdja_value_at(tree, 1);
-  flu_list *l = flu_list_malloc();
+  fdja_value *lnumber = fdja_value_at(tree, 2);
+
+  flu_list *cond = flu_list_malloc();
+  flu_list *then = flu_list_malloc();
+  flu_list *elze = flu_list_malloc();
+  flu_list *l = cond;
+
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
+    if (fdja_strcmp(v, "then") == 0) { l = then; continue; }
+    if (fdja_strcmp(v, "else") == 0) { l = elze; continue; }
     flu_list_add(l, v);
   }
   atts->child = NULL;
 
-  if (l->size > 0)
+  fdja_value *children = fdja_value_at(tree, 3);
+
+  if (cond->size > 0)
   {
-    fdja_unshift(
-      fdja_value_at(tree, 3),
-      to_tree(l, fdja_value_at(tree, 2), node, msg));
+    if (then->size > 0)
+    {
+      if (elze->size > 0)
+      {
+        fdja_unshift(children, to_tree(elze, lnumber, node, msg));
+      }
+      fdja_unshift(children, to_tree(then, lnumber, node, msg));
+    }
+    fdja_unshift(children, to_tree(cond, lnumber, node, msg));
   }
 
-  flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
+  flu_list_and_items_free(cond, (void (*)(void *))fdja_value_free);
+  flu_list_and_items_free(then, (void (*)(void *))fdja_value_free);
+  flu_list_and_items_free(elze, (void (*)(void *))fdja_value_free);
 
   return 1;
 }
@@ -274,6 +292,8 @@ static int rewrite_post_if(
 static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
   //printf("rewrite_tree() "); fdja_putdc(tree);
+
+// TODO: at first, rewrite the "post" stuff !!!
 
   int rw = 0; // rewritten? not yet
 
