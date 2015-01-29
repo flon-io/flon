@@ -284,9 +284,32 @@ static int rewrite_head_if(
 static int rewrite_post_if(
   fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
-  // TODO
-
   return 0;
+//printf("rewrite_post_if(): "); fdja_putdc(tree);
+//  fdja_value *aprev = NULL;
+//  flu_list *l = NULL;
+//  for (fdja_value *a = fdja_value_at(tree, 1)->child; a; a = a->sibling)
+//  {
+//    if (l)
+//    {
+//      flu_list_add(l, a);
+//    }
+//    else if (fdja_strcmp(a, "if") == 0 || fdja_strcmp(a, "unless") == 0)
+//    {
+//      l = flu_list_malloc();
+//      flu_list_add(l, a);
+//    }
+//    aprev = a;
+//  }
+//
+//  if (l == NULL) return 0;
+//
+//fdja_putdc(to_tree(l, fdja_value_at(tree, 2), node, msg));
+//
+//  //flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
+//  aprev->sibling = NULL;
+//
+//return 1;
 }
 
 static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
@@ -299,8 +322,8 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 
   rw |= rewrite_as_call_or_invoke(node, msg, tree);
 
-  rw |= rewrite_head_if(node, msg, tree);
   rw |= rewrite_post_if(node, msg, tree);
+  rw |= rewrite_head_if(node, msg, tree);
 
   // in precedence order
   //

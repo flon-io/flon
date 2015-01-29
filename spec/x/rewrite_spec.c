@@ -373,6 +373,27 @@ context "flon-executor"
       }
 
       it "rewrites  c d if a > b"
+      {
+        msg = mrad(
+          "c d if a > b\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ if, {}, 1, [ "
+            "[ >, {}, 1, [ "
+              "[ a, {}, 1, [] ], "
+              "[ b, {}, 1, [] ] "
+            "] ], "
+            "[ c, { _0: d }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
       it "rewrites  c d unless a > b"
     }
   }
