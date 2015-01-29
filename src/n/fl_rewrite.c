@@ -286,32 +286,53 @@ static int rewrite_head_if(
 static int rewrite_post_if(
   fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
-  return 0;
-//printf("rewrite_post_if(): "); fdja_putdc(tree);
-//  fdja_value *aprev = NULL;
-//  flu_list *l = NULL;
-//  for (fdja_value *a = fdja_value_at(tree, 1)->child; a; a = a->sibling)
-//  {
-//    if (l)
-//    {
-//      flu_list_add(l, a);
-//    }
-//    else if (fdja_strcmp(a, "if") == 0 || fdja_strcmp(a, "unless") == 0)
-//    {
-//      l = flu_list_malloc();
-//      flu_list_add(l, a);
-//    }
-//    aprev = a;
-//  }
-//
-//  if (l == NULL) return 0;
-//
-//fdja_putdc(to_tree(l, fdja_value_at(tree, 2), node, msg));
-//
-//  //flu_list_and_items_free(l, (void (*)(void *))fdja_value_free);
-//  aprev->sibling = NULL;
-//
-//return 1;
+  fdja_value *atts = fdja_value_at(tree, 1);
+
+  flu_list *cond = NULL;
+
+  for (fdja_value *a = atts->child; a; a = a->sibling)
+  {
+    if (cond)
+    {
+      flu_list_add(cond, a);
+    }
+    else if (fdja_strcmp(a, "if") == 0 || fdja_strcmp(a, "unless") == 0)
+    {
+      cond = flu_list_malloc();
+      flu_list_add(cond, a);
+    }
+  }
+
+  if (cond == NULL) return 0;
+
+  fdja_value *lnumber = fdja_value_at(tree, 2);
+  fdja_value *children = fdja_value_at(tree, 3);
+  fdja_value *origin = fdja_value_at(tree, 4);
+
+  lnumber->sibling = NULL; // cut original children link
+  children->sibling = NULL;
+
+  fdja_value *condt = to_tree(cond, fdja_value_at(tree, 2), node, msg);
+
+  fdja_value *thenatts = fdja_object_malloc();
+  for (fdja_value *a = atts->child; a; a = a->sibling)
+  {
+    if (a == cond->first->item) break;
+    fdja_set(thenatts, a->key, fdja_clone(a));
+  }
+
+  fdja_value *thent = fdja_array_malloc();
+  fdja_push(thent, fdja_clone(fdja_value_at(tree, 0))); // head
+  fdja_push(thent, thenatts);
+  fdja_push(thent, fdja_clone(lnumber));
+  fdja_push(thent, children);
+  //if (origin) fdja_push(thent, origin);
+
+  fdja_push(fdja_value_at(condt, 3), thent);
+
+  fdja_replace(tree, condt);
+
+  return 1;
 }
 
 static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
