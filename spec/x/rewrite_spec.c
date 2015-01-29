@@ -222,7 +222,7 @@ context "flon-executor"
       expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
     }
 
-    context "with 'if' or 'unless'"
+    context "with 'if' or 'unless' at the head"
     {
       it "rewrites  if a"
       {
@@ -371,7 +371,10 @@ context "flon-executor"
         expect(fdja_ls(node, "inst", NULL) ===f "if");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
+    }
 
+    context "with 'if' or 'unless' at the tail"
+    {
       it "rewrites  c d if a > b"
       {
         msg = mrad(
@@ -394,6 +397,7 @@ context "flon-executor"
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
+      it "rewrites  sequence if a > b \\ c \\ d"
       it "rewrites  c d unless a > b"
     }
   }
