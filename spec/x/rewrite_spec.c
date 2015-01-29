@@ -44,7 +44,7 @@ context "flon-executor"
 
   describe "flon_rewrite_tree()"
   {
-    it "sets 'inst' (but not 'tree') when there is no rewrite"
+    it "doesn't set 'tree' when there is no rewrite"
     {
       msg = mrad(
         ">\n"
@@ -202,6 +202,26 @@ context "flon-executor"
       expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
     }
 
+    it "rewrites  trace a or (trace b or trace c)"
+    {
+      msg = mrad("trace a or (trace b or trace c)");
+      //fdja_putdc(fdja_l(msg, "tree"));
+
+      flon_rewrite_tree(node, msg);
+
+      expect(fdja_ld(msg, "tree") ===f ""
+        "[ or, {}, 1, [ "
+          "[ trace, { _0: a }, 1, [] ], "
+          "[ or, {}, 1, [ "
+            "[ trace, { _0: b }, 1, [] ], "
+            "[ trace, { _0: c }, 1, [] ] "
+          "] ] "
+        "], sx ]");
+
+      expect(fdja_ls(node, "inst", NULL) ===f "or");
+      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+    }
+
     context "with 'if' or 'unless'"
     {
       it "rewrites  if a"
@@ -281,8 +301,7 @@ context "flon-executor"
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
-      //it "rewrites if \\ a > b"
-      it "doesn't rewrite if \\ a > b"
+      it "doesn't rewrite  if \\ a > b"
       {
         msg = mrad(
           "if \n"
@@ -313,26 +332,6 @@ context "flon-executor"
 
       it "rewrites  c d if a > b"
       it "rewrites  c d unless a > b"
-
-      it "rewrites trace a or (trace b or trace c)"
-      {
-        msg = mrad("trace a or (trace b or trace c)");
-        //fdja_putdc(fdja_l(msg, "tree"));
-
-        flon_rewrite_tree(node, msg);
-
-        expect(fdja_ld(msg, "tree") ===f ""
-          "[ or, {}, 1, [ "
-            "[ trace, { _0: a }, 1, [] ], "
-            "[ or, {}, 1, [ "
-              "[ trace, { _0: b }, 1, [] ], "
-              "[ trace, { _0: c }, 1, [] ] "
-            "] ] "
-          "], sx ]");
-
-        expect(fdja_ls(node, "inst", NULL) ===f "or");
-        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-      }
     }
   }
 }
