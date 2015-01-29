@@ -71,7 +71,7 @@ context "flon and tree rewrite:"
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload.trace") ===f ""
-        "[ 0_0, 0_1_0, 0_1_1 ]");
+        "[ 0, 0, 0 ]");
     }
   }
 }
