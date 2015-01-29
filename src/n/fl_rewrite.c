@@ -253,8 +253,8 @@ static int rewrite_head_if(
 
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
-    if (fdja_strcmp(v, "then") == 0) { l = then; continue; }
-    if (fdja_strcmp(v, "else") == 0) { l = elze; continue; }
+    if (fdja_strcmp(v, "then") == 0) l = then;
+    else if (fdja_strcmp(v, "else") == 0) l = elze;
     flu_list_add(l, v);
   }
   atts->child = NULL;
@@ -267,8 +267,10 @@ static int rewrite_head_if(
     {
       if (elze->size > 0)
       {
+        fdja_free(flu_list_shift(elze));
         fdja_unshift(children, to_tree(elze, lnumber, node, msg));
       }
+      fdja_free(flu_list_shift(then));
       fdja_unshift(children, to_tree(then, lnumber, node, msg));
     }
     fdja_unshift(children, to_tree(cond, lnumber, node, msg));
