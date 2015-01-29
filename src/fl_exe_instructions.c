@@ -265,17 +265,19 @@ static int ret_to_boolean(fdja_value *v)
   return 1;
 }
 
-static fdja_value *expand(
-  fdja_value *v, fdja_value *node, fdja_value *msg, int *expanded)
+static int expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 {
-  if (v == NULL) return NULL;
+  if (v == NULL) return 0;
+
+  int r = 0; // expanded? no
 
   if (v->key && strstr(v->key, "$("))
   {
     char *k = v->key;
     v->key = fdol_expand(k, &(lup){ node, msg }, dol_lookup);
     free(k);
-    if (expanded) *expanded = 1;
+
+    r = 1; // expanded? yes
   }
 
   if (v->type == 's' || v->type == 'q' || v->type == 'y')
@@ -296,7 +298,7 @@ static fdja_value *expand(
 
       free(ss);
 
-      if (expanded) *expanded = 1;
+      r = 1; // expanded? yes
     }
     free(s);
   }
@@ -304,12 +306,12 @@ static fdja_value *expand(
   {
     for (fdja_value *c = v->child; c; c = c->sibling)
     {
-      expand(c, node, msg, expanded);
+      if (expand(c, node, msg)) r = 1; // expanded? yes
     }
   }
   //else // do not expand
 
-  return v;
+  return r;
 }
 
 static fdja_value *attributes(fdja_value *node, fdja_value *msg)
@@ -326,7 +328,7 @@ static fdja_value *attributes(fdja_value *node, fdja_value *msg)
   for (fdja_value *v = atts->child; v; v = v->sibling)
   {
     fdja_value *vv = fdja_clone(v); vv->key = strdup(v->key);
-    expand(vv, node, msg, NULL);
+    expand(vv, node, msg);
     fdja_set(r, vv->key, vv);
   }
 
