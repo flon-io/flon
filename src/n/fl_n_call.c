@@ -33,7 +33,6 @@ static int is_callable(fdja_value *val)
     val != NULL &&
     val->type == 'o' &&
     fdja_l(val, "nid") &&
-    fdja_l(val, "counter") &&
     fdja_l(val, "args")
   );
 }
@@ -67,9 +66,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
   // prepare new node's nid
 
   nid = fdja_ls(val, "nid");
-  size_t counter = fdja_li(val, "counter") + 1;
-  cnid = flu_sprintf("%s-%x", nid, counter);
-  fdja_psetv(val, "counter", "%d", counter);
+  cnid = flu_sprintf("%s-%x", nid, counter_next());
 
   // prepare tree
 

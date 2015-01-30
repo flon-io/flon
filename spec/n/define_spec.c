@@ -68,9 +68,6 @@ context "instruction:"
 
       v1 = fdja_l(v, "nodes.0.vars.sub.nid");
       expect(fdja_tod(v1) ===f "0_0");
-
-      v1 = fdja_l(v, "nodes.0.vars.sub.counter");
-      expect(fdja_tod(v1) ===f "0");
     }
 
     it "is OK when there are no args"
@@ -102,9 +99,6 @@ context "instruction:"
 
       v1 = fdja_l(v, "nodes.0.vars.sub.nid");
       expect(fdja_tod(v1) ===f "0_0");
-
-      v1 = fdja_l(v, "nodes.0.vars.sub.counter");
-      expect(fdja_tod(v1) ===f "0");
     }
 
     it "is OK when the name and args are extrapolated"
@@ -136,9 +130,6 @@ context "instruction:"
 
       v1 = fdja_l(v, "nodes.0.vars.sub0.nid");
       expect(fdja_tod(v1) ===f "0_0");
-
-      v1 = fdja_l(v, "nodes.0.vars.sub0.counter");
-      expect(fdja_tod(v1) ===f "0");
     }
 
     it "returns 'anonymous functions'"

@@ -335,6 +335,15 @@ static fdja_value *attributes(fdja_value *node, fdja_value *msg)
   return r;
 }
 
+static size_t counter_next()
+{
+  size_t r = 1;
+  if (fdja_l(execution, "counter")) r = fdja_li(execution, "counter") + 1;
+  fdja_psetv(execution, "counter", "%d", r);
+
+  return r;
+}
+
 
 //
 // ... some defaults

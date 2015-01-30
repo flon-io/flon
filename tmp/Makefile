@@ -76,7 +76,7 @@ zs.c: ../spec/z/*_spec.c
 cs: $(DEPS)
 ds: $(DDEPS) flon_helpers.o feu_helpers.o
 xs: $(XDEPS)
-is: $(IDEPS)
+is: $(IDEPS) flon_helpers.o
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o
 ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
