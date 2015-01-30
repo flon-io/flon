@@ -382,14 +382,14 @@ static short double_fork(char *ctx, char *logpath, char *arg)
       fgaj_d("wrote var/run/%s.pid", exid);
     }
       //
-      // the invoker stdout is kept for payload output.
+      // the tasker stdout is kept for payload output.
 
     fflush(stderr);
 
     char *bin = NULL;
     //
-    if (*ctx == 'i')
-      bin = flon_conf_string("invoker.bin", "bin/flon-invoker");
+    if (*ctx == 't')
+      bin = flon_conf_string("tasker.bin", "bin/flon-tasker");
     else
       bin = flon_conf_string("executor.bin", "bin/flon-executor");
 
@@ -401,7 +401,7 @@ static short double_fork(char *ctx, char *logpath, char *arg)
       v &&
       (
         strstr(v, "all") ||
-        (*ctx == 'i' && strstr(v, "inv")) ||
+        (*ctx == 't' && strstr(v, "tsk")) ||
         (*ctx == 'e' && strstr(v, "exe"))
       )
     )
@@ -493,12 +493,12 @@ static short dispatch(const char *fname, fdja_value *j)
   char *arg = exid;
   char *logpath = NULL;
   //
-  if (*fname == 'i') // invoke
+  if (*fname == 't') // task
   {
-    ct = "inv";
-    ctx = "invoker";
-    arg = flu_sprintf("var/spool/inv/%s", fname);
-    logpath = flu_sprintf("var/log/%s/inv_%s-%s.log", fep, exid, nid);
+    ct = "tsk";
+    ctx = "tasker";
+    arg = flu_sprintf("var/spool/tsk/%s", fname);
+    logpath = flu_sprintf("var/log/%s/tsk_%s-%s.log", fep, exid, nid);
   }
   else // execute, receive, cancel
   {
@@ -523,7 +523,7 @@ static short dispatch(const char *fname, fdja_value *j)
 
   // over
 
-  if (*fname == 'i') free(arg); // else arg == exid
+  if (*fname == 't') free(arg); // else arg == exid
   free(exid);
   free(fep);
   free(nid);
@@ -567,12 +567,12 @@ static short receive_ret(const char *fname)
     goto _over;
   }
 
-  // unlink inv_
+  // unlink tsk_
 
-  if (flu_unlink("var/spool/inv/inv_%s", fname + 4) == 0)
-    fgaj_i("unlinked var/spool/inv/inv_%s", fname + 4);
+  if (flu_unlink("var/spool/tsk/tsk_%s", fname + 4) == 0)
+    fgaj_i("unlinked var/spool/tsk/tsk_%s", fname + 4);
   else
-    fgaj_i("failed to unlink var/spool/inv/inv_%s", fname + 4);
+    fgaj_i("failed to unlink var/spool/tsk/tsk_%s", fname + 4);
 
   // unlink ret_
 
@@ -613,7 +613,7 @@ short flon_dispatch(const char *fname)
 
   if (
     strncmp(fname, "exe_", 4) != 0 &&
-    strncmp(fname, "inv_", 4) != 0 &&
+    strncmp(fname, "tsk_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0 &&
     strncmp(fname, "can_", 4) != 0

@@ -197,7 +197,7 @@ context "flon-dispatcher and schedules:"
 
       r = flon_dispatch(name);
 
-      flu_system("tree var/ -I www");
+      //flu_system("tree var/ -I www");
 
       expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
@@ -250,7 +250,7 @@ context "flon-dispatcher and schedules:"
 
       r = flon_dispatch(name);
 
-      flu_system("tree var/ -I www");
+      //flu_system("tree var/ -I www");
 
       expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 

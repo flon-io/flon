@@ -48,17 +48,17 @@ context "flon-dispatcher"
 
   describe "flon_dispatch()"
   {
-    it "dispatches invocations"
+    it "dispatches tasks"
     {
-      exid = flon_generate_exid("dtest.inv");
+      exid = flon_generate_exid("dtest.tsk");
       fep = flon_exid_path(exid);
-      name = flu_sprintf("inv_%s-0_2.json", exid);
+      name = flu_sprintf("tsk_%s-0_2.json", exid);
 
       int r = flu_writeall(
-        "var/spool/dis/inv_%s-0_2.json", exid,
+        "var/spool/dis/tsk_%s-0_2.json", exid,
         "{"
-          "point: invoke\n"
-          "tree: [ stamp, {}, [] ]\n"
+          "point: task\n"
+          "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_2\n"
           "payload: {\n"
@@ -74,7 +74,7 @@ context "flon-dispatcher"
       r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-0_2.json", exid, 2);
       expect(r i== 1); // ret file found
 
-      flu_msleep(100); // give it time to write the file
+      flu_msleep(210); // give it time to write the file
 
       fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
       expect(v != NULL);
@@ -82,23 +82,23 @@ context "flon-dispatcher"
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
 
-      s = flu_readall("var/log/%s/inv_%s-0_2.log", fep, exid);
+      s = flu_readall("var/log/%s/tsk_%s-0_2.log", fep, exid);
       //printf(">>>\n%s<<<\n", s);
       expect(s != NULL);
-      expect(s >== " invoked >ruby stamp.rb<");
+      expect(s >== " ran >ruby stamp.rb<");
       expect(s >== " stamp.rb over.");
 
       expect(flu_fstat("var/spool/dis/%s", name) == 0);
 
       flu_unlink("var/spool/dis/ret_%s-0_2.json", exid);
-      flu_unlink("var/spool/inv/inv_%s-0_2.json", exid);
-      flu_unlink("var/log/inv/%s-0_2.txt", exid);
+      flu_unlink("var/spool/tsk/tsk_%s-0_2.json", exid);
+      flu_unlink("var/log/tsk/%s-0_2.txt", exid);
     }
 
     it "rejects files it doesn't understand"
     {
       exid = flon_generate_exid("dtest.rju");
-      name = flu_sprintf("inv_%s.json", exid);
+      name = flu_sprintf("tsk_%s.json", exid);
       path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(path, "NADA");
@@ -107,17 +107,17 @@ context "flon-dispatcher"
       r = flon_dispatch(name);
       expect(r i== -1); // -1 rejected / 1 seen, failed / 2 dispatched
 
-      s = flu_readall("var/spool/rejected/inv_%s.json", exid);
+      s = flu_readall("var/spool/rejected/tsk_%s.json", exid);
       expect(s >== "NADA");
       expect(s >== "# reason:");
 
-      flu_unlink("var/spool/rejected/inv_%s.json", exid);
+      flu_unlink("var/spool/rejected/tsk_%s.json", exid);
     }
 
     it "rejects files it doesn't know how to dispatch"
     {
       exid = flon_generate_exid("dtest.rjk");
-      name = flu_sprintf("inv_%s.json", exid);
+      name = flu_sprintf("tsk_%s.json", exid);
       path = flu_sprintf("var/spool/dis/%s", name);
 
       int r = flu_writeall(
@@ -135,13 +135,13 @@ context "flon-dispatcher"
       r = flon_dispatch(name);
       expect(r i== -1); // -1 rejected / 1 seen, failed / 2 dispatched
 
-      s = flu_readall("var/spool/rejected/inv_%s.json", exid);
+      s = flu_readall("var/spool/rejected/tsk_%s.json", exid);
       expect(s ^== "{nada: [ stamp");
 
-      flu_unlink("var/spool/rejected/inv_%s.json", exid);
+      flu_unlink("var/spool/rejected/tsk_%s.json", exid);
     }
 
-    it "receives invocation returns"
+    it "receives task returns"
     {
       int r = -1;
       exid = flon_generate_exid("dtest.rir");
@@ -149,10 +149,10 @@ context "flon-dispatcher"
       name = flu_sprintf("ret_%s-0_7-f.json", exid);
 
       r = flu_writeall(
-        "var/spool/inv/inv_%s-0_7-f.json", exid,
+        "var/spool/tsk/tsk_%s-0_7-f.json", exid,
         "{"
-          "point: invoke\n"
-          "tree: [ stamp, {}, [] ]\n"
+          "point: task\n"
+          "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_7-f\n"
           "payload: {\n"
@@ -179,7 +179,7 @@ context "flon-dispatcher"
       expect(r i== 1); // rcv_ file found
 
       //expect(flu_fstat("var/spool/dis/rcv_%s-0_7-f.json", exid) == 'f');
-      expect(flu_fstat("var/spool/inv/inv_%s-0_7-f.json", exid) == 0);
+      expect(flu_fstat("var/spool/tsk/tsk_%s-0_7-f.json", exid) == 0);
       expect(flu_fstat("var/spool/dis/ret_%s-0_7-f.json", exid) == 0);
 
 

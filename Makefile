@@ -32,7 +32,7 @@ clean-tst-time:
 clean-tst-basic:
 	rm -f tst/var/spool/dis/*.json
 	rm -f tst/var/spool/exe/*.json
-	rm -f tst/var/spool/inv/*.json
+	rm -f tst/var/spool/tsk/*.json
 	rm -f tst/var/spool/rejected/nada
 	rm -f tst/var/spool/rejected/*.json
 	rm -f tst/var/spool/rejected/*.jon
