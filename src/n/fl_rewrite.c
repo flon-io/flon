@@ -311,8 +311,9 @@ static int rewrite_post_if(
 
   lnumber->sibling = NULL; // cut original children link
   children->sibling = NULL;
+  fdja_free(origin);
 
-  fdja_value *condt = to_tree(cond, fdja_value_at(tree, 2), node, msg);
+  fdja_value *condt = to_tree(cond, lnumber, node, msg);
 
   fdja_value *thenatts = fdja_object_malloc();
   for (fdja_value *a = atts->child; a; a = a->sibling)
@@ -320,6 +321,8 @@ static int rewrite_post_if(
     if (a == cond->first->item) break;
     fdja_set(thenatts, a->key, fdja_clone(a));
   }
+
+  flu_list_free(cond);
 
   fdja_value *thent = fdja_array_malloc();
   fdja_push(thent, fdja_clone(fdja_value_at(tree, 0))); // head
