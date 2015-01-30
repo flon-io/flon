@@ -62,10 +62,12 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
   if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
 
   char *next =
-    strcmp(from, nid) == 0 ?  flon_nid_child(nid, 0) : flon_nid_next(from);
+    strcmp(from, nid) == 0 ?
+    flon_nid_child(nid, 0) :
+    flon_nid_next(from, 1);
 
-  fdja_value *t =
-    next ? flon_node_tree(next) : NULL;
+  fdja_value *t = next ? flon_node_tree(next) : NULL;
+
   char r = 'v'; // over, for now
 
   if (t)

@@ -200,12 +200,14 @@ context "fl_ids:"
   {
     it "returns the next nid"
     {
-      expect(flon_nid_next("0") == NULL);
-      expect(flon_nid_next("0_1") ===f "0_2");
-      expect(flon_nid_next("1_2") ===f "1_3");
-      expect(flon_nid_next("1_2_3") ===f "1_2_4");
+      expect(flon_nid_next("0", 1) == NULL);
+      expect(flon_nid_next("0_1", 1) ===f "0_2");
+      expect(flon_nid_next("1_2", 1) ===f "1_3");
+      expect(flon_nid_next("1_2_3", 1) ===f "1_2_4");
 
-      expect(flon_nid_next("1_2_3-2") ===f "1_2_4-2");
+      expect(flon_nid_next("1_2_3-2", 1) ===f "1_2_4-2");
+
+      expect(flon_nid_next("1_2_3-2", -1) ===f "1_2_2-2");
     }
   }
 }

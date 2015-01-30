@@ -34,7 +34,7 @@ char *flon_generate_exid(const char *domain);
 fdja_value *flon_parse_nid(const char *s);
 char *flon_parse_exid(const char *s);
 
-char *flon_nid_next(const char *nid);
+char *flon_nid_next(const char *nid, int increment);
 char *flon_nid_child(const char *nid, int n);
 size_t flon_nid_depth(const char *nid);
 

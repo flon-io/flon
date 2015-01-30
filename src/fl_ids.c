@@ -170,7 +170,7 @@ char *flon_parse_exid(const char *s)
   return r;
 }
 
-char *flon_nid_next(const char *nid)
+char *flon_nid_next(const char *nid, int increment)
 {
   char *r = NULL;
   char *node = NULL;
@@ -188,12 +188,12 @@ char *flon_nid_next(const char *nid)
   counter = fdja_ls(i, "counter", NULL);
 
   *u = '\0';
-  long l = strtol(u + 1, NULL, 16);
+  long long l = strtoll(u + 1, NULL, 16);
 
   if (counter && strcmp(counter, "0") != 0)
-    r = flu_sprintf("%s_%x-%s", node, l + 1, counter);
+    r = flu_sprintf("%s_%x-%s", node, l + increment, counter);
   else
-    r = flu_sprintf("%s_%x", node, l + 1);
+    r = flu_sprintf("%s_%x", node, l + increment);
 
 _over:
 

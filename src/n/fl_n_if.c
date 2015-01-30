@@ -39,15 +39,12 @@ static char rcv_if(fdja_value *node, fdja_value *rcv)
 
   int ret = ret_to_boolean(fdja_l(rcv, "payload.ret"));
 
-  char *next = flon_nid_next(from);
-  if (ret == 0) next = flon_nid_next(next);
-    //
-    // TODO: flond_nid_next(start, increment);
-    //
-  //char *next = flon_nid_next(from, ret ? 1 : 2);
+  char *next = flon_nid_next(from, ret ? 1 : 2);
 
-  if (flon_node_tree(next)) queue_child_execute(next, node, rcv, NULL);
-  else r = 'v';
+  if (flon_node_tree(next))
+    queue_child_execute(next, node, rcv, NULL);
+  else
+    r = 'v';
 
   free(next);
 
