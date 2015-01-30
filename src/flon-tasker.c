@@ -23,15 +23,26 @@
 // Made in Japan.
 //
 
-// for specs
+#define _POSIX_C_SOURCE 200809L
 
-#ifndef FL_INVOKER_H
-#define FL_INVOKER_H
+#include <stdio.h>
 
-#include "djan.h"
+#include "gajeta.h"
+#include "fl_common.h"
+#include "fl_tasker.h"
 
 
-int flon_invoke(const char *path);
+int main(int argc, char *argv[])
+{
+  flon_configure(".");
+  flon_setup_logging("tasker");
 
-#endif // FL_INVOKER_H
+  if (argc < 2)
+  {
+    fgaj_e("missing incoming invocation file as arg");
+    return 1;
+  }
+
+  return flon_task(argv[1]);
+}
 

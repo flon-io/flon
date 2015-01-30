@@ -1,6 +1,6 @@
 
 //
-// specifying flon-invoker
+// specifying flon-tasker
 //
 // Fri Oct  3 11:24:25 JST 2014
 //
@@ -10,12 +10,12 @@
 #include "djan.h"
 #include "fl_ids.h"
 #include "fl_common.h"
-#include "fl_invoker.h"
+#include "fl_tasker.h"
 
 #include "flon_helpers.h"
 
 
-context "flon-invoker"
+context "flon-tasker"
 {
   before each
   {
@@ -28,18 +28,18 @@ context "flon-invoker"
     flon_configure(".");
   }
 
-  describe "flon_invoke()"
+  describe "flon_task()"
   {
-    it "invokes"
+    it "tasks"
     {
       char *exid = flon_generate_exid("itest");
       char *nid = "0_0_7";
-      char *path = flu_sprintf("var/spool/inv/inv_%s-%s.json", exid, nid);
+      char *path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
-        "point: invoke\n"
-        "tree: [ stamp, {}, [] ]\n"
+        "point: task\n"
+        "tree: [ task, { _0: stamp }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"
@@ -48,29 +48,31 @@ context "flon-invoker"
         exid, nid
       );
 
-      int r = flon_invoke(path);
+      int r = flon_task(path);
 
       expect(r == 0);
 
-      r = hlp_wait_for_file('f', "var/spool/inv/inv_%s-%s.json", exid, nid, 3);
+      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 3);
       expect(r i== 1);
+      //
+      flu_msleep(300);
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/tsk/tsk_%s-%s.json", exid, nid) c== 'f');
         // it's still here, it's the dispatcher's work to nuke it
 
       expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
 
       fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
-      //puts(fdja_to_pretty_djan(v));
+      //fdja_putdc(v);
 
       expect(fdja_ls(v, "hello", NULL) ===f "world");
       expect(fdja_l(v, "stamp") != NULL);
 
       fdja_free(v);
 
-      flu_unlink("var/spool/inv/inv_%s-%s.json", exid, nid);
+      flu_unlink("var/spool/tsk/tsk_%s-%s.json", exid, nid);
       flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
 
       free(exid);

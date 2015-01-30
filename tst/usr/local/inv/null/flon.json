@@ -1,6 +1,0 @@
-
-# null
-
-invoke: "bin/null -e $(exid) -n $(nid)"
-out: discard
-

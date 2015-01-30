@@ -1,6 +1,6 @@
 
 //
-// specifying flon invokers
+// specifying flon taskers
 //
 // Mon Nov 17 06:00:25 JST 2014
 //
@@ -8,10 +8,12 @@
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_common.h"
-#include "fl_invoker.h"
+#include "fl_tasker.h"
+
+#include "flon_helpers.h"
 
 
-context "invoker: mirror"
+context "tasker: mirror"
 {
   before each
   {
@@ -44,12 +46,12 @@ context "invoker: mirror"
     {
       exid = flon_generate_exid("itest-mirror-0");
       nid = "0_1";
-      path = flu_sprintf("var/spool/inv/inv_%s-%s.json", exid, nid);
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
-        "point: invoke\n"
-        "tree: [ mirror, {}, [] ]\n"
+        "point: task\n"
+        "tree: [ task, { _0: mirror }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"
@@ -60,22 +62,26 @@ context "invoker: mirror"
         exid, nid
       );
 
-      int r = flon_invoke(path);
+      int r = flon_task(path);
 
       expect(r == 0);
 
-      sleep(1);
+      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 3);
+      expect(r i== 1);
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/tsk/tsk_%s-%s.json", exid, nid) c== 'f');
         // it's still here, it's the dispatcher's work to nuke it,
+        // but since there is no answer...
 
       expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
-        // the null participant nuked it
+
+      //char *s = flu_readall("var/spool/dis/ret_%s-%s.json", exid, nid);
+      //puts(s);
+      //free(s);
 
       v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
-
       expect(v != NULL);
 
       //flu_putf(fdja_todc(v));

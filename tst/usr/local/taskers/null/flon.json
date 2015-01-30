@@ -1,0 +1,6 @@
+
+# null
+
+run: "bin/null -e $(exid) -n $(nid)"
+out: discard
+

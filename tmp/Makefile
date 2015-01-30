@@ -39,9 +39,9 @@ DDEPS= \
 XDEPS= \
   $(DEPS) \
   dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
-IDEPS= \
+TDEPS= \
   $(DEPS) \
-  dollar.o fl_invoker.o
+  dollar.o fl_tasker.o
 LDEPS= \
   $(DEPS) $(SHV_OS) $(TSI_OS) \
   flu64.o fl_listener.o fl_lis_auth.o
@@ -64,8 +64,8 @@ ds.c: ../spec/d/*_spec.c
 	$(RODZO) ../spec/d/*_spec.c -o ds.c
 xs.c: ../spec/x/*_spec.c
 	$(RODZO) ../spec/x/*_spec.c -o xs.c
-is.c: ../spec/i/*_spec.c
-	$(RODZO) ../spec/i/*_spec.c -o is.c
+ts.c: ../spec/t/*_spec.c
+	$(RODZO) ../spec/t/*_spec.c -o ts.c
 ls.c: ../spec/l/*_spec.c
 	$(RODZO) ../spec/l/*_spec.c -o ls.c
 ns.c: ../spec/n/*_spec.c
@@ -76,16 +76,16 @@ zs.c: ../spec/z/*_spec.c
 cs: $(DEPS)
 ds: $(DDEPS) flon_helpers.o feu_helpers.o
 xs: $(XDEPS)
-is: $(IDEPS) flon_helpers.o
+ts: $(TDEPS) flon_helpers.o
 ls: $(LDEPS) fl_dispatcher.o l_helpers.o
 ns: $(DEPS) feu_helpers.o
 zs: $(DEPS) feu_helpers.o
 
-s: cs ds xs is ls ns zs
+s: cs ds xs ts ls ns zs
 
 warn:
 	$(MAKE) _tmpsrc
-	$(MAKE) clean cs ds xs is ls ns zs  2>&1 | . ./spec_filter.sh
+	$(MAKE) clean cs ds xs ts ls ns zs  2>&1 | . ./spec_filter.sh
 
 sX:
 	$(MAKE) _tmpsrc
@@ -96,17 +96,17 @@ sX:
 sc:
 	$(MAKE) sX _VAL="$(_VAL)" _PREQ="cs"
 sd:
-	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor ds"
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="tasker executor ds"
 sx:
 	$(MAKE) sX _VAL="$(_VAL)" _PREQ="xs"
-si:
-	$(MAKE) sX _VAL="$(_VAL)" _PREQ="is"
+st:
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="ts"
 sl:
-	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher ls"
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="tasker executor dispatcher ls"
 sn:
-	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher ns"
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="tasker executor dispatcher ns"
 sz:
-	$(MAKE) sX _VAL="$(_VAL)" _PREQ="invoker executor dispatcher zs"
+	$(MAKE) sX _VAL="$(_VAL)" _PREQ="tasker executor dispatcher zs"
 #
 vsc:
 	$(MAKE) sc _VAL="$(VAL)"
@@ -114,8 +114,8 @@ vsd:
 	$(MAKE) sd _VAL="$(VAL)"
 vsx:
 	$(MAKE) sx _VAL="$(VAL)"
-vsi:
-	$(MAKE) si _VAL="$(VAL)"
+vst:
+	$(MAKE) st _VAL="$(VAL)"
 vsl:
 	$(MAKE) sl _VAL="$(VAL)"
 vsn:
@@ -127,15 +127,15 @@ vsz:
 sum:
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	$(MAKE) _tmpsrc
-	$(MAKE) invoker executor dispatcher cs ds is ls ns xs zs
+	$(MAKE) tasker executor dispatcher cs ds ts ls ns xs zs
 	@echo "\n--- make sc ---common-------------------------------------------"
 	@./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sd ---dispatcher---------------------------------------"
 	@./ds 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sx ---executor-----------------------------------------"
 	@./xs 2>&1 | ./spec_filter.sh
-	@echo "\n--- make si ---invoker------------------------------------------"
-	@./is 2>&1 | ./spec_filter.sh
+	@echo "\n--- make st ---tasker-------------------------------------------"
+	@./ts 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sl ---listener-----------------------------------------"
 	@./ls 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sn ---instructions-------------------------------------"
@@ -147,15 +147,15 @@ sum:
 vsum:
 	$(MAKE) -C .. ctst 2>&1 > /dev/null
 	$(MAKE) _tmpsrc
-	$(MAKE) invoker executor dispatcher cs ds is ls ns xs zs
+	$(MAKE) tasker executor dispatcher cs ds ts ls ns xs zs
 	@echo "\n--- make vsc ---common------------------------------------------"
 	$(VAL) ./cs 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsd ---dispatcher--------------------------------------"
 	$(VAL) ./ds 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsx ---executor----------------------------------------"
 	$(VAL) ./xs 2>&1 | ./spec_filter.sh
-	@echo "\n--- make vsi ---invoker-----------------------------------------"
-	$(VAL) ./is 2>&1 | ./spec_filter.sh
+	@echo "\n--- make vst ---tasker------------------------------------------"
+	$(VAL) ./ts 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsl ---listener----------------------------------------"
 	$(VAL) ./ls 2>&1 | ./spec_filter.sh
 	@echo "\n--- make vsn ---instructions------------------------------------"
@@ -169,20 +169,20 @@ _specfilter:
 	@echo "** $(FIL):"
 	@echo "*"
 	@cat $(FIL) | ./spec_filter.sh x
-vesn: ns invoker executor dispatcher
+vesn: ns tasker executor dispatcher
 	FLONVAL=exe $(MAKE) sn
 	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
-vesz: ns invoker executor dispatcher
+vesz: ns tasker executor dispatcher
 	FLONVAL=exe $(MAKE) sz
 	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
 
-ssi: _tmpsrc is
-	strace -r ./is
-ssd: ds executor invoker
+sst: _tmpsrc ts
+	strace -r ./ts
+ssd: ds executor tasker
 	strace -r ./ds
 
 flon-executor: $(XDEPS)
-flon-invoker: $(IDEPS)
+flon-tasker: $(TDEPS)
 #
 flon-dispatcher: $(DDEPS)
 	$(CC) -I../src $(CFLAGS) ../src/flon-dispatcher.c $(DDEPS) \
@@ -197,9 +197,9 @@ flon-flon: $(DEPS) $(TSI_OS) flu64.o
 executor:
 	$(MAKE) _tmpsrc; $(MAKE) flon-executor
 	mv flon-executor ../tst/bin/
-invoker:
-	$(MAKE) _tmpsrc; $(MAKE) flon-invoker
-	mv flon-invoker ../tst/bin/
+tasker:
+	$(MAKE) _tmpsrc; $(MAKE) flon-tasker
+	mv flon-tasker ../tst/bin/
 dispatcher:
 	$(MAKE) _tmpsrc; $(MAKE) flon-dispatcher
 	mv flon-dispatcher ../tst/bin/

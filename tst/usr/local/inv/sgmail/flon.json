@@ -1,6 +1,0 @@
-
-# stamp
-
-#invoke: "ruby stamp.rb -x ${task.x.y.z}"
-invoke: "bin/sgmail"
-

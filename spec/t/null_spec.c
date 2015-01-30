@@ -1,6 +1,6 @@
 
 //
-// specifying flon invokers
+// specifying flon taskers
 //
 // Sat Nov 15 17:50:46 JST 2014
 //
@@ -8,10 +8,10 @@
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_common.h"
-#include "fl_invoker.h"
+#include "fl_tasker.h"
 
 
-context "invoker: null"
+context "tasker: null"
 {
   before each
   {
@@ -40,12 +40,12 @@ context "invoker: null"
     {
       exid = flon_generate_exid("itest-null-0");
       nid = "0_1";
-      path = flu_sprintf("var/spool/inv/inv_%s-%s.json", exid, nid);
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
-        "point: invoke\n"
-        "tree: [ null, {}, [] ]\n"
+        "point: task\n"
+        "tree: [ task, { _0: \"null\" }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"
@@ -54,7 +54,7 @@ context "invoker: null"
         exid, nid
       );
 
-      int r = flon_invoke(path);
+      int r = flon_task(path);
 
       expect(r == 0);
 
@@ -62,12 +62,12 @@ context "invoker: null"
 
       expect(flu_canopath(".") $==f "/tst/");
 
-      expect(flu_fstat("var/spool/inv/inv_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/tsk/tsk_%s-%s.json", exid, nid) c== 'f');
         // it's still here, it's the dispatcher's work to nuke it,
         // but since there is no answer...
 
       expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 0);
-        // the null participant nuked it
+        // the null tasker nuked it
     }
   }
 }

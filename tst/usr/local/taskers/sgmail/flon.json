@@ -1,0 +1,6 @@
+
+# stamp
+
+#run: "ruby stamp.rb -x ${task.x.y.z}"
+run: "bin/sgmail"
+

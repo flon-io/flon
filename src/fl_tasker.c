@@ -37,7 +37,8 @@
 #include "gajeta.h"
 #include "djan.h"
 #include "fl_common.h"
-#include "fl_invoker.h"
+#include "fl_tasker.h"
+
 
 typedef struct { char *exid; char *nid; fdja_value *pl; } lup;
 
@@ -61,60 +62,58 @@ static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
   return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
 }
 
-int flon_invoke(const char *path)
+int flon_task(const char *path)
 {
   fgaj_d("path: %s", path);
 
-  fdja_value *inv = fdja_parse_obj_f(path);
+  fdja_value *tsk = fdja_parse_obj_f(path);
 
-  if (inv == NULL)
+  if (tsk == NULL)
   {
-    fgaj_r("couldn't read inv msg at %s", path); return 1;
+    fgaj_r("couldn't read tsk msg at %s", path); return 1;
   }
 
-  //fgaj_d("inv_: %s", fdja_to_djan(inv, 0));
+  fdja_value *tree = fdja_lookup(tsk, "tree");
 
-  fdja_value *invocation = fdja_lookup(inv, "tree");
-
-  if (invocation == NULL)
+  if (tree == NULL)
   {
     fgaj_e("no 'tree' key in the message"); return 1;
   }
 
-  fdja_value *payload = fdja_lookup(inv, "payload");
+  fdja_value *payload = fdja_lookup(tsk, "payload");
   if (payload == NULL) payload = fdja_object_malloc();
 
-  char *exid = fdja_ls(inv, "exid", NULL);
-  char *nid = fdja_ls(inv, "nid", NULL);
+  char *exid = fdja_ls(tsk, "exid", NULL);
+  char *nid = fdja_ls(tsk, "nid", NULL);
 
-  char *invoked = fdja_ls(invocation, "0", NULL);
-  if (strcmp(invoked, "invoke") == 0)
-  {
-    free(invoked);
-    invoked = fdja_ls(invocation, "1._0", NULL);
-  }
+  //char *tasked = fdja_ls(task, "0", NULL);
+  //if (strcmp(tasked, "task") == 0)
+  //{
+  //  free(tasked);
+  //  tasked = fdja_ls(task, "1._0", NULL);
+  //}
+  char *tasker_name = fdja_ls(tree, "1._0", NULL);
 
-  char *invoker_path = flu_sprintf("usr/local/inv/%s", invoked);
+  char *tasker_path = flu_sprintf("usr/local/taskers/%s", tasker_name);
   char *ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
 
   char cwd[1024 + 1]; getcwd(cwd, 1024);
   fgaj_i("cwd: %s", cwd);
 
   fgaj_i("exid: %s, nid: %s", exid, nid);
-  //fgaj_i("invocation: %s", fdja_to_json(invocation));
-  fgaj_i("invoker at %s", invoker_path);
+  fgaj_i("tasker at %s", tasker_path);
 
-  fdja_value *inv_conf = fdja_parse_obj_f("%s/flon.json", invoker_path);
+  fdja_value *tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
 
-  if (inv_conf == NULL)
+  if (tasker_conf == NULL)
   {
-    fgaj_r("didn't find invoker conf at %s/flon.json", invoker_path);
+    fgaj_r("didn't find tasker conf at %s/flon.json", tasker_path);
     return 1;
   }
 
-  char *cmd = fdja_ls(inv_conf, "invoke", NULL);
+  char *cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
 
-  char *out = fdja_ls(inv_conf, "out", NULL);
+  char *out = fdja_ls(tasker_conf, "out", NULL);
   if (out && strcmp(out, "discard") == 0)
   {
     free(ret); ret = strdup("/dev/null");
@@ -123,7 +122,7 @@ int flon_invoke(const char *path)
 
   if (cmd == NULL)
   {
-    fgaj_e("no 'invoke' key in invoker conf at %s/flon.json", invoker_path);
+    fgaj_e("no 'run' key in tasker conf at %s/flon.json", tasker_path);
     return 1;
   }
 
@@ -134,7 +133,7 @@ int flon_invoke(const char *path)
     cmd = cmd1;
   }
 
-  fgaj_i("invoking >%s<", cmd);
+  fgaj_i("tasker %s running >%s<", tasker_name, cmd);
 
   int pds[2];
 
@@ -142,7 +141,7 @@ int flon_invoke(const char *path)
 
   if (r != 0)
   {
-    fgaj_r("failed to setup pipe between invoker and invoked");
+    fgaj_r("failed to setup pipe between taskmaster and tasker");
     return 1;
   }
 
@@ -150,7 +149,7 @@ int flon_invoke(const char *path)
 
   if (i < 0) // failure
   {
-    fgaj_r("failed to fork invoked");
+    fgaj_r("taskmaster failed to fork tasker");
   }
   else if (i == 0) // child
   {
@@ -177,9 +176,9 @@ int flon_invoke(const char *path)
       return 127;
     }
 
-    if (chdir(invoker_path) != 0)
+    if (chdir(tasker_path) != 0)
     {
-      fgaj_r("failed to chdir to %s", invoker_path);
+      fgaj_r("failed to chdir to %s", tasker_path);
       return 127;
     }
 
@@ -203,7 +202,7 @@ int flon_invoke(const char *path)
 
     // over, no wait
 
-    fgaj_i("invoked >%s< pid %i", cmd, i);
+    fgaj_i("tasker %s ran >%s< pid %i", tasker_name, cmd, i);
   }
 
   // resource cleanup
@@ -211,13 +210,13 @@ int flon_invoke(const char *path)
   // not really necessary, but it helps when debugging / checking...
   // 0 lost, like all the others (hopefully).
 
-  fdja_free(inv);
-  fdja_free(inv_conf);
+  fdja_free(tsk);
+  fdja_free(tasker_conf);
   free(exid);
   free(nid);
-  free(invoker_path);
+  free(tasker_path);
   free(cmd);
-  free(invoked);
+  free(tasker_name);
   free(ret);
 
   // exit
