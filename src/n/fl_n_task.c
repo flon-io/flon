@@ -24,33 +24,33 @@
 //
 
 
-static char exe_invoke(fdja_value *node, fdja_value *exe)
+static char exe_task(fdja_value *node, fdja_value *exe)
 {
   char r = 'k'; // for now, ok
 
   char *exid = execution_id;
   char *nid = fdja_ls(node, "nid", NULL);
 
-  fdja_value *inv = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
-  fdja_psetv(inv, "point", "invoke");
-  fdja_set(inv, "tree", fdja_lc(exe, "tree"));
-  fdja_set(inv, "payload", payload_clone(exe));
-  fdja_pset(inv, "payload.args", fdja_lc(exe, "tree.1"));
+  fdja_value *tsk = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
+  fdja_psetv(tsk, "point", "task");
+  fdja_set(tsk, "tree", fdja_lc(exe, "tree"));
+  fdja_set(tsk, "payload", payload_clone(exe));
+  fdja_pset(tsk, "payload.args", fdja_lc(exe, "tree.1"));
 
-  if (flon_lock_write(inv, "var/spool/dis/inv_%s-%s.json", exid, nid) != 1)
+  if (flon_lock_write(tsk, "var/spool/dis/tsk_%s-%s.json", exid, nid) != 1)
   {
-    fgaj_r("failed writing to var/spool/dis/inv_%s-%s.json", exid, nid);
-    set_error_note(node, "failed to write invocation file", NULL);
+    fgaj_r("failed writing to var/spool/dis/tsk_%s-%s.json", exid, nid);
+    set_error_note(node, "failed to write tsk_ file", NULL);
     r = 'r';
   }
 
-  fdja_free(inv);
+  fdja_free(tsk);
   free(nid);
 
   return r;
 }
 
-static char rcv_invoke(fdja_value *node, fdja_value *rcv)
+static char rcv_task(fdja_value *node, fdja_value *rcv)
 {
   fdja_pset(rcv, "payload.args", NULL);
 

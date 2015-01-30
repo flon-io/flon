@@ -29,22 +29,22 @@ context "instruction:"
     fdja_free(result);
   }
 
-  describe "invoke"
+  describe "task"
   {
-    it "invokes an external piece of code"
+    it "tasks an external piece of code"
     {
-      exid = flon_generate_exid("n.invoke.main");
+      exid = flon_generate_exid("n.task.main");
 
       hlp_launch(
         exid,
-        "invoke stamp\n"
+        "task stamp\n"
         "",
-        "{ hello: invoke }");
+        "{ hello: task }");
 
       result = hlp_wait(exid, "receive", "0", 7);
 
       //flon_pp_execution(exid);
-      //hlp_cat_inv_log(exid);
+      //hlp_cat_tsk_log(exid);
 
       expect(result != NULL);
       //puts(fdja_todc(result));
@@ -53,7 +53,7 @@ context "instruction:"
       expect(fdja_ls(result, "nid", NULL) ===f "0");
       expect(fdja_ls(result, "from", NULL) == NULL);
 
-      expect(fdja_ls(result, "payload.hello", NULL) ===f "invoke");
+      expect(fdja_ls(result, "payload.hello", NULL) ===f "task");
       expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
 
       expect(fdja_l(result, "payload.args") == NULL);
@@ -61,11 +61,11 @@ context "instruction:"
 
     it "passes arguments"
     {
-      exid = flon_generate_exid("n.invoke.expand");
+      exid = flon_generate_exid("n.task.expand");
 
       hlp_launch(
         exid,
-        "invoke copyargs\n"
+        "task copyargs\n"
         "",
         "{}");
 
@@ -83,11 +83,11 @@ context "instruction:"
 
     it "expands its arguments"
     {
-      exid = flon_generate_exid("n.invoke.expand");
+      exid = flon_generate_exid("n.task.expand");
 
       hlp_launch(
         exid,
-        "invoke copyargs $(air), swiss: $(air.0), luft: $(air.1)\n"
+        "task copyargs $(air), swiss: $(air.0), luft: $(air.1)\n"
         "",
         "{ air: [ sr, lh, em ] }");
 
@@ -105,7 +105,7 @@ context "instruction:"
         "{ _0: copyargs, _1: [ sr, lh, em ], swiss: sr, luft: lh }");
     }
 
-    it "sets the node as 'failed' if the invoker doesn't exist"
+    it "sets the node as 'failed' if the tasker doesn't exist"
       // TODO: don't hurry with this one... think about it [later]...
   }
 }

@@ -327,7 +327,7 @@ _over:
   return r;
 }
 
-void hlp_cat_inv_log(char *exid)
+void hlp_cat_tsk_log(char *exid)
 {
   char *fep = flon_exid_path(exid);
   flu_system("find var/log/%s -name \"*.log\" | xargs tail -n +1", fep);
