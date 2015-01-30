@@ -937,6 +937,10 @@ static int fdja_is_number(char *s)
 
 void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 {
+//printf(
+//  "fdja_to_d() %p '%c' o?%d %p\"%.7s...\" d%zu\n",
+//  v, v->type, v->sowner, v->source + v->soff, v->source + v->soff, depth);
+
   short cl = flags & FDJA_F_COLOR;
   short ol = flags & FDJA_F_ONELINE;
   short cp = flags & FDJA_F_COMPACT;
