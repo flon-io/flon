@@ -58,6 +58,12 @@ vlis:
 	make clean listener && \
     valgrind --leak-check=full -v ./tst/bin/flon-listener -d tst/
 
+ps:
+	ps aux | grep flon
+killall:
+	killall -i -r flon
+
 .PHONY: \
-  spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis
+  spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
+  ps killall
 
