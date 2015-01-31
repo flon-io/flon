@@ -62,7 +62,7 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
   if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
 
   char *next =
-    strcmp(from, nid) == 0 ?
+    from == NULL || strcmp(from, nid) == 0 ?
     flon_nid_child(nid, 0) :
     flon_nid_next(from, 1);
 
@@ -88,9 +88,8 @@ static char seq_exe(fdja_value *node, fdja_value *exe, int track_ret)
   fdja_set(node, "children", fdja_array_malloc());
   if (track_ret) fdja_set(node, "rets", fdja_array_malloc());
 
-  if (child_count(node, exe) < 1) return 'v';
-
-  return seq_rcv(node, exe);
+  if (child_count(node, exe) > 0) return seq_rcv(node, exe);
+  return 'v';
 }
 
 static char con_exe(fdja_value *node, fdja_value *exe)

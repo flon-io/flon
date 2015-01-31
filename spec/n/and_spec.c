@@ -104,7 +104,7 @@ context "instruction:"
       char *lc = flu_pline("wc -l var/archive/%s/msgs.log", fep);
       *strchr(lc, ' ') = 0;
 
-      expect(lc ===f "10");
+      expect(lc ===f "9");
 
       free(fep);
     }

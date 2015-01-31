@@ -187,10 +187,12 @@ static void set_error_note(fdja_value *node, char *format, ...)
 
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
 {
+  // [ sequence, {}, 2, [], fname ]
+
   fdja_value *t = tree(node, msg);
   if (t == NULL) return -1;
 
-  fdja_value *cs = fdja_lookup(t, "2");
+  fdja_value *cs = fdja_value_at(t, 3);
   if (cs == NULL) return -1;
 
   return fdja_size(cs);
