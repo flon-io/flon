@@ -39,16 +39,16 @@ context "flon-executor"
 
   describe "flon_execute()"
   {
-    it "executes an invocation"
+    it "executes a task instruction exe"
     {
-      exid = flon_generate_exid("xtest.i");
+      exid = flon_generate_exid("xtest.t");
       fep = flon_exid_path(exid);
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
         "{"
           "point: execute\n"
-          "tree: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "tree: [ task, { _0: stamp, color: blue }, [] ]\n"
           "exid: %s\n"
           "payload: {\n"
             "hello: world\n"
@@ -64,9 +64,9 @@ context "flon-executor"
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
       expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
 
-      expect(flu_fstat("var/spool/dis/inv_%s-0.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-0.json", exid) == 'f');
 
-      fdja_value *v = fdja_parse_f("var/spool/dis/inv_%s-0.json", exid);
+      fdja_value *v = fdja_parse_f("var/spool/dis/tsk_%s-0.json", exid);
 
       expect(v != NULL);
       expect(fdja_ls(v, "exid", NULL) ===f exid);
@@ -81,24 +81,24 @@ context "flon-executor"
       expect(v != NULL);
       expect(fdja_ls(v, "exid", NULL) ===f exid);
 
-      expect(fdja_to_json(fdja_l(v, "nodes.0.tree")) ===f ""
-        "[\"invoke\",{\"_0\":\"stamp\",\"color\":\"blue\"},[]]");
+      expect(fdja_ld(v, "nodes.0.tree") ===f ""
+        "[ task, { _0: stamp, color: blue }, [] ]");
 
       fdja_free(v);
     }
 
-    it "executes an invocation return"
+    it "executes task instruction rcv"
     {
-      // at first let's start an execution, with an invocation
+      // at first let's start an execution, with a task
 
-      exid = flon_generate_exid("xtest.ir");
+      exid = flon_generate_exid("xtest.tr");
       fep = flon_exid_path(exid);
 
       flu_writeall(
         "var/spool/exe/exe_%s.json", exid,
         "{"
           "point: execute\n"
-          "tree: [ invoke, { _0: stamp, color: blue }, [] ]\n"
+          "tree: [ task, { _0: stamp, color: blue }, [] ]\n"
           "exid: %s\n"
           "payload: {\n"
             "hello: world\n"
@@ -115,7 +115,7 @@ context "flon-executor"
 
       // let's manually return to the execution
 
-      expect(flu_unlink("var/spool/dis/inv_%s-0.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/tsk_%s-0.json", exid) == 0);
 
       flu_writeall(
         "var/spool/exe/rcv_%s-0.json", exid,
@@ -153,8 +153,8 @@ context "flon-executor"
           "point: execute\n"
           "tree:\n"
           "  [ sequence, {}, 1, [\n"
-          "    [ invoke, { _0: stamp, color: blue }, 2, [] ]\n"
-          "    [ invoke, { _0: stamp, color: green }, 3, [] ]\n"
+          "    [ task, { _0: stamp, color: blue }, 2, [] ]\n"
+          "    [ task, { _0: stamp, color: green }, 3, [] ]\n"
           "  ] ]\n"
           "exid: %s\n"
           "payload: {\n"
@@ -172,16 +172,16 @@ context "flon-executor"
 
       //flon_pp_execution(exid);
 
-      expect(flu_fstat("var/spool/dis/inv_%s-0_0.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-0_0.json", exid) == 'f');
 
-      //puts(flu_readall("var/spool/dis/inv_%s-0.0.json", exid));
+      //puts(flu_readall("var/spool/dis/tsk_%s-0.0.json", exid));
 
-      v = fdja_parse_f("var/spool/dis/inv_%s-0_0.json", exid);
+      v = fdja_parse_f("var/spool/dis/tsk_%s-0_0.json", exid);
 
       expect(fdja_ls(v, "point", NULL) ===f ""
-        "invoke");
+        "task");
       expect(fdja_to_json(fdja_l(v, "tree", NULL)) ===F fdja_vj(""
-        "[ invoke, { _0: stamp, color: blue }, 2, [] ]"));
+        "[ task, { _0: stamp, color: blue }, 2, [] ]"));
       expect(fdja_to_json(fdja_l(v, "payload", NULL)) ===F fdja_vj(""
         "{ hello: xtest.pn, args: { _0: stamp, color: blue } }"));
 
@@ -192,9 +192,9 @@ context "flon-executor"
       v = fdja_parse_f("var/run/%s/run.json", fep);
       //puts(fdja_todc(v));
 
-      expect(fdja_lj(v, "nodes.0_0.nid", NULL) ===f "\"0_0\"");
-      expect(fdja_lj(v, "nodes.0_0.parent", NULL) ===f "\"0\"");
-      expect(fdja_lj(v, "nodes.0_0.inst", NULL) ===f "\"invoke\"");
+      expect(fdja_ld(v, "nodes.0_0.nid", NULL) ===f "0_0");
+      expect(fdja_ld(v, "nodes.0_0.parent", NULL) ===f "\"0\"");
+      expect(fdja_ld(v, "nodes.0_0.inst", NULL) ===f "task");
       expect(fdja_lj(v, "nodes.0_0.created", NULL) ^==f "\"20");
 
       fdja_free(v);
@@ -209,7 +209,7 @@ context "flon-executor"
 
       // inject ret_ back, towards "green"
 
-      expect(flu_unlink("var/spool/dis/inv_%s-0_0.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/tsk_%s-0_0.json", exid) i== 0);
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_0.json", exid,
@@ -231,15 +231,15 @@ context "flon-executor"
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
 
-      expect(flu_fstat("var/spool/dis/inv_%s-0_1.json", exid) == 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-0_1.json", exid) == 'f');
 
-      v = fdja_parse_f("var/spool/dis/inv_%s-0_1.json", exid);
+      v = fdja_parse_f("var/spool/dis/tsk_%s-0_1.json", exid);
       //puts(fdja_todc(v));
 
       expect(fdja_ls(v, "point", NULL) ===f ""
-        "invoke");
+        "task");
       expect(fdja_lj(v, "tree", NULL) ===F fdja_vj(""
-        "[ invoke, { _0: stamp, color: green }, 3, [] ]"));
+        "[ task, { _0: stamp, color: green }, 3, [] ]"));
       expect(fdja_lj(v, "payload", NULL) ===F fdja_vj(""
         "{ hello: chuugoku, args: { _0: stamp, color: green } }"));
 
@@ -250,16 +250,16 @@ context "flon-executor"
       v = fdja_parse_f("var/run/%s/run.json", fep);
       //puts(fdja_to_pretty_djan(v));
 
-      expect(fdja_lj(v, "nodes.0_1.nid", NULL) ===f "\"0_1\"");
-      expect(fdja_lj(v, "nodes.0_1.parent", NULL) ===f "\"0\"");
-      expect(fdja_lj(v, "nodes.0_1.inst", NULL) ===f "\"invoke\"");
+      expect(fdja_ld(v, "nodes.0_1.nid") ===f "0_1");
+      expect(fdja_ld(v, "nodes.0_1.parent") ===f "\"0\"");
+      expect(fdja_ld(v, "nodes.0_1.inst") ===f "task");
       expect(fdja_lj(v, "nodes.0_1.created", NULL) ^==f "\"20");
 
       fdja_free(v);
 
       // inject ret_ back, towards "eox" (end of execution)
 
-      expect(flu_unlink("var/spool/dis/inv_%s-0_1.json", exid) == 0);
+      expect(flu_unlink("var/spool/dis/tsk_%s-0_1.json", exid) == 0);
 
       flu_writeall(
         "var/spool/exe/ret_%s-0_1.json", exid,
