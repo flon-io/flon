@@ -40,7 +40,7 @@ static void print_usage()
   puts("");
   puts("# flon-scope");
   puts("");
-  puts("  flon-scope [-d {dir}] {exid-fragment}");
+  puts("  flon-scope [-d {dir}] [exid-fragment]");
   puts("");
   puts("Pretty prints the first execution it finds.");
   puts("looks in {start-dir}/var/run/ first, then in {start-dir}/var/archive/");
@@ -73,7 +73,7 @@ static char *lookup_exid(char *dir, char *fragment, size_t depth)
     }
     else if (depth == 2 && s == 'd')
     {
-      if (strstr(ep->d_name, fragment))
+      if (fragment == NULL || strstr(ep->d_name, fragment))
       {
         r = ep->d_name; goto _over;
       }
@@ -108,14 +108,19 @@ int main(int argc, char *argv[])
     else badarg = 1;
   }
 
-  if (optind >= argc) badarg = 1;
+  if (argc > optind + 1) badarg = 1;
   if (badarg) { print_usage(); return 1; }
 
   if (chdir(d) != 0) { printf("couldn't chdir to %s", d); return 1; }
 
-  char *fragment = argv[optind];
-
+  char *fragment = optind == argc ? NULL : argv[optind];
   char *exid = determine_exid(fragment);
+
+  printf("-----------------------------------------------------------------\n");
+  //printf("optind %d, argc %d\n", optind, argc);
+  printf("fragment  >%s<\n", fragment);
+  printf("exid      >%s<\n", exid);
+  printf("-----------------------------------------------------------------\n");
 
   if (exid == NULL)
   {
