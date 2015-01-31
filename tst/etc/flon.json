@@ -13,8 +13,8 @@ dispatcher: {
 executor: {
   bin: bin/flon-executor
 }
-invoker: {
-  bin: bin/flon-invoker
+tasker: {
+  bin: bin/flon-tasker
   log: { level: debug }
 }
 
