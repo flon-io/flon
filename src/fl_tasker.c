@@ -62,9 +62,25 @@ static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
   return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
 }
 
-static char *lookup_tasker(char *domain, char *tasker_name)
+char *flon_lookup_tasker(const char *domain, const char *name)
 {
-  return flu_sprintf("usr/local/tsk/%s", tasker_name);
+  size_t l = strlen(domain);
+
+  while (1)
+  {
+    char *path = flu_sprintf("usr/local/tsk/%.*s/%s", l, domain, name);
+    if (flu_fstat(path) == 'd') return path;
+    free(path);
+    do --l; while (l > 0 && domain[l] != '.');
+    if (l == 0) break;
+  }
+
+  char *r = flu_sprintf("usr/local/tsk/any/%s", name);
+  if (flu_fstat(r) == 'd') return r;
+
+  free(r);
+
+  return NULL;
 }
 
 int flon_task(const char *path)
@@ -94,8 +110,7 @@ int flon_task(const char *path)
   char *domain = flon_exid_domain(exid);
 
   char *tasker_name = fdja_ls(tree, "1._0", NULL);
-  //char *tasker_path = flu_sprintf("usr/local/taskers/%s", tasker_name);
-  char *tasker_path = lookup_tasker(domain, tasker_name);
+  char *tasker_path = flon_lookup_tasker(domain, tasker_name);
 
   if (tasker_path == NULL)
   {

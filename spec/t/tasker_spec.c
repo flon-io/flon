@@ -79,5 +79,28 @@ context "flon-tasker"
       free(path);
     }
   }
+
+  describe "flon_lookup_tasker()"
+  {
+    it "returns null if it doesn't find"
+    {
+//char *flon_lookup_tasker(const char *domain, const char *name);
+      expect(flon_lookup_tasker("ttest.asia.japan", "nada") == NULL);
+    }
+
+    it "returns the tasker with the most specific domain"
+    {
+      expect(flon_lookup_tasker("ttest.asia.japan", "stamp") ===f ""
+        "usr/local/tsk/ttest.asia.japan/stamp");
+      expect(flon_lookup_tasker("ttest.asia.philippines", "stamp") ===f ""
+        "usr/local/tsk/ttest/stamp");
+    }
+
+    it "returns the tasker in the 'any' domain by default"
+    {
+      expect(flon_lookup_tasker("xtest.europe.france", "stamp") ===f ""
+        "usr/local/tsk/any/stamp");
+    }
+  }
 }
 
