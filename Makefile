@@ -62,8 +62,10 @@ ps:
 	ps aux | grep flon
 killall:
 	killall -i -r flon
+tt:
+	tree -L 3 tst/usr/local/
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
-  ps killall
+  ps killall tt
 
