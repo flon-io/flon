@@ -32,7 +32,7 @@ context "flon-tasker"
   {
     it "tasks"
     {
-      char *exid = flon_generate_exid("itest");
+      char *exid = flon_generate_exid("ttest");
       char *nid = "0_0_7";
       char *path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 

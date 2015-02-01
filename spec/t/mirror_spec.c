@@ -44,7 +44,7 @@ context "tasker: mirror"
   {
     it "repeats its command line args in its output"
     {
-      exid = flon_generate_exid("itest-mirror-0");
+      exid = flon_generate_exid("ttest-mirror-0");
       nid = "0_1";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
