@@ -210,5 +210,18 @@ context "fl_ids:"
       expect(flon_nid_next("1_2_3-2", -1) ===f "1_2_2-2");
     }
   }
+
+  describe "flon_exid_domain()"
+  {
+    it "returns the domain part of an exid"
+    {
+      expect(flon_exid_domain("xxx-0_1") ===f "xxx");
+    }
+
+    it "returns NULL if it can't find the domain part"
+    {
+      expect(flon_exid_domain("xxx") == NULL);
+    }
+  }
 }
 

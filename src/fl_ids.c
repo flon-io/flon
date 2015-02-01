@@ -170,6 +170,13 @@ char *flon_parse_exid(const char *s)
   return r;
 }
 
+char *flon_exid_domain(const char *exid)
+{
+  char *dash = strchr(exid, '-');
+
+  return dash ? strndup(exid, dash - exid) : NULL;
+}
+
 char *flon_nid_next(const char *nid, int increment)
 {
   char *r = NULL;
