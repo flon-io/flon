@@ -62,6 +62,11 @@ static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
   return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
 }
 
+static char *lookup_tasker(char *domain, char *tasker_name)
+{
+  return flu_sprintf("usr/local/tsk/%s", tasker_name);
+}
+
 int flon_task(const char *path)
 {
   fgaj_d("path: %s", path);
@@ -86,21 +91,24 @@ int flon_task(const char *path)
   char *exid = fdja_ls(tsk, "exid", NULL);
   char *nid = fdja_ls(tsk, "nid", NULL);
 
-  //char *tasked = fdja_ls(task, "0", NULL);
-  //if (strcmp(tasked, "task") == 0)
-  //{
-  //  free(tasked);
-  //  tasked = fdja_ls(task, "1._0", NULL);
-  //}
-  char *tasker_name = fdja_ls(tree, "1._0", NULL);
+  char *domain = flon_exid_domain(exid);
 
-  char *tasker_path = flu_sprintf("usr/local/taskers/%s", tasker_name);
+  char *tasker_name = fdja_ls(tree, "1._0", NULL);
+  //char *tasker_path = flu_sprintf("usr/local/taskers/%s", tasker_name);
+  char *tasker_path = lookup_tasker(domain, tasker_name);
+
+  if (tasker_path == NULL)
+  {
+    fgaj_r("didn't find tasker %s (domain %s)", tasker_name, domain);
+    return 1;
+  }
+
   char *ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
 
   char cwd[1024 + 1]; getcwd(cwd, 1024);
   fgaj_i("cwd: %s", cwd);
 
-  fgaj_i("exid: %s, nid: %s", exid, nid);
+  fgaj_i("exid: %s, nid: %s, domain: %s", exid, nid, domain);
   fgaj_i("tasker at %s", tasker_path);
 
   fdja_value *tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
@@ -214,6 +222,7 @@ int flon_task(const char *path)
   fdja_free(tasker_conf);
   free(exid);
   free(nid);
+  free(domain);
   free(tasker_path);
   free(cmd);
   free(tasker_name);
