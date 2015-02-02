@@ -64,8 +64,10 @@ killall:
 	killall -i -r flon
 tt:
 	tree -L 3 tst/usr/local/
+last: scope
+	./tst/bin/flon-scope -d tst/
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
-  ps killall tt
+  ps killall tt last
 
