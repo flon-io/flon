@@ -54,7 +54,45 @@ context "flon and taskers:"
     }
 
     it "tasks a less specific domain tasker"
+    {
+      exid = flon_generate_exid("ttest.europe.france");
+
+      hlp_launch(
+        exid,
+        "task stamp\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ stamp: \"ttest stamp\" }");
+    }
+
     it "tasks an 'any' tasker"
+    {
+      exid = flon_generate_exid("xtest.europe.france");
+
+      hlp_launch(
+        exid,
+        "task stamp\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ls(result, "payload.stamp") ^==f "20");
+    }
   }
 }
 
