@@ -507,6 +507,7 @@ static flon_instruction *lookup_instruction(char dir, const char *name)
 }
 
 #include "fl_rewrite.c" // flon_rewrite_tree()
+#include "fl_catt.c" // flon_rewrite_tree()
 
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
@@ -526,6 +527,8 @@ char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
     goto _over;
   }
 
+  eval_catt_pre(dir, node, msg);
+
   r = i(node, msg);
 
   if (r == 'r') // error
@@ -533,6 +536,8 @@ char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
     fdja_set(node, "status", fdja_s("failed"));
     //fdja_set(node, "note", fdja_s("xxx")); // set by the instruction itself
   }
+
+  eval_catt_post(dir, node, msg);
 
 _over:
 
