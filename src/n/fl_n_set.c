@@ -48,7 +48,7 @@ static char exe_set(fdja_value *node, fdja_value *exe)
     a = sibling;
   }
 
-  flu_putf(fdja_todc(execution));
+  //fdja_putdc(execution);
 
   atts->child = NULL; fdja_free(atts);
 

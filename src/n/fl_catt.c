@@ -29,15 +29,33 @@ static void eval_catt_pre_vars(
 {
   fdja_value *vars = fdja_l(tree, "1.vars");
 
+  if (vars == NULL) for (size_t i = 0; ; ++i)
+  {
+    char *s = fdja_ls(tree, "1._%d", i, NULL);
+    if (s == NULL) break;
+
+    if (strcmp(s, "vars") == 0)
+    {
+      vars = fdja_object_malloc();
+    }
+    free(s);
+
+    if (vars) break;
+  }
+
   if (vars == NULL) return;
   if (vars->type == 'f') return;
 
   if (vars->type == 't') vars = fdja_object_malloc();
-  else if (vars->type == 'o') vars = fdja_clone(vars);
-  else vars = NULL;
+  else if (vars->type == 'o') {} // vars = vars;
+  else return;
 
-  if (vars) fdja_set(node, "vars", vars);
-    // TODO: case where node already has vars...
+  fdja_value *nvars = fdja_l(node, "vars");
+
+  if (nvars == NULL)
+    fdja_set(node, "vars", vars->key == NULL ? vars : fdja_clone(vars));
+  else
+    fdja_merge(nvars, vars);
 }
 
 static void eval_catt_pre(char dir, fdja_value *node, fdja_value *msg)
@@ -46,16 +64,10 @@ static void eval_catt_pre(char dir, fdja_value *node, fdja_value *msg)
 
   fdja_value *t = tree(node, msg);
 
-  //printf("%c pre:\n", dir);
-  //fdja_putdc(t);
-
   eval_catt_pre_vars(dir, node, msg, t);
 }
 
 static void eval_catt_post(char dir, fdja_value *node, fdja_value *msg)
 {
-  //printf("post:\n");
-  //fdja_putdc(node);
-  //fdja_putdc(msg);
 }
 
