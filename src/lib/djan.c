@@ -1393,7 +1393,7 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v)
 
   for (fdja_value **l = &array->child; ; l = &(*l)->sibling)
   {
-    if (*l == NULL) { *l = v; break; }
+    if (*l == NULL) { *l = v; v->sibling = NULL; break; }
   }
 
   return v;
@@ -1461,7 +1461,7 @@ fdja_value *fdja_set(fdja_value *object, const char *key, ...)
 
   if (val != NULL)
   {
-    if (val->key) free(val->key);
+    free(val->key);
     val->key = strdup(k);
   }
 
@@ -1469,25 +1469,33 @@ fdja_value *fdja_set(fdja_value *object, const char *key, ...)
   {
     fdja_value *child = *link;
 
-    if (child == NULL) { *link = v; break; }
-
-    if (strcmp(k, child->key) == 0)
+    if (child == NULL) // add at the end
     {
-      if (v == NULL)
+      *link = v;
+      if (v) v->sibling = NULL;
+
+      break;
+    }
+
+    if (strcmp(k, child->key) == 0) // found previous entry
+    {
+      if (v == NULL) // remove
       {
         *link = child->sibling;
         fdja_value_free(child);
       }
-      else
+      else // add
       {
         *link = v;
         v->sibling = child->sibling;
         fdja_value_free(child);
       }
+
       break;
     }
   }
-  if (start)
+
+  if (start) // add at start
   {
     val->sibling = object->child;
     object->child = val;
@@ -1513,7 +1521,7 @@ fdja_value *fdja_oset(fdja_value *object, const char *key, ...)
   {
     fdja_value *child = *link;
 
-    if (child == NULL) { *link = val; break; }
+    if (child == NULL) { *link = val; val->sibling = NULL; break; }
 
     int cmp = strcmp(k, child->key);
 
@@ -1712,10 +1720,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 44224b1db225710206e5043a981eea16238f9087
+//commit 6df02515c85ac37a89661588ba48d093e5ee0b57
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Feb 3 13:55:57 2015 +0900
+//Date:   Wed Feb 4 06:30:05 2015 +0900
 //
-//    fix fdja_merge()
-//    
-//    confused with a flu_list() as dict...
+//    let fdja_oset() reset its added ->sibling

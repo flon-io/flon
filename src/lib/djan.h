@@ -192,6 +192,7 @@ size_t fdja_size(fdja_value *v);
 int fdja_cmp(fdja_value *a, fdja_value *b);
 
 fdja_value *fdja_value_at(fdja_value *v, long n);
+#define fdja_at(v, n) fdja_value_at(v, n)
 
 fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap);
 fdja_value *fdja_lookup(fdja_value *v, const char *path, ...);
@@ -277,10 +278,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 44224b1db225710206e5043a981eea16238f9087
+//commit 6df02515c85ac37a89661588ba48d093e5ee0b57
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Feb 3 13:55:57 2015 +0900
+//Date:   Wed Feb 4 06:30:05 2015 +0900
 //
-//    fix fdja_merge()
-//    
-//    confused with a flu_list() as dict...
+//    let fdja_oset() reset its added ->sibling
