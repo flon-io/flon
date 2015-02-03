@@ -115,6 +115,33 @@ context "instruction:"
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
         "{ trace: [ 3 ] }"));
     }
+
+    it "sets variables at various levels"
+    {
+      exid = flon_generate_exid("n.set.var.levels");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set v.a: 0\n"
+        "  trace $(v.a)\n"
+        "  sequence vars: {}\n"
+        "    set v.a: 1\n"
+        "    trace $(v.a)\n"
+        "  trace $(v.a)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_lj(result, "payload") ===F fdja_vj(""
+        "{ trace: [ 0, 1, 0 ] }"));
+    }
   }
 }
 
