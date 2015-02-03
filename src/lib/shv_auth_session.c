@@ -147,6 +147,9 @@ void fshv_start_session(
   fshv_session *ses = push_func(params)(sid, user, id, expus);
 
   set_session_cookie(req, res, params, ses);
+
+  free(id);
+  free(sid);
 }
 
 void fshv_stop_session(
@@ -209,8 +212,8 @@ _over:
   return 0;
 }
 
-//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
+//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 07:04:24 2015 +0900
+//Date:   Tue Jan 27 14:27:01 2015 +0900
 //
-//    adapt no_auth() to new fshv_autenticate() sig
+//    add support for "application/pdf"

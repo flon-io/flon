@@ -27,12 +27,14 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <unistd.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 #include <ev.h>
 
 #include "flutil.h"
@@ -156,37 +158,168 @@ static void fshv_set_content_length(fshv_con *con)
   flu_list_set(con->res->headers, "content-length", s);
 }
 
-static int pipe_file(char *path, FILE *dst)
+static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 {
-  int r = 0;
+  if (revents & EV_ERROR) { fgaj_r("invalid event"); return; }
+  if ( ! (revents & EV_WRITE)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
-  FILE *src = fopen(path, "r");
-  if (src == NULL) return 1;
+  fshv_con *con = (fshv_con *)eio->data;
 
-  char buffer[FSHV_BUFFER_SIZE + 1];
-  size_t rl, wl;
+  fgaj_sd(
+    eio,
+    "hout %p bout %p", con ? con->hout : NULL, con ? con->bout : NULL);
 
-  while (1)
+  if (con->hout)
   {
-    rl = fread(buffer, sizeof(char), FSHV_BUFFER_SIZE, src);
-    if (rl > 0)
+    while (1)
     {
-      wl = fwrite(buffer, sizeof(char), rl, dst);
-      if (wl < rl) fgaj_w("wrote %zu of %zu chars :-(", wl, rl);
+      errno = 0;
+
+      size_t l = con->houtlen - con->houtoff;
+      if (l == 0) break;
+      if (l > FSHV_BUFFER_SIZE) l = FSHV_BUFFER_SIZE;
+      ssize_t w = write(eio->fd, con->hout + con->houtoff, l);
+
+      fgaj_sdr(eio, "hout wrote %d / %zu / %zu chars", w, l, con->houtlen);
+
+      if (w < 0) { fgaj_sr(eio, "failed to write header"); return; }
+        // TODO: should I give up here???
+
+      con->houtoff += w;
+
+      if (w < l) return;
+      //if (con->houtoff < con->houtlen) break;
     }
 
-    if (rl < FSHV_BUFFER_SIZE)
-    {
-      if (feof(src)) break;
+    free(con->hout); con->hout = NULL;
+  }
 
-      fgaj_w("read only %zu of %zu chars, but not eof", rl, FSHV_BUFFER_SIZE);
-      r = 1; break;
+  if (con->bout)
+  {
+    char buf[FSHV_BUFFER_SIZE];
+
+    while (1)
+    {
+      errno = 0;
+      size_t r = fread(buf, sizeof(char), FSHV_BUFFER_SIZE, con->bout);
+      if (r == 0) break;
+
+      for (size_t off = 0; off < r; )
+      {
+        //fgaj_sdr(eio, "pre-write");
+        errno = 0;
+        ssize_t w = write(eio->fd, (char *)buf + off, r - off);
+        fgaj_sdr(eio, "bout wrote %d / %d / %d", w, off, r);
+        if (w < 0)
+        {
+          if (errno != 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+            fgaj_sr(eio, "write error while sending file");
+          if (fseek(con->bout, off - r, SEEK_CUR) != 0)
+            fgaj_sr(eio, "fseek failed SEEK_CUR %d", off - r);
+          return;
+        }
+        off += w;
+      }
+    }
+
+    fclose(con->bout); con->bout = NULL;
+  }
+
+  // done
+
+  char asrc = 'i'; char *addr = flu_list_get(con->req->headers, "x-real-ip");
+  if (addr == NULL)
+  {
+    asrc = 'f'; addr = flu_list_get(con->req->headers, "x-forwarded-for");
+  }
+  if (addr == NULL)
+  {
+    asrc = 'a'; addr = inet_ntoa(con->client->sin_addr);
+  }
+
+  long long nowus = flu_gets('u');
+
+  fgaj_si(
+    eio,
+    "%c%s %i l%s c%.3fms r%.3fms done.",
+    asrc, addr,
+    con->res->status_code,
+    flu_list_get(con->res->headers, "content-length"),
+    (nowus - con->startus) / 1000.0,
+    (nowus - con->req->startus) / 1000.0);
+
+  ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)"); free(eio);
+  fshv_con_reset(con);
+}
+
+static int prepare_response(fshv_con *con)
+{
+  con->hout = NULL;
+  con->houtlen = 0;
+  con->houtoff = 0;
+
+  con->bout = NULL;
+
+  FILE *fout = open_memstream(&con->hout, &con->houtlen);
+
+  if (fout == NULL) { fgaj_r("couldn't prepare response"); return 1; }
+
+  int r = 0;
+  flu_list *ths = NULL;
+
+  r = fprintf(
+    fout,
+    "HTTP/1.1 %i %s\r\n",
+    con->res->status_code,
+    fshv_reason(con->res->status_code));
+  if (r < 0) goto _over;
+
+  char *xsf = NULL;
+
+  fshv_lower_keys(con->res->headers);
+  ths = flu_list_dtrim(con->res->headers);
+  //
+  for (flu_node *n = ths->first; n != NULL; n = n->next)
+  {
+    //printf("* %s: %s\n", n->key, (char *)n->item);
+
+    if (strcmp(n->key, "fshv_file") == 0) xsf = (char *)n->item;
+
+    if (strncmp(n->key, "fshv_", 4) == 0) continue;
+
+    r = fprintf(fout, "%s: %s\r\n", n->key, (char *)n->item);
+    if (r < 0) goto _over;
+  }
+
+  r = fputs("\r\n", fout);
+  if (r < 0) goto _over;
+
+  if ( ! xsf)
+  {
+    for (flu_node *n = con->res->body->first; n; n = n->next)
+    {
+      r = fputs((char *)n->item, fout);
+      if (r < 0) goto _over;
     }
   }
 
-  fclose(src);
+  r = fclose(fout);
+  if (r != 0) { r = -1; goto _over; }
 
-  return r;
+  if (xsf && ! flu_list_get(con->req->headers, "x-real-ip"))
+  {
+    con->bout = fopen(xsf, "r");
+    //if (con->bout == NULL) { r = -1; goto _over; }
+    if (con->bout == NULL) r = -1;
+  }
+
+_over:
+
+  flu_list_free(ths);
+
+  if (r < 0) fgaj_r("problem preparing response");
+
+  return r > -1 ? 0 : r;
 }
 
 void fshv_respond(struct ev_loop *l, struct ev_io *eio)
@@ -237,83 +370,24 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 
   if (l == NULL) return; // only in spec/handle_spec.c
 
-  // write headers
+  // prepare response
 
-  FILE *f = fdopen(eio->fd, "w");
+  prepare_response(con);
 
-  if (f == NULL) { fgaj_r("couldn't open file back to client"); return; }
+  // respond
 
-  fprintf(
-    f,
-    "HTTP/1.1 %i %s\r\n",
-    con->res->status_code,
-    fshv_reason(con->res->status_code));
+  struct ev_io *weio = calloc(1, sizeof(struct ev_io));
+  weio->data = con;
 
-  char *xsf = NULL;
+  //ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (r)");
+    // NO, because this eio may be re-used :-)
 
-  fshv_lower_keys(con->res->headers);
-  flu_list *ths = flu_list_dtrim(con->res->headers);
-  //
-  for (flu_node *n = ths->first; n != NULL; n = n->next)
-  {
-    //printf("* %s: %s\n", n->key, (char *)n->item);
-
-    if (strcmp(n->key, "fshv_file") == 0) xsf = (char *)n->item;
-
-    if (strncmp(n->key, "fshv_", 4) == 0) continue;
-
-    fprintf(f, "%s: %s\r\n", n->key, (char *)n->item);
-  }
-  flu_list_free(ths);
-
-  fputs("\r\n", f);
-
-  // write body
-
-  if (xsf)
-  {
-    if ( ! flu_list_get(con->req->headers, "x-real-ip")) pipe_file(xsf, f);
-  }
-  else
-  {
-    for (flu_node *n = con->res->body->first; n; n = n->next)
-    {
-      fputs((char *)n->item, f);
-    }
-  }
-
-  fclose(f);
-
-  // done
-
-  char asrc = 'i'; char *addr = flu_list_get(con->req->headers, "x-real-ip");
-  if (addr == NULL)
-  {
-    asrc = 'f'; addr = flu_list_get(con->req->headers, "x-forwarded-for");
-  }
-  if (addr == NULL)
-  {
-    asrc = 'a'; addr = inet_ntoa(con->client->sin_addr);
-  }
-
-  nowus = flu_gets('u');
-
-  fgaj_i(
-    "i%p r%i %c%s %s %s %i l%s c%.3fms r%.3fms",
-    eio, con->rqount,
-    asrc, addr,
-    fshv_char_to_method(con->req->method),
-    con->req->uri,
-    con->res->status_code,
-    flu_list_get(con->res->headers, "content-length"),
-    (nowus - con->startus) / 1000.0,
-    (nowus - con->req->startus) / 1000.0);
-
-  fshv_con_reset(con);
+  ev_io_init(weio, fshv_respond_cb, eio->fd, EV_WRITE);
+  ev_io_start(l, weio);
 }
 
-//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
+//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 07:04:24 2015 +0900
+//Date:   Tue Jan 27 14:27:01 2015 +0900
 //
-//    adapt no_auth() to new fshv_autenticate() sig
+//    add support for "application/pdf"

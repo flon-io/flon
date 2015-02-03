@@ -240,8 +240,8 @@ int fshv_do_route(char *path, fshv_request *req)
   return r;
 }
 
-//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
+//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 07:04:24 2015 +0900
+//Date:   Tue Jan 27 14:27:01 2015 +0900
 //
-//    adapt no_auth() to new fshv_autenticate() sig
+//    add support for "application/pdf"

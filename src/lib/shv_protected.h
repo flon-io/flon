@@ -75,6 +75,12 @@ typedef struct {
   ssize_t rqount;
   fshv_request *req;
   fshv_response *res;
+
+  char *hout;
+  size_t houtlen;
+  size_t houtoff;
+
+  FILE *bout;
 } fshv_con;
 
 fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes);
@@ -141,8 +147,8 @@ int fshv_debug_handler(
 
 #endif // FLON_SHV_PROTECTED_H
 
-//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
+//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 07:04:24 2015 +0900
+//Date:   Tue Jan 27 14:27:01 2015 +0900
 //
-//    adapt no_auth() to new fshv_autenticate() sig
+//    add support for "application/pdf"

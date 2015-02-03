@@ -54,6 +54,7 @@ static char *fshv_determine_content_type(const char *path)
   else if (strcmp(suffix, ".css") == 0) r = "text/css";
   else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
   else if (strcmp(suffix, ".html") == 0) r = "text/html";
+  else if (strcmp(suffix, ".pdf") == 0) r = "application/pdf";
   else r = "text/plain";
 
   return strdup(r);
@@ -72,20 +73,17 @@ ssize_t fshv_serve_file(
 
   res->status_code = 200;
 
+  flu_list_set(
+    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
+  flu_list_set(
+    res->headers, "content-type", fshv_determine_content_type(pa));
+  flu_list_set(
+    res->headers, "fshv_file", strdup(pa));
+
   char *h = flu_list_get(params, "header");
   if (h == NULL) h = flu_list_get(params, "h");
   if (h == NULL) h = "X-Accel-Redirect";
-
-  flu_list_set(
-    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
-
-  flu_list_set(
-    res->headers, "content-type", fshv_determine_content_type(pa));
-
-  flu_list_set(
-    res->headers, "fshv_file", strdup(pa));
-  flu_list_set(
-    res->headers, h, pa);
+  flu_list_set(res->headers, h, pa);
 
   return sta.st_size;
 }
@@ -209,8 +207,8 @@ int fshv_debug_handler(
   return 1;
 }
 
-//commit 6da902f0b1b923f6e0da7c4881ef323c9ce03011
+//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 07:04:24 2015 +0900
+//Date:   Tue Jan 27 14:27:01 2015 +0900
 //
-//    adapt no_auth() to new fshv_autenticate() sig
+//    add support for "application/pdf"

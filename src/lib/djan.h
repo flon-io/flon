@@ -277,8 +277,10 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 102a32f26f61a65f3a89bac8cdb777aa1a31fc9a
+//commit 44224b1db225710206e5043a981eea16238f9087
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 20 15:55:35 2015 +0900
+//Date:   Tue Feb 3 13:55:57 2015 +0900
 //
-//    track the radial "origin"
+//    fix fdja_merge()
+//    
+//    confused with a flu_list() as dict...

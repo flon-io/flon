@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -44,10 +44,18 @@
 // 40 'w' warn
 // 50 'e' error
 
-/*
- * Logger function type.
+/* "subjecter" function type.
+ * Returns the length of the "subject" written to buffer or
+ * -1 in case of error.
  */
-typedef void fgaj_logger(char level, const char *subject, const char *msg);
+typedef ssize_t fgaj_subjecter(
+  char *buffer, size_t off,
+  const char *file, int line, const char *func, const void *subject);
+
+/* Logger function type.
+ */
+typedef void fgaj_logger(
+  char level, const char *subject, const char *msg);
 
 
 //
@@ -58,10 +66,13 @@ typedef struct fgaj_conf {
   char level;  // defaults to 30 (info)
   short utc;   // 1 = true, defaults to 0
   char *host;  // defaults to result of gethostname()
-  fgaj_logger *logger;  // logger function
-  void *out;            // logging destination
-  short flush;          // defaults to 0, when 1 will flush after each log
-  void *params;         // whatever suits the logger func
+  fgaj_subjecter *subjecter;  // "subjecter" function
+  fgaj_logger *logger;        // logger function
+  void *out;                  // logging destination
+  short flush;                // defaults to 0, when 1 will flush after each log
+  void *params;               // whatever suits the logger func
+  size_t subject_maxlen;      // defaults to 256 (-1)
+  size_t message_maxlen;      // defaults to 1024 (-1)
 } fgaj_conf;
 
 /* Returns the configuration global var.
@@ -79,6 +90,15 @@ void fgaj_conf_reset();
  */
 void fgaj_read_env();
 
+
+//
+// "subjecters"
+
+/* Default subjecter function.
+ */
+ssize_t fgaj_default_subjecter(
+  char *buffer, size_t off,
+  const char *file, int line, const char *func, const void *subject);
 
 //
 // loggers
@@ -108,44 +128,71 @@ void fgaj_grey_logger(
  *
  * It accepts 'r' as a [virtual] level as well (like 'e' but appends the
  * result of strerror(errno) to the message)
+ *
+ * When `short` is 1, it will log `errno`'s text value as well (akin
+ * to `perror()`.
  */
 void fgaj_log(
-  char level,
-  const char *file, int line, const char *func,
+  char level, short err,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, ...);
 
 // the ellipsis in there cover "format and ellipsis"...
 
-#define fgaj_t(...) fgaj_log('t', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_d(...) fgaj_log('d', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_i(...) fgaj_log('i', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_w(...) fgaj_log('w', __FILE__, __LINE__, __func__, __VA_ARGS__)
-#define fgaj_e(...) fgaj_log('e', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_t(...) \
+  fgaj_log('t', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_d(...) \
+  fgaj_log('d', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_i(...) \
+  fgaj_log('i', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_w(...) \
+  fgaj_log('w', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+#define fgaj_e(...) \
+  fgaj_log('e', 0, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
-#define fgaj_r(...) fgaj_log('r', __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_r(...) \
+  fgaj_log('r', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
 #define fgaj_l(level, ...) \
-  fgaj_log(level, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log(level, level == 'r', __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 
 #define fgaj_ll(level, subject, ...) \
-  fgaj_log(level, subject, -1, NULL, __VA_ARGS__)
-
-//
-// sometimes one wants to log an error at the trace level...
-
-void fgaj_rlog(
-  char level, short err,
-  const char *file, int line, const char *func,
-  const char *format, ...);
+  fgaj_log(level, level == 'r', subject, -1, NULL, NULL, __VA_ARGS__)
 
 #define fgaj_tr(...) \
-  fgaj_rlog('t', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('t', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_dr(...) \
-  fgaj_rlog('d', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('d', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_ir(...) \
-  fgaj_rlog('i', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('i', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
 #define fgaj_wr(...) \
-  fgaj_rlog('w', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+  fgaj_log('w', 1, __FILE__, __LINE__, __func__, NULL, __VA_ARGS__)
+
+#define fgaj_st(...) \
+  fgaj_log('t', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sd(...) \
+  fgaj_log('d', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_si(...) \
+  fgaj_log('i', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sw(...) \
+  fgaj_log('w', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_se(...) \
+  fgaj_log('e', 0, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_sr(...) \
+  fgaj_log('r', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_str(...) \
+  fgaj_log('t', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sdr(...) \
+  fgaj_log('d', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_sir(...) \
+  fgaj_log('i', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+#define fgaj_swr(...) \
+  fgaj_log('w', 1, __FILE__, __LINE__, __func__, __VA_ARGS__)
+
+#define fgaj_sl(level, ...) \
+  fgaj_log(level, level == 'r', __FILE__, __LINE__, __func__, __VA_ARGS__)
 
 
 //
@@ -178,8 +225,8 @@ char *fgaj_now();
 
 #endif // FLON_GAJETA_H
 
-//commit c9df05e3ba11ea6c705a22f45af4efbe7093aa6b
+//commit e230ed43cf03757e024e58d060a145623b348d6a
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Dec 18 15:21:10 2014 +0900
+//Date:   Mon Jan 26 17:37:51 2015 +0900
 //
-//    add ->flush to fgaj_conf
+//    preserve errno while calling isatty()

@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -71,6 +71,12 @@ void fgaj_read_env()
   s = fgaj_getenv("FLON_LOG_LEVEL", "FGAJ_LEVEL");
   if (s) fgaj__conf->level = fgaj_parse_level(s);
   //printf("level: %i\n", fgaj__conf->level);
+
+  s = fgaj_getenv("FLON_LOG_SUBMAXLEN", "FGAJ_SUBMAXLEN");
+  if (s) fgaj__conf->subject_maxlen = strtoll(s, NULL, 10);
+  //
+  s = fgaj_getenv("FLON_LOG_MSGMAXLEN", "FGAJ_MSGMAXLEN");
+  if (s) fgaj__conf->message_maxlen = strtoll(s, NULL, 10);
 }
 
 static void fgaj_init()
@@ -89,9 +95,13 @@ static void fgaj_init()
 
   fgaj__conf->level = 30; // default to INFO
 
+  fgaj__conf->subjecter = fgaj_default_subjecter;
   fgaj__conf->logger = fgaj_color_file_logger;
   fgaj__conf->out = NULL;
   fgaj__conf->params = NULL;
+
+  fgaj__conf->subject_maxlen = 256 - 1;
+  fgaj__conf->message_maxlen = 1024 - 1;
 
   // now that the defaults are in place, read the env
 
@@ -150,9 +160,40 @@ char fgaj_parse_level(char *s)
   return fgaj_normalize_level(*s);
 }
 
+
+//
+// "subjecters"
+
+ssize_t fgaj_default_subjecter(
+  char *buffer, size_t off,
+  const char *file, int line, const char *func, const void *subject)
+{
+  size_t ooff = off;
+  size_t rem = fgaj_conf_get()->subject_maxlen - off;
+
+  int w = snprintf(buffer + off, rem, file);
+  if (w < 0) return -1; /* else */ off += w; rem -= w;
+
+  if (line > -1)
+  {
+    w = snprintf(buffer + off, rem, ":%d", line);
+    if (w < 0) return -1; /* else */ off += w; rem -= w;
+  }
+  if (func)
+  {
+    w = snprintf(buffer + off, rem, ":%s", func);
+    if (w < 0) return -1; /* else */ off += w; rem -= w;
+  }
+
+  if (subject) w = snprintf(buffer + off, rem, " %p", subject);
+  if (w < 0) return -1; /* else */ off += w;
+
+  return off - ooff;
+}
+
+
 //
 // loggers
-
 
 // PS1="\[\033[1;34m\][\$(date +%H%M)][\u@\h:\w]$\[\033[0m\] "
 //
@@ -169,7 +210,11 @@ static short fgaj_color(FILE *f)
 {
   if (fgaj__conf->color == 'T') return 1;
   if (fgaj__conf->color == 'f') return 0;
-  return isatty(fileno(f));
+  int rno = errno;
+  short r = isatty(fileno(f));
+  errno = rno;
+
+  return r;
 }
 
 static char *fgaj_red(int c) { return c ? "[0;31m" : ""; }
@@ -284,6 +329,8 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
     "%s%*s%s %-*s %s%s\n",
     cgrey, indent + 6, lstr, pid, 0, pref, msg, cclear);
 
+  if (fgaj__conf->flush) fflush(f);
+
   if (*pid != 0) free(pid);
   fgaj_level_string_free(lstr);
 }
@@ -294,7 +341,7 @@ void fgaj_grey_logger(char level, const char *pref, const char *msg)
 
 static void fgaj_do_log(
   char level,
-  const char *file, int line, const char *func,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, va_list ap, short err)
 {
   if (fgaj__conf == NULL) fgaj_init();
@@ -304,52 +351,30 @@ static void fgaj_do_log(
   level = fgaj_normalize_level(level);
   if (level < fgaj__conf->level && level <= 50) return;
 
-  flu_sbuffer *b = NULL;
+  char sub[fgaj__conf->subject_maxlen + 1];
+  memset(sub, 0, fgaj__conf->subject_maxlen + 1);
+  fgaj__conf->subjecter(sub, 0, file, line, func, subject);
 
-  b = flu_sbuffer_malloc();
-  flu_sbputs(b, file);
-  if (line > -1)
-  {
-    flu_sbprintf(b, ":%d", line);
-    if (func != NULL) flu_sbprintf(b, ":%s", func);
-  }
-  //
-  char *subject = flu_sbuffer_to_string(b);
+  size_t ml = fgaj__conf->message_maxlen;
+  char msg[ml + 1]; memset(msg, 0, ml + 1);
+  int w = format ? vsnprintf(msg, ml, format, ap) : 0;
+  if (err) snprintf(msg + w, ml - w, ": (E%d) %s", errno, strerror(errno));
 
-  b = flu_sbuffer_malloc();
-  flu_sbvprintf(b, format, ap);
-  if (err) flu_sbprintf(b, ": %s", strerror(errno));
-  //
-  char *msg = flu_sbuffer_to_string(b);
-
-  fgaj__conf->logger(level, subject, msg);
-
-  free(subject);
-  free(msg);
+  fgaj__conf->logger(level, sub, msg);
 }
 
 void fgaj_log(
-  char level,
-  const char *file, int line, const char *func,
-  const char *format, ...)
-{
-  va_list ap; va_start(ap, format);
-  fgaj_do_log(level, file, line, func, format, ap, tolower(level) == 'r');
-  va_end(ap);
-}
-
-void fgaj_rlog(
   char level, short err,
-  const char *file, int line, const char *func,
+  const char *file, int line, const char *func, const void *subject,
   const char *format, ...)
 {
   va_list ap; va_start(ap, format);
-  fgaj_do_log(level, file, line, func, format, ap, err);
+  fgaj_do_log(level, file, line, func, subject, format, ap, err);
   va_end(ap);
 }
 
-//commit c9df05e3ba11ea6c705a22f45af4efbe7093aa6b
+//commit e230ed43cf03757e024e58d060a145623b348d6a
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Dec 18 15:21:10 2014 +0900
+//Date:   Mon Jan 26 17:37:51 2015 +0900
 //
-//    add ->flush to fgaj_conf
+//    preserve errno while calling isatty()

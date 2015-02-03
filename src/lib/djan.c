@@ -937,10 +937,6 @@ static int fdja_is_number(char *s)
 
 void fdja_to_d(FILE *f, fdja_value *v, int flags, size_t depth)
 {
-//printf(
-//  "fdja_to_d() %p '%c' o?%d %p\"%.7s...\" d%zu\n",
-//  v, v->type, v->sowner, v->source + v->soff, v->source + v->soff, depth);
-
   short cl = flags & FDJA_F_COLOR;
   short ol = flags & FDJA_F_ONELINE;
   short cp = flags & FDJA_F_COMPACT;
@@ -1544,18 +1540,9 @@ int fdja_merge(fdja_value *dst, fdja_value *src)
 {
   if (dst->type != 'o' || src->type != 'o') return 0;
 
-  fdja_value *last = dst->child;
-  while (last && last->sibling) { last = last->sibling; }
-
-  for (fdja_value *c = src->child; c != NULL; c = c->sibling)
+  for (fdja_value *n = src->child; n; n = n->sibling)
   {
-    fdja_value *cc = fdja_clone(c);
-    cc->key = strdup(c->key);
-
-    if (last) last->sibling = cc;
-    else dst->child = cc;
-
-    last = cc;
+    fdja_set(dst, n->key, fdja_clone(n));
   }
 
   return 1;
@@ -1725,8 +1712,10 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 102a32f26f61a65f3a89bac8cdb777aa1a31fc9a
+//commit 44224b1db225710206e5043a981eea16238f9087
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 20 15:55:35 2015 +0900
+//Date:   Tue Feb 3 13:55:57 2015 +0900
 //
-//    track the radial "origin"
+//    fix fdja_merge()
+//    
+//    confused with a flu_list() as dict...
