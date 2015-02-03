@@ -124,11 +124,11 @@ context "instruction:"
         exid,
         "sequence\n"
         "  set v.a: 0\n"
-        "  trace $(v.a)\n"
+        "  trace '$(v.a) $(lv.a) $(gv.a)'\n"
         "  sequence vars: {}\n"
-        "    set v.a: 1\n"
-        "    trace $(v.a)\n"
-        "  trace $(v.a)\n"
+        "    set v.a: 1, lv.a: 2, gv.a: 3\n"
+        "    trace '$(v.a) $(lv.a) $(gv.a)'\n"
+        "  trace '$(v.a) $(lv.a) $(gv.a)'\n"
         "",
         "{}");
 
@@ -140,7 +140,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ trace: [ 0, 1, 0 ] }"));
+        "{ trace: [ '0 0 0', '2 2 3', '3 3 3' ] }"));
     }
   }
 }

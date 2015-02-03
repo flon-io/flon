@@ -86,7 +86,7 @@ static int rewrite_as_call_or_invoke(
   flon_instruction *inst = lookup_instruction('e', name);
   if (inst) { free(name); return 0; }
 
-  fdja_value *v = lookup_var(node, name);
+  fdja_value *v = lookup_var(node, 'l', name); // 'l' for "local"
 
   if (is_callable(v))
   {

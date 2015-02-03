@@ -43,7 +43,7 @@ static char exe_define(fdja_value *node, fdja_value *exe)
   fdja_psetv(val, "tree.0", "sequence");
   fdja_psetv(val, "tree.1", "{}");
 
-  set_var(node, name, val);
+  set_var(node, 'l', name, val); // 'l' for "local"
 
   free(nid);
   free(name);

@@ -56,7 +56,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   name = fdja_to_string(cargs->child);
 
-  fdja_value *val = lookup_var(node, name);
+  fdja_value *val = lookup_var(node, 'l', name); // 'l' for "local"
 
   if ( ! is_callable(val))
   {

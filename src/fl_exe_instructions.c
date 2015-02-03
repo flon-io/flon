@@ -135,36 +135,48 @@ static fdja_value *parent(fdja_value *node)
   return r;
 }
 
-static fdja_value *lookup_var(fdja_value *node, const char *key)
-{
-  if (node == NULL) return NULL;
-
-  fdja_value *vars = fdja_l(node, "vars");
-
-  if (vars)
-  {
-    fdja_value *val = fdja_l(vars, key);
-    if (val) return val;
-  }
-
-  return lookup_var(parent(node), key);
-}
-
-static fdja_value *lookup_vars(fdja_value *node)
+static fdja_value *lookup_var_node(char mode, fdja_value *node)
 {
   fdja_value *vars = fdja_l(node, "vars");
 
-  if (vars) return vars;
+  if (mode == 'l' && vars) return node;
 
   fdja_value *par = parent(node);
-  if (par) return lookup_vars(par);
+
+  if (vars && par == NULL && mode == 'g') return node;
+  if (par) return lookup_var_node(mode, par);
 
   return NULL;
 }
 
-static void set_var(fdja_value *node, char *key, fdja_value *val)
+static fdja_value *lookup_vars(char mode, fdja_value *node)
 {
-  fdja_value *vars = lookup_vars(node);
+  fdja_value *n = lookup_var_node(mode, node);
+
+  return n ? fdja_l(n, "vars") : NULL;
+}
+
+static fdja_value *lookup_var(fdja_value *node, char mode, const char *key)
+{
+  if (mode != 'g' && mode != 'l' && mode != 'd') mode = 'l';
+
+  fdja_value *n = lookup_var_node(mode, node);
+  if (n == NULL) return NULL;
+
+  fdja_value *r = fdja_l(n, "vars.%s", key);
+  if (r) return r;
+
+  fdja_value *par = parent(node);
+  if (par == NULL) return NULL;
+
+  return lookup_var(par, mode, key);
+}
+
+static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
+{
+  if (mode != 'g' && mode != 'l' && mode != 'd') mode = 'l';
+
+  fdja_value *vars = lookup_vars(mode, node);
 
   if (vars) fdja_pset(vars, key, val);
 
@@ -208,16 +220,18 @@ static ssize_t child_count(fdja_value *node, fdja_value *msg)
 
 static char extract_prefix(const char *path)
 {
-  if (strncmp(path, "f.", 2) == 0) return 'f';
-  if (strncmp(path, "v.", 2) == 0) return 'v';
-  if (strncmp(path, "fld.", 4) == 0) return 'f';
-  if (strncmp(path, "var.", 4) == 0) return 'v';
-  if (strncmp(path, "field.", 4) == 0) return 'f';
-  if (strncmp(path, "variable.", 9) == 0) return 'v';
+  int off = (*path == 'l' || *path == 'g' || *path == 'd') ? 1 : 0;
+
+  if (strncmp(path + off, "f.", 2) == 0) return 'f';
+  if (strncmp(path + off, "v.", 2) == 0) return 'v';
+  if (strncmp(path + off, "fld.", 4) == 0) return 'f';
+  if (strncmp(path + off, "var.", 4) == 0) return 'v';
+  if (strncmp(path + off, "field.", 4) == 0) return 'f';
+  if (strncmp(path + off, "variable.", 9) == 0) return 'v';
   //return *path; // no worky...
   return 0; // none
 
-  // TODO: "vf" vs "fv" ? or $(a||v.a) vs $(v.a||a)
+  // TODO: "vf" vs "fv" ? or $(a||v.a) vs $(v.a||a) (pipes, not 'l's)
 }
 
 typedef struct { fdja_value *node; fdja_value *msg; } lup;
@@ -242,15 +256,16 @@ static char *dol_lookup(void *data, const char *path)
   // regular case, var or fld
 
   char k = extract_prefix(path);
+  char *pth = (char *)path;
 
   fdja_value *v = NULL;
 
-  if (k != 0) path = strchr(path, '.') + 1;
+  if (k != 0) pth = strchr(path, '.') + 1;
 
   if (k == 'v')
-    v = lookup_var(lu->node, path);
+    v = lookup_var(lu->node, *path, pth);
   else
-    v = fdja_l(payload(lu->msg), path);
+    v = fdja_l(payload(lu->msg), pth);
 
   if (v == NULL)
     return strdup("");

@@ -35,6 +35,9 @@ static char exe_set(fdja_value *node, fdja_value *exe)
     char *key = a->key;
     fdja_value *sibling = a->sibling;
 
+    //a->sibling = NULL;
+      // done by djan itself
+
     //fgaj_d("key: 0 >%s<", key);
 
     char k = extract_prefix(a->key);
@@ -42,8 +45,10 @@ static char exe_set(fdja_value *node, fdja_value *exe)
 
     //fgaj_d("key: 1 >%s<", key);
 
-    if (k == 'f' || k == 0) fdja_pset(pl, key, a);
-    else if (k == 'v') set_var(node, key, a);
+    if (k == 'f' || k == 0)
+      fdja_pset(pl, key, a);
+    else if (k == 'v')
+      set_var(node, *a->key, key, a);
 
     a = sibling;
   }
