@@ -2,9 +2,9 @@
 VPATH=src
 #CFLAGS=-I../src -g -Wall -O3 -lrt
 #CFLAGS=-I../src -g -Wall -lrt -lev -D_POSIX_C_SOURCE=200809L
-CFLAGS=-I$(VPATH) -g -Wall -lrt -lev
+CFLAGS=-std=c99 -I$(VPATH) -g -Wall -lrt -lev
 LDLIBS=
-CC=c99
+CC=gcc
 
 VAL=valgrind --leak-check=full -v
 #VAL=valgrind --leak-check=full -v --num-callers=50
