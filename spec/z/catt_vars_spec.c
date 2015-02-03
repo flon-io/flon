@@ -107,6 +107,27 @@ context "flon and catts:"
     }
 
     it "doesn't overwrite an existing set of 'vars'"
+    {
+      exid = flon_generate_exid("z.vars.overwrite");
+
+      hlp_launch_v(
+        exid,
+        "sequence vars: { color: red, car: vw }\n"
+        "  trace '$(nid) $(v.name) $(v.color) $(v.car)'\n"
+        "",
+        "{}",
+        "{ name: henri, color: blue }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ \"0_0 henri red vw\" ] }");
+    }
   }
 }
 
