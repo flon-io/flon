@@ -131,7 +131,7 @@ void hlp_dispatcher_sighup()
   free(s);
 }
 
-void hlp_launch(char *exid, char *flow, char *payload)
+void hlp_launch_v(char *exid, char *flow, char *payload, char *vars)
 {
   char *fep = flon_exid_path(exid);
 
@@ -143,11 +143,15 @@ void hlp_launch(char *exid, char *flow, char *payload)
   fdja_value *pl = fdja_v(payload);
   if (pl == NULL) { nlog("couldn't parse payload..."); return; }
 
+  fdja_value *vs = vars ? fdja_v(vars) : NULL;
+  if (vars && vs == NULL) { nlog("couldn't parse vars..."); return; }
+
   fdja_value *v = fdja_v("{ exid: %s }", exid);
 
   fdja_psetv(v, "point", "execute");
   fdja_set(v, "tree", fl);
   fdja_set(v, "payload", pl);
+  if (vs) fdja_set(v, "vars", vs);
 
   int i = fdja_to_json_f(v, "var/spool/dis/exe_%s.json", exid);
   if (i != 1)
@@ -159,6 +163,11 @@ void hlp_launch(char *exid, char *flow, char *payload)
 
   fdja_free(v);
   free(fep);
+}
+
+void hlp_launch(char *exid, char *flow, char *payload)
+{
+  hlp_launch_v(exid, flow, payload, NULL);
 }
 
 int hlp_cancel(char *exid, char *nid)

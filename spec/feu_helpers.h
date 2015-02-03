@@ -17,6 +17,7 @@ void hlp_dispatcher_sighup();
   // maybe when half a second before sending...
 
 void hlp_launch(char *exid, char *flow, char *payload);
+void hlp_launch_v(char *exid, char *flow, char *payload, char *vars);
 int hlp_cancel(char *exid, char *nid);
 
 fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec);

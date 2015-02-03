@@ -118,7 +118,8 @@ void flon_unschedule_msg(
   flon_schedule_msg(type, ts, nid, NULL, NULL, NULL);
 }
 
-static fdja_value *create_node(char *nid, char *parent_nid, fdja_value *tree)
+static fdja_value *create_node(
+  fdja_value *msg, char *nid, char *parent_nid, fdja_value *tree)
 {
   fdja_value *node = fdja_object_malloc();
 
@@ -133,11 +134,11 @@ static fdja_value *create_node(char *nid, char *parent_nid, fdja_value *tree)
   fdja_set(
     node, "parent", parent_nid ? fdja_s(parent_nid) : fdja_v("null"));
 
-  if (strcmp(nid, "0") == 0)
-  {
-    fdja_set(node, "tree", fdja_clone(tree));
-    fdja_psetv(node, "vars", "{}");
-  }
+  if (strcmp(nid, "0") == 0) fdja_set(node, "tree", fdja_clone(tree));
+
+  fdja_value *vars = fdja_l(msg, "vars");
+  if (vars) fdja_set(node, "vars", fdja_clone(vars));
+  else if (strcmp(nid, "0") == 0) fdja_set(node, "vars", fdja_object_malloc());
 
   fdja_pset(execution, "nodes.%s", nid, node);
 
@@ -186,7 +187,7 @@ static void handle_execute(char order, fdja_value *msg)
 
   char *parent_nid = fdja_ls(msg, "parent", NULL);
   fdja_value *payload = fdja_l(msg, "payload");
-  fdja_value *node = create_node(nid, parent_nid, tree);
+  fdja_value *node = create_node(msg, nid, parent_nid, tree);
 
   fdja_set(msg, "tree", fdja_clone(tree));
 
