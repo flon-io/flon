@@ -56,7 +56,15 @@ static void n_log(
 
   char *nid = fdja_lsd(node, "nid", "nid?");
 
-  fgaj_log(level, file, line, func, "-%s: %s", nid, m);
+  //void fgaj_log(
+  //  char level, short err,
+  //  const char *file, int line, const char *func, const void *subject,
+  //  const char *format, ...);
+    //
+  fgaj_log(
+    level, level == 'r',
+    file, line, func, NULL, // TODO: adapt subject?
+    "-%s: %s", nid, m);
 
   free(nid);
   free(m);
