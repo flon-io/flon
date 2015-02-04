@@ -43,10 +43,6 @@
   // scans var/spool/exe again
 
 
-// vars:
-//   the current execution and a list of
-//   outgoing executes and invokes
-
 char *execution_id = NULL;
 char *execution_path = NULL;
 FILE *msgs_log = NULL;
@@ -54,8 +50,6 @@ fdja_value *execution = NULL;
 
 static flu_list *msgs = NULL;
 
-//static size_t counter = 0;
-  // how many executions got carried out in this session?
 
 void flon_queue_msg(
   const char *type,
@@ -383,7 +377,6 @@ static void unload_execution()
   if (msgs_log) { fclose(msgs_log); msgs_log = NULL; }
   if (execution) fdja_free(execution); execution = NULL;
   if (msgs) flu_list_free(msgs); msgs = NULL;
-  //counter = 0;
 }
 
 static int name_matches(const char *n)
