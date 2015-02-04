@@ -60,6 +60,7 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
 
   fdja_value *rets = fdja_l(node, "rets");
   if (rets) fdja_push(rets, fdja_lc(rcv, "payload.ret"));
+    // fdja_push() doesn't mind NULLs
 
   char *next =
     from == NULL || strcmp(from, nid) == 0 ?
