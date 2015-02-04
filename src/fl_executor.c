@@ -217,7 +217,7 @@ static void handle_execute(char order, fdja_value *msg)
   else // error, 'r' or '?'
   {
     flon_queue_msg(
-      "failed", nid, parent_nid, payload, "note", fdja_lc(node, "note"));
+      "failed", nid, parent_nid, payload, "error", fdja_lc(node, "errors.-1"));
   }
 
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);
@@ -303,7 +303,7 @@ static void handle_return(char order, fdja_value *msg)
   else // error, 'r' or '?'
   {
     flon_queue_msg(
-      "failed", nid, parent_nid, payload, "note", fdja_lc(node, "note"));
+      "failed", nid, parent_nid, payload, "error", fdja_lc(node, "errors.-1"));
   }
 
   if (fname) flon_move_to_processed("var/spool/exe/%s", fname);

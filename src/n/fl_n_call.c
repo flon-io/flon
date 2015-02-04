@@ -51,7 +51,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   if (cargs->child == NULL)
   {
-    set_error_note(node, "nothing to call", cargs); r = 'r'; goto _over;
+    push_error(node, "nothing to call", cargs); r = 'r'; goto _over;
   }
 
   name = fdja_to_string(cargs->child);
@@ -60,7 +60,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   if ( ! is_callable(val))
   {
-    set_error_note(node, "cannot call", val); r = 'r'; goto _over;
+    push_error(node, "cannot call", val); r = 'r'; goto _over;
   }
 
   // prepare new node's nid

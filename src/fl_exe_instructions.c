@@ -183,26 +183,42 @@ static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
   // TODO: update the "mtime" of the node holding the "vars"
 }
 
-static void set_error_note(fdja_value *node, char *format, ...)
+static void push_error_value(fdja_value *node, fdja_value *error)
+{
+  fdja_value *errors = fdja_l(node, "errors");
+  if (errors == NULL) errors = fdja_set(node, "errors", fdja_array_malloc());
+
+  if (fdja_l(error, "ctime") == NULL)
+  {
+    fdja_set(error, "ctime", fdja_sym(flu_tstamp(NULL, 1, 'u')));
+  }
+
+  fdja_push(errors, error);
+}
+
+static void push_error(fdja_value *node, char *format, ...)
 {
   va_list ap; va_start(ap, format);
   char *t = flu_svprintf(format, ap);
   fdja_value *v = va_arg(ap, fdja_value *);
   va_end(ap);
 
+  fdja_value *err = fdja_object_malloc();
+
   if (v == NULL)
   {
-    fdja_set(node, "note", fdja_s(t));
+    fdja_set(err, "msg", fdja_s(t));
   }
   else
   {
-    //char *sv = fdja_to_djan(v, FDJA_F_ONELINE | FDJA_F_COMPACT | FDJA_F_NULL);
     char *sv = fdja_to_djan(v, FDJA_F_ONELINE | FDJA_F_NULL);
-    fdja_set(node, "note", fdja_s("%s: %s", t, sv));
+    fdja_set(err, "msg", fdja_s("%s: %s", t, sv));
     free(sv);
   }
 
   free(t);
+
+  push_error_value(node, err);
 }
 
 static ssize_t child_count(fdja_value *node, fdja_value *msg)

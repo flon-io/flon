@@ -40,7 +40,7 @@ static char exe_task(fdja_value *node, fdja_value *exe)
   if (flon_lock_write(tsk, "var/spool/dis/tsk_%s-%s.json", exid, nid) != 1)
   {
     fgaj_r("failed writing to var/spool/dis/tsk_%s-%s.json", exid, nid);
-    set_error_note(node, "failed to write tsk_ file", NULL);
+    push_error(node, "failed to write tsk_ file", NULL);
     r = 'r';
   }
 
