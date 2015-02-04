@@ -1389,6 +1389,7 @@ char *fdja_ld(fdja_value *v, const char *path, ...)
 
 fdja_value *fdja_push(fdja_value *array, fdja_value *v)
 {
+  if (v == NULL) return NULL;
   if (array->type != 'a') return NULL;
 
   for (fdja_value **l = &array->child; ; l = &(*l)->sibling)
@@ -1720,8 +1721,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 6df02515c85ac37a89661588ba48d093e5ee0b57
+//commit 5219ca2877ba8a5b1afb9689580833ec64344bc0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Feb 4 06:30:05 2015 +0900
+//Date:   Wed Feb 4 09:39:40 2015 +0900
 //
-//    let fdja_oset() reset its added ->sibling
+//    ensure fdja_push() doesn't mind being passed NULL
