@@ -47,12 +47,9 @@ int main(int argc, char *argv[])
   flon_configure(".");
   flon_setup_logging("executor");
 
-  if (argc < 2)
-  {
-    fgaj_e("missing exid as arg"); r = 1; goto _over;
-  }
+  if (argc < 2) { fgaj_e("missing exid as arg"); r = 1; goto _over; }
 
-  r = flon_execute(argv[1]);
+  flon_execute(argv[1]);
 
 _over:
 

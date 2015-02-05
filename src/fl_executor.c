@@ -507,7 +507,7 @@ static void execute()
   persist();
 }
 
-int flon_execute(const char *exid)
+void flon_execute(const char *exid)
 {
   fgaj_i(exid);
 
@@ -516,7 +516,5 @@ int flon_execute(const char *exid)
   execute();
 
   unload_execution();
-
-  return 0; // success
 }
 

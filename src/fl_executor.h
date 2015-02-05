@@ -37,7 +37,7 @@ extern char *execution_path;
 extern fdja_value *execution;
 
 
-int flon_execute(const char *exid);
+void flon_execute(const char *exid);
 
 void flon_queue_msg(
   const char *type, const char *nid, const char *from_nid,
@@ -51,6 +51,7 @@ void flon_schedule_msg(
 
 void flon_unschedule_msg(
   const char *type, const char *ts, const char *nid);
+
 
 //
 // instructions

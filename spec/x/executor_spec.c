@@ -57,9 +57,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       expect(flu_fstat("var/spool/exe/exe_%s.json", exid) == 0);
       expect(flu_fstat("var/run/%s/processed/exe_%s.json", fep, exid) == 'f');
@@ -107,9 +105,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       //puts(flu_readall("var/run/%s.json", exid));
 
@@ -130,9 +126,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       expect(flu_fstat("var/spool/exe/%s-0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/rcv_%s-0.json", exid) == 0);
@@ -166,9 +160,7 @@ context "flon-executor"
 
       // let it flow towards "blue"
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       //flon_pp_execution(exid);
 
@@ -224,9 +216,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
@@ -274,9 +264,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
       expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
@@ -313,9 +301,7 @@ context "flon-executor"
         exid
       );
 
-      r = flon_execute(exid);
-
-      expect(r i== 0);
+      flon_execute(exid);
 
       //flon_pp_execution(exid);
 
