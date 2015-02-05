@@ -518,3 +518,47 @@ void flon_execute(const char *exid)
   unload_execution();
 }
 
+fdja_value *flon_execut(
+  fdja_value *tree, fdja_value *payload, fdja_value *vars)
+{
+  execution_id = strdup("transient");
+  execution_path = NULL;
+  execution = fdja_v("{ exid: \"%s\", nodes: {} }", execution_id);
+
+  msgs = flu_list_malloc();
+
+  fdja_value *msg = fdja_v("{ point: execute, exid: \"%s\" }", execution_id);
+  fdja_set(msg, "tree", tree);
+  fdja_set(msg, "payload", payload);
+  fdja_set(msg, "vars", vars);
+
+  flu_list_add(msgs, msg);
+
+  fdja_value *terminated = NULL;
+
+  while (1)
+  {
+    fdja_value *m = flu_list_shift(msgs); if (m == NULL) break;
+
+    fdja_value *point = fdja_l(m, "point");
+    char p = point ? *fdja_srk(point) : 0;
+
+    if (p == 'e')
+      handle_execute(p, m);
+    else if (p == 'r' || p == 'c') // receive or cancel
+      handle_return(p, m);
+    else if (p == 't') // terminated
+      { terminated = m; break; }
+    else if (p)
+      handle_event(p, m);
+    else
+      reject_or_discard_msg(p, m);
+
+    fdja_free(m);
+  }
+
+  unload_execution();
+
+  return terminated;
+}
+

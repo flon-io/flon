@@ -18,8 +18,6 @@ context "flon-executor"
 {
   before each
   {
-    int r;
-
     char *exid = NULL;
     char *fep = NULL;
 

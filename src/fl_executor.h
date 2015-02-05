@@ -53,6 +53,9 @@ void flon_unschedule_msg(
   const char *type, const char *ts, const char *nid);
 
 
+fdja_value *flon_execut(
+  fdja_value *tree, fdja_value *payload, fdja_value *vars);
+
 //
 // instructions
 
