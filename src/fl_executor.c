@@ -82,6 +82,9 @@ void flon_schedule_msg(
   fdja_value *tree0, fdja_value *tree1,
   fdja_value *msg)
 {
+  if (msgs_log == NULL) return;
+    // no schedules when running transient executions
+
   //flu_putf(fdja_todc(msg));
 
   fgaj_i("%sschedule %s %s from -%s", msg ? "" : "un", type, ts, nid);
