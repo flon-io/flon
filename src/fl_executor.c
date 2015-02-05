@@ -545,14 +545,12 @@ fdja_value *flon_execut(
 
     if (p == 'e')
       handle_execute(p, m);
-    else if (p == 'r' || p == 'c') // receive or cancel
+    else if (p == 'r') // receive
       handle_return(p, m);
     else if (p == 't') // terminated
       { terminated = m; break; }
-    else if (p)
-      handle_event(p, m);
-    else
-      reject_or_discard_msg(p, m);
+    //else
+      // simply discard
 
     fdja_free(m);
   }
