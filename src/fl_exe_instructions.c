@@ -506,7 +506,9 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "stall", exe_stall, rcv_, can_ },
   &(flon_ni){ "val", exe_val, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
-  &(flon_ni){ "if", exe_if, rcv_if, can_ },
+
+  &(flon_ni){ "and", exe_and, rcv_and, can_ },
+  &(flon_ni){ "or", exe_and, rcv_and, can_ },
 
   &(flon_ni){ ">", exe_cmp, rcv_cmp, can_ },
   &(flon_ni){ ">=", exe_cmp, rcv_cmp, can_ },
@@ -516,8 +518,7 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "!=", exe_cmp, rcv_cmp, can_ },
   //&(flon_ni){ "c>", exe_cmp, rcv_cmp, can_ }, // TODO
 
-  &(flon_ni){ "and", exe_and, rcv_and, can_ },
-  &(flon_ni){ "or", exe_and, rcv_and, can_ },
+  &(flon_ni){ "if", exe_if, rcv_if, can_ },
 
   NULL
 };

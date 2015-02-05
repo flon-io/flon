@@ -82,6 +82,27 @@ context "instruction:"
       expect(fdja_tod(pl) ===f ""
         "{ hello: emptiness }");
     }
+
+    it "returns the last value"
+    {
+      exid = flon_generate_exid("n.sequence.retlast");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  0\n"
+        "  1\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f "{ ret: 1 }");
+    }
   }
 }
 
