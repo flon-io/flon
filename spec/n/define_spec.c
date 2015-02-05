@@ -1,6 +1,6 @@
 
 //
-// specifying flon-dispatcher
+// specifying instructions
 //
 // Wed Jan  7 21:33:28 JST 2015
 //
