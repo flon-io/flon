@@ -22,7 +22,7 @@ while read LINE; do
   echo $LINE | grep -E "definitely lost: [1-9][0-9]* bytes" || :
   #
   if [ ! -z "$1" ]; then
-    echo $LINE | grep -E " bytes in " || :
+    echo $LINE | grep -E " [1-9][,0-9]* bytes in " || :
     echo $LINE | grep -E " at 0x" || :
     echo $LINE | grep -E " by 0x" || :
   fi
