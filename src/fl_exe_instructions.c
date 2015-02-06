@@ -524,12 +524,13 @@ static flon_ni *instructions[] = {
 
   &(flon_ni){ "ife", exe_ife, rcv_ife, can_ },
   &(flon_ni){ "unlesse", exe_ife, rcv_ife, can_ },
+
   &(flon_ni){ "if", exe_if, rcv_if, can_ },
   &(flon_ni){ "unless", exe_if, rcv_if, can_ },
+  &(flon_ni){ "elsif", exe_if, rcv_if, can_ },
+  &(flon_ni){ "elif", exe_if, rcv_if, can_ },
 
   &(flon_ni){ "else", exe_else, rcv_else, can_ },
-  //&(flon_ni){ "elsif", exe_else, rcv_else, can_ },
-  //&(flon_ni){ "elif", exe_else, rcv_else, can_ },
 
   NULL
 };
