@@ -166,6 +166,11 @@ char *fdja_srk(fdja_value *v);
  */
 int fdja_strcmp(fdja_value *v, const char *s);
 
+/* Like fdja_strcmp(), but restricts itself to the first n chars.
+ * If n < 0, behaves like fdja_strcmp().
+ */
+int fdja_strncmp(fdja_value *v, const char *s, ssize_t n);
+
 /* Returns the string value behind the fdja_value. For a string fdja_value,
  * the enclosing double quotes will not be included and the string will be
  * unescaped.
@@ -278,8 +283,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 5219ca2877ba8a5b1afb9689580833ec64344bc0
+//commit a1abc7bf88665334c4d8cdbab2dbade5b55b2e32
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Feb 4 09:39:40 2015 +0900
+//Date:   Sat Feb 7 06:31:43 2015 +0900
 //
-//    ensure fdja_push() doesn't mind being passed NULL
+//    implement fdja_strncmp()

@@ -1131,18 +1131,23 @@ char *fdja_srk(fdja_value *v)
   return v->source + v->soff;
 }
 
-int fdja_strcmp(fdja_value *v, const char *s)
+int fdja_strncmp(fdja_value *v, const char *s, ssize_t n)
 {
   if (s == NULL) return -1;
   if (v == NULL) return -1;
   if ( ! fdja_is_stringy(v)) return -1;
 
   char *sv = fdja_to_string(v);
-  int r = strcmp(sv, s);
+  int r = n < 0 ? strcmp(sv, s) : strncmp(sv, s, n);
   free(sv);
     // a bit costly but easier to follow
 
   return r;
+}
+
+int fdja_strcmp(fdja_value *v, const char *s)
+{
+  return fdja_strncmp(v, s, -1);
 }
 
 char *fdja_value_to_s(fdja_value *v)
@@ -1721,8 +1726,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 5219ca2877ba8a5b1afb9689580833ec64344bc0
+//commit a1abc7bf88665334c4d8cdbab2dbade5b55b2e32
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Feb 4 09:39:40 2015 +0900
+//Date:   Sat Feb 7 06:31:43 2015 +0900
 //
-//    ensure fdja_push() doesn't mind being passed NULL
+//    implement fdja_strncmp()
