@@ -285,7 +285,7 @@ context "flon-executor"
         flon_rewrite_tree(node, msg);
 
         expect(fdja_ld(msg, "tree") ===f ""
-          "[ if, {}, 1, [ "
+          "[ ife, {}, 1, [ "
             "[ >, {}, 1, [ "
               "[ a, {}, 1, [] ], "
               "[ b, {}, 1, [] ] "
@@ -307,7 +307,7 @@ context "flon-executor"
         flon_rewrite_tree(node, msg);
 
         expect(fdja_ld(msg, "tree") ===f ""
-          "[ if, {}, 1, [ "
+          "[ ife, {}, 1, [ "
             "[ >, {}, 1, [ "
               "[ a, {}, 1, [] ], "
               "[ b, {}, 1, [] ] "
@@ -354,14 +354,6 @@ context "flon-executor"
 
         flon_rewrite_tree(node, msg);
 
-        //expect(fdja_ld(msg, "tree") ===f ""
-        //  "[ if, {}, 1, [ "
-        //    "[ >, {}, 2, [ "
-        //      "[ a, {}, 2, [] ], "
-        //      "[ b, {}, 2, [] ] "
-        //    "] ], "
-        //    "[ c, { _0: d }, 3, [] ] "
-        //  "], sx ]");
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, 1, [ "
             "[ a, { _0: >, _1: b }, 2, [] ], "
@@ -439,7 +431,7 @@ context "flon-executor"
         flon_rewrite_tree(node, msg);
 
         expect(fdja_ld(msg, "tree") ===f ""
-          "[ if, {}, 1, [ "
+          "[ ife, {}, 1, [ "
             "[ >, {}, 1, [ "
               "[ a, {}, 1, [] ], "
               "[ b, {}, 1, [] ] "
@@ -462,7 +454,7 @@ context "flon-executor"
         flon_rewrite_tree(node, msg);
 
         expect(fdja_ld(msg, "tree") ===f ""
-          "[ if, {}, 1, [ "
+          "[ ife, {}, 1, [ "
             "[ >, {}, 1, [ "
               "[ a, {}, 1, [] ], "
               "[ b, {}, 1, [] ] "
@@ -486,7 +478,7 @@ context "flon-executor"
         flon_rewrite_tree(node, msg);
 
         expect(fdja_ld(msg, "tree") ===f ""
-          "[ unless, {}, 1, [ "
+          "[ unlesse, {}, 1, [ "
             "[ >, {}, 1, [ "
               "[ a, {}, 1, [] ], "
               "[ b, {}, 1, [] ] "
