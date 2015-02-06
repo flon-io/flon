@@ -371,6 +371,24 @@ context "flon-executor"
         expect(fdja_ls(node, "inst", NULL) ===f "if");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
+
+      it "rewrites  if true"
+      {
+        msg = mrad(
+          "if true\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ if, {}, 1, [ "
+            "[ val, { _0: true }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
     context "with 'if' or 'unless' at the tail"
