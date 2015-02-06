@@ -475,6 +475,7 @@ static char can_(fdja_value *node, fdja_value *can)
 #include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
 #include "fl_n_define.c"
+#include "fl_n_else.c"
 #include "fl_n_if.c"
 #include "fl_n_ife.c"
 #include "fl_n_noop.c"
@@ -525,6 +526,10 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "unlesse", exe_ife, rcv_ife, can_ },
   &(flon_ni){ "if", exe_if, rcv_if, can_ },
   &(flon_ni){ "unless", exe_if, rcv_if, can_ },
+
+  &(flon_ni){ "else", exe_else, rcv_else, can_ },
+  //&(flon_ni){ "elsif", exe_else, rcv_else, can_ },
+  //&(flon_ni){ "elif", exe_else, rcv_else, can_ },
 
   NULL
 };
