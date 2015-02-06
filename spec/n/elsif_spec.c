@@ -32,7 +32,7 @@ context "instruction:"
   {
     it "doesn't trigger when 'ret' not false"
     {
-      exid = flon_generate_exid("n.else.no");
+      exid = flon_generate_exid("n.elsif.no");
 
       hlp_launch(
         exid,
@@ -58,7 +58,7 @@ context "instruction:"
 
     it "triggers when 'ret' false"
     {
-      exid = flon_generate_exid("n.else.yes");
+      exid = flon_generate_exid("n.elsif.yes");
 
       hlp_launch(
         exid,
@@ -85,7 +85,7 @@ context "instruction:"
 
     it "fits well right after an 'if'"
     {
-      exid = flon_generate_exid("n.else.postif");
+      exid = flon_generate_exid("n.elsif.postif");
 
       hlp_launch(
         exid,
@@ -123,7 +123,7 @@ context "instruction:"
 
     it "passes if it evaluates to false"
     {
-      exid = flon_generate_exid("n.else.postif");
+      exid = flon_generate_exid("n.elsif.pass");
 
       hlp_launch(
         exid,
@@ -139,6 +139,37 @@ context "instruction:"
         "    trace e\n"
         "  elif\n"
         "    3 > 2\n"
+        "    trace f\n"
+        "    trace g\n"
+        "  trace h\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ a, f, g, h ], ret: true }");
+    }
+
+    it "leverages rewrite"
+    {
+      exid = flon_generate_exid("n.elsif.rewritten");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace a\n"
+        "  if 3 > 4\n"
+        "    trace b\n"
+        "    trace c\n"
+        "  elif 3 > 5\n"
+        "    trace d\n"
+        "    trace e\n"
+        "  elsif 3 > 2\n"
         "    trace f\n"
         "    trace g\n"
         "  trace h\n"

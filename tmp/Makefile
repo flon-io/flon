@@ -142,6 +142,7 @@ sum:
 	@./ns 2>&1 | ./spec_filter.sh
 	@echo "\n--- make sz ---a-to-z-------------------------------------------"
 	@./zs 2>&1 | ./spec_filter.sh
+	@echo "\n---"
 	@echo ""
 
 vsum:

@@ -240,6 +240,8 @@ static int rewrite_head_if(
 
   if (
     fdja_strcmp(vname, "if") != 0 &&
+    fdja_strcmp(vname, "elif") != 0 &&
+    fdja_strcmp(vname, "elsif") != 0 &&
     fdja_strcmp(vname, "unless") != 0
   ) return 0;
 
