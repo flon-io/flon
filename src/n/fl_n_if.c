@@ -26,9 +26,9 @@
 
 static char rcv_if(fdja_value *node, fdja_value *rcv)
 {
-  printf("=== RCV\n");
-  fdja_putdc(node);
-  fdja_putdc(rcv);
+  //printf("=== RCV\n");
+  //fdja_putdc(node);
+  //fdja_putdc(rcv);
 
   char r = 'v';
 
@@ -75,9 +75,9 @@ _over:
 
 static char exe_if(fdja_value *node, fdja_value *exe)
 {
-  printf("=== EXE\n");
-  fdja_putdc(node);
-  fdja_putdc(exe);
+  //printf("=== EXE\n");
+  //fdja_putdc(node);
+  //fdja_putdc(exe);
 
   if (fdja_size(fdja_l(exe, "tree.3")) < 1) return 'v';
     // no children ? "if" over.
