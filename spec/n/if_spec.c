@@ -138,6 +138,30 @@ context "instruction:"
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: false, trace: [ c ] }");
     }
+
+    it "doesn't mind the rewrite"
+    {
+      exid = flon_generate_exid("n.if.rewritten");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  if 6 > 5\n"
+        "    trace a\n"
+        "    trace b\n"
+        "  trace c\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: true, trace: [ a, b, c ] }");
+    }
   }
 }
 
