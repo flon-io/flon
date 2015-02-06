@@ -82,7 +82,8 @@ static char exe_if(fdja_value *node, fdja_value *exe)
   if (fdja_size(fdja_l(exe, "tree.3")) < 1) return 'v';
     // no children ? "if" over.
 
-  if (*fdja_srk(fdja_l(node, "inst")) == 'e') // elsif or elif
+  //if (*fdja_srk(fdja_l(node, "inst")) == 'e') // elsif or elif
+  if (fdja_strncmp(fdja_l(node, "inst"), "el", 2) == 0) // elsif or elif
   {
     fdja_value *ret = fdja_l(exe, "payload.ret");
     if (ret == NULL || ret->type != 'f') return 'v';
