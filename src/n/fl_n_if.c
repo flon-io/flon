@@ -40,10 +40,12 @@ static char rcv_if(fdja_value *node, fdja_value *rcv)
 
   conditional = flon_nid_child(nid, 0);
 
-  int then =
-    strcmp(from, conditional) == 0 ?
-    ret_to_boolean(fdja_l(rcv, "payload.ret")) :
-    1;
+  int then = 1;
+  if (strcmp(from, conditional) == 0)
+  {
+    then = ret_to_boolean(fdja_l(rcv, "payload.ret"));
+    if (fdja_strcmp(fdja_l(node, "inst"), "if") != 0) then = ! then;
+  }
 
   if (then)
   {
