@@ -521,6 +521,7 @@ static flon_ni *instructions[] = {
   //&(flon_ni){ "c>", exe_cmp, rcv_cmp, can_ }, // TODO
 
   &(flon_ni){ "ife", exe_ife, rcv_ife, can_ },
+  &(flon_ni){ "unlesse", exe_ife, rcv_ife, can_ },
 
   NULL
 };

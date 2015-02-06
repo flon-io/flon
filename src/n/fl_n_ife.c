@@ -26,8 +26,6 @@
 
 static char rcv_ife(fdja_value *node, fdja_value *rcv)
 {
-  //fdja_putdc(rcv);
-
   char r = 'k';
 
   char *nid = fdja_ls(node, "nid", NULL);
@@ -39,7 +37,10 @@ static char rcv_ife(fdja_value *node, fdja_value *rcv)
 
   int ret = ret_to_boolean(fdja_l(rcv, "payload.ret"));
 
-  char *next = flon_nid_next(from, ret ? 1 : 2);
+  int branch = ret ? 1 : 2;
+  if (fdja_strcmp(fdja_l(node, "inst"), "ife") != 0) branch = ret ? 2 : 1;
+
+  char *next = flon_nid_next(from, branch);
 
   if (flon_node_tree(next))
     queue_child_execute(next, node, rcv, NULL);
@@ -59,7 +60,8 @@ _over:
 
 static char exe_ife(fdja_value *node, fdja_value *exe)
 {
-  //fdja_putdc(exe);
+  fdja_putdc(node);
+  fdja_putdc(exe);
 
   if (fdja_size(fdja_l(exe, "tree.3")) < 1) return 'v';
     // no children ? "ife" over.
