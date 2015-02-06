@@ -28,15 +28,15 @@ context "instruction:"
     fdja_free(result);
   }
 
-  describe "if"
+  describe "ife"
   {
     it "goes on when empty"
     {
-      exid = flon_generate_exid("n.if.empty");
+      exid = flon_generate_exid("n.ife.empty");
 
       hlp_launch(
         exid,
-        "if\n"
+        "ife\n"
         "",
         "{}");
 
@@ -49,11 +49,11 @@ context "instruction:"
 
     it "goes on when true and no then branch"
     {
-      exid = flon_generate_exid("n.if.then.no.then");
+      exid = flon_generate_exid("n.ife.then.no.then");
 
       hlp_launch(
         exid,
-        "if\n"
+        "ife\n"
         "  5 > 4\n"
         "",
         "{}");
@@ -70,11 +70,11 @@ context "instruction:"
 
     it "goes on when false and no else branch"
     {
-      exid = flon_generate_exid("n.if.else.no.else");
+      exid = flon_generate_exid("n.ife.else.no.else");
 
       hlp_launch(
         exid,
-        "if\n"
+        "ife\n"
         "  3 > 4\n"
         "",
         "{}");
@@ -91,11 +91,11 @@ context "instruction:"
 
     it "triggers the then branch"
     {
-      exid = flon_generate_exid("n.if.then");
+      exid = flon_generate_exid("n.ife.then");
 
       hlp_launch(
         exid,
-        "if\n"
+        "ife\n"
         "  5 > 4\n"
         "  'then'\n"
         "  'else'\n"
@@ -114,11 +114,11 @@ context "instruction:"
 
     it "triggers the else branch"
     {
-      exid = flon_generate_exid("n.if.else");
+      exid = flon_generate_exid("n.ife.else");
 
       hlp_launch(
         exid,
-        "if\n"
+        "ife\n"
         "  3 > 4\n"
         "  'then'\n"
         "  'else'\n"
