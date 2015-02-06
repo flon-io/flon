@@ -21,6 +21,7 @@ context "flon-executor"
     char *exid = NULL;
     char *fep = NULL;
     fdja_value *v = NULL;
+    char *path = strdup("spec/x/schedules_spec/path");
 
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
@@ -35,6 +36,7 @@ context "flon-executor"
     free(fep);
     free(exid);
     fdja_free(v);
+    free(path);
   }
 
   describe "flon_schedule_msg()"
@@ -43,6 +45,7 @@ context "flon-executor"
     {
       exid = flon_generate_exid("xtest.fsm.at");
       execution_id = exid;
+      execution_path = path;
 
       flon_schedule_msg(
         "at", "20141224.203030", "0_0",
@@ -57,6 +60,7 @@ context "flon-executor"
 
       //flu_putf(fdja_todc(v));
 
+      expect(v != NULL);
       expect(fdja_ls(v, "point", NULL) ===f "schedule");
       expect(fdja_ls(v, "at", NULL) ===f "20141224.203030");
 
@@ -86,6 +90,7 @@ context "flon-executor"
 
       //flu_putf(fdja_todc(v));
 
+      expect(v != NULL);
       expect(fdja_ls(v, "point", NULL) ===f "schedule");
       expect(fdja_ls(v, "cron", NULL) ===f "* * * * *");
 
