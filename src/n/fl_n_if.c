@@ -44,7 +44,11 @@ static char rcv_if(fdja_value *node, fdja_value *rcv)
   if (strcmp(from, conditional) == 0)
   {
     then = ret_to_boolean(fdja_l(rcv, "payload.ret"));
-    if (fdja_strcmp(fdja_l(node, "inst"), "if") != 0) then = ! then;
+    if (fdja_strcmp(fdja_l(node, "inst"), "if") != 0)
+    {
+      then = ! then;
+      fdja_psetv(rcv, "payload.ret", then ? "true" : "false");
+    }
   }
 
   if (then)

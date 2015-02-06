@@ -45,6 +45,9 @@ context "instruction:"
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{}");
     }
 
     it "goes on when false and no children"
@@ -65,7 +68,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: false }");
+        "{ ret: true }");
     }
 
     it "goes on when true and no children"
@@ -86,7 +89,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: true }");
+        "{ ret: false }");
     }
 
     it "triggers the children when false"
@@ -111,7 +114,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: false, trace: [ a, b, c ] }");
+        "{ ret: true, trace: [ a, b, c ] }");
     }
 
     it "skips the children when true"
@@ -136,7 +139,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: true, trace: [ c ] }");
+        "{ ret: false, trace: [ c ] }");
     }
   }
 }

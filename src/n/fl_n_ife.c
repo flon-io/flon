@@ -37,8 +37,10 @@ static char rcv_ife(fdja_value *node, fdja_value *rcv)
 
   int ret = ret_to_boolean(fdja_l(rcv, "payload.ret"));
 
+  if (fdja_strcmp(fdja_l(node, "inst"), "ife") != 0) ret = ! ret;
   int branch = ret ? 1 : 2;
-  if (fdja_strcmp(fdja_l(node, "inst"), "ife") != 0) branch = ret ? 2 : 1;
+
+  fdja_psetv(rcv, "payload.ret", ret ? "true" : "false");
 
   char *next = flon_nid_next(from, branch);
 

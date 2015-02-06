@@ -45,6 +45,9 @@ context "instruction:"
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{}");
     }
 
     it "goes on when false and no then branch"
@@ -65,7 +68,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: false }");
+        "{ ret: true }");
     }
 
     it "goes on when true and no else branch"
@@ -86,7 +89,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: true }");
+        "{ ret: false }");
     }
 
     it "triggers the then branch"
