@@ -21,7 +21,7 @@ context "flon-executor"
     char *exid = NULL;
     char *fep = NULL;
     fdja_value *v = NULL;
-    char *path = strdup("spec/x/schedules_spec/path");
+    char *path = rdz_strdup("spec/x/schedules_spec/path");
 
     fgaj_conf_get()->logger = fgaj_grey_logger;
     fgaj_conf_get()->level = 5;
