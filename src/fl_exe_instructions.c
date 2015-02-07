@@ -471,6 +471,7 @@ static char can_(fdja_value *node, fdja_value *can)
 #include "fl_seq_con.c"
 
 #include "fl_n_and.c"
+#include "fl_n_arith.c"
 #include "fl_n_call.c"
 #include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
@@ -531,6 +532,11 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "elif", exe_if, rcv_if, can_ },
 
   &(flon_ni){ "else", exe_else, rcv_else, can_ },
+
+  &(flon_ni){ "+", exe_arith, rcv_arith, can_ },
+  &(flon_ni){ "-", exe_arith, rcv_arith, can_ },
+  &(flon_ni){ "*", exe_arith, rcv_arith, can_ },
+  &(flon_ni){ "/", exe_arith, rcv_arith, can_ },
 
   NULL
 };
