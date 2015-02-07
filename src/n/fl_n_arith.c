@@ -66,7 +66,21 @@ static long long arith_fold_i(char *op, flu_list *numbers)
 
 static double arith_fold_d(char *op, flu_list *numbers)
 {
-  return 0;
+  if (numbers->first == NULL) return 0;
+
+  long double r = strtold(numbers->first->item, NULL);
+
+  for (flu_node *n = numbers->first->next; n; n = n->next)
+  {
+    long double nn = strtold(n->item, NULL);
+    if (*op == '+') r += nn;
+    else if (*op == '-') r -= nn;
+    else if (*op == '*') r *= nn;
+    else if (*op == '/') r /= nn;
+    // else do nothing about it...
+  }
+
+  return r;
 }
 
 static char rcv_arith(fdja_value *node, fdja_value *rcv)

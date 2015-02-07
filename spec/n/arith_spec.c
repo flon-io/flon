@@ -36,7 +36,7 @@ context "instruction:"
     {
       it "adds integers"
       {
-        exid = flon_generate_exid("n.plus.adds");
+        exid = flon_generate_exid("n.plus.addi");
 
         hlp_launch(
           exid,
@@ -52,6 +52,30 @@ context "instruction:"
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: 6 }");
+      }
+    }
+
+    describe "-"
+    {
+      it "substracts doubles"
+      {
+        exid = flon_generate_exid("n.minus.subd");
+
+        hlp_launch(
+          exid,
+          "- 1000 2.0 3.0e2\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: 698.000000 }");
+            // 6 zeros? :-(
       }
     }
 
