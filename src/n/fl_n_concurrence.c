@@ -24,55 +24,19 @@
 //
 
 
-// TODO: move the core of it to src/n/fl_seq_con.c
-
 static char rcv_concurrence(fdja_value *node, fdja_value *rcv)
 {
   // TODO: focus immediately on "merge participants (invokers)"
 
-  char *from = fdja_ls(rcv, "from", NULL);
-  fdja_value *children = fdja_l(node, "children");
+  char r = con_rcv(node, rcv);
 
-  //flu_putf(fdja_todc(children));
-  //flu_putf(fdja_todc(rcv));
+  // TODO: merge & co
 
-  int found = fdja_unpush(children, from);
-
-  if (found) // merge
-  {
-    // TODO merge
-  }
-
-  free(from);
-
-  //if (found == 0) // not found...
-  if (fdja_size(children) == 0) return 'v'; // over
-  return 'k';
+  return r;
 }
 
 static char exe_concurrence(fdja_value *node, fdja_value *exe)
 {
-  //flu_putf(fdja_todc(node));
-  //flu_putf(fdja_todc(exe));
-
-  char *nid = fdja_ls(node, "nid", NULL);
-  char *cnid = NULL;
-
-  fdja_value *children = fdja_set(node, "children", fdja_array_malloc());
-
-  for (size_t i = 0; ; ++i)
-  {
-    free(cnid); cnid = flu_sprintf("%s_%zu", nid, i);
-
-    fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
-
-    queue_child_execute(cnid, node, exe, NULL);
-  }
-
-  free(cnid);
-  free(nid);
-
-  if (fdja_size(children) == 0) return 'v'; // already over
-  return 'k'; // ok
+  return con_exe(node, exe);
 }
 
