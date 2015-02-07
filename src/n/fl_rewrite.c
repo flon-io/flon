@@ -240,9 +240,11 @@ static int rewrite_head_if(
 
   if (
     fdja_strcmp(vname, "if") != 0 &&
+    //fdja_strcmp(vname, "ife") != 0 &&
     fdja_strcmp(vname, "elif") != 0 &&
     fdja_strcmp(vname, "elsif") != 0 &&
-    fdja_strcmp(vname, "unless") != 0
+    fdja_strcmp(vname, "unless") != 0 //&&
+    //fdja_strcmp(vname, "unlesse") != 0
   ) return 0;
 
   fdja_value *atts = fdja_value_at(tree, 1);
@@ -262,6 +264,7 @@ static int rewrite_head_if(
   atts->child = NULL;
 
   fdja_value *children = fdja_value_at(tree, 3);
+  int has_then = then->size > 0;
 
   if (cond->size > 0)
   {
@@ -281,6 +284,13 @@ static int rewrite_head_if(
   flu_list_and_items_free(cond, (void (*)(void *))fdja_value_free);
   flu_list_and_items_free(then, (void (*)(void *))fdja_value_free);
   flu_list_and_items_free(elze, (void (*)(void *))fdja_value_free);
+
+  if (has_then)
+  {
+    fdja_replace(
+      tree->child,
+      fdja_v(*fdja_srk(tree->child) == 'i' ? "ife" : "unlesse"));
+  }
 
   return 1;
 }
@@ -310,6 +320,10 @@ static int rewrite_post_if(
   fdja_value *lnumber = fdja_value_at(tree, 2);
 
   fdja_value *condt = to_tree(cond, lnumber, node, msg);
+  //
+  fdja_replace(
+    condt->child,
+    fdja_v(*fdja_srk(condt->child) == 'i' ? "ife" : "unlesse"));
 
   fdja_value *then_atts = fdja_object_malloc();
   for (fdja_value *a = atts->child; a; a = a->sibling)
@@ -350,12 +364,15 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
   //
   rw |= rewrite_pinfix("or", node, msg, tree);
   rw |= rewrite_pinfix("and", node, msg, tree);
+  //
   rw |= rewrite_pinfix("==", node, msg, tree);
   rw |= rewrite_pinfix("!=", node, msg, tree);
+  //
   rw |= rewrite_pinfix(">", node, msg, tree);
   rw |= rewrite_pinfix(">=", node, msg, tree);
   rw |= rewrite_pinfix("<", node, msg, tree);
   rw |= rewrite_pinfix("<=", node, msg, tree);
+  //
   rw |= rewrite_pinfix("+", node, msg, tree);
   rw |= rewrite_pinfix("-", node, msg, tree);
   rw |= rewrite_pinfix("*", node, msg, tree);

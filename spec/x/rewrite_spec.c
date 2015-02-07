@@ -293,7 +293,7 @@ context "flon-executor"
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
-        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ls(node, "inst", NULL) ===f "ife");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
@@ -316,7 +316,7 @@ context "flon-executor"
             "[ e, { _0: f }, 1, [] ] "
           "], sx ]");
 
-        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ls(node, "inst", NULL) ===f "ife");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
@@ -439,7 +439,7 @@ context "flon-executor"
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
-        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ls(node, "inst", NULL) ===f "ife");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
@@ -448,6 +448,7 @@ context "flon-executor"
         msg = mrad(
           "c if a > b\n"
           "  e f\n"
+          "  g h\n"
         );
         //fdja_putdc(fdja_l(msg, "tree"));
 
@@ -460,11 +461,12 @@ context "flon-executor"
               "[ b, {}, 1, [] ] "
             "] ], "
             "[ c, {}, 1, [ "
-              "[ e, { _0: f }, 2, [] ] "
+              "[ e, { _0: f }, 2, [] ], "
+              "[ g, { _0: h }, 3, [] ] "
             "] ] "
           "], sx ]");
 
-        expect(fdja_ls(node, "inst", NULL) ===f "if");
+        expect(fdja_ls(node, "inst", NULL) ===f "ife");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
@@ -486,7 +488,7 @@ context "flon-executor"
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
-        expect(fdja_ls(node, "inst", NULL) ===f "unless");
+        expect(fdja_ls(node, "inst", NULL) ===f "unlesse");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
     }
