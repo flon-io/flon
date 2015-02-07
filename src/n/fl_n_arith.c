@@ -45,7 +45,7 @@ static char determine_type(flu_list *numbers)
   return 'i'; // integer
 }
 
-static long long arith_fold_i(char *op, flu_list *numbers)
+static long long arith_fold_i(fdja_value *node, char *op, flu_list *numbers)
 {
   if (numbers->first == NULL) return 0;
 
@@ -57,14 +57,32 @@ static long long arith_fold_i(char *op, flu_list *numbers)
     if (*op == '+') r += nn;
     else if (*op == '-') r -= nn;
     else if (*op == '*') r *= nn;
-    else if (*op == '/') r /= nn;
+    else if (*op == '/')
+    {
+      if (nn == 0) { push_error(node, "division by zero"); return 0; }
+      r /= nn;
+    }
     // else do nothing about it...
   }
 
   return r;
 }
 
-static double arith_fold_d(char *op, flu_list *numbers)
+//static int is_ldzero(long double n)
+static int is_ldzero(char *n)
+{
+  //return (nn == 0.0);
+  for (size_t i = 0; ; ++i)
+  {
+    if (n[i] == 0) break;
+    if (n[i] != '0' && n[i] == '.') return 0;
+  }
+  return 1;
+
+  // well...
+}
+
+static double arith_fold_d(fdja_value *node, char *op, flu_list *numbers)
 {
   if (numbers->first == NULL) return 0;
 
@@ -76,7 +94,11 @@ static double arith_fold_d(char *op, flu_list *numbers)
     if (*op == '+') r += nn;
     else if (*op == '-') r -= nn;
     else if (*op == '*') r *= nn;
-    else if (*op == '/') r /= nn;
+    else if (*op == '/')
+    {
+      if (is_ldzero(n->item)){ push_error(node, "division by zero"); return 0; }
+      r /= nn;
+    }
     // else do nothing about it...
   }
 
@@ -89,21 +111,24 @@ static char rcv_arith(fdja_value *node, fdja_value *rcv)
 
   if (r != 'v') return r;
 
+  size_t rcount = error_count(node);
+
   char *op = fdja_ls(node, "inst", NULL);
   flu_list *ns = list_numbers(fdja_l(node, "rets"));
   char t = determine_type(ns);
 
   fdja_value *ret = NULL;
   if (t == 'i')
-    ret = fdja_v("%d", arith_fold_i(op, ns));
+    ret = fdja_v("%d", arith_fold_i(node, op, ns));
   else // 'd'
-    ret = fdja_v("%f", arith_fold_d(op, ns));
+    ret = fdja_v("%f", arith_fold_d(node, op, ns));
 
   fdja_pset(rcv, "payload.ret", ret);
 
   flu_list_free_all(ns);
   free(op);
 
+  if (error_count(node) > rcount) return 'r';
   return 'v';
 }
 

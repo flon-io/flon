@@ -221,6 +221,13 @@ static void push_error(fdja_value *node, char *format, ...)
   push_error_value(node, err);
 }
 
+static size_t error_count(fdja_value *node)
+{
+  fdja_value *errs = fdja_l(node, "errors");
+
+  return errs == NULL ? 0 : fdja_size(errs);
+}
+
 static ssize_t child_count(fdja_value *node, fdja_value *msg)
 {
   // [ sequence, {}, 2, [], fname ]

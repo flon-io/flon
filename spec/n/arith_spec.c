@@ -82,7 +82,45 @@ context "instruction:"
     describe "/"
     {
       it "raises on / 0"
-      it "raises on / 0.0"
+      {
+        exid = flon_generate_exid("n.div.zeroi");
+
+        hlp_launch(
+          exid,
+          "/ 7 0\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "failed", NULL, 3);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ls(result, "error.msg", NULL) ===f "division by zero");
+      }
+
+      //it "raises on / 0.0"
+      it "returns infinity on / 0.0"
+      {
+        exid = flon_generate_exid("n.div.zerod");
+
+        hlp_launch(
+          exid,
+          "/ 7.1 0.000000\n"
+          "",
+          "{}");
+
+        //result = hlp_wait(exid, "failed", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+        //flu_putf(fdja_todc(result));
+
+        //expect(fdja_ls(result, "error.msg", NULL) ===f "division by zero");
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: inf }");
+      }
     }
   }
 }
