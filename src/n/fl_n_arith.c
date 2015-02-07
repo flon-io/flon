@@ -68,19 +68,19 @@ static long long arith_fold_i(fdja_value *node, char *op, flu_list *numbers)
   return r;
 }
 
-//static int is_ldzero(long double n)
-static int is_ldzero(char *n)
-{
-  //return (nn == 0.0);
-  for (size_t i = 0; ; ++i)
-  {
-    if (n[i] == 0) break;
-    if (n[i] != '0' && n[i] == '.') return 0;
-  }
-  return 1;
-
-  // well...
-}
+////static int is_ldzero(long double n)
+//static int is_ldzero(char *n)
+//{
+//  //return (nn == 0.0);
+//  for (size_t i = 0; ; ++i)
+//  {
+//    if (n[i] == 0) break;
+//    if (n[i] != '0' && n[i] == '.') return 0;
+//  }
+//  return 1;
+//
+//  // well...
+//}
 
 static double arith_fold_d(fdja_value *node, char *op, flu_list *numbers)
 {
@@ -94,12 +94,15 @@ static double arith_fold_d(fdja_value *node, char *op, flu_list *numbers)
     if (*op == '+') r += nn;
     else if (*op == '-') r -= nn;
     else if (*op == '*') r *= nn;
-    else if (*op == '/')
-    {
-      if (is_ldzero(n->item)){ push_error(node, "division by zero"); return 0; }
-      r /= nn;
-    }
-    // else do nothing about it...
+    else if (*op == '/') r /= nn;
+    //else if (*op == '/')
+    //{
+    //  if (is_ldzero(n->item))
+    //  {
+    //    push_error(node, "division by zero"); return 0;
+    //  }
+    //  r /= nn;
+    //}
   }
 
   return r;
