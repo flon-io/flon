@@ -163,7 +163,7 @@ static short schedule(const char *fname, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
 
-  int unschedule = (*fdja_srk(fdja_l(msg, "point")) == 'u');
+  int unschedule = (fdja_lk(msg, "point") == 'u');
 
   fgaj_d("%sschedule order: %s", unschedule ? "un" : "", fname);
 
