@@ -1397,6 +1397,8 @@ fdja_value *fdja_push(fdja_value *array, fdja_value *v)
   if (v == NULL) return NULL;
   if (array->type != 'a') return NULL;
 
+  free(v->key); v->key = NULL;
+
   for (fdja_value **l = &array->child; ; l = &(*l)->sibling)
   {
     if (*l == NULL) { *l = v; v->sibling = NULL; break; }
@@ -1726,8 +1728,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit a1abc7bf88665334c4d8cdbab2dbade5b55b2e32
+//commit 8b672e79021fd795a026accbf084441d2bf3c2bd
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Feb 7 06:31:43 2015 +0900
+//Date:   Sun Feb 8 15:43:59 2015 +0900
 //
-//    implement fdja_strncmp()
+//    make sure fdja_push() reset the val ->key

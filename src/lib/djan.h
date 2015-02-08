@@ -283,8 +283,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit a1abc7bf88665334c4d8cdbab2dbade5b55b2e32
+//commit 8b672e79021fd795a026accbf084441d2bf3c2bd
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Feb 7 06:31:43 2015 +0900
+//Date:   Sun Feb 8 15:43:59 2015 +0900
 //
-//    implement fdja_strncmp()
+//    make sure fdja_push() reset the val ->key
