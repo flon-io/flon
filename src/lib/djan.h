@@ -217,6 +217,7 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 #define fdja_lsd(...) fdja_lookup_string_dup_default(__VA_ARGS__)
 #define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
 #define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
+#define fdja_lk(...) *fdja_srk(fdja_lookup(__VA_ARGS__))
 
 char *fdja_lj(fdja_value *v, const char *path, ...);
 char *fdja_ld(fdja_value *v, const char *path, ...);
@@ -283,8 +284,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 8b672e79021fd795a026accbf084441d2bf3c2bd
+//commit 0d900119b8ef769179bca725f60703c27415f678
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Feb 8 15:43:59 2015 +0900
+//Date:   Sun Feb 8 17:27:25 2015 +0900
 //
-//    make sure fdja_push() reset the val ->key
+//    implement fdja_lk()

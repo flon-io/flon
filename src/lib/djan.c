@@ -1728,8 +1728,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 8b672e79021fd795a026accbf084441d2bf3c2bd
+//commit 0d900119b8ef769179bca725f60703c27415f678
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Feb 8 15:43:59 2015 +0900
+//Date:   Sun Feb 8 17:27:25 2015 +0900
 //
-//    make sure fdja_push() reset the val ->key
+//    implement fdja_lk()
