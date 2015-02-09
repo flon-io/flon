@@ -64,153 +64,162 @@ context "flon-executor"
       expect(fdja_ld(node, "tree", NULL) === NULL);
     }
 
-    it "rewrites  a > b"
+    context "'>':"
     {
-      msg = mrad("a > b");
+      it "rewrites  a > b"
+      {
+        msg = mrad("a > b");
 
-      flon_rewrite_tree(node, msg);
+        flon_rewrite_tree(node, msg);
 
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ >, {}, 1, [ "
-          "[ a, {}, 1, [] ], "
-          "[ b, {}, 1, [] ] "
-        "], sx ]");
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ >, {}, 1, [ "
+            "[ a, {}, 1, [] ], "
+            "[ b, {}, 1, [] ] "
+          "], sx ]");
 
-      expect(fdja_ls(node, "inst", NULL) ===f ">");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+        expect(fdja_ls(node, "inst", NULL) ===f ">");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  > a b"
+      {
+        msg = mrad("> a b");
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ >, {}, 1, [ "
+            "[ a, {}, 1, [] ], "
+            "[ b, {}, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f ">");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
-    it "rewrites  > a b"
+    context "'and', 'or':"
     {
-      msg = mrad("> a b");
+      it "rewrites  a or b or c"
+      {
+        msg = mrad("a or b or c");
 
-      flon_rewrite_tree(node, msg);
+        flon_rewrite_tree(node, msg);
 
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ >, {}, 1, [ "
-          "[ a, {}, 1, [] ], "
-          "[ b, {}, 1, [] ] "
-        "], sx ]");
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ or, {}, 1, [ "
+            "[ a, {}, 1, [] ], "
+            "[ b, {}, 1, [] ], "
+            "[ c, {}, 1, [] ] "
+          "], sx ]");
 
-      expect(fdja_ls(node, "inst", NULL) ===f ">");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+        expect(fdja_ls(node, "inst", NULL) ===f "or");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  a or b and c"
+      {
+        msg = mrad("a or b and c");
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ or, {}, 1, [ "
+            "[ a, {}, 1, [] ], "
+            "[ b, { _0: and, _1: c }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "or");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  a and (b or c)"
+      {
+        msg = mrad("a and (b or c)");
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ and, {}, 1, [ "
+            "[ a, {}, 1, [] ], "
+            "[ b, { _0: or, _1: c }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "and");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  (a or b) and c"
+      {
+        msg = mrad("(a or b) and c");
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ and, {}, 1, [ "
+            "[ a, { _0: or, _1: b }, 1, [] ], "
+            "[ c, {}, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "and");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  trace a or (trace b or trace c)"
+      {
+        msg = mrad("trace a or (trace b or trace c)");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ or, {}, 1, [ "
+            "[ trace, { _0: a }, 1, [] ], "
+            "[ trace, { _0: b, _1: or, _2: trace, _3: c }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "or");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
-    it "rewrites  a or b or c"
+    context "$(cmp):"
     {
-      msg = mrad("a or b or c");
+      it "rewrites  $(cmp) x y"
+      {
+        msg = mradp("$(cmp) x y", fdja_v("{ cmp:  > }"));
 
-      flon_rewrite_tree(node, msg);
+        flon_rewrite_tree(node, msg);
 
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ or, {}, 1, [ "
-          "[ a, {}, 1, [] ], "
-          "[ b, {}, 1, [] ], "
-          "[ c, {}, 1, [] ] "
-        "], sx ]");
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ >, {}, 1, [ "
+            "[ x, {}, 1, [] ], "
+            "[ y, {}, 1, [] ] "
+          "], sx ]");
 
-      expect(fdja_ls(node, "inst", NULL) ===f "or");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+        expect(fdja_ls(node, "inst", NULL) ===f ">");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  x $(cmp) y"
+      {
+        msg = mradp("x $(cmp) y", fdja_v("{ cmp:  > }"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ >, {}, 1, [ "
+            "[ x, {}, 1, [] ], "
+            "[ y, {}, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f ">");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
-    it "rewrites  a or b and c"
-    {
-      msg = mrad("a or b and c");
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ or, {}, 1, [ "
-          "[ a, {}, 1, [] ], "
-          "[ b, { _0: and, _1: c }, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f "or");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    it "rewrites  a and (b or c)"
-    {
-      msg = mrad("a and (b or c)");
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ and, {}, 1, [ "
-          "[ a, {}, 1, [] ], "
-          "[ b, { _0: or, _1: c }, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f "and");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    it "rewrites  (a or b) and c"
-    {
-      msg = mrad("(a or b) and c");
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ and, {}, 1, [ "
-          "[ a, { _0: or, _1: b }, 1, [] ], "
-          "[ c, {}, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f "and");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    it "rewrites  $(cmp) x y"
-    {
-      msg = mradp("$(cmp) x y", fdja_v("{ cmp:  > }"));
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ >, {}, 1, [ "
-          "[ x, {}, 1, [] ], "
-          "[ y, {}, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f ">");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    it "rewrites  x $(cmp) y"
-    {
-      msg = mradp("x $(cmp) y", fdja_v("{ cmp:  > }"));
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ >, {}, 1, [ "
-          "[ x, {}, 1, [] ], "
-          "[ y, {}, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f ">");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    it "rewrites  trace a or (trace b or trace c)"
-    {
-      msg = mrad("trace a or (trace b or trace c)");
-      //fdja_putdc(fdja_l(msg, "tree"));
-
-      flon_rewrite_tree(node, msg);
-
-      expect(fdja_ld(msg, "tree") ===f ""
-        "[ or, {}, 1, [ "
-          "[ trace, { _0: a }, 1, [] ], "
-          "[ trace, { _0: b, _1: or, _2: trace, _3: c }, 1, [] ] "
-        "], sx ]");
-
-      expect(fdja_ls(node, "inst", NULL) ===f "or");
-      expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
-    }
-
-    context "with 'if' or 'unless' at the head"
+    context "head 'if':"
     {
       it "rewrites  if a"
       {
@@ -395,7 +404,7 @@ context "flon-executor"
       }
     }
 
-    context "with 'if' or 'unless' at the tail"
+    context "tail 'if':"
     {
       it "rewrites  c d if a > b"
       {
@@ -460,7 +469,12 @@ context "flon-executor"
       }
     }
 
-    context "when 'set'"
+    context "'else if':"
+    {
+      it "flips burgers"
+    }
+
+    context "'set':"
     {
       it "doesn't rewrite  set"
       {
