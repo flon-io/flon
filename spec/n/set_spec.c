@@ -48,7 +48,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ hello: set, a: 1 }"));
+        "{ hello: set, ret: 1, a: 1 }"));
     }
 
     it "sets a field, by default"
@@ -69,7 +69,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ hello: set, a: 2 }"));
+        "{ hello: set, ret: 2, a: 2 }"));
     }
 
     it "sets a field, via an expanded key"
@@ -90,7 +90,7 @@ context "instruction:"
       //flu_putf(fdja_todc(result));
 
       expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ k: number, number: 3 }"));
+        "{ k: number, ret: 3, number: 3 }"));
     }
 
     it "sets a variable"
@@ -112,8 +112,8 @@ context "instruction:"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ trace: [ 3 ] }"));
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 3, trace: [ 3 ] }");
     }
 
     it "sets variables at various levels"
@@ -139,8 +139,8 @@ context "instruction:"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ trace: [ '0 0 0', '2 2 3', '3 3 3' ] }"));
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 3, trace: [ \"0 0 0\", \"2 2 3\", \"3 3 3\" ] }");
     }
 
     it "evaluate a single child and use its ret as set value"
@@ -163,8 +163,8 @@ context "instruction:"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_lj(result, "payload") ===F fdja_vj(""
-        "{ trace: [ 6 ] }"));
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 6, trace: [ 6 ] }");
     }
   }
 }

@@ -26,48 +26,29 @@
 
 static char rcv_set(fdja_value *node, fdja_value *rcv)
 {
-printf("RCV ====\n");
-fdja_putdc(node);
-fdja_putdc(rcv);
+  fdja_value *att = fdja_at(fdja_l(tree(node, rcv), "1"), 0);
+  expand(att, node, rcv);
 
-  return 'k';
+  char *satt = fdja_to_string(att);
+  char *key = satt;
+
+  char k = extract_prefix(key);
+  if (k != 0) key = strchr(key, '.') + 1;
+
+  fdja_value *val = fdja_lc(rcv, "payload.ret");
+
+  if (k == 'f' || k == 0)
+    fdja_pset(fdja_l(rcv, "payload"), key, val);
+  else if (k == 'v')
+    set_var(node, *satt, key, val);
+
+  free(satt);
+
+  return 'v';
 }
 
 static char exe_set(fdja_value *node, fdja_value *exe)
 {
-//  fdja_value *pl = payload(exe);
-//
-//  fdja_value *atts = attributes(node, exe);
-//
-//  for (fdja_value *a = atts->child; a; )
-//  {
-//    char *key = a->key;
-//    fdja_value *sibling = a->sibling;
-//
-//    //a->sibling = NULL;
-//      // done by djan itself
-//
-//    //fgaj_d("key: 0 >%s<", key);
-//
-//    char k = extract_prefix(a->key);
-//    if (k != 0) key = strchr(key, '.') + 1;
-//
-//    //fgaj_d("key: 1 >%s<", key);
-//
-//    if (k == 'f' || k == 0)
-//      fdja_pset(pl, key, a);
-//    else if (k == 'v')
-//      set_var(node, *a->key, key, a);
-//
-//    a = sibling;
-//  }
-//
-//  //fdja_putdc(execution);
-//
-//  atts->child = NULL; fdja_free(atts);
-//
-//  return 'v'; // over
-
   if (child_count(node, exe) < 1) return 'v';
 
   char *nid = fdja_ls(node, "nid", NULL);
