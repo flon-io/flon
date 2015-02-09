@@ -78,7 +78,7 @@ context "flon and catts:"
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
+        "{ ret: blue, trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
     }
 
     it "sets an empty local scope `vars: true`"
@@ -103,7 +103,7 @@ context "flon and catts:"
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
+        "{ ret: blue, trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
     }
 
     it "doesn't overwrite an existing set of 'vars'"

@@ -74,32 +74,45 @@ static void unshift_attribute(char *name, fdja_value *tree)
   }
 }
 
-static int rewrite_as_call_or_invoke(
+static int rewrite_as_call_invoke_or_val(
   fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
+  int r = 0; // "not rewritten" for now
+
   fdja_value *vname = fdja_l(tree, "0");
+  char *name = NULL;
 
-  if ( ! fdja_is_stringy(vname)) return 0;
+  if ( ! fdja_is_stringy(vname)) goto _over;
 
-  char *name = fdja_to_string(vname);
+  name = fdja_to_string(vname);
 
-  flon_instruction *inst = lookup_instruction('e', name);
-  if (inst) { free(name); return 0; }
+  if (lookup_instruction('e', name)) goto _over;
+
+  r = 1; // "rewritten" for now
 
   fdja_value *v = lookup_var(node, 'l', name); // 'l' for "local"
 
   if (is_callable(v))
   {
-    //printf("***\n"); fdja_putdc(tree);
-    fdja_psetv(node, "inst", "call");
+    //fdja_psetv(node, "inst", "call");
     fdja_replace(fdja_l(tree, "0"), fdja_s("call"));
     unshift_attribute(name, tree);
-    //fdja_putdc(tree);
   }
+  else if (fdja_lz(tree, "1") == 0 && fdja_lz(tree, "3") == 0)
+  {
+    fdja_replace(fdja_l(tree, "0"), fdja_s("val"));
+    unshift_attribute(name, tree);
+  }
+  else
+  {
+    r = 0;
+  }
+
+_over:
 
   free(name);
 
-  return 1;
+  return r;
 }
 
 static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree);
@@ -417,7 +430,7 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 
   int rw = 0; // rewritten? not yet
 
-  rw |= rewrite_as_call_or_invoke(node, msg, tree);
+  rw |= rewrite_as_call_invoke_or_val(node, msg, tree);
 
   rw |= rewrite_post_if(node, msg, tree);
   rw |= rewrite_head_if(node, msg, tree);

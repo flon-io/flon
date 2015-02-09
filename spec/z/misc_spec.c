@@ -55,5 +55,53 @@ context "flon and misc:"
         "{ trace: [ \"billy the kid\" ] }");
     }
   }
+
+  describe "an unknown reference"
+  {
+    it "is turned into a string"
+    {
+      exid = flon_generate_exid("z.unknownref");
+
+      hlp_launch(
+        exid,
+        "nada\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: nada }");
+    }
+  }
+
+  describe "a lonely value"
+  {
+    it "is returned"
+    {
+      exid = flon_generate_exid("z.lonelyval");
+
+      hlp_launch(
+        exid,
+        "7\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 7 }");
+    }
+  }
 }
 
