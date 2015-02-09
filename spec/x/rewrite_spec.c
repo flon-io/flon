@@ -122,10 +122,7 @@ context "flon-executor"
       expect(fdja_ld(msg, "tree") ===f ""
         "[ or, {}, 1, [ "
           "[ a, {}, 1, [] ], "
-          "[ and, {}, 1, [ "
-            "[ b, {}, 1, [] ], "
-            "[ c, {}, 1, [] ] "
-          "] ] "
+          "[ b, { _0: and, _1: c }, 1, [] ] "
         "], sx ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f "or");
@@ -141,10 +138,7 @@ context "flon-executor"
       expect(fdja_ld(msg, "tree") ===f ""
         "[ and, {}, 1, [ "
           "[ a, {}, 1, [] ], "
-          "[ or, {}, 1, [ "
-            "[ b, {}, 1, [] ], "
-            "[ c, {}, 1, [] ] "
-          "] ] "
+          "[ b, { _0: or, _1: c }, 1, [] ] "
         "], sx ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f "and");
@@ -159,10 +153,7 @@ context "flon-executor"
 
       expect(fdja_ld(msg, "tree") ===f ""
         "[ and, {}, 1, [ "
-          "[ or, {}, 1, [ "
-            "[ a, {}, 1, [] ], "
-            "[ b, {}, 1, [] ] "
-          "] ], "
+          "[ a, { _0: or, _1: b }, 1, [] ], "
           "[ c, {}, 1, [] ] "
         "], sx ]");
 
@@ -212,10 +203,7 @@ context "flon-executor"
       expect(fdja_ld(msg, "tree") ===f ""
         "[ or, {}, 1, [ "
           "[ trace, { _0: a }, 1, [] ], "
-          "[ or, {}, 1, [ "
-            "[ trace, { _0: b }, 1, [] ], "
-            "[ trace, { _0: c }, 1, [] ] "
-          "] ] "
+          "[ trace, { _0: b, _1: or, _2: trace, _3: c }, 1, [] ] "
         "], sx ]");
 
       expect(fdja_ls(node, "inst", NULL) ===f "or");
@@ -265,10 +253,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ] "
+            "[ a, { _0: >, _1: b }, 1, [] ] "
           "], sx ]");
 
         expect(fdja_ls(node, "inst", NULL) ===f "if");
@@ -286,10 +271,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ ife, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
@@ -308,10 +290,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ ife, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, { _0: d }, 1, [] ], "
             "[ e, { _0: f }, 1, [] ] "
           "], sx ]");
@@ -332,10 +311,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ if, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, { _0: d }, 2, [] ] "
           "], sx ]");
 
@@ -432,10 +408,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ ife, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
@@ -456,10 +429,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ ife, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, {}, 1, [ "
               "[ e, { _0: f }, 2, [] ], "
               "[ g, { _0: h }, 3, [] ] "
@@ -481,10 +451,7 @@ context "flon-executor"
 
         expect(fdja_ld(msg, "tree") ===f ""
           "[ unlesse, {}, 1, [ "
-            "[ >, {}, 1, [ "
-              "[ a, {}, 1, [] ], "
-              "[ b, {}, 1, [] ] "
-            "] ], "
+            "[ a, { _0: >, _1: b }, 1, [] ], "
             "[ c, { _0: d }, 1, [] ] "
           "], sx ]");
 
