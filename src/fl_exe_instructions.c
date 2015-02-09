@@ -509,7 +509,7 @@ typedef struct {
 static flon_ni *instructions[] = {
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence, can_ },
   &(flon_ni){ "define", exe_define, rcv_, can_ },
-  &(flon_ni){ "set", exe_set, rcv_, can_ },
+  &(flon_ni){ "set", exe_set, rcv_set, can_ },
   &(flon_ni){ "call", exe_call, rcv_, can_ },
   &(flon_ni){ "task", exe_task, rcv_task, can_ },
   &(flon_ni){ "concurrence", exe_concurrence, rcv_concurrence, can_ },

@@ -596,6 +596,24 @@ context "flon-executor"
         expect(fdja_ls(node, "inst", NULL) ===f "sequence");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
+
+      it "rewrites  set k: 1"
+      {
+        msg = mrad(
+          "set k: 1\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ set, { _0: k }, 1, [ "
+            "[ val, { _0: 1 }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "set");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
   }
 }

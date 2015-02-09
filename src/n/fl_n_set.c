@@ -24,39 +24,60 @@
 //
 
 
+static char rcv_set(fdja_value *node, fdja_value *rcv)
+{
+printf("RCV ====\n");
+fdja_putdc(node);
+fdja_putdc(rcv);
+
+  return 'k';
+}
+
 static char exe_set(fdja_value *node, fdja_value *exe)
 {
-  fdja_value *pl = payload(exe);
+//  fdja_value *pl = payload(exe);
+//
+//  fdja_value *atts = attributes(node, exe);
+//
+//  for (fdja_value *a = atts->child; a; )
+//  {
+//    char *key = a->key;
+//    fdja_value *sibling = a->sibling;
+//
+//    //a->sibling = NULL;
+//      // done by djan itself
+//
+//    //fgaj_d("key: 0 >%s<", key);
+//
+//    char k = extract_prefix(a->key);
+//    if (k != 0) key = strchr(key, '.') + 1;
+//
+//    //fgaj_d("key: 1 >%s<", key);
+//
+//    if (k == 'f' || k == 0)
+//      fdja_pset(pl, key, a);
+//    else if (k == 'v')
+//      set_var(node, *a->key, key, a);
+//
+//    a = sibling;
+//  }
+//
+//  //fdja_putdc(execution);
+//
+//  atts->child = NULL; fdja_free(atts);
+//
+//  return 'v'; // over
 
-  fdja_value *atts = attributes(node, exe);
+  if (child_count(node, exe) < 1) return 'v';
 
-  for (fdja_value *a = atts->child; a; )
-  {
-    char *key = a->key;
-    fdja_value *sibling = a->sibling;
+  char *nid = fdja_ls(node, "nid", NULL);
+  char *next = flon_nid_child(nid, 0);
 
-    //a->sibling = NULL;
-      // done by djan itself
+  queue_child_execute(next, node, exe, NULL);
 
-    //fgaj_d("key: 0 >%s<", key);
+  free(next);
+  free(nid);
 
-    char k = extract_prefix(a->key);
-    if (k != 0) key = strchr(key, '.') + 1;
-
-    //fgaj_d("key: 1 >%s<", key);
-
-    if (k == 'f' || k == 0)
-      fdja_pset(pl, key, a);
-    else if (k == 'v')
-      set_var(node, *a->key, key, a);
-
-    a = sibling;
-  }
-
-  //fdja_putdc(execution);
-
-  atts->child = NULL; fdja_free(atts);
-
-  return 'v'; // over
+  return 'k';
 }
 
