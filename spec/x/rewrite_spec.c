@@ -97,6 +97,23 @@ context "flon-executor"
         expect(fdja_ls(node, "inst", NULL) ===f ">");
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
+
+      it "rewrites  a b > c d"
+      {
+        msg = mrad("a b > c d");
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ >, {}, 1, [ "
+            "[ a, { _0: b }, 1, [] ], "
+            "[ c, { _0: d }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f ">");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
     context "'and', 'or':"
@@ -590,6 +607,24 @@ context "flon-executor"
         expect(fdja_ld(msg, "tree") ===f ""
           "[ set, { _0: k }, 1, [ "
             "[ val, { _0: 1 }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "set");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  set k: blue"
+      {
+        msg = mrad(
+          "set k: blue\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ set, { _0: k }, 1, [ "
+            "[ blue, {}, 1, [] ] "
           "], sx ]");
 
         expect(fdja_ls(node, "inst", NULL) ===f "set");
