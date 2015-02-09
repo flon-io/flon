@@ -102,7 +102,7 @@ context "instruction:"
       //flu_system("wc -l var/archive/%s/msgs.log", fep);
 
       char *lc = flu_pline("wc -l var/archive/%s/msgs.log", fep);
-      *strchr(lc, ' ') = 0;
+      char *space = strchr(lc, ' '); if (space) *space = 0;
 
       expect(lc ===f "9");
 

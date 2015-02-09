@@ -47,7 +47,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "execute", "0_1", 3);
+      result = hlp_wait(exid, "execute", "0_1", 5);
 
       //flon_pp_execution(exid);
 
@@ -57,6 +57,8 @@ context "instruction:"
 
       v = hlp_read_run_json(exid);
       //flu_putf(fdja_todc(v));
+
+      expect(v != NULL);
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars");
       expect(fdja_size(v1) zu== 1);
@@ -83,7 +85,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "execute", "0_1", 3);
+      result = hlp_wait(exid, "execute", "0_1", 5);
 
       //flon_pp_execution(exid);
 
@@ -93,6 +95,8 @@ context "instruction:"
 
       v = hlp_read_run_json(exid);
       //flu_putf(fdja_todc(v));
+
+      expect(v != NULL);
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub.args");
       expect(fdja_tod(v1) ===f "[]");
@@ -114,7 +118,7 @@ context "instruction:"
         "",
         "{ sname: sub0, aname: arg0 }");
 
-      result = hlp_wait(exid, "execute", "0_1", 3);
+      result = hlp_wait(exid, "execute", "0_1", 5);
 
       //flon_pp_execution(exid);
 
@@ -124,6 +128,8 @@ context "instruction:"
 
       v = hlp_read_run_json(exid);
       //flu_putf(fdja_todc(v));
+
+      expect(v != NULL);
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars.sub0.args");
       expect(fdja_tod(v1) ===f "[ arg0 ]");

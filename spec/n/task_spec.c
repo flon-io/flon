@@ -41,7 +41,7 @@ context "instruction:"
         "",
         "{ hello: task }");
 
-      result = hlp_wait(exid, "receive", "0", 7);
+      result = hlp_wait(exid, "receive", "0", 9);
 
       //flon_pp_execution(exid);
       //hlp_cat_tsk_log(exid);
@@ -69,7 +69,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 7);
+      result = hlp_wait(exid, "terminated", NULL, 9);
 
       //flu_putf(hlp_last_msg(exid));
       //flon_pp_execution(exid);
@@ -91,7 +91,7 @@ context "instruction:"
         "",
         "{ air: [ sr, lh, em ] }");
 
-      result = hlp_wait(exid, "terminated", NULL, 7);
+      result = hlp_wait(exid, "terminated", NULL, 9);
 
       //flu_putf(hlp_last_msg(exid));
       //flon_pp_execution(exid);
