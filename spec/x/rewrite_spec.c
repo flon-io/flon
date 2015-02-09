@@ -492,6 +492,111 @@ context "flon-executor"
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
     }
+
+    context "when 'set'"
+    {
+      it "doesn't rewrite  set"
+      {
+        msg = mrad(
+          "set\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ set, {}, 1, [], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "set");
+        expect(fdja_ld(node, "tree", NULL) ===f NULL);
+      }
+
+      it "doesn't rewrite  set k\\v"
+      {
+        msg = mrad(
+          "set k\n"
+          "  v\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ set, { _0: k }, 1, [ "
+            "[ v, {}, 2, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "set");
+        expect(fdja_ld(node, "tree", NULL) ===f NULL);
+      }
+
+      it "rewrites  set k: v"
+      {
+        msg = mrad(
+          "set k: v\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ set, { _0: k }, 1, [ "
+            "[ v, {}, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "set");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  set k0: v0, k1: v1"
+      {
+        msg = mrad(
+          "set k0: v0, k1: v1\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ sequence, {}, 1, [ "
+            "[ set, { _0: k0 }, 1, [ "
+              "[ v0, {}, 1, [] ] "
+            "] ], "
+            "[ set, { _0: k1 }, 1, [ "
+              "[ v1, {}, 1, [] ] "
+            "] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "sequence");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+
+      it "rewrites  set k0: v0, k1: (a + 1), k2: v2"
+      {
+        msg = mrad(
+          "set k0: v0, k1: (a + 1), k2: v2\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ sequence, {}, 1, [ "
+            "[ set, { _0: k0 }, 1, [ "
+              "[ v0, {}, 1, [] ] "
+            "] ], "
+            "[ set, { _0: k1 }, 1, [ "
+              "[ a, { _0: +, _1: 1 }, 1, [] ] "
+            "] ], "
+            "[ set, { _0: k2 }, 1, [ "
+              "[ v2, {}, 1, [] ] "
+            "] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "sequence");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+    }
   }
 }
 

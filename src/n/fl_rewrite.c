@@ -233,6 +233,73 @@ static int rewrite_pinfix(
     rewrite_prefix(op, node, msg, tree);
 }
 
+static int rewrite_set(
+  fdja_value *node, fdja_value *msg, fdja_value *tree)
+{
+  fdja_value *vname = fdja_value_at(tree, 0);
+
+  if (fdja_strcmp(vname, "set") != 0) return 0;
+  if (fdja_lz(tree, "1") < 1) return 0;
+  if (fdja_lz(tree, "3") > 0) return 0;
+
+  //flu_list *ratts = flu_list_malloc(); // remaining attributes
+  flu_list *sets = flu_list_malloc();
+
+  for (fdja_value *a = fdja_l(tree, "1")->child; a; a = a->sibling)
+  {
+    //if (is_index(a->key)) { flu_list_add(ratts, a); continue; }
+    if (is_index(a->key)) continue;
+
+    fdja_value *set = fdja_array_malloc();
+    fdja_push(set, fdja_v("set"));
+    fdja_push(set, fdja_v("{ _0: \"%s\" }", a->key));
+    fdja_push(set, fdja_lc(tree, "2"));
+    fdja_value *children = fdja_push(set, fdja_array_malloc());
+
+    fdja_value *child = NULL;
+    //
+    if (is_tree(a))
+    {
+      child = fdja_clone(a);
+    }
+    else
+    {
+      child = fdja_array_malloc();
+      fdja_push(child, fdja_clone(a));
+      fdja_push(child, fdja_object_malloc());
+      fdja_push(child, fdja_lc(tree, "2"));
+      fdja_push(child, fdja_array_malloc());
+    }
+    fdja_push(children, child);
+
+    flu_list_add(sets, set);
+  }
+
+  if (sets->size == 1)
+  {
+    fdja_replace(tree, sets->first->item);
+  }
+  else
+  {
+    fdja_value *seq = fdja_array_malloc();
+    fdja_push(seq, fdja_v("sequence"));
+    fdja_push(seq, fdja_object_malloc());
+    fdja_push(seq, fdja_lc(tree, "2"));
+    fdja_value *children = fdja_push(seq, fdja_array_malloc());
+
+    for (flu_node *n = sets->first; n; n = n->next)
+    {
+      fdja_push(children, n->item);
+    }
+
+    fdja_replace(tree, seq);
+  }
+
+  flu_list_free(sets);
+
+  return 1;
+}
+
 static int rewrite_head_if(
   fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
@@ -359,6 +426,8 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 
   rw |= rewrite_post_if(node, msg, tree);
   rw |= rewrite_head_if(node, msg, tree);
+
+  rw |= rewrite_set(node, msg, tree);
 
   // in precedence order
   //
