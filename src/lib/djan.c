@@ -1211,7 +1211,7 @@ int fdja_cmp(fdja_value *a, fdja_value *b)
   return r;
 }
 
-fdja_value *fdja_value_at(fdja_value *v, long n)
+fdja_value *fdja_value_at(fdja_value *v, long long n)
 {
   if (n < 0)
   {
@@ -1219,7 +1219,7 @@ fdja_value *fdja_value_at(fdja_value *v, long n)
     if (n < 0) return NULL;
   }
 
-  size_t i = 0; for (fdja_value *c = v->child; c != NULL; c = c->sibling)
+  size_t i = 0; for (fdja_value *c = v->child; c; c = c->sibling)
   {
     if (i++ == n) return c;
   }
@@ -1372,6 +1372,15 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...)
   if (strncasecmp(s, "false", r->slen) == 0) return 0;
   if (strncasecmp(s, "no", r->slen) == 0) return 0;
   return def;
+}
+
+ssize_t fdja_lookup_size(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *vv = fdja_vlookup(v, path, ap);
+  va_end(ap);
+
+  return vv ? fdja_size(vv) : -1;
 }
 
 char *fdja_lj(fdja_value *v, const char *path, ...)
@@ -1728,8 +1737,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 0d900119b8ef769179bca725f60703c27415f678
+//commit 3e641e01d60aaecf50896a87459871a18a78e2f0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Feb 8 17:27:25 2015 +0900
+//Date:   Mon Feb 9 09:50:04 2015 +0900
 //
-//    implement fdja_lk()
+//    implement fdja_lookup_size() / fdja_lz()

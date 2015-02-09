@@ -196,7 +196,7 @@ size_t fdja_size(fdja_value *v);
  */
 int fdja_cmp(fdja_value *a, fdja_value *b);
 
-fdja_value *fdja_value_at(fdja_value *v, long n);
+fdja_value *fdja_value_at(fdja_value *v, long long n);
 #define fdja_at(v, n) fdja_value_at(v, n)
 
 fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap);
@@ -211,6 +211,8 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
   //
   // the last arg is the default value
 
+ssize_t fdja_lookup_size(fdja_value *v, const char *path, ...);
+
 #define fdja_l(...) fdja_lookup(__VA_ARGS__)
 #define fdja_lc(...) fdja_lookup_c(__VA_ARGS__)
 #define fdja_ls(...) fdja_lookup_string(__VA_ARGS__)
@@ -218,6 +220,7 @@ int fdja_lookup_bool(fdja_value *v, const char *path, ...);
 #define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
 #define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
 #define fdja_lk(...) *fdja_srk(fdja_lookup(__VA_ARGS__))
+#define fdja_lz(...) fdja_lookup_size(__VA_ARGS__)
 
 char *fdja_lj(fdja_value *v, const char *path, ...);
 char *fdja_ld(fdja_value *v, const char *path, ...);
@@ -284,8 +287,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 0d900119b8ef769179bca725f60703c27415f678
+//commit 3e641e01d60aaecf50896a87459871a18a78e2f0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Feb 8 17:27:25 2015 +0900
+//Date:   Mon Feb 9 09:50:04 2015 +0900
 //
-//    implement fdja_lk()
+//    implement fdja_lookup_size() / fdja_lz()
