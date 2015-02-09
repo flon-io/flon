@@ -369,6 +369,24 @@ static int rewrite_head_if(
   return 1;
 }
 
+static int rewrite_else_if(
+  fdja_value *node, fdja_value *msg, fdja_value *tree)
+{
+  if (fdja_strcmp(fdja_l(tree, "0"), "else") != 0) return 0;
+  if (fdja_strcmp(fdja_l(tree, "1._0"), "if") != 0) return 0;
+
+  fdja_replace(fdja_l(tree, "0"), fdja_v("elsif"));
+
+  fdja_value *natts = fdja_object_malloc();
+  for (fdja_value *a = fdja_l(tree, "1")->child->sibling; a; a = a->sibling)
+  {
+    fdja_set(natts, a->key, fdja_clone(a));
+  }
+  fdja_replace(fdja_l(tree, "1"), natts);
+
+  return 1;
+}
+
 static int rewrite_post_if(
   fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
@@ -432,6 +450,7 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 
   rw |= rewrite_as_call_invoke_or_val(node, msg, tree);
 
+  rw |= rewrite_else_if(node, msg, tree);
   rw |= rewrite_post_if(node, msg, tree);
   rw |= rewrite_head_if(node, msg, tree);
 

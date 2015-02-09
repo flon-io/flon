@@ -488,7 +488,23 @@ context "flon-executor"
 
     context "'else if':"
     {
-      it "flips burgers"
+      it "rewrites  else if a > b"
+      {
+        msg = mrad(
+          "else if a > b\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ elsif, {}, 1, [ "
+            "[ a, { _0: >, _1: b }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "elsif");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
     }
 
     context "'set':"
