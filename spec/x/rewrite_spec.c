@@ -548,6 +548,27 @@ context "flon-executor"
       }
     }
 
+    context "'else':"
+    {
+      it "rewrites  else c d"
+      {
+        msg = mrad(
+          "else c d\n"
+        );
+        //fdja_putdc(fdja_l(msg, "tree"));
+
+        flon_rewrite_tree(node, msg);
+
+        expect(fdja_ld(msg, "tree") ===f ""
+          "[ else, {}, 1, [ "
+            "[ c, { _0: d }, 1, [] ] "
+          "], sx ]");
+
+        expect(fdja_ls(node, "inst", NULL) ===f "else");
+        expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
+      }
+    }
+
     context "'set':"
     {
       it "doesn't rewrite  set"

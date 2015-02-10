@@ -314,11 +314,12 @@ static int rewrite_head_if(
 
   if (
     fdja_strcmp(vname, "if") != 0 &&
-    //fdja_strcmp(vname, "ife") != 0 &&
     fdja_strcmp(vname, "elif") != 0 &&
     fdja_strcmp(vname, "elsif") != 0 &&
-    fdja_strcmp(vname, "unless") != 0 //&&
-    //fdja_strcmp(vname, "unlesse") != 0
+    fdja_strcmp(vname, "unless") != 0 &&
+    fdja_strcmp(vname, "else") != 0
+    //fdja_strcmp(vname, "ife") != 0 &&
+    //fdja_strcmp(vname, "unlesse") != 0 &&
   ) return 0;
 
   fdja_value *atts = fdja_value_at(tree, 1);
