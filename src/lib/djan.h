@@ -87,6 +87,10 @@ fdja_value *fdja_dparse_radial(char *input);
 fdja_value *fdja_fparse_radial(FILE *fm, const char *origin);
 fdja_value *fdja_parse_radial_f(const char *path, ...);
 
+/* Expect a size_t (start line number) as last argument.
+ */
+fdja_value *fdja_parse_r(const char *format, ...);
+
 fdja_value *fdja_parse_obj(char *input);
 fdja_value *fdja_dparse_obj(char *input);
 fdja_value *fdja_fparse_obj(FILE *f);
@@ -199,6 +203,8 @@ int fdja_cmp(fdja_value *a, fdja_value *b);
 fdja_value *fdja_value_at(fdja_value *v, long long n);
 #define fdja_at(v, n) fdja_value_at(v, n)
 
+#define fdja_atc(v, n) fdja_clone(fdja_value_at(v, n))
+
 fdja_value *fdja_vlookup(fdja_value *v, const char *path, va_list ap);
 fdja_value *fdja_lookup(fdja_value *v, const char *path, ...);
 fdja_value *fdja_lookup_c(fdja_value *v, const char *path, ...);
@@ -287,8 +293,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 3e641e01d60aaecf50896a87459871a18a78e2f0
+//commit d6e7a9a20c829c37fbb15fd43b6d9d3089f66212
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Feb 9 09:50:04 2015 +0900
+//Date:   Tue Feb 10 14:06:39 2015 +0900
 //
-//    implement fdja_lookup_size() / fdja_lz()
+//    implement fdja_parse_r()
