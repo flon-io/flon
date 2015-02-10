@@ -36,7 +36,7 @@ static int is_tree(fdja_value *v)
   if (v->type != 'a') return 0;
 
   if (v->child == NULL) return 0; // head
-  if (strchr("sqya", v->child->type) == NULL) return 0;
+  //if (strchr("sqya", v->child->type) == NULL) return 0;
   if (v->child->type == 'a' && ! is_tree(v->child)) return 0;
 
   if (v->child->sibling == NULL) return 0; // attributes

@@ -52,8 +52,6 @@ context "flon and tree rewrite:"
         "{ a: 4, ret: true }");
     }
 
-    it "rewrites and execute  $(a) $(op) 3"
-
     it "rewrites a pack or'ed trace calls"
     {
       exid = flon_generate_exid("z.rewrite.ortraces");
@@ -73,6 +71,31 @@ context "flon and tree rewrite:"
       expect(fdja_ld(result, "payload.trace") ===f ""
         "[ 0, 0, 0 ]");
     }
+
+    it "rewrites and execute  sub (1 + 2)"
+    {
+      exid = flon_generate_exid("z.rewrite.treeatt");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  define sub c\n"
+        "    trace $(c)\n"
+        "  sub (1 + 2)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 3, c: 3, trace: [ 3 ] }");
+    }
+
+    it "rewrites and execute  $(a) $(op) 3"
   }
 }
 
