@@ -361,9 +361,11 @@ static int rewrite_head_if(
 
   if (has_then)
   {
-    fdja_replace(
-      tree->child,
-      fdja_v(*fdja_srk(tree->child) == 'i' ? "ife" : "unlesse"));
+    char *inst = "ife";
+    if (*fdja_srk(tree->child) == 'u') inst = "unlesse";
+    else if (*fdja_srk(tree->child) == 'e') inst = "elsif";
+
+    fdja_replace(tree->child, fdja_v(inst));
   }
 
   return 1;
