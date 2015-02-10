@@ -25,6 +25,7 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -133,6 +134,17 @@ static fdja_value *parent(fdja_value *node)
   free(pnid);
 
   return r;
+}
+
+static char *radfile(fdja_value *node, fdja_value *msg)
+{
+  fdja_value *t = tree(node, msg);
+  if (t && fdja_at(t, 4)) return fdja_ls(t, "4", NULL);
+
+  fdja_value *par = parent(node);
+  if (par == NULL) return NULL;
+
+  return radfile(par, NULL);
 }
 
 static fdja_value *lookup_var_node(char mode, fdja_value *node)
@@ -514,6 +526,7 @@ static char can_(fdja_value *node, fdja_value *can)
 #include "fl_n_else.c"
 #include "fl_n_if.c"
 #include "fl_n_ife.c"
+#include "fl_n_log.c"
 #include "fl_n_noop.c"
 #include "fl_n_task.c"
 #include "fl_n_sequence.c"
@@ -546,6 +559,7 @@ static flon_ni *instructions[] = {
   &(flon_ni){ "val", exe_val, rcv_, can_ },
   &(flon_ni){ "wait", exe_wait, rcv_, can_ },
   &(flon_ni){ "noop", exe_noop, rcv_, can_ },
+  &(flon_ni){ "log", exe_log, rcv_, can_ },
 
   &(flon_ni){ "and", exe_and, rcv_and, can_ },
   &(flon_ni){ "or", exe_and, rcv_and, can_ },
