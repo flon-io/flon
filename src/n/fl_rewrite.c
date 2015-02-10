@@ -230,7 +230,7 @@ static int rewrite_prefix(
 
   fdja_value *t = fdja_array_malloc();
   fdja_push(t, fdja_s(op));
-  /*fdja_value *natts = */fdja_push(t, fdja_object_malloc());
+  fdja_push(t, fdja_object_malloc());
   fdja_push(t, fdja_clone(line));
   fdja_value *nchildren = fdja_push(t, fdja_array_malloc());
 
@@ -440,6 +440,52 @@ static int rewrite_post_if(
   return 1;
 }
 
+static int rewrite_parens(
+  fdja_value *node, fdja_value *msg, fdja_value *tree)
+{
+  fdja_value *atts = fdja_at(tree, 1);
+  int seen = 0;
+  for (fdja_value *a = atts->child; a; a = a->sibling) if (is_tree(a)) seen = 1;
+  if ( ! seen) return 0;
+
+  fdja_value *seq = fdja_array_malloc();
+  fdja_push(seq, fdja_v("sequence"));
+  fdja_push(seq, fdja_object_malloc());
+  fdja_push(seq, fdja_atc(tree, 2)); // lnumber
+  fdja_value *schildren = fdja_push(seq, fdja_array_malloc());
+
+  fdja_value *core = fdja_array_malloc();
+  fdja_push(core, fdja_atc(tree, 0));
+  fdja_value *catts = fdja_push(core, fdja_object_malloc());
+  fdja_push(core, fdja_atc(tree, 2)); // lnumber
+  fdja_push(core, fdja_atc(tree, 3)); // children
+
+  size_t ln = fdja_to_int(fdja_at(tree, 2));
+
+  size_t j = 0;
+  for (fdja_value *a = atts->child; a; a = a->sibling)
+  {
+    if (is_tree(a))
+    {
+      fdja_value *s = fdja_parse_r("set w._%zu", j, ln);
+      fdja_push(fdja_at(s, 3), fdja_clone(a));
+      fdja_push(schildren, s);
+
+      fdja_set(catts, a->key, fdja_s("$(w._%zu)", j++));
+    }
+    else
+    {
+      fdja_set(catts, a->key, fdja_clone(a));
+    }
+  }
+
+  fdja_push(schildren, core);
+
+  fdja_replace(tree, seq);
+
+  return 1;
+}
+
 static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 {
   //printf("rewrite_tree() "); fdja_putdc(tree);
@@ -477,6 +523,8 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
 
   //rw |= rewrite_pinfix("!", node, msg, tree); // TODO: it's an instruction
 
+  rw |= rewrite_parens(node, msg, tree);
+
   return rw;
 }
 
@@ -484,19 +532,19 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 {
   fdja_value *tree = fdja_l(msg, "tree");
 
-  expand(fdja_l(tree, "0"), node, msg); // name / head
-  expand(fdja_l(tree, "1"), node, msg); // attributes
+  expand(fdja_at(tree, 0), node, msg); // name / head
+  expand(fdja_at(tree, 1), node, msg); // attributes
 
   //if (fdja_l(tree, "1._")) return 0;
     // TODO: replace with my line vs my child line check...
 
-  fdja_value *origin = fdja_lc(tree, "4");
+  fdja_value *origin = fdja_atc(tree, 4);
 
   int rewritten = rewrite_tree(node, msg, tree);
 
   if (rewritten)
   {
-    if (origin && fdja_value_at(tree, 4) == NULL)
+    if (origin && fdja_at(tree, 4) == NULL)
     {
       fdja_push(tree, fdja_clone(origin));
     }
@@ -505,7 +553,7 @@ int flon_rewrite_tree(fdja_value *node, fdja_value *msg)
 
   fdja_free(origin);
 
-  fdja_set(node, "inst", fdja_lc(tree, "0"));
+  fdja_set(node, "inst", fdja_atc(tree, 0));
 
   return rewritten;
 }
