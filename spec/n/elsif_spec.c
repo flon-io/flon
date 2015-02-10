@@ -213,6 +213,37 @@ context "instruction:"
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ a, d, e, f ], ret: true }");
     }
+
+    it "leverages the 'then' rewrite"
+    {
+      exid = flon_generate_exid("n.else_if.then.rewrite");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace a\n"
+        "  # ...\n"
+        "  if 3 > 4 then trace b\n"
+        "  else if 3 > 2 then trace c\n"
+        "  else trace d\n"
+        "  # ...\n"
+        "  if 3 > 4 then trace e\n"
+        "  else if 3 > 5 then trace f\n"
+        "  else trace g\n"
+        "  # ...\n"
+        "  trace h\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ a, c, g, h ], ret: false }");
+    }
   }
 }
 
