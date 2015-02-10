@@ -172,6 +172,17 @@ static fdja_value *lookup_var(fdja_value *node, char mode, const char *key)
   return lookup_var(par, mode, key);
 }
 
+static fdja_value *lookup_war(fdja_value *node, const char *key)
+{
+  fdja_value *par = parent(node);
+  if (par == NULL) return NULL;
+
+  fdja_value *wars = fdja_l(par, "wars");
+  if (wars == NULL) return NULL;
+
+  return fdja_l(wars, key);
+}
+
 static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
 {
   if (mode != 'g' && mode != 'l' && mode != 'd') mode = 'l';
@@ -179,6 +190,20 @@ static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
   fdja_value *vars = lookup_vars(mode, node);
 
   if (vars) fdja_pset(vars, key, val);
+
+  // TODO: update the "mtime" of the node holding the "vars"
+}
+
+static void set_war(fdja_value *node, char *key, fdja_value *val)
+{
+  fdja_value *par = parent(node);
+
+  if (par == NULL) return;
+
+  fdja_value *wars = fdja_l(par, "wars");
+  if (wars == NULL) wars = fdja_set(par, "wars", fdja_object_malloc());
+
+  fdja_set(wars, key, val);
 
   // TODO: update the "mtime" of the node holding the "vars"
 }
@@ -247,6 +272,7 @@ static char extract_prefix(const char *path)
 
   if (strncmp(path + off, "f.", 2) == 0) return 'f';
   if (strncmp(path + off, "v.", 2) == 0) return 'v';
+  if (strncmp(path + off, "w.", 2) == 0) return 'w';
   if (strncmp(path + off, "fld.", 4) == 0) return 'f';
   if (strncmp(path + off, "var.", 4) == 0) return 'v';
   if (strncmp(path + off, "field.", 4) == 0) return 'f';
@@ -287,6 +313,8 @@ static char *dol_lookup(void *data, const char *path)
 
   if (k == 'v')
     v = lookup_var(lu->node, *path, pth);
+  else if (k == 'w')
+    v = lookup_war(lu->node, pth);
   else
     v = fdja_l(payload(lu->msg), pth);
 

@@ -26,7 +26,7 @@
 
 static char rcv_set(fdja_value *node, fdja_value *rcv)
 {
-  fdja_value *att = fdja_at(fdja_l(tree(node, rcv), "1"), 0);
+  fdja_value *att = fdja_at(fdja_at(tree(node, rcv), 1), 0);
   expand(att, node, rcv);
 
   char *satt = fdja_to_string(att);
@@ -41,6 +41,8 @@ static char rcv_set(fdja_value *node, fdja_value *rcv)
     fdja_pset(fdja_l(rcv, "payload"), key, val);
   else if (k == 'v')
     set_var(node, *satt, key, val);
+  else if (k == 'w')
+    set_war(node, key, val);
 
   free(satt);
 

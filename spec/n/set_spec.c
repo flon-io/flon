@@ -166,6 +166,30 @@ context "instruction:"
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: 6, trace: [ 6 ] }");
     }
+
+    it "sets wars"
+    {
+      exid = flon_generate_exid("n.set.wars");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set w.a\n"
+        "    + 1 2\n"
+        "  trace $(w.a)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: 3, trace: [ 3 ] }");
+    }
   }
 }
 
