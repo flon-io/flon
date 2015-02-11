@@ -7,6 +7,7 @@
 
 #include "flutil.h"
 #include "fl_ids.h"
+#include "fl_paths.h"
 #include "fl_tools.h"
 #include "feu_helpers.h"
 
@@ -21,12 +22,14 @@ context "flon and cancel:"
   before each
   {
     char *exid = NULL;
+    char *fep = NULL;
     fdja_value *res = NULL;
     fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
+    free(fep);
     fdja_free(res);
     fdja_free(v);
   }
@@ -36,6 +39,7 @@ context "flon and cancel:"
     it "may be cancelled"
     {
       exid = flon_generate_exid("z.cancel.0");
+      fep = flon_exid_path(exid);
 
       hlp_launch(
         exid,
@@ -75,6 +79,12 @@ context "flon and cancel:"
 
       fdja_value *nodes = fdja_l(v, "nodes");
       expect(fdja_size(nodes) zu== 0);
+
+      flu_msleep(500);
+
+      //puts(flu_pline("ls var/spool/tdis/%s 2>&1", fep));
+      expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""
+        "No such file or directory");
     }
   }
 }
