@@ -472,14 +472,6 @@ static void unschedule_timers(fdja_value *node, fdja_value *msg)
   }
 }
 
-static char rcv_(fdja_value *node, fdja_value *rcv)
-{
-  // TODO: remove timers
-  // TODO: cancel bastards
-
-  return 'v'; // over
-}
-
 static size_t cancel_dependents(fdja_value *node, char *type)
 {
   fdja_value *array = fdja_l(node, type);
@@ -499,6 +491,18 @@ static size_t cancel_dependents(fdja_value *node, char *type)
   return fdja_size(array);
 }
 
+static char rcv_(fdja_value *node, fdja_value *rcv)
+{
+  unschedule_timers(node, rcv);
+
+  size_t count = cancel_dependents(node, "bastards");
+
+  return count > 0 ? 'k' : 'v';
+    //
+    // waiting on bastards ? 'k' ok
+    // no bastards ? 'v' over
+}
+
 static char can_(fdja_value *node, fdja_value *can)
 {
   fdja_set(node, "status", fdja_s("cancelling"));
@@ -512,7 +516,10 @@ static char can_(fdja_value *node, fdja_value *can)
 
   unschedule_timers(node, can);
 
-  return count > 0 ? 'k' : 'v'; // over
+  return count > 0 ? 'k' : 'v';
+    //
+    // waiting on bastards or children ? 'k' ok
+    // no children, no bastards ? 'v' over
 }
 
 #include "fl_seq_con.c"
