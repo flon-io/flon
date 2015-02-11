@@ -529,6 +529,19 @@ static char can_(fdja_value *node, fdja_value *can)
     // no children, no bastards ? 'v' over
 }
 
+static int is_callable(fdja_value *val)
+{
+  return (
+    val != NULL &&
+    val->type == 'o' &&
+    fdja_l(val, "nid") &&
+    fdja_l(val, "args")
+  );
+}
+
+//
+// the instructions
+
 #include "fl_seq_con.c"
 
 #include "fl_n_and.c"
@@ -632,7 +645,7 @@ static flon_instruction *lookup_instruction(char dir, const char *name)
 }
 
 #include "fl_rewrite.c" // flon_rewrite_tree()
-#include "fl_catt.c" // flon_rewrite_tree()
+#include "fl_catt.c" // eval_catt_*()
 
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {

@@ -27,18 +27,6 @@
 // * unmapped arguments go into `variables.args`
 // * mapped arguments go to fields, unless prefixed with "v."
 
-static int is_callable(fdja_value *val)
-{
-  return (
-    val != NULL &&
-    val->type == 'o' &&
-    fdja_l(val, "nid") &&
-    fdja_l(val, "args")
-  );
-}
-  //
-  // is used in fl_exe_instructions.c as well...
-
 static char exe_call(fdja_value *node, fdja_value *exe)
 {
   char r = 'k'; // ok for now
