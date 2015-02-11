@@ -47,7 +47,7 @@ context "instruction:"
         "",
         "{ x: 123, y: [ 4, 5, 6 ] }");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 5);
       //flon_pp_execution(exid);
 
       expect(result != NULL);

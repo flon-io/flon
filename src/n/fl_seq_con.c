@@ -103,11 +103,13 @@ static char seq_exe(fdja_value *node, fdja_value *exe, int track_ret)
 
 static char con_rcv(fdja_value *node, fdja_value *rcv)
 {
-  char *from = fdja_ls(rcv, "from", NULL);
-  fdja_value *children = fdja_l(node, "children");
+  //fdja_putdc(children);
+  //fdja_putdc(rcv);
 
-  //flu_putf(fdja_todc(children));
-  //flu_putf(fdja_todc(rcv));
+  fdja_value *children = fdja_l(node, "children");
+  if (children == NULL) return 'v'; // over;
+
+  char *from = fdja_ls(rcv, "from", NULL);
 
   int found = fdja_unpush(children, from);
 
@@ -128,26 +130,22 @@ static char con_exe(fdja_value *node, fdja_value *exe)
   //flu_putf(fdja_todc(node));
   //flu_putf(fdja_todc(exe));
 
-  // TODO: rework...
+  fdja_value *cts = fdja_at(tree(node, exe), 3);
+  if (fdja_size(cts) < 1) return 'v'; // empty
 
   char *nid = fdja_ls(node, "nid", NULL);
   char *cnid = NULL;
 
-  fdja_value *children = fdja_set(node, "children", fdja_array_malloc());
-
   for (size_t i = 0; ; ++i)
   {
+    if (fdja_at(cts, i) == NULL) break;
     free(cnid); cnid = flu_sprintf("%s_%zu", nid, i);
-
-    fdja_value *t = flon_node_tree(cnid); if (t == NULL) break;
-
     queue_child_execute(cnid, node, exe, NULL);
   }
 
   free(cnid);
   free(nid);
 
-  if (fdja_size(children) == 0) return 'v'; // already over
   return 'k'; // ok
 }
 
