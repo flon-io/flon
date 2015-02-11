@@ -248,6 +248,19 @@ size_t flon_nid_depth(const char *nid)
   return r;
 }
 
+size_t flon_nid_index(const char *nid)
+{
+  char *un = strrchr(nid, '_'); if (un) un++; else un = (char *)nid;
+  char *dash = strchr(nid, '-'); if (dash == NULL) dash = strchr(nid, 0);
+  char *id = strndup(un, dash - un);
+
+  size_t r = strtoll(id, NULL, 16);
+
+  free(id);
+
+  return r;
+}
+
 char *flon_point_to_prefix(const char *point)
 {
   if (point == NULL) return "UNK_";

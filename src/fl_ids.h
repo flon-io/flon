@@ -39,6 +39,7 @@ char *flon_exid_domain(const char *exid);
 char *flon_nid_next(const char *nid, int increment);
 char *flon_nid_child(const char *nid, int n);
 size_t flon_nid_depth(const char *nid);
+size_t flon_nid_index(const char *nid);
 
 //void flon_stamp(fdja_value *o, const char *key);
 

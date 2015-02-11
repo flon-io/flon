@@ -211,6 +211,20 @@ context "fl_ids:"
     }
   }
 
+  describe "flon_nid_index()"
+  {
+    it "returns the last part of the nid (but not the counter)"
+    {
+      expect(flon_nid_index("0") zu== 0);
+      expect(flon_nid_index("12") zu== 18);
+      expect(flon_nid_index("0_0") zu== 0);
+      expect(flon_nid_index("0_13") zu== 19);
+      expect(flon_nid_index("0-7") zu== 0);
+      expect(flon_nid_index("0_1-7") zu== 1);
+      expect(flon_nid_index("0_1a-7") zu== 26);
+    }
+  }
+
   describe "flon_exid_domain()"
   {
     it "returns the domain part of an exid"
