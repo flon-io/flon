@@ -119,8 +119,8 @@ context "instruction:"
 
         expect(result != NULL);
 
-        flu_msleep(500);
-          // TODO: replace that with a help_wait("unscheduled")
+        result = hlp_wait(exid, "unschedule", NULL, 5);
+        flu_msleep(350);
 
         expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""
           "No such file or directory");

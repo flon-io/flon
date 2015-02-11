@@ -6,6 +6,7 @@
 //
 
 #include "flutil.h"
+#include "flutim.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
 #include "fl_tools.h"
@@ -50,7 +51,7 @@ context "flon and cancel:"
         "",
         "{ hello: cancel.0 }");
 
-      res = hlp_wait(exid, "execute", "0_1", 4);
+      res = hlp_wait(exid, "execute", "0_1", 7);
 
       //flon_pp_execution(exid);
 
@@ -63,7 +64,7 @@ context "flon and cancel:"
 
       hlp_cancel(exid, NULL);
 
-      res = hlp_wait(exid, "terminated", NULL, 4);
+      res = hlp_wait(exid, "terminated", NULL, 7);
 
       //flon_pp_execution(exid);
 
@@ -80,7 +81,8 @@ context "flon and cancel:"
       fdja_value *nodes = fdja_l(v, "nodes");
       expect(fdja_size(nodes) zu== 0);
 
-      flu_msleep(500);
+      /*result = */hlp_wait(exid, "unschedule", NULL, 7);
+      flu_msleep(350);
 
       //puts(flu_pline("ls var/spool/tdis/%s 2>&1", fep));
       expect(flu_pline("ls var/spool/tdis/%s 2>&1", fep) >==f ""

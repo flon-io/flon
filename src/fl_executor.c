@@ -51,6 +51,24 @@ fdja_value *execution = NULL;
 static flu_list *msgs = NULL;
 
 
+static void do_log(fdja_value *msg)
+{
+  if (msgs_log == NULL) return;
+
+  //flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
+
+  char *now = fgaj_now();
+
+  fputs(now, msgs_log);
+  fputc(' ', msgs_log);
+  fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
+  fputc('\n', msgs_log);
+
+  fflush(msgs_log);
+
+  free(now);
+}
+
 void flon_queue_msg(
   const char *type,
   const char *nid, const char *from_nid,
@@ -106,6 +124,8 @@ void flon_schedule_msg(
       "failed to write to var/spool/dis/sch_%s-%s.json", execution_id, nid);
   }
 
+  do_log(m);
+
   fdja_free(m);
 }
 
@@ -142,24 +162,6 @@ static fdja_value *create_node(
   //puts(fdja_todc(execution));
 
   return node;
-}
-
-static void do_log(fdja_value *msg)
-{
-  if (msgs_log == NULL) return;
-
-  //flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
-
-  char *now = fgaj_now();
-
-  fputs(now, msgs_log);
-  fputc(' ', msgs_log);
-  fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
-  fputc('\n', msgs_log);
-
-  fflush(msgs_log);
-
-  free(now);
 }
 
 static void handle_execute(char order, fdja_value *msg)
