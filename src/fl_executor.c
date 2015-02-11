@@ -147,7 +147,7 @@ static fdja_value *create_node(
   fdja_set(
     node, "nid", fdja_s(nid));
   fdja_set(
-    node, "created", fdja_sym(flu_tstamp(NULL, 1, 'u')));
+    node, "ctime", fdja_sym(flu_tstamp(NULL, 1, 'u')));
   fdja_set(
     node, "parent", parent_nid ? fdja_s(parent_nid) : fdja_v("null"));
 
@@ -230,7 +230,7 @@ static void handle_execute(char order, fdja_value *msg)
 
 static void log_delta(fdja_value *node)
 {
-  char *tsp = fdja_ls(node, "created", NULL);
+  char *tsp = fdja_ls(node, "ctime", NULL);
   //fgaj_d("tsp: %s", tsp);
   struct timespec *tsc = flu_parse_tstamp(tsp, 1);
   struct timespec *delta = flu_tdiff(NULL, tsc);

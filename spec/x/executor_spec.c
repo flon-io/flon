@@ -185,7 +185,7 @@ context "flon-executor"
       expect(fdja_ld(v, "nodes.0_0.nid", NULL) ===f "0_0");
       expect(fdja_ld(v, "nodes.0_0.parent", NULL) ===f "\"0\"");
       expect(fdja_ld(v, "nodes.0_0.inst", NULL) ===f "task");
-      expect(fdja_lj(v, "nodes.0_0.created", NULL) ^==f "\"20");
+      expect(fdja_lj(v, "nodes.0_0.ctime", NULL) ^==f "\"20");
 
       fdja_free(v);
 
@@ -241,7 +241,7 @@ context "flon-executor"
       expect(fdja_ld(v, "nodes.0_1.nid") ===f "0_1");
       expect(fdja_ld(v, "nodes.0_1.parent") ===f "\"0\"");
       expect(fdja_ld(v, "nodes.0_1.inst") ===f "task");
-      expect(fdja_lj(v, "nodes.0_1.created", NULL) ^==f "\"20");
+      expect(fdja_lj(v, "nodes.0_1.ctime", NULL) ^==f "\"20");
 
       fdja_free(v);
 
