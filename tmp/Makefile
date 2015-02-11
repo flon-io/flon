@@ -85,7 +85,7 @@ s: cs ds xs ts ls ns zs
 
 warn:
 	$(MAKE) _tmpsrc
-	$(MAKE) clean cs ds xs ts ls ns zs  2>&1 | . ./spec_filter.sh
+	$(MAKE) clean cs ds xs ts ls ns zs  2>&1 | ruby specfilter.rb
 
 sX:
 	$(MAKE) _tmpsrc
@@ -129,19 +129,19 @@ sum:
 	$(MAKE) _tmpsrc
 	$(MAKE) tasker executor dispatcher cs ds ts ls ns xs zs
 	@echo "\n--- make sc ---common-------------------------------------------"
-	@./cs 2>&1 | ./spec_filter.sh
+	@./cs 2>&1 | ruby specfilter.rb
 	@echo "\n--- make sd ---dispatcher---------------------------------------"
-	@./ds 2>&1 | ./spec_filter.sh
+	@./ds 2>&1 | ruby specfilter.rb
 	@echo "\n--- make sx ---executor-----------------------------------------"
-	@./xs 2>&1 | ./spec_filter.sh
+	@./xs 2>&1 | ruby specfilter.rb
 	@echo "\n--- make st ---tasker-------------------------------------------"
-	@./ts 2>&1 | ./spec_filter.sh
+	@./ts 2>&1 | ruby specfilter.rb
 	@echo "\n--- make sl ---listener-----------------------------------------"
-	@./ls 2>&1 | ./spec_filter.sh
+	@./ls 2>&1 | ruby specfilter.rb
 	@echo "\n--- make sn ---instructions-------------------------------------"
-	@./ns 2>&1 | ./spec_filter.sh
+	@./ns 2>&1 | ruby specfilter.rb
 	@echo "\n--- make sz ---a-to-z-------------------------------------------"
-	@./zs 2>&1 | ./spec_filter.sh
+	@./zs 2>&1 | ruby specfilter.rb
 	@echo "\n---"
 	@echo ""
 
@@ -150,32 +150,29 @@ vsum:
 	$(MAKE) _tmpsrc
 	$(MAKE) tasker executor dispatcher cs ds ts ls ns xs zs
 	@echo "\n--- make vsc ---common------------------------------------------"
-	$(VAL) ./cs 2>&1 | ./spec_filter.sh
+	$(VAL) ./cs 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vsd ---dispatcher--------------------------------------"
-	$(VAL) ./ds 2>&1 | ./spec_filter.sh
+	$(VAL) ./ds 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vsx ---executor----------------------------------------"
-	$(VAL) ./xs 2>&1 | ./spec_filter.sh
+	$(VAL) ./xs 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vst ---tasker------------------------------------------"
-	$(VAL) ./ts 2>&1 | ./spec_filter.sh
+	$(VAL) ./ts 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vsl ---listener----------------------------------------"
-	$(VAL) ./ls 2>&1 | ./spec_filter.sh
+	$(VAL) ./ls 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vsn ---instructions------------------------------------"
-	$(VAL) ./ns 2>&1 | ./spec_filter.sh
+	$(VAL) ./ns 2>&1 | ruby specfilter.rb
 	@echo "\n--- make vsz ---a-to-z------------------------------------------"
-	$(VAL) ./zs 2>&1 | ./spec_filter.sh
+	$(VAL) ./zs 2>&1 | ruby specfilter.rb
 	@echo ""
 
-_specfilter:
-	@echo ""
-	@echo "** $(FIL):"
-	@echo "*"
-	@cat $(FIL) | ./spec_filter.sh x
 vesn: ns tasker executor dispatcher
 	FLONVAL=exe $(MAKE) sn
-	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	#find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	find ../tst/var -name exe.log -exec sh -c "cat {} | ruby specfilter.rb {}" \;
 vesz: ns tasker executor dispatcher
 	FLONVAL=exe $(MAKE) sz
-	find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	#find ../tst/var -name exe.log -exec $(MAKE) _specfilter FIL={} \;
+	find ../tst/var -name exe.log -exec sh -c "cat {} | ruby specfilter.rb {}" \;
 
 sst: _tmpsrc ts
 	strace -r ./ts
@@ -219,5 +216,5 @@ spec:
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean _tmpsrc _tmpsrcc _specfilter
+.PHONY: clean _tmpsrc _tmpsrcc
 
