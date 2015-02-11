@@ -195,6 +195,11 @@ static fdja_value *lookup_war(fdja_value *node, const char *key)
   return fdja_l(wars, key);
 }
 
+static void touch(fdja_value *node)
+{
+  fdja_set(node, "mtime", fdja_sym(flu_tstamp(NULL, 1, 'u')));
+}
+
 static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
 {
   if (mode != 'g' && mode != 'l' && mode != 'd') mode = 'l';
@@ -203,7 +208,7 @@ static void set_var(fdja_value *node, char mode, char *key, fdja_value *val)
 
   if (vars) fdja_pset(vars, key, val);
 
-  // TODO: update the "mtime" of the node holding the "vars"
+  touch(node);
 }
 
 static void set_war(fdja_value *node, char *key, fdja_value *val)
@@ -217,7 +222,7 @@ static void set_war(fdja_value *node, char *key, fdja_value *val)
 
   fdja_set(wars, key, val);
 
-  // TODO: update the "mtime" of the node holding the "vars"
+  touch(node);
 }
 
 static void push_error_value(fdja_value *node, fdja_value *error)
@@ -231,6 +236,8 @@ static void push_error_value(fdja_value *node, fdja_value *error)
   }
 
   fdja_push(errors, error);
+
+  touch(node);
 }
 
 static void push_error(fdja_value *node, char *format, ...)
@@ -640,7 +647,7 @@ char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
   if (i == NULL)
   {
     fdja_set(node, "status", fdja_s("failed"));
-    fdja_set(node, "note", fdja_s("unknown instruction '%s'", inst));
+    push_error(node, "unknown instruction '%s'", inst, NULL);
 
     goto _over;
   }

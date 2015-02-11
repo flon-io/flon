@@ -59,7 +59,7 @@ static long long arith_fold_i(fdja_value *node, char *op, flu_list *numbers)
     else if (*op == '*') r *= nn;
     else if (*op == '/')
     {
-      if (nn == 0) { push_error(node, "division by zero"); return 0; }
+      if (nn == 0) { push_error(node, "division by zero", NULL); return 0; }
       r /= nn;
     }
     // else do nothing about it...
@@ -99,7 +99,7 @@ static double arith_fold_d(fdja_value *node, char *op, flu_list *numbers)
     //{
     //  if (is_ldzero(n->item))
     //  {
-    //    push_error(node, "division by zero"); return 0;
+    //    push_error(node, "division by zero", NULL); return 0;
     //  }
     //  r /= nn;
     //}

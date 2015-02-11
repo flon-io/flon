@@ -85,6 +85,8 @@ static char seq_rcv(fdja_value *node, fdja_value *rcv)
   free(next);
   free(from);
 
+  touch(node);
+
   return r;
 }
 
@@ -119,6 +121,8 @@ static char con_rcv(fdja_value *node, fdja_value *rcv)
   }
 
   free(from);
+
+  touch(node);
 
   //if (found == 0) // not found...
   if (fdja_size(children) == 0) return 'v'; // over

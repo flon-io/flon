@@ -2,7 +2,7 @@
 //
 // specifying flon
 //
-// Sun Nov 23 07:07:13 JST 2014
+// Wed Feb 11 14:48:17 JST 2015
 //
 
 #include "fl_ids.h"
@@ -10,7 +10,7 @@
 #include "feu_helpers.h"
 
 
-context "flon and errors:"
+context "flon and mtime:"
 {
   before all
   {
@@ -30,35 +30,29 @@ context "flon and errors:"
     fdja_free(v);
   }
 
-  describe "an execution with an unknown instruction"
+  describe "a node mtime"
   {
-    it "stalls"
+    it "is set each time the node is modified"
     {
-      exid = flon_generate_exid("z.errors.unkown_inst");
+      exid = flon_generate_exid("z.mtime");
 
       hlp_launch(
         exid,
         "nada a\n"
         "",
-        "{ hello: unknown }");
+        "{}");
 
       result = hlp_wait(exid, "failed", "0", 3);
+
       //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //fdja_putdc(result);
+      //puts(fdja_todc(result));
 
       v = hlp_read_run_json(exid);
       //fdja_putdc(v);
 
-      expect(fdja_ls(v, "nodes.0.status", NULL) ===f ""
-        "failed");
-      expect(fdja_ls(v, "nodes.0.errors.0.msg", NULL) ===f ""
-        "unknown instruction 'nada'");
-      expect(fdja_ls(v, "nodes.0.errors.0.ctime", NULL) ^==f ""
-        "20");
-      expect(fdja_ls(v, "nodes.0.mtime", NULL) ^==f ""
-        "20");
+      expect(fdja_ls(v, "nodes.0.mtime", NULL) ^===f "20");
     }
   }
 }
