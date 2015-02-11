@@ -128,6 +128,8 @@ static char con_exe(fdja_value *node, fdja_value *exe)
   //flu_putf(fdja_todc(node));
   //flu_putf(fdja_todc(exe));
 
+  // TODO: rework...
+
   char *nid = fdja_ls(node, "nid", NULL);
   char *cnid = NULL;
 

@@ -520,6 +520,7 @@ static char can_(fdja_value *node, fdja_value *can)
 #include "fl_n_and.c"
 #include "fl_n_arith.c"
 #include "fl_n_call.c"
+#include "fl_n_cand.c"
 #include "fl_n_cmp.c"
 #include "fl_n_concurrence.c"
 #include "fl_n_define.c"
@@ -547,7 +548,8 @@ typedef struct {
   flon_instruction *can;
 } flon_ni;
 
-static flon_ni *instructions[] = {
+static flon_ni *instructions[] =
+{
   &(flon_ni){ "sequence", exe_sequence, rcv_sequence, can_ },
   &(flon_ni){ "define", exe_define, rcv_, can_ },
   &(flon_ni){ "set", exe_set, rcv_set, can_ },
@@ -563,6 +565,8 @@ static flon_ni *instructions[] = {
 
   &(flon_ni){ "and", exe_and, rcv_and, can_ },
   &(flon_ni){ "or", exe_and, rcv_and, can_ },
+  &(flon_ni){ "cand", exe_cand, rcv_cand, can_ },
+  &(flon_ni){ "cor", exe_cand, rcv_cand, can_ },
 
   &(flon_ni){ ">", exe_cmp, rcv_cmp, can_ },
   &(flon_ni){ ">=", exe_cmp, rcv_cmp, can_ },
