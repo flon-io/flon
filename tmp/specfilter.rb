@@ -44,7 +44,7 @@ ARGF.each do |l|
 
   if l.match(/: warning: /) then puts yellow(l); next; end
 
-  if l.match(/^make spec L=[0-9]+/) then puts red(l); next; end
+  if l.match(/^make spec I=[0-9]+/) then puts red(l); next; end
   if l.match(/definitely lost: [1-9][0-9]* bytes/) then puts red(l); next; end
 
   if l.match(/ lost: [1-9][0-9]* bytes in /) then puts red(l); next; end
