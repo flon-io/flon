@@ -98,7 +98,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
       if (p == 'v') fdja_set(tvars, k, val);
       else fdja_pset(exe, "payload.%s", k, val);
     }
-    else // no more key, push to vars.args (targs)
+    else // no more keys, push to vars.args (targs)
     {
       fdja_push(targs, val);
     }

@@ -530,12 +530,18 @@ static char can_(fdja_value *node, fdja_value *can)
 
 static int is_callable(fdja_value *val)
 {
-  return (
-    val != NULL &&
-    val->type == 'o' &&
-    fdja_l(val, "nid") &&
-    fdja_l(val, "args")
-  );
+  if (val == NULL) return 0;
+  if (val->type != 'o') return 0;
+
+  fdja_value *v = fdja_l(val, "nid");
+  if (v == NULL) return 0;
+  if ( ! fdja_is_stringy(v)) return 0;
+
+  v = fdja_l(val, "args");
+  if (v == NULL) return 0;
+  if (v->type != 'a') return 0;
+
+  return 1;
 }
 
 //
