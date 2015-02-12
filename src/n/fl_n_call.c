@@ -64,6 +64,8 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // map arguments
 
+  // TODO what about putting the vars in the "sequence" instead of the "call"?
+
   fdja_psetv(node, "vars", "{}");
   fdja_value *targs = fdja_psetv(node, "vars.args", "[]");
 
@@ -110,7 +112,6 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // trigger execution
 
-  //flon_queue_msg("execute", cnid, pnid, payload(exe), "tree", tree);
   queue_child_execute(cnid, node, exe, tree);
 
 _over:

@@ -555,6 +555,7 @@ static int is_callable(fdja_value *val)
 #include "fl_n_if.c"
 #include "fl_n_ife.c"
 #include "fl_n_log.c"
+#include "fl_n_map.c"
 #include "fl_n_noop.c"
 #include "fl_n_task.c"
 #include "fl_n_sequence.c"
@@ -617,6 +618,8 @@ static flon_ni *instructions[] =
   &(flon_ni){ "-", exe_arith, rcv_arith, can_ },
   &(flon_ni){ "*", exe_arith, rcv_arith, can_ },
   &(flon_ni){ "/", exe_arith, rcv_arith, can_ },
+
+  &(flon_ni){ "map", exe_map, rcv_map, can_ },
 
   NULL
 };

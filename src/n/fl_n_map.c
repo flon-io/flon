@@ -24,37 +24,32 @@
 //
 
 
-static char rcv_cand(fdja_value *node, fdja_value *rcv)
+static char rcv_map(fdja_value *node, fdja_value *rcv)
 {
-//  if (is_msg_to_self(rcv)) return seq_rcv(node, rcv);
+//  fdja_putdc(node);
+//  fdja_putdc(rcv);
 //
-//  fdja_value *vret = fdja_l(rcv, "payload.ret");
-//  int ret = ret_to_boolean(vret);
-//  char *op = fdja_ls(node, "inst", NULL);
+//  char *nid = fdja_ls(node, "nid", NULL);
+//  char *from = fdja_ls(rcv, "from", NULL);
 //
-//  char r = 'k';
+//  //size_t mindex = 0;
+//  //if (from && strcmp(from, nid) != 0)
 //
-//  if (strcmp(op, "or") == 0)
-//  {
-//    if (ret) r = 'v';
-//  }
-//  else // "and"
-//  {
-//    if ( ! ret) r = 'v';
-//  }
+//  // TODO use flon_nid_index(nid)...
 //
-//  free(op);
-//
-//  fdja_psetv(rcv, "payload.ret", ret ? "true" : "false");
-//
-//  if (r != 'k') return r;
-//  return seq_rcv(node, rcv);
-
+//  fdja_value *rets = fdja_l(node, "rets");
+//  fdja_push(rets, fdja_lc(rcv, "payload.ret"));
   return 'k';
 }
 
-static char exe_cand(fdja_value *node, fdja_value *exe)
+static char exe_map(fdja_value *node, fdja_value *exe)
 {
-  return con_exe(node, exe);
+//  fdja_set(node, "values", fdja_array_malloc());
+//
+//  fdja_set(node, "rets", fdja_array_malloc());
+//  //fdja_set(node, "mindex", fdja_v("-1"));
+//
+//  return rcv_map(node, exe);
+  return 'k';
 }
 
