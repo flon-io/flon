@@ -88,12 +88,17 @@ void flon_pp_execution(const char *exid)
       char *br = strchr(line, '{');
       fwrite(line, sizeof(char), br - line, stdout);
       v = fdja_parse(br);
-      if (v)
+      char p = v ? fdja_lk(v, "point") : '?';
+      if (p == 'e')
       {
         v->sowner = 0;
         flu_putf(fdja_todc(v));
-        fdja_free(v); }
-      else { puts(line); }
+        fdja_free(v);
+      }
+      else
+      {
+        printf(br);
+      }
     }
     free(line);
     fclose(f);
