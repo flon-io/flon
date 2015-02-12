@@ -45,7 +45,7 @@ static char rcv_ife(fdja_value *node, fdja_value *rcv)
   char *next = flon_nid_next(from, branch);
 
   if (flon_node_tree(next))
-    queue_child_execute(next, node, rcv, NULL);
+    queue_child_execute(next, node, rcv, NULL, NULL);
   else
     r = 'v';
 
@@ -71,7 +71,7 @@ static char exe_ife(fdja_value *node, fdja_value *exe)
   char *nid = fdja_ls(node, "nid", NULL);
   char *next = flon_nid_child(nid, 0);
 
-  queue_child_execute(next, node, exe, NULL);
+  queue_child_execute(next, node, exe, NULL, NULL);
 
   free(nid);
   free(next);

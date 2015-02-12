@@ -40,9 +40,7 @@ extern fdja_value *execution;
 void flon_execute(const char *exid);
 
 void flon_queue_msg(
-  const char *type, const char *nid, const char *from_nid,
-  fdja_value *payload,
-  char *key, fdja_value *val);
+  const char *type, const char *nid, const char *from_nid, fdja_value *m);
 
 void flon_schedule_msg(
   const char *type, const char *ts, const char *nid,

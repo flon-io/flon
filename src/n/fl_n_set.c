@@ -56,7 +56,7 @@ static char exe_set(fdja_value *node, fdja_value *exe)
   char *nid = fdja_ls(node, "nid", NULL);
   char *next = flon_nid_child(nid, 0);
 
-  queue_child_execute(next, node, exe, NULL);
+  queue_child_execute(next, node, exe, NULL, NULL);
 
   free(next);
   free(nid);

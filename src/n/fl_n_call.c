@@ -64,10 +64,8 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // map arguments
 
-  // TODO what about putting the vars in the "sequence" instead of the "call"?
-
-  fdja_psetv(node, "vars", "{}");
-  fdja_value *targs = fdja_psetv(node, "vars.args", "[]");
+  fdja_value *tvars = fdja_object_malloc();
+  fdja_value *targs = fdja_set(tvars, "args", fdja_array_malloc());
 
   fdja_value *dargs = fdja_lc(val, "args"); // define args
 
@@ -97,7 +95,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
     {
       char p = extract_prefix(key);
       char *k = key; if (p != 0) k = strchr(key, '.') + 1;
-      if (p == 'v') fdja_pset(node, "vars.%s", k, val);
+      if (p == 'v') fdja_set(tvars, k, val);
       else fdja_pset(exe, "payload.%s", k, val);
     }
     else // no more key, push to vars.args (targs)
@@ -112,7 +110,7 @@ static char exe_call(fdja_value *node, fdja_value *exe)
 
   // trigger execution
 
-  queue_child_execute(cnid, node, exe, tree);
+  queue_child_execute(cnid, node, exe, tree, tvars);
 
 _over:
 
