@@ -411,23 +411,22 @@ static int expand(fdja_value *v, fdja_value *node, fdja_value *msg)
 
 static fdja_value *attributes(fdja_value *node, fdja_value *msg)
 {
-  fdja_value *atts = fdja_l(tree(node, msg), "1");
-  fdja_value *r = fdja_object_malloc();
+  //fdja_value *atts = fdja_l(tree(node, msg), "1");
+  //fdja_value *r = fdja_object_malloc();
+  //if (atts == NULL || atts->type != 'o')
+  //{
+  //  log_e(node, msg, "tree not found, no attributes");
+  //  return r;
+  //}
+  //for (fdja_value *v = atts->child; v; v = v->sibling)
+  //{
+  //  fdja_value *vv = fdja_clone(v); vv->key = strdup(v->key);
+  //  expand(vv, node, msg);
+  //  fdja_set(r, vv->key, vv);
+  //}
+  //return r;
 
-  if (atts == NULL || atts->type != 'o')
-  {
-    log_e(node, msg, "tree not found, no attributes");
-    return r;
-  }
-
-  for (fdja_value *v = atts->child; v; v = v->sibling)
-  {
-    fdja_value *vv = fdja_clone(v); vv->key = strdup(v->key);
-    expand(vv, node, msg);
-    fdja_set(r, vv->key, vv);
-  }
-
-  return r;
+  return fdja_atc(tree(node, msg), 1);
 }
 
 static size_t counter_next()
