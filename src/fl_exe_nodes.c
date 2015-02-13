@@ -80,22 +80,26 @@ static fdja_value *node_tree(const char *nid)
 
   pnid = fdja_ls(execution, "nodes.%s.parent", nid, NULL);
   if (pnid) t = node_tree(pnid);
+  free(pnid);
+
   if (t) return fdja_at(fdja_at(t, 3), flon_nid_index(nid));
 
   fdja_value *t0 = NULL;
   pnid = flon_nid_parent(nid, 0);
   if (pnid) t0 = node_tree(pnid);
-
-  fdja_value *t1 = NULL;
-  pnid = flon_nid_parent(nid, 1);
-  if (pnid) t1 = node_tree(pnid);
+  free(pnid);
 
   size_t index = flon_nid_index(nid);
 
   if (t0) t0 = fdja_at(fdja_at(t0, 3), index);
-  if (t1) t1 = fdja_at(fdja_at(t1, 3), index);
+  if (t0) return t0;
 
-  return t0 ? t0 : t1;
+  fdja_value *t1 = NULL;
+  pnid = flon_nid_parent(nid, 1);
+  if (pnid) t1 = node_tree(pnid);
+  free(pnid);
+
+  return t1 ? fdja_at(fdja_at(t1, 3), index) : NULL;
 }
 
 fdja_value *flon_node_tree(const char *nid)
