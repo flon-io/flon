@@ -33,25 +33,36 @@ static char do_call(fdja_value *node, fdja_value *msg, fdja_value *cargs)
 
   char *nid = NULL;
   char *cnid = NULL;
-  char *name = NULL;
 
-  if (cargs->child == NULL)
+  fdja_value *carg0 = cargs->child;
+  fdja_value *callable = NULL;
+  char *cname = NULL;
+
+  if (carg0 == NULL)
   {
     push_error(node, "nothing to call", cargs); r = 'r'; goto _over;
   }
 
-  name = fdja_to_string(cargs->child);
-
-  fdja_value *val = lookup_var(node, 'l', name); // 'l' for "local"
-
-  if ( ! is_callable(val))
+  //name = fdja_to_string(cargs->child);
+  //fdja_value *val = lookup_var(node, 'l', name); // 'l' for "local"
+  if (is_callable(carg0))
   {
-    push_error(node, "cannot call", val); r = 'r'; goto _over;
+    callable = carg0;
+  }
+  else
+  {
+    cname = fdja_to_string(carg0);
+    callable = lookup_var(node, 'l', cname); // 'l' for "local"
+
+    if ( ! is_callable(callable))
+    {
+      push_error(node, "not callable '%s'", cname, NULL); r = 'r'; goto _over;
+    }
   }
 
   // prepare new node's nid
 
-  nid = fdja_ls(val, "nid");
+  nid = fdja_ls(callable, "nid");
   cnid = flu_sprintf("%s-%x", nid, counter_next());
 
   // prepare tree
@@ -65,7 +76,7 @@ static char do_call(fdja_value *node, fdja_value *msg, fdja_value *cargs)
   fdja_value *tvars = fdja_object_malloc();
   fdja_value *targs = fdja_set(tvars, "args", fdja_array_malloc());
 
-  fdja_value *dargs = fdja_lc(val, "args"); // define args
+  fdja_value *dargs = fdja_lc(callable, "args"); // define args
 
   fdja_push(targs, fdja_clone(cargs->child));
 
@@ -116,7 +127,7 @@ _over:
 
   free(nid);
   free(cnid);
-  free(name);
+  free(cname);
   fdja_free(cargs);
 
   return r;

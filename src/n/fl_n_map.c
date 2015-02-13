@@ -45,9 +45,9 @@
 
 static char rcv_map(fdja_value *node, fdja_value *rcv)
 {
-  printf("~~~~~\n");
-  fdja_putdc(node);
-  fdja_putdc(rcv);
+  //printf("~~~~~\n");
+  //fdja_putdc(node);
+  //fdja_putdc(rcv);
 
   char r = 'k'; // ok for now
 
@@ -57,15 +57,21 @@ static char rcv_map(fdja_value *node, fdja_value *rcv)
 
   fdja_value *values = fdja_l(node, "map.values");
 
-  ++index;
+  fdja_pset(node, "map.index", fdja_v("%zu", ++index));
 
-  if (index >= fdja_size(values))
+  if (index >= fdja_size(values)) // iteration over
   {
     fdja_pset(rcv, "payload.ret", fdja_lc(node, "map.rets"));
     r = 'v'; goto _over;
   }
 
-  // TODO: continue me
+  fdja_value *nid = fdja_lc(node, "nid");
+
+  fdja_value *cargs = fdja_object_malloc();
+  fdja_set(cargs, "_0", fdja_o("nid", nid, "args", fdja_v("[ ret ]"), NULL));
+  fdja_set(cargs, "_1", fdja_atc(values, index));
+
+  r = do_call(node, rcv, cargs);
 
 _over:
 
@@ -124,21 +130,11 @@ static char exe_map(fdja_value *node, fdja_value *exe)
     r = 'r'; goto _over;
   }
 
-  //if (callname) cname = fdja_to_string(callname);
-  //if (cname) callable = lookup_var(node, 'l', cname); // 'l' for "local"
-  //
-  //if (callname && callable == NULL)
-  //{
-  //  push_error(node, "cannot map with non-callable", callname);
-  //  r = 'r'; goto _over;
-  //}
-
   // ok, start mapping
 
   fdja_set(node, "map", fdja_object_malloc());
   fdja_pset(node, "map.values", fdja_clone(values));
   fdja_pset(node, "map.callname", fdja_clone(callname));
-  //fdja_pset(node, "map.index", fdja_v("-1"));
   fdja_pset(node, "map.rets", fdja_array_malloc());
 
   r = rcv_map(node, exe);
