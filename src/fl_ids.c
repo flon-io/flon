@@ -211,6 +211,24 @@ _over:
   return r;
 }
 
+char *flon_nid_parent(const char *nid)
+{
+  char *u = strrchr(nid, '_');
+  if (u == NULL) return NULL;
+
+  char *i = strdup(nid);
+
+  char *c = i + (u - nid);
+  char *d = strchr(nid, '-');
+
+  if (d)
+    while (1) { *c = *d; if (*d == 0) break; ++c; ++d; }
+  else
+    *c = 0;
+
+  return i;
+}
+
 char *flon_nid_child(const char *nid, int n)
 {
   char *dash = strchr(nid, '-');

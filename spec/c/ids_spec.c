@@ -185,6 +185,16 @@ context "fl_ids:"
     }
   }
 
+  describe "flon_nid_parent()"
+  {
+    it "returns the parent nid"
+    {
+      expect(flon_nid_parent("0") == NULL);
+      expect(flon_nid_parent("0_0") ===f "0");
+      expect(flon_nid_parent("0_0-f") ===f "0-f");
+    }
+  }
+
   describe "flon_nid_child()"
   {
     it "returns the nid for the nth child"
