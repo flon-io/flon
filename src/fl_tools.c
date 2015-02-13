@@ -89,7 +89,7 @@ void flon_pp_execution(const char *exid)
       fwrite(line, sizeof(char), br - line, stdout);
       v = fdja_parse(br);
       char p = v ? fdja_lk(v, "point") : '?';
-      if (p == 'e')
+      if (p == 'e' || p == 'f') // execute or failed
       {
         v->sowner = 0;
         flu_putf(fdja_todc(v));
