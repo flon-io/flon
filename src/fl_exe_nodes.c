@@ -41,46 +41,76 @@ fdja_value *flon_node(const char *nid)
   return fdja_l(execution, "nodes.%s", nid);
 }
 
-static fdja_value *node_tree(const char *nid, int clone)
+//static fdja_value *node_tree(const char *nid, int clone)
+//{
+//  fdja_value *t = fdja_l(execution, "nodes.0.tree");
+//
+//  if (t == NULL) return NULL;
+//
+//  flu_list *l = flu_split(nid, "_");
+//
+//  char *cnid = calloc(strlen(nid) + 1, sizeof(char));
+//  char *ccnid = cnid + sprintf(cnid, l->first->item);
+//
+//  if (l->size > 1) for (flu_node *n = l->first->next; n; n = n->next)
+//  {
+//    ccnid += sprintf(ccnid, "_%s", (char *)n->item);
+//
+//    fdja_value *nt = fdja_l(execution, "nodes.%s.tree", cnid);
+//
+//    if (nt)
+//      t = nt;
+//    else
+//      t = fdja_l(t, "3.%lli", strtoll((char *)n->item, NULL, 16));
+//  }
+//  flu_list_free_all(l);
+//
+//  free(cnid);
+//
+//  return clone ? fdja_clone(t) : t;
+//    // fdja_clone(NULL) returns NULL
+//}
+
+static fdja_value *node_tree(const char *nid)
 {
-  fdja_value *t = fdja_l(execution, "nodes.0.tree");
+  fdja_value *t = fdja_l(execution, "nodes.%s.tree", nid);
+  if (t) return t;
 
-  if (t == NULL) return NULL;
+  char *pnid = NULL;
 
-  flu_list *l = flu_split(nid, "_");
+  pnid = fdja_ls(execution, "nodes.%s.parent", nid, NULL);
+  if (pnid) t = node_tree(pnid);
+  if (t) return fdja_at(fdja_at(t, 3), flon_nid_index(nid));
 
-  char *cnid = calloc(strlen(nid) + 1, sizeof(char));
-  char *ccnid = cnid + sprintf(cnid, l->first->item);
+  fdja_value *t0 = NULL;
+  pnid = flon_nid_parent(nid, 0);
+  if (pnid) t0 = node_tree(pnid);
 
-  if (l->size > 1) for (flu_node *n = l->first->next; n; n = n->next)
-  {
-    ccnid += sprintf(ccnid, "_%s", (char *)n->item);
+  fdja_value *t1 = NULL;
+  pnid = flon_nid_parent(nid, 1);
+  if (pnid) t1 = node_tree(pnid);
 
-    fdja_value *nt = fdja_l(execution, "nodes.%s.tree", cnid);
+  size_t index = flon_nid_index(nid);
 
-    if (nt)
-      t = nt;
-    else
-      t = fdja_l(t, "3.%lli", strtoll((char *)n->item, NULL, 16));
-  }
-  flu_list_free_all(l);
+  if (t0) t0 = fdja_at(fdja_at(t0, 3), index);
+  if (t1) t1 = fdja_at(fdja_at(t1, 3), index);
 
-  free(cnid);
-
-  return clone ? fdja_clone(t) : t;
-    // fdja_clone(NULL) returns NULL
+  return t0 ? t0 : t1;
 }
 
 fdja_value *flon_node_tree(const char *nid)
 {
-  return node_tree(nid, 0);
+  return node_tree(nid);
 }
 
 fdja_value *flon_node_tree_clone(const char *nid)
 {
-  return node_tree(nid, 1);
+  return fdja_clone(node_tree(nid));
 }
 
+  // TODO: rename to flon_parent_nid()
+  // TODO: leverage flon_nid_parent()
+  //
 char *flon_node_parent_nid(const char *nid)
 {
   fdja_value *node = flon_node(nid);

@@ -35,7 +35,10 @@ context "fl_exe_nodes"
         "0_1_0-1: {}\n"
         "0_1_2: { tree: [ sequence, {}, -1, [] ] }\n"
         "0_1_3: { tree: [ or, {}, 7, [ [ a, {}, 7, [] ], [ b, {}, 7, [] ] ] ] }\n"
+
         "9_1_9: { parent: 9_0 }\n" // special
+
+        "1_0-1: { tree: [ or, {}, 7, [ [ a, {}, 7, [] ], [ b, {}, 7, [] ] ] ] }\n"
       "}");
   }
   after each
@@ -80,6 +83,14 @@ context "fl_exe_nodes"
     it "looks up and returns rewritten trees (-{counter})"
     {
       fdja_value *t = flon_node_tree("0_1_3_0-77");
+
+      expect(fdja_tod(t) ===f ""
+        "[ a, {}, 7, [] ]");
+    }
+
+    it "looks up and returns rewritten trees (-{counter} 2)"
+    {
+      fdja_value *t = flon_node_tree("1_0_0-1");
 
       expect(fdja_tod(t) ===f ""
         "[ a, {}, 7, [] ]");
