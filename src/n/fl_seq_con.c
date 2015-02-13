@@ -24,16 +24,6 @@
 //
 
 
-static int is_msg_to_self(fdja_value *msg)
-{
-  char *nid = fdja_ls(msg, "nid");
-  char *from = fdja_ls(msg, "from");
-  int r = strcmp(nid, from) == 0;
-  free(nid); free(from);
-
-  return r;
-}
-
 static void queue_child_execute(
   const char *next_nid, fdja_value *node, fdja_value *msg,
   fdja_value *tree, fdja_value *vars)

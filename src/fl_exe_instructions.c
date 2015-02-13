@@ -544,6 +544,17 @@ static int is_callable(fdja_value *val)
   return 1;
 }
 
+static int is_msg_to_self(fdja_value *msg)
+{
+  char *nid = fdja_ls(msg, "nid", NULL);
+  char *from = fdja_ls(msg, "from", NULL);
+  int r = nid && from && (strcmp(nid, from) == 0);
+  free(nid); free(from);
+
+  return r;
+}
+
+
 //
 // the instructions
 
