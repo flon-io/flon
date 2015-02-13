@@ -68,12 +68,8 @@ context "instruction:"
       expect(result != NULL);
       //puts(fdja_todc(result));
 
-      //expect(fdja_ls(result, "point", NULL) ===f "receive");
-      //expect(fdja_ls(result, "nid", NULL) ===f "0");
-      //expect(fdja_ls(result, "from", NULL) == NULL);
-      //expect(fdja_ls(result, "payload.hello", NULL) ===f "task");
-      //expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
-      //expect(fdja_l(result, "payload.args") == NULL);
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ i: 4, ret: [ 5, 6, 7 ] }");
     }
 
     it "iterates over an object"

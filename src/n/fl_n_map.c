@@ -51,16 +51,21 @@ static char rcv_map(fdja_value *node, fdja_value *rcv)
 
   char r = 'k'; // ok for now
 
+  if (is_msg_to_self(rcv)) { r = 'v'; goto _over; }
+
   ssize_t index = fdja_li(node, "map.index", (ssize_t)-1);
 
   if (index > -1) fdja_pset(node, "map.rets.]", fdja_lc(payload(rcv), "ret"));
 
   fdja_value *values = fdja_l(node, "map.values");
+printf("{{{{{{{{{{{{{{{ values size: %zu\n", fdja_size(values));
 
   fdja_pset(node, "map.index", fdja_v("%zu", ++index));
+printf("              { index1: %d\n", index);
 
   if (index >= fdja_size(values)) // iteration over
   {
+printf("              { over\n");
     fdja_pset(rcv, "payload.ret", fdja_lc(node, "map.rets"));
     r = 'v'; goto _over;
   }
