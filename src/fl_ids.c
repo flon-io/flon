@@ -211,7 +211,7 @@ _over:
   return r;
 }
 
-char *flon_nid_parent(const char *nid)
+char *flon_nid_parent(const char *nid, int chop)
 {
   char *u = strrchr(nid, '_');
   if (u == NULL) return NULL;
@@ -221,7 +221,7 @@ char *flon_nid_parent(const char *nid)
   char *c = i + (u - nid);
   char *d = strchr(nid, '-');
 
-  if (d)
+  if (d && chop != 1)
     while (1) { *c = *d; if (*d == 0) break; ++c; ++d; }
   else
     *c = 0;

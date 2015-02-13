@@ -37,7 +37,7 @@ char *flon_parse_exid(const char *s);
 char *flon_exid_domain(const char *exid);
 
 char *flon_nid_next(const char *nid, int increment);
-char *flon_nid_parent(const char *nid);
+char *flon_nid_parent(const char *nid, int chop);
 char *flon_nid_child(const char *nid, int n);
 size_t flon_nid_depth(const char *nid);
 size_t flon_nid_index(const char *nid);

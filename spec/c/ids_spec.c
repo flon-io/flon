@@ -189,9 +189,16 @@ context "fl_ids:"
   {
     it "returns the parent nid"
     {
-      expect(flon_nid_parent("0") == NULL);
-      expect(flon_nid_parent("0_0") ===f "0");
-      expect(flon_nid_parent("0_0-f") ===f "0-f");
+      expect(flon_nid_parent("0", 0) == NULL);
+      expect(flon_nid_parent("0_0", 0) ===f "0");
+      expect(flon_nid_parent("0_0-f", 0) ===f "0-f");
+    }
+
+    it "chops the -{counter} when chop == 1"
+    {
+      expect(flon_nid_parent("0", 1) == NULL);
+      expect(flon_nid_parent("0_0", 1) ===f "0");
+      expect(flon_nid_parent("0_0-f", 1) ===f "0");
     }
   }
 
