@@ -49,8 +49,6 @@ context "fl_exe_nodes"
     {
       fdja_value *t = flon_node_tree("0");
 
-      expect(t != NULL);
-
       expect(fdja_tod(t) ^==f ""
         "[ sequence, {}, 1, [");
     }
@@ -58,8 +56,6 @@ context "fl_exe_nodes"
     it "looks up a sub tree"
     {
       fdja_value *t = flon_node_tree("0_1_0");
-
-      expect(t != NULL);
 
       expect(fdja_tod(t) ===f ""
         "[ invoke, { _0: stamp, color: green }, 4, [] ]");
@@ -69,8 +65,6 @@ context "fl_exe_nodes"
     {
       fdja_value *t = flon_node_tree("0_1_2");
 
-      expect(t != NULL);
-
       expect(fdja_tod(t) ===f ""
         "[ sequence, {}, -1, [] ]");
     }
@@ -79,7 +73,13 @@ context "fl_exe_nodes"
     {
       fdja_value *t = flon_node_tree("0_1_3_0");
 
-      expect(t != NULL);
+      expect(fdja_tod(t) ===f ""
+        "[ a, {}, 7, [] ]");
+    }
+
+    it "looks up and returns rewritten trees (-{counter})"
+    {
+      fdja_value *t = flon_node_tree("0_1_3_0-77");
 
       expect(fdja_tod(t) ===f ""
         "[ a, {}, 7, [] ]");
