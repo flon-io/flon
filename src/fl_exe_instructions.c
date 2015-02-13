@@ -548,6 +548,7 @@ static int is_callable(fdja_value *val)
 // the instructions
 
 #include "fl_seq_con.c"
+#include "fl_call.c" // do_call()
 
 #include "fl_n_and.c"
 #include "fl_n_arith.c"
