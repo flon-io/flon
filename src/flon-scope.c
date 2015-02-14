@@ -52,6 +52,7 @@ static char *lookup_exid(char *dir, char *fragment, size_t depth)
   //printf("dir: %s, depth: %zu\n", dir, depth);
 
   char *r = NULL;
+  char *path = NULL;
 
   DIR *d = opendir(dir);
   if (d == NULL) return NULL;
@@ -61,7 +62,7 @@ static char *lookup_exid(char *dir, char *fragment, size_t depth)
   {
     if (*ep->d_name == '.') continue;
 
-    char *path = flu_sprintf("%s/%s", dir, ep->d_name);
+    free(path); path = flu_sprintf("%s/%s", dir, ep->d_name);
     char s = flu_fstat(path);
 
     //printf("  * %s %c\n", path, s);
@@ -75,7 +76,7 @@ static char *lookup_exid(char *dir, char *fragment, size_t depth)
     {
       if (fragment == NULL || strstr(ep->d_name, fragment))
       {
-        r = ep->d_name; goto _over;
+        r = strdup(ep->d_name); goto _over;
       }
     }
   }
@@ -83,6 +84,8 @@ static char *lookup_exid(char *dir, char *fragment, size_t depth)
 _over:
 
   closedir(d);
+
+  free(path);
 
   return r;
 }
@@ -129,6 +132,7 @@ int main(int argc, char *argv[])
   }
 
   flon_pp_execution(exid);
+  free(exid);
 
   return 0;
 }

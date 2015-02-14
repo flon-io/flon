@@ -105,18 +105,13 @@ void flon_pp_execution(const char *exid)
       //printf("%.32s ", line);
       printf("%.26s ", line);
       char *br = strchr(line, '{');
-      v = fdja_parse(br);
+      v = fdja_parse(br); if (v) v->sowner = 0;
       char p = v ? fdja_lk(v, "point") : '?';
       if (p == 'e' || p == 'f') // execute or failed
-      {
-        v->sowner = 0;
         flu_putf(fdja_todc(v));
-        fdja_free(v);
-      }
       else
-      {
         printf(br);
-      }
+      fdja_free(v);
     }
     free(line);
     fclose(f);
@@ -147,6 +142,8 @@ void flon_pp_execution(const char *exid)
       }
       else
       {
+        v->sowner = 0;
+
         fdja_value *t = fdja_l(v, "tree");
 
         if (t)
@@ -176,6 +173,7 @@ void flon_pp_execution(const char *exid)
           char *f = fdja_to_string(from);
           char *color = flon_is_plain_receive(v) ? cdgrey : cred;
           printf("f%s%s%s ", color, f, cclear);
+          free(f);
         }
 
         if (t)
@@ -216,17 +214,8 @@ void flon_pp_execution(const char *exid)
 
         printf("\n");
       }
-      //char p = v ? fdja_lk(v, "point") : '?';
-      //if (p == 'e' || p == 'f') // execute or failed
-      //{
-      //  v->sowner = 0;
-      //  flu_putf(fdja_todc(v));
-      //  fdja_free(v);
-      //}
-      //else
-      //{
-      //  printf(br);
-      //}
+      free(nid);
+      fdja_free(v);
     }
     free(line);
     free(prevpl);
