@@ -42,13 +42,13 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
+      result = hlp_wait(exid, "failed", NULL, 7);
 
       expect(result != NULL);
       //puts(fdja_todc(result));
 
-      expect(fdja_ld(result, "payload") ===f "{ ret: [] }");
+      expect(fdja_ls(result, "error.msg", NULL) ^==f ""
+        "no values to map from: ");
     }
 
     it "iterates over an array"
