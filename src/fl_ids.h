@@ -46,5 +46,9 @@ size_t flon_nid_index(const char *nid);
 
 char *flon_point_to_prefix(const char *point);
 
+/* Returns 1 if the receiver's id is "natural" parent id for the emitter id.
+ */
+int flon_is_plain_receive(fdja_value *msg);
+
 #endif // FL_IDS_H
 

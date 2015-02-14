@@ -45,6 +45,9 @@ void flon_pp_execution(const char *exid)
 // Brown       0;33     Yellow        1;33
 // Light Gray  0;37     White         1;37
   char *cclear = "[0;0m";
+  char *cred = "[0;31m";
+  char *cdred = "[1;31m";
+  char *cdblue = "[1;34m";
   char *cgreen = "[0;32m";
   char *cdgrey = "[1;30m";
   char *cbrown = "[0;33m";
@@ -130,6 +133,7 @@ void flon_pp_execution(const char *exid)
     char *line = NULL;
     size_t len = 0;
     fdja_value *v = NULL;
+    char *prevpl = NULL;
 
     while (getline(&line, &len, f) != -1)
     {
@@ -159,21 +163,55 @@ void flon_pp_execution(const char *exid)
         printf("%*s", 2 * depth, "");
 
         char *point = fdja_ls(v, "point", NULL);
-        printf("%.2s ", point);
+        char *color = point == 'f' ? cdred : cclear;
+        printf("%s%.2s%s ", color, point, cclear);
         free(point);
+
+        if (nid)
+        {
+          printf("%s%s%s ", cdgrey, nid, cclear);
+        }
+        fdja_value *from = fdja_l(v, "from"); if (from)
+        {
+          char *f = fdja_to_string(from);
+          char *color = flon_is_plain_receive(v) ? cdgrey : cred;
+          printf("f%s%s%s ", color, f, cclear);
+        }
 
         if (t)
         {
           char *inst = fdja_ls(t, "0", NULL);
-          printf("%s ", inst);
+          char *atts = NULL;
+          if (fdja_lz(t, "1") > 0)
+          {
+            atts = fdja_ld(t, "1");
+            atts[0] = ' ';
+            atts[strlen(atts) - 2] = 0;
+          }
+          printf(
+            "%s%s%s%s ",
+            cdblue, inst, atts ? atts + 1 : "", cclear);
           free(inst);
+          free(atts);
         }
 
         if (fdja_l(v, "payload"))
         {
           char *payload = fdja_lj(v, "payload");
-          printf("pl:%s ", payload);
-          free(payload);
+          if (prevpl == NULL || strcmp(prevpl, payload) != 0)
+          {
+            printf("%s%s%s ", cbrown, payload, cclear);
+            free(prevpl); prevpl = payload;
+          }
+          else
+          {
+            free(payload);
+          }
+        }
+        else
+        {
+          //free(prevpl); prevpl = NULL;
+          printf("%s(nopl)%s ", cbrown, cclear);
         }
 
         printf("\n");
@@ -191,6 +229,7 @@ void flon_pp_execution(const char *exid)
       //}
     }
     free(line);
+    free(prevpl);
     fclose(f);
   }
   free(fpath);

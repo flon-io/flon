@@ -291,3 +291,54 @@ char *flon_point_to_prefix(const char *point)
   return "UNK_";
 }
 
+int flon_is_plain_receive(fdja_value *msg)
+{
+  int r = 0;
+
+  char *emitter = NULL;
+  char *receiver = NULL;
+  fdja_value *em = NULL;
+  fdja_value *re = NULL;
+  char *emc = NULL;
+  char *rec = NULL;
+  char *emn = NULL;
+  char *ren = NULL;
+
+  emitter = fdja_ls(msg, "from", NULL);
+  if (emitter == NULL) goto _over;
+
+  receiver = fdja_ls(msg, "nid", NULL);
+  if (receiver == NULL) goto _over;
+
+  em = flon_parse_nid(emitter);
+  re = flon_parse_nid(receiver);
+  if (em == NULL || re == NULL) goto _over;
+
+  emc = fdja_ls(em, "counter", NULL);
+  rec = fdja_ls(re, "counter", NULL);
+
+  if (emc == NULL) emc = strdup("");
+  if (rec == NULL) rec = strdup("");
+  if (strcmp(emc, rec) != 0) goto _over;
+
+  emn = fdja_ls(em, "node", "");
+  ren = fdja_ls(re, "node", "");
+
+  if (strncmp(emn, ren, strlen(ren)) != 0) goto _over;
+
+  r = 1;
+
+_over:
+
+  free(emitter);
+  free(receiver);
+  fdja_free(em);
+  fdja_free(re);
+  free(emc);
+  free(rec);
+  free(emn);
+  free(ren);
+
+  return r;
+}
+
