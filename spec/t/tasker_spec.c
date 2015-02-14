@@ -6,6 +6,7 @@
 //
 
 #include "flutil.h"
+#include "flutim.h"
 #include "gajeta.h"
 #include "djan.h"
 #include "fl_ids.h"
