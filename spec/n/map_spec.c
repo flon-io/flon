@@ -31,97 +31,104 @@ context "instruction:"
 
   describe "map"
   {
-    it "doesn't iterate over an empty array"
+    context "on array"
     {
-      exid = flon_generate_exid("n.map.array.empty");
+      it "fails on a missing array"
+      {
+        exid = flon_generate_exid("n.map.array.missing");
 
-      hlp_launch(
-        exid,
-        "map\n"
-        "  1 + $(ret)\n"
-        "",
-        "{}");
+        hlp_launch(
+          exid,
+          "map\n"
+          "  1 + $(ret)\n"
+          "",
+          "{}");
 
-      result = hlp_wait(exid, "failed", NULL, 7);
+        result = hlp_wait(exid, "failed", NULL, 7);
 
-      expect(result != NULL);
-      //puts(fdja_todc(result));
+        expect(result != NULL);
+        //puts(fdja_todc(result));
 
-      expect(fdja_ls(result, "error.msg", NULL) ^==f ""
-        "no values to map from: ");
+        expect(fdja_ls(result, "error.msg", NULL) ^==f ""
+          "no values to map from: ");
+      }
+
+      it "iterates"
+      {
+        exid = flon_generate_exid("n.map.array");
+
+        hlp_launch(
+          exid,
+          "map [ 1 2 3 ]\n"
+          "  $(i) + $(ret)\n"
+          "",
+          "{ i: 4 }");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ i: 4, ret: [ 5, 6, 7 ] }");
+      }
+
+      it "iterates over an $(f.ret) array"
+      {
+        exid = flon_generate_exid("n.map.array.ret");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  [ 1 2 3 ]\n"
+          "  map\n"
+          "    $(i) + $(ret)\n"
+          "",
+          "{ i: 6 }");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ i: 6, ret: [ 7, 8, 9 ] }");
+      }
+
+      it "iterates and makes v.key and v.index available"
+      {
+        exid = flon_generate_exid("n.map.array.v.key");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  [ 1 2 3 ]\n"
+          "  map\n"
+          "    $(v.key) * $(v.index) * $(ret)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: [ 0, 2, 12 ] }");
+      }
+
+      it "iterates and maps to a callable"
     }
 
-    it "iterates over an array"
+    context "on object"
     {
-      exid = flon_generate_exid("n.map.array");
-
-      hlp_launch(
-        exid,
-        "map [ 1 2 3 ]\n"
-        "  $(i) + $(ret)\n"
-        "",
-        "{ i: 4 }");
-
-      result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //puts(fdja_todc(result));
-
-      expect(fdja_ld(result, "payload") ===f ""
-        "{ i: 4, ret: [ 5, 6, 7 ] }");
+      it "iterates over an object"
+      it "iterates over an $(f.ret) object"
+      it "iterates and maps an object to a callable"
     }
-
-    it "iterates over an $(f.ret) array"
-    {
-      exid = flon_generate_exid("n.map.array.ret");
-
-      hlp_launch(
-        exid,
-        "sequence\n"
-        "  [ 1 2 3 ]\n"
-        "  map\n"
-        "    $(i) + $(ret)\n"
-        "",
-        "{ i: 6 }");
-
-      result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //puts(fdja_todc(result));
-
-      expect(fdja_ld(result, "payload") ===f ""
-        "{ i: 6, ret: [ 7, 8, 9 ] }");
-    }
-
-    it "makes the current array index available via v.key and v.index"
-    {
-      exid = flon_generate_exid("n.map.array.v.key");
-
-      hlp_launch(
-        exid,
-        "sequence\n"
-        "  [ 1 2 3 ]\n"
-        "  map\n"
-        "    $(v.key) * $(v.index) * $(ret)\n"
-        "",
-        "{}");
-
-      result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //puts(fdja_todc(result));
-
-      expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: [ 0, 2, 12 ] }");
-    }
-
-    it "iterates over an object"
-    it "iterates over an $(f.ret) object"
-    it "iterates and maps an array to a callable"
-    it "iterates and maps an object to a callable"
   }
 }
 
