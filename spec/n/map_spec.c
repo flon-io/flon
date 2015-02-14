@@ -72,9 +72,33 @@ context "instruction:"
         "{ i: 4, ret: [ 5, 6, 7 ] }");
     }
 
+    it "iterates over an $(f.ret) array"
+    {
+      exid = flon_generate_exid("n.map.array.ret");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  [ 1 2 3 ]\n"
+        "  map\n"
+        "    $(i) + $(ret)\n"
+        "",
+        "{ i: 6 }");
+
+      result = hlp_wait(exid, "terminated", NULL, 7);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ i: 6, ret: [ 7, 8, 9 ] }");
+    }
+
     it "iterates over an object"
-    it "iterates over $(f.ret) by default"
-    it "iterates and maps to a callable"
+    it "iterates over an $(f.ret) object"
+    it "iterates and maps an array to a callable"
+    it "iterates and maps an object to a callable"
   }
 }
 
