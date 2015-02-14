@@ -64,10 +64,21 @@ static char rcv_map(fdja_value *node, fdja_value *rcv)
   }
 
   fdja_value *nid = fdja_lc(node, "nid");
+  fdja_value *val = fdja_atc(values, index);
 
   fdja_value *cargs = fdja_object_malloc();
-  fdja_set(cargs, "_0", fdja_o("nid", nid, "args", fdja_v("[ ret ]"), NULL));
-  fdja_set(cargs, "_1", fdja_atc(values, index));
+  fdja_set(
+    cargs, "_0",
+    fdja_o("nid", nid, "args", fdja_v("[ ret, v.key, v.index ]"), NULL));
+  fdja_set(
+    cargs, "_1",
+    val);
+  fdja_set(
+    cargs, "_2",
+    fdja_v("%zu", index));
+  fdja_set(
+    cargs, "_3",
+    fdja_v("%zu", index));
 
   r = do_call(node, rcv, cargs);
 

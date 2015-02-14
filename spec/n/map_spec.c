@@ -95,6 +95,29 @@ context "instruction:"
         "{ i: 6, ret: [ 7, 8, 9 ] }");
     }
 
+    it "makes the current array index available via v.key and v.index"
+    {
+      exid = flon_generate_exid("n.map.array.v.key");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  [ 1 2 3 ]\n"
+        "  map\n"
+        "    $(v.key) * $(v.index) * $(ret)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 7);
+      //flon_pp_execution(exid);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: [ 0, 2, 12 ] }");
+    }
+
     it "iterates over an object"
     it "iterates over an $(f.ret) object"
     it "iterates and maps an array to a callable"
