@@ -105,12 +105,12 @@ static char exe_map(fdja_value *node, fdja_value *exe)
   }
   else if (a0) // map add-three
   {
-    values = payload(exe);
+    values = fdja_l(exe, "payload.ret");
     callname = a0;
   }
   else if (cn->child) // map \n 1 + $(ret)
   {
-    values = payload(exe);
+    values = fdja_l(exe, "payload.ret");
     block = cn;
   }
   //else {} // error
