@@ -34,6 +34,25 @@
 #include "fl_tools.h"
 
 
+  // Black       0;30     Dark Gray     1;30
+  // Blue        0;34     Light Blue    1;34
+  // Green       0;32     Light Green   1;32
+  // Cyan        0;36     Light Cyan    1;36
+  // Red         0;31     Light Red     1;31
+  // Purple      0;35     Light Purple  1;35
+  // Brown       0;33     Yellow        1;33
+  // Light Gray  0;37     White         1;37
+  //
+static char *cclear = "[0;0m";
+static char *cred = "[0;31m";
+static char *cdred = "[1;31m";
+//static char *cblue = "[0;34m";
+static char *cdblue = "[1;34m";
+static char *cgreen = "[0;32m";
+static char *cdgrey = "[1;30m";
+static char *cbrown = "[0;33m";
+//static char *cyellow = "[1;33m";
+
 static ssize_t count_lines(const char *path)
 {
   FILE *f = fopen(path, "r");
@@ -65,26 +84,157 @@ static size_t lookup_anid(char **anids, const char *nid)
   return i;
 }
 
+static void print_msgs_timeline(const char *fpath)
+{
+  FILE *f = fopen(fpath, "r");
+
+  if (f == NULL)
+  {
+    printf("couldn't read file at %s\n", fpath);
+    perror("reason:");
+    return;
+  }
+
+  char *line = NULL;
+  size_t len = 0;
+  fdja_value *v = NULL;
+
+  while (getline(&line, &len, f) != -1)
+  {
+    //printf("%.32s ", line);
+    printf("%.26s ", line);
+    char *br = strchr(line, '{');
+    v = fdja_parse(br); if (v) v->sowner = 0;
+    char p = v ? fdja_lk(v, "point") : '?';
+    if (p == 'e' || p == 'f') // execute or failed
+      flu_putf(fdja_todc(v));
+    else
+      printf(br);
+    fdja_free(v);
+  }
+  free(line);
+  fclose(f);
+}
+
+static void print_msgs_xmastree(const char *fpath)
+{
+  FILE *f = fopen(fpath, "r");
+
+  if (f == NULL)
+  {
+    printf("couldn't read file at %s\n", fpath);
+    perror("reason:");
+    return;
+  }
+
+  ssize_t msg_count = count_lines(fpath);
+
+  char **anids = calloc(msg_count + 1, sizeof(char *));
+
+  char *line = NULL;
+  size_t len = 0;
+  fdja_value *v = NULL;
+  char *prevpl = NULL;
+
+  while (getline(&line, &len, f) != -1)
+  {
+    printf("%s%.26s%s ", cdgrey, line, cclear);
+    char *br = strchr(line, '{');
+    v = fdja_parse(br);
+    char *nid = v ? fdja_ls(v, "nid", NULL) : NULL;
+    if (v == NULL)
+    {
+      printf(br);
+    }
+    else
+    {
+      v->sowner = 0;
+
+      fdja_value *t = fdja_l(v, "tree");
+
+      if (t)
+      {
+        long long line = fdja_li(t, "2", (long long)0);
+        printf("%s%3lli%s ", cbrown, line, cclear);
+      }
+      else
+      {
+        printf("    ");
+      }
+
+      int depth = nid ? flon_nid_depth(nid) : 0;
+      printf("%*s", 2 * depth, "");
+
+      char *point = fdja_ls(v, "point", NULL);
+      char *color = *point == 'f' ? cdred : cclear;
+      printf("%s%.2s%s ", color, point, cclear);
+      free(point);
+
+      if (nid)
+      {
+        size_t anid = lookup_anid(anids, nid);
+        printf("%s%s %s%zx%s ", cdgrey, nid, cgreen, anid, cclear);
+      }
+      fdja_value *from = fdja_l(v, "from"); if (from)
+      {
+        char *f = fdja_to_string(from);
+        size_t af = lookup_anid(anids, f);
+        char *color = flon_is_plain_receive(v) ? cdgrey : cred;
+        printf("f:%s%s %s%zx%s ", color, f, cgreen, af, cclear);
+        free(f);
+      }
+
+      if (t)
+      {
+        char *inst = fdja_ls(t, "0", NULL);
+        char *atts = NULL;
+        if (fdja_lz(t, "1") > 0)
+        {
+          atts = fdja_ld(t, "1");
+          atts[0] = ' ';
+          atts[strlen(atts) - 2] = 0;
+        }
+        printf(
+          "%s%s%s%s ",
+          cdblue, inst, atts ? atts + 1 : "", cclear);
+        free(inst);
+        free(atts);
+      }
+
+      if (fdja_l(v, "payload"))
+      {
+        char *payload = fdja_lj(v, "payload");
+        if (prevpl == NULL || strcmp(prevpl, payload) != 0)
+        {
+          printf("%s%s%s ", cbrown, payload, cclear);
+          free(prevpl); prevpl = payload;
+        }
+        else
+        {
+          free(payload);
+        }
+      }
+      else
+      {
+        //free(prevpl); prevpl = NULL;
+        printf("%s(nopl)%s ", cbrown, cclear);
+      }
+
+      printf("\n");
+    }
+    free(nid);
+    fdja_free(v);
+  }
+  free(line);
+  free(prevpl);
+  fclose(f);
+
+  for (size_t i = 0; anids[i]; ++i) free(anids[i]);
+  free(anids);
+}
+
 void flon_pp_execution(const char *exid)
 {
-    // Black       0;30     Dark Gray     1;30
-    // Blue        0;34     Light Blue    1;34
-    // Green       0;32     Light Green   1;32
-    // Cyan        0;36     Light Cyan    1;36
-    // Red         0;31     Light Red     1;31
-    // Purple      0;35     Light Purple  1;35
-    // Brown       0;33     Yellow        1;33
-    // Light Gray  0;37     White         1;37
-    //
-  char *cclear = "[0;0m";
-  char *cred = "[0;31m";
-  char *cdred = "[1;31m";
-  //char *cblue = "[0;34m";
-  char *cdblue = "[1;34m";
-  char *cgreen = "[0;32m";
-  char *cdgrey = "[1;30m";
-  char *cbrown = "[0;33m";
-  //char *cyellow = "[1;33m";
 
   char *fep = flon_exid_path(exid);
 
@@ -120,151 +270,14 @@ void flon_pp_execution(const char *exid)
     "find var/log/%s -name \"inv_%s-*.log\" | xargs tail -n +1", fep, exid);
   printf(cclear);
 
-
-  puts("\n## msgs log (timeline view)\n#");
   char *fpath = flu_sprintf("%s/msgs.log", path);
 
-  ssize_t msg_count = count_lines(fpath);
-
-  FILE *f = fopen(fpath, "r");
-  if (f == NULL)
-  {
-    printf("couldn't read file at %s\n", fpath); perror("reason:");
-  }
-  else
-  {
-    char *line = NULL;
-    size_t len = 0;
-    fdja_value *v = NULL;
-
-    while (getline(&line, &len, f) != -1)
-    {
-      //printf("%.32s ", line);
-      printf("%.26s ", line);
-      char *br = strchr(line, '{');
-      v = fdja_parse(br); if (v) v->sowner = 0;
-      char p = v ? fdja_lk(v, "point") : '?';
-      if (p == 'e' || p == 'f') // execute or failed
-        flu_putf(fdja_todc(v));
-      else
-        printf(br);
-      fdja_free(v);
-    }
-    free(line);
-    fclose(f);
-  }
+  puts("\n## msgs log (timeline view)\n#");
+  print_msgs_timeline(fpath);
 
   puts("\n## msgs log (xmas view)\n#");
-  f = fopen(fpath, "r");
-  if (f == NULL)
-  {
-    printf("couldn't read file at %s\n", fpath); perror("reason:");
-  }
-  else
-  {
-    char **anids = calloc(msg_count + 1, sizeof(char *));
+  print_msgs_xmastree(fpath);
 
-    char *line = NULL;
-    size_t len = 0;
-    fdja_value *v = NULL;
-    char *prevpl = NULL;
-
-    while (getline(&line, &len, f) != -1)
-    {
-      printf("%s%.26s%s ", cdgrey, line, cclear);
-      char *br = strchr(line, '{');
-      v = fdja_parse(br);
-      char *nid = v ? fdja_ls(v, "nid", NULL) : NULL;
-      if (v == NULL)
-      {
-        printf(br);
-      }
-      else
-      {
-        v->sowner = 0;
-
-        fdja_value *t = fdja_l(v, "tree");
-
-        if (t)
-        {
-          long long line = fdja_li(t, "2", (long long)0);
-          printf("%s%3lli%s ", cbrown, line, cclear);
-        }
-        else
-        {
-          printf("    ");
-        }
-
-        int depth = nid ? flon_nid_depth(nid) : 0;
-        printf("%*s", 2 * depth, "");
-
-        char *point = fdja_ls(v, "point", NULL);
-        char *color = *point == 'f' ? cdred : cclear;
-        printf("%s%.2s%s ", color, point, cclear);
-        free(point);
-
-        if (nid)
-        {
-          size_t anid = lookup_anid(anids, nid);
-          printf("%s%s %s%zx%s ", cdgrey, nid, cgreen, anid, cclear);
-        }
-        fdja_value *from = fdja_l(v, "from"); if (from)
-        {
-          char *f = fdja_to_string(from);
-          size_t af = lookup_anid(anids, f);
-          char *color = flon_is_plain_receive(v) ? cdgrey : cred;
-          printf("f:%s%s %s%zx%s ", color, f, cgreen, af, cclear);
-          free(f);
-        }
-
-        if (t)
-        {
-          char *inst = fdja_ls(t, "0", NULL);
-          char *atts = NULL;
-          if (fdja_lz(t, "1") > 0)
-          {
-            atts = fdja_ld(t, "1");
-            atts[0] = ' ';
-            atts[strlen(atts) - 2] = 0;
-          }
-          printf(
-            "%s%s%s%s ",
-            cdblue, inst, atts ? atts + 1 : "", cclear);
-          free(inst);
-          free(atts);
-        }
-
-        if (fdja_l(v, "payload"))
-        {
-          char *payload = fdja_lj(v, "payload");
-          if (prevpl == NULL || strcmp(prevpl, payload) != 0)
-          {
-            printf("%s%s%s ", cbrown, payload, cclear);
-            free(prevpl); prevpl = payload;
-          }
-          else
-          {
-            free(payload);
-          }
-        }
-        else
-        {
-          //free(prevpl); prevpl = NULL;
-          printf("%s(nopl)%s ", cbrown, cclear);
-        }
-
-        printf("\n");
-      }
-      free(nid);
-      fdja_free(v);
-    }
-    free(line);
-    free(prevpl);
-    fclose(f);
-
-    for (size_t i = 0; anids[i]; ++i) free(anids[i]);
-    free(anids);
-  }
   free(fpath);
 
   puts("\n## run.json\n#");
