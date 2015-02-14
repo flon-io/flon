@@ -121,6 +121,27 @@ context "instruction:"
       }
 
       it "iterates and maps to a callable"
+      {
+        exid = flon_generate_exid("n.map.array.callable");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  define adder v.v, v.k, v.i\n"
+          "    $(v.v) + $(v.k) + $(v.i)\n"
+          "  map [ 1, 2, 3 ] adder\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: [ 1, 4, 7 ] }");
+      }
     }
 
     context "on object"

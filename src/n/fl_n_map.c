@@ -45,9 +45,7 @@
 
 static char rcv_map(fdja_value *node, fdja_value *rcv)
 {
-  char r = 'k'; // ok for now
-
-  if (is_msg_to_self(rcv)) { r = 'v'; goto _over; }
+  if (is_msg_to_self(rcv)) return 'v'; // over
 
   ssize_t index = fdja_li(node, "map.index", (ssize_t)-1);
 
@@ -60,37 +58,42 @@ static char rcv_map(fdja_value *node, fdja_value *rcv)
   if (index >= fdja_size(values)) // iteration over
   {
     fdja_pset(rcv, "payload.ret", fdja_lc(node, "map.rets"));
-    r = 'v'; goto _over;
+    return 'v';
   }
 
-  fdja_value *nid = fdja_lc(node, "nid");
-  fdja_value *val = fdja_atc(values, index);
+  fdja_value *callname = fdja_l(node, "map.callname");
+
+  fdja_value *callee = NULL;
+
+  if (callname)
+  {
+    callee =
+      fdja_clone(callname);
+  }
+  else
+  {
+    callee =
+      fdja_o(
+        "nid", fdja_lc(node, "nid"),
+        "args", fdja_v("[ ret, v.key, v.index ]"),
+        NULL);
+  }
 
   fdja_value *cargs = fdja_object_malloc();
-  fdja_set(
-    cargs, "_0",
-    fdja_o("nid", nid, "args", fdja_v("[ ret, v.key, v.index ]"), NULL));
-  fdja_set(
-    cargs, "_1",
-    val);
-  fdja_set(
-    cargs, "_2",
-    fdja_v("%zu", index));
-  fdja_set(
-    cargs, "_3",
-    fdja_v("%zu", index));
 
-  r = do_call(node, rcv, cargs);
+  //fdja_set(
+  //  cargs, "_0",
+  //  fdja_o("nid", nid, "args", fdja_v("[ ret, v.key, v.index ]"), NULL));
+  fdja_set(cargs, "_0", callee);
+  fdja_set(cargs, "_1", fdja_atc(values, index));
+  fdja_set(cargs, "_2", fdja_v("%zu", index));
+  fdja_set(cargs, "_3", fdja_v("%zu", index));
 
-_over:
-
-  return r;
+  return do_call(node, rcv, cargs);
 }
 
 static char exe_map(fdja_value *node, fdja_value *exe)
 {
-  char r = 'k'; // ok for now
-
   fdja_value *t = tree(node, exe);
   fdja_value *atts = fdja_at(t, 1);
   fdja_value *a0 = atts->child;
@@ -100,8 +103,7 @@ static char exe_map(fdja_value *node, fdja_value *exe)
   // marshall input
 
   fdja_value *values = NULL;
-  fdja_value *callname = NULL; char *cname = NULL;
-  //fdja_value *callable = NULL;
+  fdja_value *callname = NULL;
   fdja_value *block = NULL;
 
   if (a0 && a1) // map [ 1, 2, 3 ] add-three
@@ -131,12 +133,12 @@ static char exe_map(fdja_value *node, fdja_value *exe)
   if (values == NULL)
   {
     push_error(node, "no values to map from", t);
-    r = 'r'; goto _over;
+    return 'r';
   }
   if (callname == NULL && block == NULL)
   {
     push_error(node, "no function/block to map with", t);
-    r = 'r'; goto _over;
+    return 'r';
   }
 
   // ok, start mapping
@@ -146,12 +148,6 @@ static char exe_map(fdja_value *node, fdja_value *exe)
   fdja_pset(node, "map.callname", fdja_clone(callname));
   fdja_pset(node, "map.rets", fdja_array_malloc());
 
-  r = rcv_map(node, exe);
-
-_over:
-
-  free(cname);
-
-  return r;
+  return rcv_map(node, exe);
 }
 
