@@ -66,6 +66,8 @@ tt:
 	tree -L 3 tst/usr/local/
 last: scope
 	./tst/bin/flon-scope -d tst/
+vlast: scope
+	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
