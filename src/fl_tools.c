@@ -231,6 +231,12 @@ static void print_msgs_xmastree(const char *fpath)
   free(prevpl);
   fclose(f);
 
+  size_t count = 0; for (; anids[count]; ++count) {};
+  //
+  printf(
+    "%sseen %s%zu%s nodes%s\n",
+    cdgrey, cgreen, count, cdgrey, cclear);
+
   for (size_t i = 0; anids[i]; ++i) free(anids[i]);
   free(anids);
 }
