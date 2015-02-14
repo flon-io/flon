@@ -155,11 +155,12 @@ static void print_msgs_xmastree(const char *fpath)
       if (t)
       {
         long long line = fdja_li(t, "2", (long long)0);
-        printf("%s%3lli%s ", cbrown, line, cclear);
+        size_t anid = nid ? lookup_anid(anids, nid) : 0;
+        printf("%s%3lli %s%3zx%s ", cbrown, line, cgreen, anid, cclear);
       }
       else
       {
-        printf("    ");
+        printf("        ");
       }
 
       int depth = nid ? flon_nid_depth(nid) : 0;
@@ -172,15 +173,16 @@ static void print_msgs_xmastree(const char *fpath)
 
       if (nid)
       {
-        size_t anid = lookup_anid(anids, nid);
-        printf("%s%s %s%zx%s ", cdgrey, nid, cgreen, anid, cclear);
+        //size_t anid = lookup_anid(anids, nid);
+        //printf("%s%s %s%zx%s ", cdgrey, nid, cgreen, anid, cclear);
+        printf("%s%s%s ", cdgrey, nid, cclear);
       }
       fdja_value *from = fdja_l(v, "from"); if (from)
       {
         char *f = fdja_to_string(from);
         size_t af = lookup_anid(anids, f);
         char *color = flon_is_plain_receive(v) ? cdgrey : cred;
-        printf("f:%s%s %s%zx%s ", color, f, cgreen, af, cclear);
+        printf("f:%s%s%s:%s%zx%s ", color, f, cclear, cgreen, af, cclear);
         free(f);
       }
 
