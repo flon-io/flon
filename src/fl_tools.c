@@ -34,24 +34,57 @@
 #include "fl_tools.h"
 
 
+static ssize_t count_lines(const char *path)
+{
+  FILE *f = fopen(path, "r");
+  if (f == NULL) return -1;
+
+  size_t r = 0;
+
+  char *line = NULL;
+  size_t len = 0;
+
+  while (getline(&line, &len, f) != -1) ++r;
+
+  free(line);
+  fclose(f);
+
+  return r;
+}
+
+static size_t lookup_anid(char **anids, const char *nid)
+{
+  size_t i = 0; while (1)
+  {
+    if (anids[i] == NULL) break;
+    if (strcmp(anids[i], nid) == 0) return i;
+    i++;
+  }
+
+  anids[i] = strdup(nid);
+  return i;
+}
+
 void flon_pp_execution(const char *exid)
 {
-// Black       0;30     Dark Gray     1;30
-// Blue        0;34     Light Blue    1;34
-// Green       0;32     Light Green   1;32
-// Cyan        0;36     Light Cyan    1;36
-// Red         0;31     Light Red     1;31
-// Purple      0;35     Light Purple  1;35
-// Brown       0;33     Yellow        1;33
-// Light Gray  0;37     White         1;37
+    // Black       0;30     Dark Gray     1;30
+    // Blue        0;34     Light Blue    1;34
+    // Green       0;32     Light Green   1;32
+    // Cyan        0;36     Light Cyan    1;36
+    // Red         0;31     Light Red     1;31
+    // Purple      0;35     Light Purple  1;35
+    // Brown       0;33     Yellow        1;33
+    // Light Gray  0;37     White         1;37
+    //
   char *cclear = "[0;0m";
   char *cred = "[0;31m";
   char *cdred = "[1;31m";
+  //char *cblue = "[0;34m";
   char *cdblue = "[1;34m";
   char *cgreen = "[0;32m";
   char *cdgrey = "[1;30m";
   char *cbrown = "[0;33m";
-  char *cyellow = "[1;33m";
+  //char *cyellow = "[1;33m";
 
   char *fep = flon_exid_path(exid);
 
@@ -87,8 +120,12 @@ void flon_pp_execution(const char *exid)
     "find var/log/%s -name \"inv_%s-*.log\" | xargs tail -n +1", fep, exid);
   printf(cclear);
 
+
   puts("\n## msgs log (timeline view)\n#");
   char *fpath = flu_sprintf("%s/msgs.log", path);
+
+  ssize_t msg_count = count_lines(fpath);
+
   FILE *f = fopen(fpath, "r");
   if (f == NULL)
   {
@@ -125,6 +162,8 @@ void flon_pp_execution(const char *exid)
   }
   else
   {
+    char **anids = calloc(msg_count + 1, sizeof(char *));
+
     char *line = NULL;
     size_t len = 0;
     fdja_value *v = NULL;
@@ -153,26 +192,28 @@ void flon_pp_execution(const char *exid)
         }
         else
         {
-          printf("    ", line);
+          printf("    ");
         }
 
         int depth = nid ? flon_nid_depth(nid) : 0;
         printf("%*s", 2 * depth, "");
 
         char *point = fdja_ls(v, "point", NULL);
-        char *color = point == 'f' ? cdred : cclear;
+        char *color = *point == 'f' ? cdred : cclear;
         printf("%s%.2s%s ", color, point, cclear);
         free(point);
 
         if (nid)
         {
-          printf("%s%s%s ", cdgrey, nid, cclear);
+          size_t anid = lookup_anid(anids, nid);
+          printf("%s%s %s%zx%s ", cdgrey, nid, cgreen, anid, cclear);
         }
         fdja_value *from = fdja_l(v, "from"); if (from)
         {
           char *f = fdja_to_string(from);
+          size_t af = lookup_anid(anids, f);
           char *color = flon_is_plain_receive(v) ? cdgrey : cred;
-          printf("f%s%s%s ", color, f, cclear);
+          printf("f:%s%s %s%zx%s ", color, f, cgreen, af, cclear);
           free(f);
         }
 
@@ -220,6 +261,9 @@ void flon_pp_execution(const char *exid)
     free(line);
     free(prevpl);
     fclose(f);
+
+    for (size_t i = 0; anids[i]; ++i) free(anids[i]);
+    free(anids);
   }
   free(fpath);
 
