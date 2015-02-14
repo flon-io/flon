@@ -196,7 +196,7 @@ context "instruction:"
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
-      expect(fdja_ls(result, "error.msg", NULL) ===f "cannot call");
+      expect(fdja_ls(result, "error.msg", NULL) ===f "not callable 'sub'");
     }
 
     it "fails gracefully when given nothing to call"
