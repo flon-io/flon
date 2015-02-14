@@ -76,7 +76,7 @@ fdja_value *flon_node(const char *nid);
 fdja_value *flon_node_tree(const char *nid);
 fdja_value *flon_node_tree_clone(const char *nid);
 
-char *flon_node_parent_nid(const char *nid);
+char *flon_parent_nid(const char *nid);
 
 #endif // FL_EXECUTOR_H
 

@@ -97,31 +97,31 @@ context "fl_exe_nodes"
     }
   }
 
-  describe "flon_node_parent_nid()"
+  describe "flon_parent_nid()"
   {
     it "returns NULL for node 0"
     {
-      expect(flon_node_parent_nid("0") == NULL);
+      expect(flon_parent_nid("0") == NULL);
     }
 
     it "returns the parent nid"
     {
-      expect(flon_node_parent_nid("0_1_0") ===f "0_1");
+      expect(flon_parent_nid("0_1_0") ===f "0_1");
     }
 
     it "ignores the 'counter' part of the nid"
     {
-      expect(flon_node_parent_nid("0_1_0-1") ===f "0_1");
+      expect(flon_parent_nid("0_1_0-1") ===f "0_1");
     }
 
     it "returns the 'parent' if present"
     {
-      expect(flon_node_parent_nid("9_1_9") ===f "9_0");
+      expect(flon_parent_nid("9_1_9") ===f "9_0");
     }
 
     it "returns NULL if it doesn't find the node"
     {
-      expect(flon_node_parent_nid("9") == NULL);
+      expect(flon_parent_nid("9") == NULL);
     }
   }
 }

@@ -282,8 +282,7 @@ static void handle_return(char order, fdja_value *msg)
 
   if (r == 'v') // over
   {
-    free(parent_nid);
-    parent_nid = flon_node_parent_nid(nid);
+    free(parent_nid); parent_nid = flon_parent_nid(nid);
 
     if (parent_nid)
     {

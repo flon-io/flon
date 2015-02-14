@@ -127,7 +127,7 @@ static fdja_value *payload_clone(fdja_value *msg)
 static fdja_value *parent(fdja_value *node)
 {
   char *nid = fdja_ls(node, "nid"); if (nid == NULL) return NULL;
-  char *pnid = flon_node_parent_nid(nid);
+  char *pnid = flon_parent_nid(nid);
   fdja_value *r = flon_node(pnid);
 
   free(nid);
