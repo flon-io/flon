@@ -241,9 +241,89 @@ static void print_msgs_xmastree(const char *fpath)
   free(anids);
 }
 
+void print_msg_child(size_t indent, fdja_value *tr)
+{
+  for (fdja_value *ct = fdja_at(tr, 3)->child; ct; ct = ct->sibling)
+  {
+    printf("%*s", indent, " ");
+
+    char *head = fdja_ls(ct, "0", NULL);
+    char *atts = fdja_ld(ct, "1");
+
+    printf(" %s%s %s", cdgrey, head, atts);
+
+    printf("%s\n", cclear);
+
+    free(head);
+    free(atts);
+  }
+}
+
+void print_msg_tree(const char *date, fdja_value *msg)
+{
+  fdja_value *tr = fdja_l(msg, "tree");
+  if (tr == NULL) return;
+
+  char *pt = fdja_ls(msg, "point", NULL); if (pt == NULL) pt = strdup("??");
+  char *nid = fdja_ls(msg, "nid", NULL); if (nid == NULL) nid = strdup(" ");
+  size_t l = fdja_li(tr, "2", (size_t)0);
+
+  printf(
+    "%s%s %s%.2s %s%zu %s%s",
+    cdgrey, date, cclear, pt, cbrown, l, cdgrey, nid);
+
+  char *head = fdja_ls(tr, "0", NULL);
+  char *atts = fdja_ld(tr, "1");
+
+  printf(" %s%s %s", cdblue, head, atts);
+
+  printf("%s\n", cclear);
+
+  char *s = flu_sprintf("%s %.2s %zu %s", date, pt, l, nid);
+
+  print_msg_child(strlen(s) + 2, tr);
+
+  free(pt);
+  free(nid);
+  free(head);
+  free(atts);
+  free(s);
+}
+
+void print_tree(const char *fpath)
+{
+  FILE *f = fopen(fpath, "r");
+
+  if (f == NULL)
+  {
+    printf("couldn't read file at %s\n", fpath);
+    perror("reason:");
+    return;
+  }
+
+  char *line = NULL;
+  size_t len = 0;
+  fdja_value *v = NULL;
+
+  while (getline(&line, &len, f) != -1)
+  {
+    char *date = strndup(line, 26);
+    char *br = strchr(line, '{');
+    v = fdja_parse(br); if (v) v->sowner = 0;
+
+    print_msg_tree(date, v);
+
+    free(date);
+    fdja_free(v);
+
+    //break;
+  }
+  free(line);
+  fclose(f);
+}
+
 void flon_pp_execution(const char *exid)
 {
-
   char *fep = flon_exid_path(exid);
 
   char *path = flu_sprintf("var/archive/%s", fep);
@@ -285,6 +365,9 @@ void flon_pp_execution(const char *exid)
 
   puts("\n## msgs log (xmas view)\n#");
   print_msgs_xmastree(fpath);
+
+  puts("\n## msgs log (forest view)\n#");
+  print_tree(fpath);
 
   free(fpath);
 
