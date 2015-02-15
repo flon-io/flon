@@ -146,7 +146,27 @@ context "instruction:"
 
     context "on object"
     {
-      it "iterates over an object"
+      it "iterates"
+      {
+        exid = flon_generate_exid("n.map.object");
+
+        hlp_launch(
+          exid,
+          "map { a:1, b: 2, c: 3 }\n"
+          "  val '$(v.index)-$(v.key):$(ret)'\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: [ 0-a:1, 1-b:2, 2-c:3 ] }");
+      }
+
       it "iterates over an $(f.ret) object"
       it "iterates and maps an object to a callable"
     }
