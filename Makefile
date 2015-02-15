@@ -66,10 +66,14 @@ tt:
 	tree -L 3 tst/usr/local/
 last: scope
 	./tst/bin/flon-scope -d tst/
+lastl: scope
+	./tst/bin/flon-scope -d tst/ | less -r
 vlast: scope
 	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/
+vlastl: scope
+	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/ | less -r
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
-  ps killall tt last
+  ps killall tt
 
