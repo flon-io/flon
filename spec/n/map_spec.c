@@ -88,7 +88,6 @@ context "instruction:"
           "{ i: 6 }");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
         //puts(fdja_todc(result));
@@ -111,7 +110,6 @@ context "instruction:"
           "{}");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
         //puts(fdja_todc(result));
@@ -134,7 +132,6 @@ context "instruction:"
           "{}");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
         //puts(fdja_todc(result));
@@ -152,8 +149,30 @@ context "instruction:"
 
         hlp_launch(
           exid,
-          "map { a:1, b: 2, c: 3 }\n"
+          "map { a: 1, b: 2, c: 3 }\n"
           "  val '$(v.index)-$(v.key):$(ret)'\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: [ 0-a:1, 1-b:2, 2-c:3 ] }");
+      }
+
+      it "iterates over an $(f.ret) object"
+      {
+        exid = flon_generate_exid("n.map.object");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  { a: 10, b: 20, c: 30 }\n"
+          "  map\n"
+          "    val '$(v.index)-$(v.key):$(ret)'\n"
           "",
           "{}");
 
@@ -164,11 +183,31 @@ context "instruction:"
         //puts(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f ""
-          "{ ret: [ 0-a:1, 1-b:2, 2-c:3 ] }");
+          "{ ret: [ 0-a:10, 1-b:20, 2-c:30 ] }");
       }
 
-      it "iterates over an $(f.ret) object"
       it "iterates and maps an object to a callable"
+      {
+        exid = flon_generate_exid("n.map.object");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  define formatter v.v, v.k, v.i\n"
+          "    val '$(v.v)/$(v.k)/$(v.i)'\n"
+          "  map { a: 10, b: 20, c: 30 } formatter\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+        //flon_pp_execution(exid);
+
+        expect(result != NULL);
+        //puts(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: [ 10/a/0, 20/b/1, 30/c/2 ] }");
+      }
     }
   }
 }
