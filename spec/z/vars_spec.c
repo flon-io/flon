@@ -53,6 +53,26 @@ context "flon and vars:"
     }
 
     it "are overriden by local vars"
+    {
+      exid = flon_generate_exid("z.test.domain");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set v.city: Dublin\n"
+        "  trace $(v.city)\n"
+        "  trace $(dv.city)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //puts(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ ret: Dublin, trace: [ Dublin, Dover ] }");
+    }
   }
 }
 

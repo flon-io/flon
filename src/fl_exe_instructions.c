@@ -148,6 +148,7 @@ static char *radfile(fdja_value *node, fdja_value *msg)
 }
 
 static fdja_value *domain_vars = NULL;
+  // domain_vars are "cached" for the duration of an execution session...
 
 static void merge_domain_vars(const char *dom)
 {
@@ -211,7 +212,9 @@ static fdja_value *lookup_vars(char mode, fdja_value *node)
 
 static fdja_value *lookup_var(fdja_value *node, char mode, const char *key)
 {
-  if (mode != 'g' && mode != 'l' && mode != 'd') mode = 'l';
+  if (mode == 'd') return lookup_domain_var(key);
+
+  if (mode != 'g' && mode != 'l') mode = 'l';
 
   fdja_value *n = lookup_var_node(mode, node);
   if (n == NULL) return NULL;
@@ -220,7 +223,6 @@ static fdja_value *lookup_var(fdja_value *node, char mode, const char *key)
   if (r) return r;
 
   fdja_value *par = parent(node);
-  //if (par == NULL) return NULL;
   if (par == NULL) return lookup_domain_var(key);
 
   return lookup_var(par, mode, key);
