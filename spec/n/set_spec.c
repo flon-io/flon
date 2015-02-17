@@ -42,8 +42,6 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
@@ -63,8 +61,6 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
@@ -83,8 +79,6 @@ context "instruction:"
         "{ k: number }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
@@ -106,8 +100,6 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
@@ -134,8 +126,6 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
@@ -157,8 +147,6 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
@@ -182,13 +170,33 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: 3, trace: [ 3 ] }");
+    }
+
+    it "cannot set domain vars"
+    {
+      exid = flon_generate_exid("n.test.set.cannot");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace $(v.city)\n"
+        "  set d.city: Brussels\n"
+        "  trace $(v.city)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ Birmingham, Birmingham ], ret: Brussels }");
     }
   }
 }
