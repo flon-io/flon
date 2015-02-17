@@ -59,9 +59,12 @@ context "flon and vars:"
       hlp_launch(
         exid,
         "sequence\n"
-        "  set v.city: Dublin\n"
-        "  trace $(v.city)\n"
-        "  trace $(dv.city)\n"
+        "  sequence vars\n"
+        "    set v.city: Dublin\n"
+        "    trace $(v.city)\n"
+        "    trace $(dv.city)\n"
+        "    trace $(gv.city)\n"
+        "  trace $(gv.city)\n"
         "",
         "{}");
 
@@ -71,7 +74,7 @@ context "flon and vars:"
       //puts(fdja_todc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: Dublin, trace: [ Dublin, Dover ] }");
+        "{ ret: Dublin, trace: [ Dublin, Dover, Dover, Dover ] }");
     }
   }
 }
