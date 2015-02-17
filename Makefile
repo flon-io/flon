@@ -67,11 +67,11 @@ tt:
 last: scope
 	./tst/bin/flon-scope -d tst/
 lastl: scope
-	./tst/bin/flon-scope -d tst/ | less -r
+	./tst/bin/flon-scope -d tst/ | less +F -R
 vlast: scope
 	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/
 vlastl: scope
-	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/ | less -r
+	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/ | less +F -R
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
