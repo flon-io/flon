@@ -43,7 +43,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
       //flon_pp_execution(exid);
 
       expect(result != NULL);
@@ -65,7 +65,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
       //flon_pp_execution(exid);
 
       expect(result != NULL);
@@ -88,7 +88,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
       //flon_pp_execution(exid);
 
       expect(result != NULL);
@@ -124,7 +124,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
       //flon_pp_execution(exid);
 
       expect(result != NULL);
@@ -146,7 +146,7 @@ context "instruction:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
       //flon_pp_execution(exid);
 
       expect(result != NULL);
