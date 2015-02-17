@@ -147,6 +147,47 @@ static char *radfile(fdja_value *node, fdja_value *msg)
   return radfile(par, NULL);
 }
 
+static fdja_value *domain_vars = NULL;
+
+static void merge_domain_vars(const char *dom)
+{
+  fdja_value *o = fdja_parse_obj_f("usr/local/etc/vars/%s.json", dom);
+  if (o == NULL) return;
+
+  fdja_merge(domain_vars, o);
+  fdja_free(o);
+}
+
+static fdja_value *lookup_domain_var(const char *key)
+{
+  if (execution_id == NULL) return NULL;
+
+  if (domain_vars == NULL)
+  {
+    domain_vars = fdja_object_malloc();
+
+    merge_domain_vars("any");
+
+    char *exid = execution_id;
+    char *dot = execution_id;
+    char *dash = strchr(dot, '-');
+
+    while (1)
+    {
+      dot = strchr(dot + 1, '.');
+      if (dash < dot) dot = dash;
+
+      char *dom = strndup(exid, dot - exid);
+      merge_domain_vars(dom);
+      free(dom);
+
+      if (dot == dash) break;
+    }
+  }
+
+  return fdja_l(domain_vars, key);
+}
+
 static fdja_value *lookup_var_node(char mode, fdja_value *node)
 {
   fdja_value *vars = fdja_l(node, "vars");
@@ -179,7 +220,8 @@ static fdja_value *lookup_var(fdja_value *node, char mode, const char *key)
   if (r) return r;
 
   fdja_value *par = parent(node);
-  if (par == NULL) return NULL;
+  //if (par == NULL) return NULL;
+  if (par == NULL) return lookup_domain_var(key);
 
   return lookup_var(par, mode, key);
 }
