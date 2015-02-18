@@ -446,7 +446,30 @@ context "instruction:"
       it "matches objects (miss)"
       it "accepts /.../ regexes"
       it "accepts /.../i regexes"
+
       it "fails when it cannot compile the regex"
+      {
+        exid = flon_generate_exid("n.cmp.match.fail");
+
+        hlp_launch(
+          exid,
+          "=~\n"
+          "  poto\n"
+          "  xxx(yyy\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "failed", NULL, 3);
+
+        expect(result != NULL);
+        //fdja_putdc(result);
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: false }");
+        expect(fdja_ls(result, "error.msg") ===f ""
+          "regex compilation failed: Unmatched ( or \\("
+          " in >xxx(yyy<");
+      }
     }
 
     context "!~"

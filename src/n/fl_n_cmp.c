@@ -43,7 +43,10 @@ static int rmatch(
   {
     char buf[128];
     regerror(ii, &regex, buf, 127);
-    push_error(node, "regex compilation failed: %s", buf, NULL);
+
+    push_error(
+      node, "regex compilation failed: %s in >%s<", buf, reg, NULL);
+
     goto _over;
   }
 
