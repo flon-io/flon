@@ -95,6 +95,27 @@ context "fl_exe_nodes"
       expect(fdja_tod(t) ===f ""
         "[ a, {}, 7, [] ]");
     }
+
+    it "returns NULL when the tree is not present (0_)"
+    {
+      fdja_value *t = flon_node_tree("0_2_3");
+
+      expect(t == NULL);
+    }
+
+    it "returns NULL when the tree is not present (1)"
+    {
+      fdja_value *t = flon_node_tree("1");
+
+      expect(t == NULL);
+    }
+
+    it "returns NULL when the tree is not present (1_)"
+    {
+      fdja_value *t = flon_node_tree("1_0");
+
+      expect(t == NULL);
+    }
   }
 
   describe "flon_parent_nid()"
