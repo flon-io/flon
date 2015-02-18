@@ -47,7 +47,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ x: 4, ret: true }");
@@ -68,7 +67,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ x: 7, ret: false }");
@@ -87,7 +85,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ x: 9, ret: true }");
@@ -106,7 +103,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ x: 10, ret: true }");
@@ -130,10 +126,8 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
-        expect(fdja_ld(result, "payload") ===f ""
-          "{ ret: true }");
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
       }
 
       it "compares objects (miss)"
@@ -151,10 +145,53 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
+
+      it "compares nulls (hit)"
+      {
+        exid = flon_generate_exid("n.cmp.eq.n.hit");
+
+        hlp_launch(
+          exid,
+          "== \n"
+          "  null\n"
+          "  null\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
+      }
+
+      it "compares nulls (miss)"
+      {
+        exid = flon_generate_exid("n.cmp.eq.n.miss");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  == \n"
+          "    null\n"
+          "    a\n"
+          "  trace $(ret)\n"
+          "  == \n"
+          "    a\n"
+          "    null\n"
+          "  trace $(ret)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
 
         expect(fdja_ld(result, "payload") ===f ""
-          "{ ret: false }");
+          "{ ret: false, trace: [ false, false ] }");
       }
 
       it "compares integers (hit)"
@@ -172,7 +209,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: true }");
       }
@@ -192,7 +228,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: false }");
       }
@@ -214,7 +249,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: false }");
       }
@@ -237,7 +271,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: true }");
       }
@@ -257,7 +290,51 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
+
+      it "compares nulls (hit)"
+      {
+        exid = flon_generate_exid("n.cmp.neq.n.hit");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  !=\n"
+          "    null\n"
+          "    a\n"
+          "  trace $(ret)\n"
+          "  !=\n"
+          "    a\n"
+          "    null\n"
+          "  trace $(ret)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: true, trace: [ true, true ] }");
+      }
+
+      it "compares nulls (miss)"
+      {
+        exid = flon_generate_exid("n.cmp.eq.n.miss");
+
+        hlp_launch(
+          exid,
+          "!= \n"
+          "  null\n"
+          "  null\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
 
         expect(fdja_ld(result, "payload") ===f "{ ret: false }");
       }
@@ -277,7 +354,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: true }");
       }
@@ -297,7 +373,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: false }");
       }
@@ -317,7 +392,6 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 3);
 
         expect(result != NULL);
-        //flu_putf(fdja_todc(result));
 
         expect(fdja_ld(result, "payload") ===f "{ ret: false }");
       }
