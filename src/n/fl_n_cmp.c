@@ -24,6 +24,45 @@
 //
 
 
+static int rmatch(
+  fdja_value *node, const char *op, fdja_value *l, fdja_value *r)
+{
+  int i = 0;
+
+  char *str = fdja_to_string(l);
+  char *reg = fdja_to_string(r);
+
+  int flags = REG_EXTENDED;
+  //if (strchr(operator, 'i')) flags = flags | REG_ICASE;
+
+  regex_t regex;
+  regmatch_t ms[1];
+
+  int ii = regcomp(&regex, reg, flags);
+  if (ii != 0)
+  {
+    char buf[128];
+    regerror(ii, &regex, buf, 127);
+    push_error(node, "regex compilation failed: %s", buf, NULL);
+    goto _over;
+  }
+
+  //flags = REG_NOTBOL | REG_NOTEOL;
+  flags = 0;
+  ii = regexec(&regex, str, 1, ms, flags);
+
+  i = (ii == 0);
+
+_over:
+
+  free(str);
+  free(reg);
+
+  regfree(&regex);
+
+  return i;
+}
+
 static int cmp_object(char *op, char *l, char *r)
 {
   if (strcmp(op, "==") == 0) return strcmp(l, r) == 0;
@@ -63,14 +102,17 @@ static int cmp_number(char *op, char *l, char *r)
   return strchr(l, '.') ? cmp_double(op, l, r) : cmp_integer(op, l, r);
 }
 
-static int cmp(char *op, fdja_value *l, fdja_value *r)
+static int cmp(
+  fdja_value *node, char *op, fdja_value *l, fdja_value *r)
 {
   char *jl = fdja_to_json(l);
   char *jr = fdja_to_json(r);
 
   int ret = 0;
 
-  if (l->type == 'n' && r->type == 'n')
+  if (op[1] == '~')
+    ret = rmatch(node, op, l, r);
+  else if (l->type == 'n' && r->type == 'n')
     ret = cmp_number(op, jl, jr);
   else if (l->type == 'n')
     ret = 0;
@@ -88,6 +130,8 @@ static char rcv_cmp(fdja_value *node, fdja_value *rcv)
 
   if (r != 'v') return r;
 
+  size_t rcount = error_count(node);
+
   char *op = fdja_ls(node, "inst", NULL);
   fdja_value *rets = fdja_l(node, "rets");
   size_t l = fdja_size(rets);
@@ -97,9 +141,12 @@ static char rcv_cmp(fdja_value *node, fdja_value *rcv)
   if (l > 1) for (fdja_value *r = rets->child; ; r = r->sibling)
   {
     if (--l == 0) break;
+
     fdja_value *left = r;
     fdja_value *right = r->sibling;
-    ret = cmp(op, left, right);
+
+    ret = cmp(node, op, left, right);
+
     if (ret == 0) break;
   }
 
@@ -107,6 +154,7 @@ static char rcv_cmp(fdja_value *node, fdja_value *rcv)
 
   free(op);
 
+  if (error_count(node) > rcount) return 'r';
   return 'v';
 }
 

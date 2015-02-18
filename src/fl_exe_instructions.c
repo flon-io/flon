@@ -28,6 +28,9 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+//
+#include <sys/types.h>
+#include <regex.h>
 
 #include "flutil.h"
 #include "flutim.h"
@@ -673,6 +676,8 @@ static flon_ni *instructions[] =
   &(flon_ni){ "<=", exe_cmp, rcv_cmp, can_ },
   &(flon_ni){ "==", exe_cmp, rcv_cmp, can_ },
   &(flon_ni){ "!=", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "=~", exe_cmp, rcv_cmp, can_ },
+  &(flon_ni){ "!~", exe_cmp, rcv_cmp, can_ },
   //&(flon_ni){ "c>", exe_cmp, rcv_cmp, can_ }, // TODO
 
   &(flon_ni){ "ife", exe_ife, rcv_ife, can_ },

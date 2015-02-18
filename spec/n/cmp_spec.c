@@ -364,7 +364,7 @@ context "instruction:"
 
         hlp_launch(
           exid,
-          "!= \n"
+          "!=\n"
           "  123\n"
           "  123\n"
           "",
@@ -383,7 +383,7 @@ context "instruction:"
 
         hlp_launch(
           exid,
-          "!= \n"
+          "!=\n"
           "  12.3\n"
           "  12.0\n"
           "",
@@ -402,9 +402,51 @@ context "instruction:"
     context "=~"
     {
       it "matches strings (hit)"
+      {
+        exid = flon_generate_exid("n.cmp.match.s.hit");
+
+        hlp_launch(
+          exid,
+          "=~\n"
+          "  toto\n"
+          "  t.t.\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
+      }
+
       it "matches strings (miss)"
+      {
+        exid = flon_generate_exid("n.cmp.match.s.hit");
+
+        hlp_launch(
+          exid,
+          "=~\n"
+          "  poto\n"
+          "  t.t.\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
+
+      it "matches ^ at the beginning"
+      it "matches $ at the end"
+
       it "matches objects (hit)"
       it "matches objects (miss)"
+      it "accepts /.../ regexes"
+      it "accepts /.../i regexes"
+      it "fails when it cannot compile the regex"
     }
 
     context "!~"
