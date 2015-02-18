@@ -474,8 +474,44 @@ context "instruction:"
 
     context "!~"
     {
-      it "unmatches strings (hit)"
-      it "unmatches strings (miss)"
+      it "doesn't match strings (hit)"
+      {
+        exid = flon_generate_exid("n.cmp.nomatch.s.hit");
+
+        hlp_launch(
+          exid,
+          "!~\n"
+          "  toto\n"
+          "  r.r.\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
+      }
+
+      it "doesn't match strings (miss)"
+      {
+        exid = flon_generate_exid("n.cmp.nomatch.s.hit");
+
+        hlp_launch(
+          exid,
+          "!~\n"
+          "  toto\n"
+          "  t.t.\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
+
       it "unmatches objects (hit)"
       it "unmatches objects (miss)"
     }

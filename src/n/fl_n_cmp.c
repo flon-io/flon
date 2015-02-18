@@ -55,6 +55,7 @@ static int rmatch(
   ii = regexec(&regex, str, 1, ms, flags);
 
   i = (ii == 0);
+  if (*op == '!') i = ! i;
 
 _over:
 
