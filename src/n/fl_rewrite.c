@@ -513,6 +513,9 @@ static int rewrite_tree(fdja_value *node, fdja_value *msg, fdja_value *tree)
   rw |= rewrite_pinfix("==", node, msg, tree);
   rw |= rewrite_pinfix("!=", node, msg, tree);
   //
+  rw |= rewrite_pinfix("=~", node, msg, tree);
+  rw |= rewrite_pinfix("!~", node, msg, tree);
+  //
   rw |= rewrite_pinfix(">", node, msg, tree);
   rw |= rewrite_pinfix(">=", node, msg, tree);
   rw |= rewrite_pinfix("<", node, msg, tree);
