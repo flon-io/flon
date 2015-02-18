@@ -198,7 +198,26 @@ context "instruction:"
       }
 
       it "compares floats (hit)"
+
       it "compares floats (miss)"
+      {
+        exid = flon_generate_exid("n.cmp.eq.f.miss");
+
+        hlp_launch(
+          exid,
+          "== \n"
+          "  12.3\n"
+          "  12.0\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
     }
 
     context "!="
@@ -284,6 +303,25 @@ context "instruction:"
       }
 
       it "compares floats (hit)"
+      {
+        exid = flon_generate_exid("n.cmp.neq.f.hit");
+
+        hlp_launch(
+          exid,
+          "!= \n"
+          "  12.3\n"
+          "  12.0\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+        //flu_putf(fdja_todc(result));
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: false }");
+      }
+
       it "compares floats (miss)"
     }
 
