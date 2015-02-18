@@ -43,7 +43,6 @@ context "instruction:"
         "{ x: 4 }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
@@ -65,7 +64,6 @@ context "instruction:"
         "{ x: 7 }");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
@@ -75,6 +73,42 @@ context "instruction:"
     }
 
     it "accepts a one-liner  > $(a) b"
+    {
+      exid = flon_generate_exid("n.cmp.1");
+
+      hlp_launch(
+        exid,
+        "> $(x) 8\n"
+        "",
+        "{ x: 9 }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ x: 9, ret: true }");
+    }
+
+    it "accepts a one-liner  $(a) > b"
+    {
+      exid = flon_generate_exid("n.cmp.1");
+
+      hlp_launch(
+        exid,
+        "$(x) > 8\n"
+        "",
+        "{ x: 10 }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ x: 10, ret: true }");
+    }
   }
 }
 
