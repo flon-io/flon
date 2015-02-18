@@ -444,8 +444,44 @@ context "instruction:"
 
       it "matches objects (hit)"
       it "matches objects (miss)"
+
       it "accepts /.../ regexes"
+      {
+        exid = flon_generate_exid("n.cmp.match.slash");
+
+        hlp_launch(
+          exid,
+          "=~\n"
+          "  toto\n"
+          "  /(t.)+/\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
+      }
+
       it "accepts /.../i regexes"
+      {
+        exid = flon_generate_exid("n.cmp.match.slash.i");
+
+        hlp_launch(
+          exid,
+          "=~\n"
+          "  TOto\n"
+          "  /(t.)+/i\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f "{ ret: true }");
+      }
 
       it "fails when it cannot compile the regex"
       {
@@ -470,6 +506,8 @@ context "instruction:"
           "regex compilation failed: Unmatched ( or \\("
           " in >xxx(yyy<");
       }
+
+      it "sets matches in variables..."
     }
 
     context "!~"

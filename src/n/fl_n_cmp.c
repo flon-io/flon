@@ -30,10 +30,22 @@ static int rmatch(
   int i = 0;
 
   char *str = fdja_to_string(l);
+
   char *reg = fdja_to_string(r);
+  char *oreg = reg;
 
   int flags = REG_EXTENDED;
-  //if (strchr(operator, 'i')) flags = flags | REG_ICASE;
+
+  if (*reg == '/')
+  {
+    char *rslash = strrchr(reg, '/');
+    if (rslash && rslash != reg)
+    {
+      reg = strndup(reg + 1, rslash - reg - 1);
+      if (strchr(rslash + 1, 'i')) flags |= REG_ICASE;
+      free(oreg);
+    }
+  }
 
   regex_t regex;
   regmatch_t ms[1];
