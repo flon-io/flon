@@ -293,8 +293,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit d6e7a9a20c829c37fbb15fd43b6d9d3089f66212
+//commit c57c4cd58486dcdc70f98357e74ab1bfe231c7c3
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Feb 10 14:06:39 2015 +0900
+//Date:   Thu Feb 19 06:42:39 2015 +0900
 //
-//    implement fdja_parse_r()
+//    allow for /regexes/i in radial

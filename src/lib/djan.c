@@ -127,6 +127,18 @@ static void fdja_parser_init()
           "]"
         ")*"
       "'");
+  fabr_parser *rxstring = // only for radial
+    fabr_n_rex(
+      "rxstring",
+      "/"
+        "("
+          "\\\\['\\/\\\\bfnrt]" "|"
+          "\\\\u[0-9a-fA-F]{4}" "|"
+          "[^"
+            "/" "\\\\" "\b" "\f" "\n" "\r" "\t"
+          "]"
+        ")*"
+      "/i?");
 
   fabr_parser *symbolk =
     fabr_n_rex(
@@ -252,7 +264,9 @@ static void fdja_parser_init()
     fabr_n_altg(
       "rad_v",
       fabr_alt(
-        rad_p, string, sqstring, number, object, array, jtrue, jfalse, jnull,
+        rad_p,
+        string, sqstring, rxstring,
+        number, object, array, jtrue, jfalse, jnull,
         NULL),
       symv,
       NULL);
@@ -407,6 +421,7 @@ static fdja_value *fdja_extract_v(char *input, fabr_tree *t)
   if (strchr("tfao", *t->name)) ty = *t->name;
   else if (*(t->name + 1) == 't') ty = 's'; // string
   else if (*(t->name + 1) == 'q') ty = 'q'; // sqstring ('string')
+  else if (*(t->name + 1) == 'x') ty = 'y'; // rxstring (/string/)
   else if (*(t->name + 1) == 'y') ty = 'y'; // symbol
   else if (*(t->name + 2) == 'm') ty = 'n'; // number
   else if (*(t->name + 2) == 'l') ty = '0'; // null
@@ -1762,8 +1777,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit d6e7a9a20c829c37fbb15fd43b6d9d3089f66212
+//commit c57c4cd58486dcdc70f98357e74ab1bfe231c7c3
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Feb 10 14:06:39 2015 +0900
+//Date:   Thu Feb 19 06:42:39 2015 +0900
 //
-//    implement fdja_parse_r()
+//    allow for /regexes/i in radial
