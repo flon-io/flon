@@ -482,6 +482,16 @@ static size_t counter_next()
   return r;
 }
 
+static size_t libcounter_next()
+{
+  for (size_t i = 1; ; ++i)
+  {
+    if (fdja_l(execution, "nodes.%zu", i) == NULL) return i;
+  }
+
+  return 9999;
+}
+
 
 //
 // ... some defaults

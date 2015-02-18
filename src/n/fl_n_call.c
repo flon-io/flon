@@ -24,10 +24,113 @@
 //
 
 
-static char exe_call(fdja_value *node, fdja_value *exe)
+// TODO: consider moving this to fl_call.c
+
+static char *locate_lib(const char *libname)
 {
-  return do_call(node, exe, attributes(node, exe));
+  char *dash = strchr(execution_id, '-');
+  if (dash == NULL) return NULL;
+
+  char *dom = strndup(execution_id, dash - execution_id);
+  char s = 0;
+
+  while (1)
+  {
+    s = flu_fstat("usr/local/lib/%s/%s", dom, libname);
+
+    if (s == 'f') break;
+    if (strcmp(dom, "any") == 0) break;
+
+    char *dot = strrchr(dom, '.');
+
+    if (dot == NULL) { free(dom); dom = strdup("any"); }
+    else { char *d = dom; dom = strndup(d, dot - d); free(d); }
+  }
+
+  char *r = NULL;
+
+  if (s == 'f') r = flu_sprintf("usr/local/lib/%s/%s", dom, libname);
+
+  free(dom);
+
+  return r;
 }
 
-// TODO rcv_call() copy 'ret' from dying "vars" to parent "vars"
+static char call_lib(
+  fdja_value *node, fdja_value *exe,
+  fdja_value *cargs, const char *libname)
+{
+  // Note: for now, we don't care how many times a lib is read and bound
+  // in the current execution...
+
+  char r = 'r'; // 'error' for now
+  char *path = NULL;
+  char *cnid = NULL;
+
+  // 1. find lib
+
+  if (execution_id == NULL)
+  {
+    push_error(node, "cannot call lib, execution_id is NULL", NULL);
+    goto _over;
+  }
+
+  path = locate_lib(libname);
+
+  if (path == NULL)
+  {
+    push_error(node, "couldn't find lib '%s'", libname, NULL);
+    goto _over;
+  }
+
+  log_i(node, exe, "lib at %s", path);
+
+  fdja_value *t = fdja_parse_radial_f(path);
+  //fdja_putdc(t);
+
+  if (t == NULL)
+  {
+    push_error(node, "couldn't parse lib at %s", path, NULL);
+    goto _over;
+  }
+
+  // 2. place lib in nodes{}
+
+  size_t lc = libcounter_next();
+  fdja_value *n = fdja_o("tree", t, NULL);
+
+  fdja_pset(execution, "nodes.%zx", lc, n);
+
+  // 4. call lib
+
+  cnid = flu_sprintf("%zu-%zu", lc, counter_next());
+  queue_child_execute(cnid, node, exe, fdja_clone(t), NULL);
+
+  r = 'k';
+
+_over:
+
+  fdja_free(cargs);
+  free(path);
+  free(cnid);
+
+  return r;
+}
+
+static char exe_call(fdja_value *node, fdja_value *exe)
+{
+  char r = 0;
+
+  fdja_value *cargs = attributes(node, exe);
+  char *cname = cargs->child ? fdja_to_string(cargs->child) : NULL;
+
+  if (cname && flu_strends(cname, ".rad"))
+    r = call_lib(node, exe, cargs, cname);
+  else
+    r = do_call(node, exe, cargs);
+
+  free(cname);
+
+  return r;
+}
 

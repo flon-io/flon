@@ -1,0 +1,12 @@
+
+# a silly test "library"
+#
+# Wed Feb 18 05:40:00 JST 2015
+
+sequence
+
+  # Adds three to the incoming integer
+  #
+  define add3 v.i
+    $(v.i) + 3
+

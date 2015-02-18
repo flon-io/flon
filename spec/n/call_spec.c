@@ -46,10 +46,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ trace: [ 0_0_0-1 ] }");
@@ -71,10 +69,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ trace: [ \"a 0_0_0-1\", \"b 0_0_1-1\" ] }");
@@ -96,10 +92,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ x: b, trace: [ \"a 0_0_0-1\", \"b 0_0_0-2\" ] }");
@@ -120,10 +114,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ a0: egg, a1: bacon, trace: [ [ sub, lettuce ] ] }");
@@ -145,10 +137,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ a1: egg, a0: bacon, a2: lettuce, trace: [ b, [ sub, cheese ] ] }");
@@ -170,10 +160,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload")) ===f ""
         "{ trace: [ \"red green\", \"green red\" ] }");
@@ -191,10 +179,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "failed", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "error.msg", NULL) ===f "not callable 'sub'");
     }
@@ -211,15 +197,42 @@ context "instruction:"
 
       result = hlp_wait(exid, "failed", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "error.msg", NULL) ===f "nothing to call: {}");
     }
 
-    it "it accepts URIs"
+    context "libraries"
+    {
+      it "calls libraries"
+      {
+        exid = flon_generate_exid("n.call.lib");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  call adders.rad # 'import'\n"
+          "  add3 7\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+        //fdja_putdc(result);
+
+        expect(fdja_ld(result, "payload", NULL) ===f ""
+          "{ ret: 10 }");
+      }
+
+      it "favours the longest [sub]domain"
+      it "fails if the .rad lib can't be found"
+    }
+    context "uris"
+    {
+      it "calls rad files behind URIs"
+    }
   }
 }
 

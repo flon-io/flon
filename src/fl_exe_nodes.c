@@ -43,6 +43,8 @@ fdja_value *flon_node(const char *nid)
 
 static fdja_value *node_tree(const char *nid)
 {
+  //fgaj_i("nid >%s<", nid);
+
   fdja_value *t = fdja_l(execution, "nodes.%s.tree", nid);
   if (t) return t;
 
@@ -74,11 +76,25 @@ static fdja_value *node_tree(const char *nid)
 
 fdja_value *flon_node_tree(const char *nid)
 {
+  //fgaj_i("nid >%s<", nid);
+  //for (fdja_value *v = fdja_l(execution, "nodes")->child; v; v = v->sibling)
+  //{
+  //  fgaj_i("** %s", v->key);
+  //  fgaj_i(" * %s", fdja_tod(v));
+  //}
+
   return node_tree(nid);
 }
 
 fdja_value *flon_node_tree_clone(const char *nid)
 {
+  //fgaj_i("nid >%s<", nid);
+  //for (fdja_value *v = fdja_l(execution, "nodes")->child; v; v = v->sibling)
+  //{
+  //  fgaj_i("** %s", v->key);
+  //  fgaj_i(" * %s", fdja_tod(v));
+  //}
+
   return fdja_clone(node_tree(nid));
 }
 

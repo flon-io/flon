@@ -147,7 +147,7 @@ fdja_value *flon_parse_nid(const char *s)
     fabr_tree *tt = fabr_tree_lookup(t, k);
     if (tt)
     {
-      char *v  = fabr_tree_string(ss, tt);
+      char *v = fabr_tree_string(ss, tt);
       fdja_set(r, k, fdja_s(v));
       free(v);
     }

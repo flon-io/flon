@@ -43,8 +43,6 @@ static char do_call(fdja_value *node, fdja_value *msg, fdja_value *cargs)
     push_error(node, "nothing to call", cargs); r = 'r'; goto _over;
   }
 
-  //name = fdja_to_string(cargs->child);
-  //fdja_value *val = lookup_var(node, 'l', name); // 'l' for "local"
   if (is_callable(carg0))
   {
     callable = carg0;
@@ -64,6 +62,7 @@ static char do_call(fdja_value *node, fdja_value *msg, fdja_value *cargs)
 
   nid = fdja_ls(callable, "nid");
   cnid = flu_sprintf("%s-%x", nid, counter_next());
+  //fgaj_d("nid >%s<, cnid >%s<", nid, cnid);
 
   // prepare tree
 

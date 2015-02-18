@@ -27,6 +27,9 @@
 static char exe_define(fdja_value *node, fdja_value *exe)
 {
   char *nid = fdja_ls(node, "nid");
+  char *dash = strchr(nid, '-'); if (dash) *dash = 0;
+    // truncate nid -counter part...
+
   fdja_value *atts = attributes(node, exe);
 
   char *name = fdja_to_string(atts->child);
