@@ -27,6 +27,7 @@
 static int cmp_object(char *op, char *l, char *r)
 {
   if (strcmp(op, "==") == 0) return strcmp(l, r) == 0;
+  if (strcmp(op, "!=") == 0) return strcmp(l, r) != 0;
   if (strcmp(op, ">=") == 0) return strcmp(l, r) >= 0;
   if (strcmp(op, "<=") == 0) return strcmp(l, r) <= 0;
   if (strcmp(op, ">") == 0) return strcmp(l, r) > 0;
@@ -40,6 +41,7 @@ static int cmp_integer(char *op, char *l, char *r)
   long long lr = strtoll(r, NULL, 10);
 
   if (strcmp(op, "==") == 0) return ll == lr;
+  if (strcmp(op, "!=") == 0) return ll != lr;
   if (strcmp(op, ">=") == 0) return ll >= lr;
   if (strcmp(op, "<=") == 0) return ll <= lr;
   if (strcmp(op, ">") == 0) return ll > lr;
