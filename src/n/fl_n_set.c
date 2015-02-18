@@ -32,6 +32,9 @@ static char rcv_set(fdja_value *node, fdja_value *rcv)
   char *satt = fdja_to_string(att);
   char *key = satt;
 
+  if (*satt == 'd') goto _over;
+    // cannot set domain variables
+
   char k = extract_prefix(key);
   if (k != 0) key = strchr(key, '.') + 1;
 
@@ -43,6 +46,8 @@ static char rcv_set(fdja_value *node, fdja_value *rcv)
     set_var(node, *satt, key, val);
   else if (k == 'w')
     set_war(node, key, val);
+
+_over:
 
   free(satt);
 
