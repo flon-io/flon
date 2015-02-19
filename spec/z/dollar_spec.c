@@ -43,10 +43,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //fdja_putdc(result);
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_lj(result, "payload.trace") ===F fdja_vj(""
         "[ 'green hornet' ]"));
@@ -70,8 +67,6 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
       //fdja_putdc(result);
 
@@ -94,10 +89,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace.0") ===f exid);
     }
@@ -118,10 +110,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace.0") ===f "0_0");
     }
@@ -142,10 +131,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace.0") ===f "0_0_0-1");
       expect(fdja_ld(result, "payload.trace.1") ===f "0_0_0-2");
@@ -163,10 +149,7 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ls(result, "payload.trace.0") ===f ""
         " 0");
@@ -189,16 +172,66 @@ context "flon and $(dollar):"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       char *exnid0 = flu_sprintf("%s-0_0", exid);
       expect(fdja_ld(result, "payload.trace.0") ===F exnid0);
 
       char *exnid1 = flu_sprintf("%s-0_1", exid);
       expect(fdja_ld(result, "payload.trace.1") ===F exnid1);
+    }
+  }
+
+  describe "$(domain)"
+  {
+    it "expands to the subdomain"
+    {
+      exid = flon_generate_exid("z.dollar.domain");
+
+      hlp_launch(
+        exid,
+        "trace $(domain)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL); //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ trace: [ z.dollar.domain ] }");
+    }
+  }
+
+  describe "$(domain+-x)"
+  {
+    it "expands to a subdomain"
+    {
+      exid = flon_generate_exid("z.dollar.domain.sub");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace a $(domain+1)\n"
+        "  trace b $(domain+2)\n"
+        "  trace c $(domain-0)\n"
+        "  trace d $(domain-1)\n"
+        "  trace e $(domain-2)\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL); //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f ""
+        "[ "
+          "[ a, z ], "
+          "[ b, z.dollar ], "
+          "[ c, z.dollar.domain.sub ], "
+          "[ d, z.dollar.domain ], "
+          "[ e, z.dollar ] "
+        "]");
     }
   }
 }

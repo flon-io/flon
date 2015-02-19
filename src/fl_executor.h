@@ -36,6 +36,8 @@ extern char *execution_id;
 extern char *execution_path;
 extern fdja_value *execution;
 
+char *flon_execution_domain();
+char *flon_execution_domain_delta(int i);
 
 void flon_execute(const char *exid);
 

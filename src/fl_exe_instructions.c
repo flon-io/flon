@@ -368,6 +368,12 @@ static char *dol_lookup(void *data, const char *path)
     return r;
   }
 
+  if (strcmp(path, "domain") == 0)
+    return flon_execution_domain();
+
+  if ((path[6] == '+' || path[6] == '-') && strncmp(path, "domain", 5) == 0)
+    return flon_execution_domain_delta(strtol(path + 6, NULL, 10));
+
   // regular case, var or fld
 
   char k = extract_prefix(path);

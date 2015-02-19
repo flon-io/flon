@@ -51,6 +51,45 @@ fdja_value *execution = NULL;
 static flu_list *msgs = NULL;
 
 
+char *flon_execution_domain()
+{
+  if (execution_id == NULL) return NULL;
+
+  char *dash = strchr(execution_id, '-');
+
+  return strndup(execution_id, dash - execution_id);
+}
+
+char *flon_execution_domain_delta(int i)
+{
+  if (execution_id == NULL) return NULL;
+
+  char *r = flon_execution_domain();
+
+  if (i == 0) return r;
+
+  char *end = r;
+
+  for (size_t j = 0; ; ++j)
+  {
+    if (i > 0)
+    {
+      if (j == i) break;
+      end = strchr(end + 1, '.');
+    }
+    else
+    {
+      if (j == -i) break;
+      end = strrchr(r, '.'); if (end == NULL) break;
+      *end = 0;
+    }
+  }
+
+  if (end) *end = 0;
+
+  return r;
+}
+
 static void do_log(fdja_value *msg)
 {
   if (msgs_log == NULL) return;

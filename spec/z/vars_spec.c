@@ -45,8 +45,7 @@ context "flon and vars:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      expect(result != NULL);
-      //puts(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ Dover ] }");
@@ -70,8 +69,7 @@ context "flon and vars:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      expect(result != NULL);
-      //puts(fdja_todc(result));
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: Dublin, trace: [ Dublin, Dover, Dover, Dover ] }");
