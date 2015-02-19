@@ -440,7 +440,56 @@ context "instruction:"
       }
 
       it "matches ^ at the beginning"
+      {
+        exid = flon_generate_exid("n.cmp.match.caret");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  =~\n"
+          "    poto\n"
+          "    ^po\n"
+          "  trace $(ret)\n"
+          "  =~\n"
+          "    poto\n"
+          "    ^no\n"
+          "  trace $(ret)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: false, trace: [ true, false ] }");
+      }
+
       it "matches $ at the end"
+      {
+        exid = flon_generate_exid("n.cmp.match.dollar");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  =~\n"
+          "    poto\n"
+          "    'to$'\n"
+          "  trace $(ret)\n"
+          "  =~\n"
+          "    poto\n"
+          "    'no$'\n"
+          "  trace $(ret)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: false, trace: [ true, false ] }");
+      }
 
       it "matches objects (hit)"
       it "matches objects (miss)"

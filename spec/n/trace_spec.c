@@ -114,6 +114,8 @@ context "instruction:"
       expect(fdja_ld(result, "payload.trace") ===f ""
         "[ { _0: 0, b: 1, _2: 2 } ]");
     }
+
+    it "traces $(ret) by default"
   }
 }
 
