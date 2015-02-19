@@ -293,8 +293,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit c57c4cd58486dcdc70f98357e74ab1bfe231c7c3
+//commit 0eb8d201ebaa9a3e26e49e755b0de7781830772e
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Feb 19 06:42:39 2015 +0900
+//Date:   Thu Feb 19 13:21:50 2015 +0900
 //
-//    allow for /regexes/i in radial
+//    accept dollars in radial symbols

@@ -474,12 +474,16 @@ context "instruction:"
           "sequence\n"
           "  =~\n"
           "    poto\n"
-          "    'to$'\n"
-          "  trace $(ret)\n"
+          "    to$\n"
+          "  trace\n"
+          "  =~\n"
+          "    poto\n"
+          "    /to$/\n"
+          "  trace\n"
           "  =~\n"
           "    poto\n"
           "    'no$'\n"
-          "  trace $(ret)\n"
+          "  trace\n"
           "",
           "{}");
 
@@ -488,7 +492,7 @@ context "instruction:"
         expect(result != NULL);
 
         expect(fdja_ld(result, "payload") ===f ""
-          "{ ret: false, trace: [ true, false ] }");
+          "{ ret: false, trace: [ true, true, false ] }");
       }
 
       it "matches objects (hit)"
