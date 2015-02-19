@@ -44,7 +44,7 @@ context "instruction:"
           "",
           "{ x: 4 }");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -64,7 +64,7 @@ context "instruction:"
           "",
           "{ x: 7 }");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -82,7 +82,7 @@ context "instruction:"
           "",
           "{ x: 9 }");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -100,7 +100,7 @@ context "instruction:"
           "",
           "{ x: 10 }");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -123,7 +123,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -142,7 +142,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -161,7 +161,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -186,7 +186,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -206,7 +206,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -225,7 +225,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -246,7 +246,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -268,7 +268,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -287,7 +287,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -312,7 +312,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -332,7 +332,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -351,7 +351,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -370,7 +370,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -389,7 +389,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -413,7 +413,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -432,7 +432,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -457,7 +457,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -487,7 +487,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -510,7 +510,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -529,7 +529,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -548,10 +548,9 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "failed", NULL, 3);
+        result = hlp_wait(exid, "failed", NULL, 7);
 
-        expect(result != NULL);
-        //fdja_putdc(result);
+        expect(result != NULL); //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: false }");
@@ -561,6 +560,24 @@ context "instruction:"
       }
 
       it "sets matches in variables..."
+      {
+        exid = flon_generate_exid("n.cmp.match.sets");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  =~ 'Manfred Mann' /(M.).+ (M.).+/\n"
+          "  trace $(v.matches)\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 7);
+
+        expect(result != NULL); //fdja_putdc(result);
+
+        expect(fdja_ld(result, "payload") ===f ""
+          "{ ret: true, trace: [ [ \"Manfred Mann\", Ma, Ma ] ] }");
+      }
     }
 
     context "!~"
@@ -577,7 +594,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 
@@ -596,7 +613,7 @@ context "instruction:"
           "",
           "{}");
 
-        result = hlp_wait(exid, "terminated", NULL, 3);
+        result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
 

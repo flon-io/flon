@@ -48,7 +48,7 @@ static int rmatch(
   }
 
   regex_t regex;
-  regmatch_t ms[1];
+  regmatch_t matches[128];
 
   int ii = regcomp(&regex, reg, flags);
   if (ii != 0)
@@ -64,10 +64,24 @@ static int rmatch(
 
   //flags = REG_NOTBOL | REG_NOTEOL;
   flags = 0;
-  ii = regexec(&regex, str, 1, ms, flags);
+  ii = regexec(&regex, str, 128, matches, flags);
 
   i = (ii == 0);
   if (*op == '!') i = ! i;
+
+  if (*op == '=' && i == 1 && matches[1].rm_so > -1)
+  {
+    fdja_value *vmatches = fdja_array_malloc();
+
+    for (size_t j = 0; j < 129; ++j)
+    {
+      int so = matches[j].rm_so;
+      if (so == -1) break;
+      fdja_push(vmatches, fdja_sym(strndup(str + so, matches[j].rm_eo - so)));
+    }
+
+    set_var(node, 'l', "matches", vmatches);
+  }
 
 _over:
 
