@@ -227,6 +227,26 @@ context "instruction:"
       }
 
       it "favours the longest [sub]domain"
+      {
+        exid = flon_generate_exid("n.call.longest");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  call extras.rad # 'import'\n"
+          "  sayhello\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "terminated", NULL, 3);
+
+        expect(result != NULL);
+        //fdja_putdc(result);
+
+        expect(fdja_ld(result, "payload", NULL) ===f ""
+          "{ trace: [ \"hello n.call\" ] }");
+      }
+
       it "fails if the .rad lib can't be found"
     }
     context "uris"

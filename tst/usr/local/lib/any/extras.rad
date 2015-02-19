@@ -4,5 +4,5 @@
 sequence
 
   define sayhello
-    trace "hello n.call"
+    trace "hello"
 
