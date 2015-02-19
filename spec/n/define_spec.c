@@ -49,21 +49,17 @@ context "instruction:"
 
       result = hlp_wait(exid, "execute", "0_1", 5);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
-      //flu_putf(fdja_todc(v));
+      //fdja_todc(v);
 
       expect(v != NULL);
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars");
       expect(fdja_size(v1) zu== 1);
-
-      //flu_putf(fdja_todc(v));
+      //fdja_todc(v);
 
       v1 = fdja_l(v, "nodes.0.vars.sub.args");
       expect(fdja_tod(v1) ===f "[ a0, a1 ]");
@@ -87,14 +83,11 @@ context "instruction:"
 
       result = hlp_wait(exid, "execute", "0_1", 5);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
-      //flu_putf(fdja_todc(v));
+      //fdja_putdc(v);
 
       expect(v != NULL);
 
@@ -120,14 +113,10 @@ context "instruction:"
 
       result = hlp_wait(exid, "execute", "0_1", 7);
 
-      //flon_pp_execution(exid);
-
-      expect(result != NULL);
-
-      //flu_putf(fdja_todc(result));
+      expect(result != NULL); //flu_putf(fdja_todc(result));
 
       v = hlp_read_run_json(exid);
-      //flu_putf(fdja_todc(v));
+      //fdja_putdc(v);
 
       expect(v != NULL);
 
@@ -138,7 +127,20 @@ context "instruction:"
       expect(fdja_tod(v1) ===f "0_0");
     }
 
-    it "returns 'anonymous functions'"
+    //it "returns 'anonymous functions'"
+    //{
+    //  exid = flon_generate_exid("n.define.anon");
+    //  hlp_launch(
+    //    exid,
+    //    "sequence\n"
+    //    "  define null bravo charly\n"
+    //    "    trace a\n"
+    //    //"  stall\n"
+    //    "",
+    //    "{}");
+    //  result = hlp_wait(exid, "terminated", NULL, 7);
+    //  expect(result != NULL); //fdja_putdc(result);
+    //}
   }
 }
 
