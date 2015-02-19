@@ -240,14 +240,33 @@ context "instruction:"
 
         result = hlp_wait(exid, "terminated", NULL, 3);
 
-        expect(result != NULL);
-        //fdja_putdc(result);
+        expect(result != NULL); //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload", NULL) ===f ""
           "{ trace: [ \"hello n.call\" ] }");
       }
 
       it "fails if the .rad lib can't be found"
+      {
+        exid = flon_generate_exid("n.call.missing");
+
+        hlp_launch(
+          exid,
+          "sequence\n"
+          "  call nada.rad # 'import'\n"
+          "  sayhello\n"
+          "",
+          "{}");
+
+        result = hlp_wait(exid, "failed", NULL, 3);
+
+        expect(result != NULL); //fdja_putdc(result);
+
+        expect(fdja_ld(result, "payload", NULL) ===f ""
+          "{}");
+        expect(fdja_ls(result, "error.msg", NULL) ===f ""
+          "couldn't find lib 'nada.rad'");
+      }
     }
     context "uris"
     {
