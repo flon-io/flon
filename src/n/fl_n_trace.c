@@ -52,7 +52,8 @@ static char exe_trace(fdja_value *node, fdja_value *exe)
 
   if (atts->child == NULL)
   {
-    fdja_push(trace, fdja_v("null"));
+    fdja_value *ret = fdja_l(exe, "payload.ret");
+    fdja_push(trace, ret ? fdja_clone(ret) : fdja_v("null"));
   }
   else if (atts->child && atts->child->sibling == NULL)
   {

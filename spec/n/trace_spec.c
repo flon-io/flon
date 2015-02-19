@@ -41,11 +41,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "receive", "0", 3);
 
-      //flon_prettyprint(exid);
-
-      expect(result != NULL);
-
-      //puts(fdja_todc(result));
+      expect(result != NULL); //puts(fdja_todc(result));
 
       expect(fdja_ls(result, "point", NULL) ===f "receive");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
@@ -69,9 +65,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      expect(result != NULL);
-
-      //fdja_putdc(result);
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace") ===f "[ [ 1, 2, trois ] ]");
     }
@@ -88,9 +82,7 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      expect(result != NULL);
-
-      //fdja_putdc(result);
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace") ===f "[ [ a, b, c ] ]");
     }
@@ -107,15 +99,32 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      expect(result != NULL);
-
-      //fdja_putdc(result);
+      expect(result != NULL); //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload.trace") ===f ""
         "[ { _0: 0, b: 1, _2: 2 } ]");
     }
 
     it "traces $(ret) by default"
+    {
+      exid = flon_generate_exid("n.trace.default");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  trace\n"
+        "  [ 3, 2, 1 ]\n"
+        "  trace\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL); //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload.trace") ===f ""
+        "[ null, [ 3, 2, 1 ] ]");
+    }
   }
 }
 
