@@ -1,0 +1,6 @@
+
+# mirrora
+
+in: all
+run: 'ruby mirror.rb'
+

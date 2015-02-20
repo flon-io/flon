@@ -221,7 +221,14 @@ int flon_task(const char *path)
     close(pds[0]);
 
     FILE *f = fdopen(pds[1], "w");
-    fdja_to_j(f, payload, 0);
+
+    char *in = fdja_l(tasker_conf, "in");
+
+    if (in && *fdja_srk(in) == 'a')
+      fdja_to_j(f, tsk, 0);
+    else
+      fdja_to_j(f, payload, 0);
+
     fclose(f);
 
     // over, no wait

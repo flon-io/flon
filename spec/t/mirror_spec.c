@@ -13,7 +13,7 @@
 #include "flon_helpers.h"
 
 
-context "tasker: mirror"
+describe "tasker:"
 {
   before each
   {
@@ -66,7 +66,53 @@ context "tasker: mirror"
 
       expect(r == 0);
 
-      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 3);
+      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 7);
+      expect(r i== 1);
+
+      expect(flu_canopath(".") $==f "/tst/");
+
+      expect(flu_fstat("var/spool/tsk/tsk_%s-%s.json", exid, nid) c== 'f');
+        // it's still here, it's the dispatcher's work to nuke it,
+        // but since there is no answer...
+
+      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
+
+      v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+      expect(v != NULL);
+
+      //fdja_putdc(v);
+      expect(fdja_ls(v, "-e", NULL) ===f exid);
+      expect(fdja_ls(v, "-n", NULL) ===f nid);
+      expect(fdja_ls(v, "-x", NULL) ===f "; xrm ../nada0");
+      expect(fdja_ls(v, "-y", NULL) ===f "\"; xrm ../nada1");
+    }
+  }
+
+  describe "mirrora"
+  {
+    it "requires the whole task"
+    {
+      exid = flon_generate_exid("ttest.mirrora.0");
+      nid = "0_1";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(
+        path,
+        "point: task\n"
+        "tree: [ task, { _0: mirrora }, [] ]\n"
+        "exid: %s\n"
+        "nid: %s\n"
+        "payload: {\n"
+          "hello: \"mirror a\"\n"
+        "}\n",
+        exid, nid
+      );
+
+      int r = flon_task(path);
+
+      expect(r == 0);
+
+      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 7);
       expect(r i== 1);
 
       expect(flu_canopath(".") $==f "/tst/");
@@ -78,17 +124,15 @@ context "tasker: mirror"
       expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
 
       //char *s = flu_readall("var/spool/dis/ret_%s-%s.json", exid, nid);
-      //puts(s);
+      //printf("ret >%s<\n", s);
       //free(s);
 
       v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
-      expect(v != NULL);
+      //fdja_putdc(v);
 
-      //flu_putf(fdja_todc(v));
-      expect(fdja_ls(v, "-e", NULL) ===f exid);
-      expect(fdja_ls(v, "-n", NULL) ===f nid);
-      expect(fdja_ls(v, "-x", NULL) ===f "; xrm ../nada0");
-      expect(fdja_ls(v, "-y", NULL) ===f "\"; xrm ../nada1");
+      expect(v != NULL);
+      expect(fdja_ls(v, "exid", NULL) ===f exid);
+      expect(fdja_ls(v, "payload.hello", NULL) ===f "mirror a");
     }
   }
 }
