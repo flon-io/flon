@@ -550,6 +550,7 @@ static void execute()
 
       //fgaj_i(fdja_tod(j));
       //fgaj_i(fdja_to_djan(j, 0));
+      //fdja_putdc(j);
 
       fdja_value *point = fdja_l(j, "point");
       char p = point ? *fdja_srk(point) : 0;

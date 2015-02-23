@@ -530,6 +530,7 @@ static void unschedule_timers(fdja_value *node, fdja_value *msg)
   for (size_t i = 0; ; ++i)
   {
     if (fdja_l(node, "timers.%zu.cancelled", i)) continue;
+    if (fdja_l(node, "timers.%zu.triggered", i)) continue;
 
     char *at = fdja_ls(node, "timers.%zu.at", i, NULL);
     if (at) { unschedule_timer("at", at, node, i); continue; }
@@ -732,6 +733,42 @@ static flon_instruction *lookup_instruction(char dir, const char *name)
 #include "fl_rewrite.c" // flon_rewrite_tree()
 #include "fl_catt.c" // eval_catt_*()
 
+static void remove_timer(char dir, fdja_value *node, fdja_value *msg)
+{
+  fdja_value *trigger = fdja_l(msg, "trigger");
+  if (trigger == NULL)
+  {
+    return;
+  }
+
+  fdja_value *timers = fdja_l(node, "timers");
+  if (timers == NULL)
+  {
+    log_w(node, msg, "triggered node has no timers...");
+    return;
+  }
+
+  char type = fdja_lk(trigger, "type");
+  char *ts = fdja_ls(trigger, "ts");
+
+//printf("--- remove_timer ---\n");
+//printf("dir: %c\n", dir);
+//printf("node: ");
+//fdja_putdc(node);
+//printf("msg: ");
+//fdja_putdc(msg);
+
+  for (fdja_value *t = timers->child; t; t = t->sibling)
+  {
+    fdja_putdc(t);
+    if (*t->child->key != type || fdja_strcmp(t->child, ts) != 0) continue;
+    fdja_set(t, "triggered", fdja_v("true"));
+    break;
+  }
+
+  free(ts);
+}
+
 char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
 {
   char *inst = fdja_ls(node, "inst", NULL);
@@ -751,6 +788,8 @@ char flon_call_instruction(char dir, fdja_value *node, fdja_value *msg)
   }
 
   eval_catt_pre(dir, node, msg);
+
+  remove_timer(dir, node, msg);
 
   r = i(node, msg);
 

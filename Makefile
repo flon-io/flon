@@ -72,6 +72,8 @@ vlast: scope
 	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/
 vlastl: scope
 	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/ | less +F -R
+catdis:
+	cat tst/var/log/dispatcher.log
 
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \

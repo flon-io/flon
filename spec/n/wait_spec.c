@@ -56,10 +56,9 @@ context "instruction:"
       flu_msleep(504);
 
       expect(result != NULL);
-      //flon_pp_execution(exid);
 
       v = hlp_read_node(exid, "0");
-      //flu_putf(fdja_todc(v));
+      //fdja_putdc(v);
 
       expect(v != NULL);
 
@@ -68,9 +67,10 @@ context "instruction:"
       expect(ts != NULL);
 
       fdja_free(v); v = hlp_read_timer(exid, "0", "at", ts);
-      //flu_putf(fdja_todc(v));
+      //fdja_putdc(v);
 
       expect(v != NULL);
+
       expect(fdja_ld(v, "tree0") ===f ""
         "[ wait, { _0: 2s }, 1, [ 0 ], sfeu ]");
       expect(fdja_ld(v, "tree1") ===f ""
@@ -78,8 +78,6 @@ context "instruction:"
 
       fdja_free(result);
       result = hlp_wait(exid, "terminated", NULL, 5);
-
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
 
@@ -89,6 +87,11 @@ context "instruction:"
       expect(d < 3.2);
 
       expect(fdja_lj(result, "payload") ===F fdja_vj("{ hello : wait }"));
+
+      //flu_system("cat var/spool/dis/sch_%s-0.json", exid);
+      expect(flu_fstat("var/spool/dis/sch_%s-0.json", exid) c== 0);
+        //
+        // fighting gh-55
     }
 
     context "when cancelled"
@@ -105,18 +108,12 @@ context "instruction:"
           "{ hello: wait.cancel }");
 
         result = hlp_wait(exid, "launched", NULL, 5);
-
-        //flon_pp_execution(exid);
-
         expect(result != NULL);
 
         int r = hlp_cancel(exid, "0");
         expect(r i== 1);
 
         fdja_free(result); result = hlp_wait(exid, "terminated", NULL, 5);
-
-        //flon_pp_execution(exid);
-
         expect(result != NULL);
 
         result = hlp_wait(exid, "unschedule", NULL, 5);
