@@ -106,7 +106,7 @@ static void flon_nid_parser_init()
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
 
   fabr_parser *msg =
-    fabr_n_rex("msg", "((exe|inv|rcv|ret|sch|can)_|at-[^-]+-)");
+    fabr_n_rex("msg", "((exe|tsk|rcv|ret|sch|can)_|at-[^-]+-)");
   fabr_parser *ftype =
     fabr_n_rex("ftype", "\\.[^\\.]+");
 
@@ -164,7 +164,19 @@ char *flon_get_exid(const char *s)
 {
   fdja_value *v = flon_parse_nid(s);
   if (v == NULL) return NULL;
+
   char *r = fdja_ls(v, "exid", NULL);
+  fdja_free(v);
+
+  return r;
+}
+
+char *flon_get_nid(const char *s)
+{
+  fdja_value *v = flon_parse_nid(s);
+  if (v == NULL) return NULL;
+
+  char *r = fdja_ls(v, "nid", NULL);
   fdja_free(v);
 
   return r;

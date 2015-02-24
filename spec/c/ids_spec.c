@@ -167,6 +167,46 @@ context "fl_ids:"
     }
   }
 
+  describe "flon_get_nid()"
+  {
+    it "extracts a nid from a string"
+    {
+      expect(flon_get_nid("0") ===f "0");
+      expect(flon_get_nid("0_1_2") ===f "0_1_2");
+      expect(flon_get_nid("0_1_2-ff") ===f "0_1_2-ff");
+    }
+
+    it "extracts a nid from a msg filename"
+    {
+      expect(
+        flon_get_nid(
+          "tsk_dtest.trig-u0-20141207.0156.kagemusha-0_0.json"
+        ) ===f ""
+        "0_0");
+      expect(
+        flon_get_nid(
+          "tsk_dtest.trig-u0-20141207.0156.kagemusha-0_0-5a.json"
+        ) ===f ""
+        "0_0-5a");
+
+      expect(
+        flon_get_nid(
+          "at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0.json"
+        ) ===f ""
+        "0");
+      expect(
+        flon_get_nid(
+          "at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json"
+        ) ===f ""
+        "0_0");
+      expect(
+        flon_get_nid(
+          "at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0-7.json"
+        ) ===f ""
+        "0_0-7");
+    }
+  }
+
   describe "flon_nid_depth()"
   {
     it "returns the depth of a nid"
