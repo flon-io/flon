@@ -119,14 +119,6 @@ int flon_task(const char *path)
     return 1;
   }
 
-  char *ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
-
-  char cwd[1024 + 1]; getcwd(cwd, 1024);
-  fgaj_i("cwd: %s", cwd);
-
-  fgaj_i("exid: %s, nid: %s, domain: %s", exid, nid, domain);
-  fgaj_i("tasker at %s", tasker_path);
-
   fdja_value *tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
 
   if (tasker_conf == NULL)
@@ -135,14 +127,20 @@ int flon_task(const char *path)
     return 1;
   }
 
-  char *cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
+  char *ret = NULL;
+  //
+  if (fdja_lk(tasker_conf, "out") == 'd') // discard
+    ret = strdup("/dev/null");
+  else
+    ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
 
-  char *out = fdja_ls(tasker_conf, "out", NULL);
-  if (out && strcmp(out, "discard") == 0)
-  {
-    free(ret); ret = strdup("/dev/null");
-  }
-  free(out);
+  char cwd[1024 + 1]; getcwd(cwd, 1024);
+  fgaj_i("cwd: %s", cwd);
+
+  fgaj_i("exid: %s, nid: %s, domain: %s", exid, nid, domain);
+  fgaj_i("tasker at %s", tasker_path);
+
+  char *cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
 
   if (cmd == NULL)
   {
