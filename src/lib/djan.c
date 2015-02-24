@@ -1424,6 +1424,15 @@ ssize_t fdja_lookup_size(fdja_value *v, const char *path, ...)
   return vv ? fdja_size(vv) : -1;
 }
 
+char fdja_lk(fdja_value *v, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_vlookup(v, path, ap);
+  va_end(ap);
+
+  return r ? *fdja_srk(r) : 0;
+}
+
 char *fdja_lj(fdja_value *v, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
@@ -1778,8 +1787,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 0eb8d201ebaa9a3e26e49e755b0de7781830772e
+//commit f0adb5c750bf733ab9932aeb7f81334907b51642
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Feb 19 13:21:50 2015 +0900
+//Date:   Wed Feb 25 06:03:34 2015 +0900
 //
-//    accept dollars in radial symbols
+//    let fdja_lk() return 0 when no value

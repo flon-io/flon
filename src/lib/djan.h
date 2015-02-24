@@ -225,8 +225,14 @@ ssize_t fdja_lookup_size(fdja_value *v, const char *path, ...);
 #define fdja_lsd(...) fdja_lookup_string_dup_default(__VA_ARGS__)
 #define fdja_li(...) fdja_lookup_int(__VA_ARGS__)
 #define fdja_lb(...) fdja_lookup_bool(__VA_ARGS__)
-#define fdja_lk(...) *fdja_srk(fdja_lookup(__VA_ARGS__))
 #define fdja_lz(...) fdja_lookup_size(__VA_ARGS__)
+
+/* Looks up the first char of a value. Useful to quickly assess a value by
+ * its first char.
+ * Returns 0 if the value is not present (returns 0 too if the value is an
+ * empty string...)
+ */
+char fdja_lk(fdja_value *v, const char *path, ...);
 
 char *fdja_lj(fdja_value *v, const char *path, ...);
 char *fdja_ld(fdja_value *v, const char *path, ...);
@@ -293,8 +299,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 0eb8d201ebaa9a3e26e49e755b0de7781830772e
+//commit f0adb5c750bf733ab9932aeb7f81334907b51642
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Feb 19 13:21:50 2015 +0900
+//Date:   Wed Feb 25 06:03:34 2015 +0900
 //
-//    accept dollars in radial symbols
+//    let fdja_lk() return 0 when no value
