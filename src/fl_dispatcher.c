@@ -600,14 +600,13 @@ short flon_dispatch(const char *fname)
 {
   fgaj_i(fname);
 
-  int r = 1;
+  int r = -1; // rejected for now
+  char *rej = NULL;
   fdja_value *msg = NULL;
 
   if ( ! flu_strends(fname, ".json"))
   {
-    flon_move_to_rejected("var/spool/dis/%s", fname, "not a .json file");
-    r = -1;
-    goto _over;
+    rej = "not a .json file"; goto _over;
   }
 
   if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
@@ -619,9 +618,7 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "sch_", 4) != 0 &&
     strncmp(fname, "can_", 4) != 0
   ) {
-    flon_move_to_rejected("var/spool/dis/%s", fname, "unknown file prefix");
-    r = -1;
-    goto _over;
+    rej = "unknown file prefix"; goto _over;
   }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
@@ -629,10 +626,7 @@ short flon_dispatch(const char *fname)
   if (msg == NULL)
   {
     r = (errno == 0) ? -1 : 1;
-    if (r == -1)
-    {
-      flon_move_to_rejected("var/spool/dis/%s", fname, "couldn't parse json");
-    }
+    if (r == -1) rej = "couldn't parse json";
     goto _over;
   }
 
@@ -649,6 +643,8 @@ short flon_dispatch(const char *fname)
   }
 
 _over:
+
+  if (rej) flon_move_to_rejected("var/spool/dis/%s", fname, rej);
 
   fdja_free(msg);
 
