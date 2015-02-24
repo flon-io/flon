@@ -217,8 +217,10 @@ static short schedule(const char *fname, fdja_value *msg)
 
     // list in timer index
 
-    if (*type == 'c') add_cron_timer(ots, fn);
-    else add_at_timer(ots, -1, fn);
+    if (*type == 'c')
+      add_cron_timer(ots, fn);
+    else
+      add_at_timer(ots, -1, fn);
   }
 
   // move to processed/
@@ -456,12 +458,12 @@ static int executor_not_running(const char *exid)
   return 0;
 }
 
-static short dispatch(const char *fname, fdja_value *j)
+static short dispatch(const char *fname, fdja_value *msg)
 {
   fgaj_d(fname);
-  //fgaj_d("j: %s", fdja_tod(j));
+  //fgaj_d("msg: %s", fdja_tod(msg));
 
-  if (fdja_l(j, "point") == NULL)
+  if (fdja_l(msg, "point") == NULL)
   {
     flon_move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
     return -1;
@@ -469,22 +471,23 @@ static short dispatch(const char *fname, fdja_value *j)
 
   int r = 2; // 'dispatched' for now
 
-  char *exid = fdja_ls(j, "exid", NULL);
-  char *nid = fdja_ls(j, "nid", NULL);
+  char *exid = fdja_ls(msg, "exid", NULL);
+  char *nid = fdja_ls(msg, "nid", NULL);
   //
   if (exid == NULL)
   {
-    fdja_value *i = flon_parse_nid(fname);
-    if (i == NULL)
+    fdja_value *id = flon_parse_nid(fname);
+
+    if (id == NULL)
     {
       flon_move_to_rejected("var/spool/dis/%s", fname, "no 'exid'");
       return -1;
     }
 
-    exid = fdja_ls(i, "exid", NULL);
-    nid = fdja_ls(i, "nid", NULL);
+    exid = fdja_ls(id, "exid", NULL);
+    nid = fdja_ls(id, "nid", NULL);
 
-    fdja_free(i);
+    fdja_free(id);
   }
 
   char *fep = flon_exid_path(exid);
