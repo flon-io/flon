@@ -167,7 +167,7 @@ static short schedule(const char *fname, fdja_value *msg)
 
   fgaj_d("%sschedule order: %s", unschedule ? "un" : "", fname);
 
-  char *exid = flon_parse_exid(fname);
+  char *exid = flon_get_exid(fname);
   char *fep = flon_exid_path(exid);
 
   // write to var/spool/tdis/

@@ -79,7 +79,7 @@ char *hlp_lookup_exid(const char *user, const char *dom, int archived_as_well)
   else
   {
     char *fn = flu_pline("find var/ -name processed | grep %s | xargs ls", dom);
-    r = flon_parse_exid(fn);
+    r = flon_get_exid(fn);
     free(fn);
   }
 

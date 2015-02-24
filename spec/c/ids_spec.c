@@ -125,18 +125,18 @@ context "fl_ids:"
     }
   }
 
-  describe "flon_parse_exid()"
+  describe "flon_get_exid()"
   {
     it "extracts an exid from a string"
     {
-      expect(flon_parse_exid("0_1_2-ff") == NULL);
+      expect(flon_get_exid("0_1_2-ff") == NULL);
 
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "xtest.pn-u0-20141021.0803.chatsidiseba-0_1_2-ff") ===f ""
         "xtest.pn-u0-20141021.0803.chatsidiseba");
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "http://x.flon.io/i/executions/org.nada-u0-20141118.1201.latsakocheba") ===f ""
         "org.nada-u0-20141118.1201.latsakocheba");
     }
@@ -144,15 +144,15 @@ context "fl_ids:"
     it "extracts an exid from a msg filename"
     {
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "ret_xtest.pn-u0-20141021.0803.kurukuru-0_1_2-ff.json") ===f ""
         "xtest.pn-u0-20141021.0803.kurukuru");
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "sch_xtest.pn-u0-20141021.0803.karako-0_1_2.json") ===f ""
         "xtest.pn-u0-20141021.0803.karako");
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "exe_nada.pn-u0-20141021.0803.karako.jon") ===f ""
         "nada.pn-u0-20141021.0803.karako");
     }
@@ -160,7 +160,7 @@ context "fl_ids:"
     it "extracts an exid from a schedule msg filename"
     {
       expect(
-        flon_parse_exid(
+        flon_get_exid(
           "at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json"
         ) ===f ""
         "dtest.trig-u0-20141207.0156.kagemusha");

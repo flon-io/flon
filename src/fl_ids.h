@@ -32,7 +32,8 @@
 char *flon_generate_exid(const char *domain);
 
 fdja_value *flon_parse_nid(const char *s);
-char *flon_parse_exid(const char *s);
+
+char *flon_get_exid(const char *s);
 
 char *flon_exid_domain(const char *exid);
 

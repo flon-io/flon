@@ -316,7 +316,7 @@ int flon_move_to_processed(const char *path, ...)
   int r = 0; // success
 
   char *fn = strdup(strrchr(p, '/') + 1);
-  char *exid = flon_parse_exid(fn);
+  char *exid = flon_get_exid(fn);
   char *fep = flon_exid_path(exid);
 
   char *d = (flu_fstat("var/archive/%s", fep) == 'd') ?  "archive" : "run";

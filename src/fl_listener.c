@@ -435,7 +435,7 @@ int flon_msg_handler(
   fshv_request *req, fshv_response *res, int mode, flu_dict *params)
 {
   char *id = flu_list_get(req->routing_d, "id");
-  char *exid = flon_parse_exid(id);
+  char *exid = flon_get_exid(id);
 
   if (exid == NULL) return 0;
   if ( ! flon_may_r('r', req, exid)) { free(exid); return 0; }

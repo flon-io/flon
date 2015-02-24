@@ -160,7 +160,7 @@ fdja_value *flon_parse_nid(const char *s)
   return r;
 }
 
-char *flon_parse_exid(const char *s)
+char *flon_get_exid(const char *s)
 {
   fdja_value *v = flon_parse_nid(s);
   if (v == NULL) return NULL;
