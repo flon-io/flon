@@ -159,7 +159,7 @@ void flon_load_timers()
   }
 }
 
-static short schedule(const char *fname, fdja_value *msg)
+static short schedule(const char *fname, fdja_value *id, fdja_value *msg)
 {
   int r = 1; // seen, failed, for now
 
@@ -458,7 +458,7 @@ static int executor_not_running(const char *exid)
   return 0;
 }
 
-static short dispatch(const char *fname, fdja_value *msg)
+static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
 {
   fgaj_d(fname);
   //fgaj_d("msg: %s", fdja_tod(msg));
@@ -536,27 +536,14 @@ static short dispatch(const char *fname, fdja_value *msg)
   return r;
 }
 
-static short receive_ret(const char *fname)
+static short receive_ret(const char *fname, fdja_value *id, fdja_value *msg)
 {
   short r = 2;
 
-  fdja_value *i = NULL;
-  fdja_value *j = NULL;
-
-  i = flon_parse_nid(fname);
-  if (i == NULL) { r = -1; goto _over; }
-    // TODO: move that check upstream
-
-  j = flon_try_parse('o', "var/spool/dis/%s", fname);
-
-  //flu_putf(fdja_todc(j));
-  //if (j == NULL) fgaj_i("NULL: %s", fname);
-
-  if (j == NULL) { r = 1; goto _over; }
-    // the file's mtime will get examined
+  fdja_value *i = fdja_clone(id);
 
   fdja_psetv(i, "point", "receive");
-  fdja_set(i, "payload", j);
+  fdja_set(i, "payload", fdja_clone(msg));
 
   //flu_putf(fdja_todc(i));
 
@@ -587,8 +574,7 @@ static short receive_ret(const char *fname)
 
 _over:
 
-  if (i && j) fdja_free(i);
-  else if (j) fdja_free(j);
+  fdja_free(i);
 
   return r;
 }
@@ -605,23 +591,31 @@ short flon_dispatch(const char *fname)
 
   int r = -1; // rejected for now
   char *rej = NULL;
+
   fdja_value *msg = NULL;
+  fdja_value *id = NULL;
 
   if ( ! flu_strends(fname, ".json"))
   {
     rej = "not a .json file"; goto _over;
   }
 
-  if (strncmp(fname, "ret_", 4) == 0) { r = receive_ret(fname); goto _over; }
-
   if (
     strncmp(fname, "exe_", 4) != 0 &&
     strncmp(fname, "tsk_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0 &&
+    strncmp(fname, "ret_", 4) != 0 && // tmp tmp tmp tmp tmp
     strncmp(fname, "can_", 4) != 0
   ) {
     rej = "unknown file prefix"; goto _over;
+  }
+
+  id = flon_parse_nid(fname);
+
+  if (id == NULL)
+  {
+    rej = "cannot parse id out of filename"; goto _over;
   }
 
   msg = flon_try_parse('o', "var/spool/dis/%s", fname);
@@ -635,20 +629,25 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  if (*fname == 's')
+  if (strncmp(fname, "ret_", 4) == 0)
   {
-    r = schedule(fname, msg);
+    r = receive_ret(fname, id, msg);
+  }
+  else if (*fname == 's')
+  {
+    r = schedule(fname, id, msg);
   }
   else
   {
-    r = dispatch(fname, msg);
-    //r = route_or_dispatch(fname, msg);
+    r = dispatch(fname, id, msg);
+    //r = route_or_dispatch(fname, id, msg);
   }
 
 _over:
 
   if (rej) flon_move_to_rejected("var/spool/dis/%s", fname, rej);
 
+  fdja_free(id);
   fdja_free(msg);
 
   //fgaj_d("r: %i", r);
