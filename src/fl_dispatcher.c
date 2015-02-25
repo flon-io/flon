@@ -463,13 +463,6 @@ static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
   fgaj_d(fname);
   //fgaj_d("msg: %s", fdja_tod(msg));
 
-  if (fdja_l(msg, "point") == NULL)
-  {
-    flon_move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
-    return -1;
-  }
-    // TODO: move that upstream !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
   int r = 2; // 'dispatched' for now
 
   char *exid = fdja_ls(id, "exid", NULL);

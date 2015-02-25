@@ -117,26 +117,17 @@ context "flon-dispatcher"
     it "rejects files it doesn't know how to dispatch"
     {
       exid = flon_generate_exid("dtest.rjk");
-      name = flu_sprintf("tsk_%s.json", exid);
+      name = flu_sprintf("nada_%s.json", exid);
       path = flu_sprintf("var/spool/dis/%s", name);
 
-      int r = flu_writeall(
-        path,
-        "{"
-          "nada: [ stamp, {}, [] ]\n"
-          "id: %s\n"
-          "payload: {\n"
-            "hello: world\n"
-          "}\n"
-        "}", exid
-      );
+      int r = flu_writeall(path, "{ na: da }", exid);
       expect(r i== 1);
 
       r = flon_dispatch(name);
       expect(r i== -1); // -1 rejected / 1 seen, failed / 2 dispatched
 
-      s = flu_readall("var/spool/rejected/tsk_%s.json", exid);
-      expect(s ^== "{nada: [ stamp");
+      s = flu_readall("var/spool/rejected/nada_%s.json", exid);
+      expect(s ^== "{ na: da }\n# reason: unknown file prefix (2");
 
       flu_unlink("var/spool/rejected/tsk_%s.json", exid);
     }
