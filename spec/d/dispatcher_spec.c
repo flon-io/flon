@@ -58,6 +58,8 @@ context "flon-dispatcher"
         "var/spool/dis/tsk_%s-0_2.json", exid,
         "{"
           "point: task\n"
+          "state: created\n"
+          "taskee: stamp\n"
           "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_2\n"
@@ -71,12 +73,12 @@ context "flon-dispatcher"
       r = flon_dispatch(name);
       expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
-      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-0_2.json", exid, 2);
+      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-0_2.json", exid, 2);
       expect(r i== 1); // ret file found
 
       flu_msleep(210); // give it time to write the file
 
-      fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-0_2.json", exid);
+      fdja_value *v = fdja_parse_f("var/spool/dis/tsk_%s-0_2.json", exid);
       expect(v != NULL);
       //flu_putf(fdja_todc(v));
       expect(fdja_l(v, "stamp", NULL) != NULL);
@@ -88,9 +90,9 @@ context "flon-dispatcher"
       expect(s >== " ran >ruby stamp.rb<");
       expect(s >== " stamp.rb over.");
 
-      expect(flu_fstat("var/spool/dis/%s", name) == 0);
+      expect(flu_fstat("var/spool/dis/%s", name) == 'f');
 
-      flu_unlink("var/spool/dis/ret_%s-0_2.json", exid);
+      flu_unlink("var/spool/dis/tsk_%s-0_2.json", exid);
       flu_unlink("var/spool/tsk/tsk_%s-0_2.json", exid);
       flu_unlink("var/log/tsk/%s-0_2.txt", exid);
     }
@@ -137,12 +139,14 @@ context "flon-dispatcher"
       int r = -1;
       exid = flon_generate_exid("dtest.rir");
       fep = flon_exid_path(exid);
-      name = flu_sprintf("ret_%s-0_7-f.json", exid);
+      name = flu_sprintf("tsk_%s-0_7-f.json", exid);
 
       r = flu_writeall(
-        "var/spool/tsk/tsk_%s-0_7-f.json", exid,
+        "var/spool/tsk/%s", name,
         "{"
           "point: task\n"
+          "state: created\n"
+          "taskee: stamp\n"
           "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_7-f\n"
@@ -154,7 +158,7 @@ context "flon-dispatcher"
       expect(r i== 1);
 
       r = flu_writeall(
-        "var/spool/dis/ret_%s-0_7-f.json", exid,
+        "var/spool/dis/%s", name,
         "{"
           "hello: dtest.rir\n"
         "}"
@@ -166,18 +170,14 @@ context "flon-dispatcher"
       r = flon_dispatch(name);
       expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
 
-      r = hlp_wait_for_file('f', "var/spool/dis/rcv_%s-0_7-f.json", exid, 2);
+      r = hlp_wait_for_file('f', "var/spool/dis/rcv_%s-0_7-f.json", exid, 3);
       expect(r i== 1); // rcv_ file found
 
-      //expect(flu_fstat("var/spool/dis/rcv_%s-0_7-f.json", exid) == 'f');
-      expect(flu_fstat("var/spool/tsk/tsk_%s-0_7-f.json", exid) == 0);
-      expect(flu_fstat("var/spool/dis/ret_%s-0_7-f.json", exid) == 0);
+      expect(flu_fstat("var/spool/tsk/%s", name) == 0);
 
+      // dispatch for the received tsk_
 
-      // dispatch for the rcv_
-
-      free(name);
-      name = flu_sprintf("rcv_%s-0_7-f.json", exid);
+      free(name); name = flu_sprintf("rcv_%s-0_7-f.json", exid);
 
       r = flon_dispatch(name);
       expect(r i== 2); // -1 rejected / 1 seen, failed / 2 dispatched
@@ -189,7 +189,7 @@ context "flon-dispatcher"
       //printf("exe.log >>>\n%s\n<<<\n", s);
       expect(s >== ": node not found");
 
-      // check that rcv_ got rejected (no execution going on)
+      // check that the received task got rejected (no execution going on)
 
       expect(flu_fstat("var/spool/rejected/rcv_%s-0_7-f.json", exid) == 'f');
     }

@@ -5,6 +5,7 @@
 // Mon Nov 17 06:00:25 JST 2014
 //
 
+#include "flutim.h"
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_common.h"
@@ -66,7 +67,7 @@ describe "tasker:"
 
       expect(r == 0);
 
-      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 7);
+      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 7);
       expect(r i== 1);
 
       expect(flu_canopath(".") $==f "/tst/");
@@ -75,9 +76,9 @@ describe "tasker:"
         // it's still here, it's the dispatcher's work to nuke it,
         // but since there is no answer...
 
-      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 'f');
 
-      v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
       expect(v != NULL);
 
       //fdja_putdc(v);
@@ -112,8 +113,11 @@ describe "tasker:"
 
       expect(r == 0);
 
-      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 7);
+      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 7);
       expect(r i== 1);
+
+      flu_msleep(350);
+        // give it time to write the file, especially when Valgrind is in
 
       expect(flu_canopath(".") $==f "/tst/");
 
@@ -121,13 +125,13 @@ describe "tasker:"
         // it's still here, it's the dispatcher's work to nuke it,
         // but since there is no answer...
 
-      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 'f');
 
       //char *s = flu_readall("var/spool/dis/ret_%s-%s.json", exid, nid);
       //printf("ret >%s<\n", s);
       //free(s);
 
-      v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
       //fdja_putdc(v);
 
       expect(v != NULL);

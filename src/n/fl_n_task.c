@@ -33,6 +33,8 @@ static char exe_task(fdja_value *node, fdja_value *exe)
 
   fdja_value *tsk = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
   fdja_psetv(tsk, "point", "task");
+  fdja_psetv(tsk, "state", "created");
+  fdja_set(tsk, "taskee", fdja_lc(exe, "tree.0"));
   fdja_set(tsk, "tree", fdja_lc(exe, "tree"));
   fdja_set(tsk, "payload", payload_clone(exe));
   fdja_pset(tsk, "payload.args", fdja_lc(exe, "tree.1"));

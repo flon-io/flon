@@ -132,7 +132,7 @@ int flon_task(const char *path)
   if (fdja_lk(tasker_conf, "out") == 'd') // discard
     ret = strdup("/dev/null");
   else
-    ret = flu_sprintf("var/spool/dis/ret_%s-%s.json", exid, nid);
+    ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", exid, nid);
 
   char cwd[1024 + 1]; getcwd(cwd, 1024);
   fgaj_i("cwd: %s", cwd);
@@ -220,9 +220,9 @@ int flon_task(const char *path)
 
     FILE *f = fdopen(pds[1], "w");
 
-    char *in = fdja_l(tasker_conf, "in");
+    char in = fdja_lk(tasker_conf, "in");
 
-    if (in && *fdja_srk(in) == 'a')
+    if (in == 'a') // "all"
       fdja_to_j(f, tsk, 0);
     else
       fdja_to_j(f, payload, 0);

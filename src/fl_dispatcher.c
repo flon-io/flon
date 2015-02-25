@@ -161,6 +161,8 @@ void flon_load_timers()
 
 static short schedule(const char *fname, fdja_value *id, fdja_value *msg)
 {
+  fgaj_i(fname);
+
   int r = 1; // seen, failed, for now
 
   int unschedule = (fdja_lk(msg, "point") == 'u');
@@ -460,7 +462,7 @@ static int executor_not_running(const char *exid)
 
 static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
 {
-  fgaj_d(fname);
+  fgaj_i(fname);
   //fgaj_d("msg: %s", fdja_tod(msg));
 
   int r = 2; // 'dispatched' for now
@@ -514,45 +516,47 @@ static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
   return r;
 }
 
-static short receive_ret(const char *fname, fdja_value *id, fdja_value *msg)
+static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
 {
+  fgaj_i(fname);
+
   short r = 2;
 
-  fdja_value *i = fdja_clone(id);
+  fdja_value *m = fdja_object_malloc();
 
-  fdja_psetv(i, "point", "receive");
-  fdja_set(i, "payload", fdja_clone(msg));
+  fdja_psetv(m, "point", "receive");
+  fdja_set(m, "exid", fdja_lc(id, "exid"));
+  fdja_set(m, "nid", fdja_lc(id, "nid"));
+  fdja_set(m, "payload", fdja_clone(msg));
 
-  //flu_putf(fdja_todc(i));
+  //flu_putf(fdja_todc(m));
 
+  int rr = fdja_to_json_f(m, "var/spool/dis/rcv_%s", fname + 4);
     // no need to lock file when writing, since we're in the reader...
-    //
-  if (fdja_to_json_f(i, "var/spool/dis/rcv_%s", fname + 4) != 1)
+
+  fdja_free(m);
+
+  if (rr != 1)
   {
     flon_move_to_rejected(
       "/var/spool/dis/%s", fname,
       "failed to move to var/spool/dis/rcv_%s", fname + 4);
-    r = -1;
-    goto _over;
+    return -1;
   }
 
-  // unlink tsk_
+  // unlink spool/tsk_
 
-  if (flu_unlink("var/spool/tsk/tsk_%s", fname + 4) == 0)
-    fgaj_i("unlinked var/spool/tsk/tsk_%s", fname + 4);
+  if (flu_unlink("var/spool/tsk/%s", fname) == 0)
+    fgaj_i("unlinked var/spool/tsk/%s", fname);
   else
-    fgaj_i("failed to unlink var/spool/tsk/tsk_%s", fname + 4);
+    fgaj_i("failed to unlink var/spool/tsk/%s", fname);
 
-  // unlink ret_
+  // unlink dis/tsk_
 
   if (flu_unlink("var/spool/dis/%s", fname) == 0)
     fgaj_i("unlinked var/spool/dis/%s", fname);
   else
     fgaj_i("failed to unlink var/spool/dis/%s", fname);
-
-_over:
-
-  fdja_free(i);
 
   return r;
 }
@@ -583,7 +587,6 @@ short flon_dispatch(const char *fname)
     strncmp(fname, "tsk_", 4) != 0 &&
     strncmp(fname, "rcv_", 4) != 0 &&
     strncmp(fname, "sch_", 4) != 0 &&
-    strncmp(fname, "ret_", 4) != 0 && // tmp tmp tmp tmp tmp
     strncmp(fname, "can_", 4) != 0
   ) {
     rej = "unknown file prefix"; goto _over;
@@ -602,18 +605,21 @@ short flon_dispatch(const char *fname)
   {
     r = (errno == 0) ? -1 : 1;
     if (r == -1) rej = "couldn't parse json";
+    else fgaj_r("couldn't read var/spool/dis/%s", fname);
     goto _over;
   }
 
   // TODO reroute?
 
-  if (strncmp(fname, "ret_", 4) == 0)
-  {
-    r = receive_ret(fname, id, msg);
-  }
-  else if (*fname == 's')
+  char *state = fdja_ls(msg, "state", NULL);
+
+  if (*fname == 's')
   {
     r = schedule(fname, id, msg);
+  }
+  else if (*fname == 't' && (state == NULL || strcmp(state, "created") != 0))
+  {
+    r = receive_task(fname, id, msg);
   }
   else
   {
@@ -623,12 +629,12 @@ short flon_dispatch(const char *fname)
 
 _over:
 
+  //fgaj_d("over r:%i rej:%s", r, rej);
+
   if (rej) flon_move_to_rejected("var/spool/dis/%s", fname, rej);
 
   fdja_free(id);
   fdja_free(msg);
-
-  //fgaj_d("r: %i", r);
 
   return r;
 }

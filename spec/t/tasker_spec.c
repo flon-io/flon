@@ -53,7 +53,7 @@ context "flon-tasker"
 
       expect(r == 0);
 
-      r = hlp_wait_for_file('f', "var/spool/dis/ret_%s-%s.json", exid, nid, 3);
+      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 3);
       expect(r i== 1);
       //
       flu_msleep(300);
@@ -63,9 +63,9 @@ context "flon-tasker"
       expect(flu_fstat("var/spool/tsk/tsk_%s-%s.json", exid, nid) c== 'f');
         // it's still here, it's the dispatcher's work to nuke it
 
-      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 'f');
+      expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 'f');
 
-      fdja_value *v = fdja_parse_f("var/spool/dis/ret_%s-%s.json", exid, nid);
+      fdja_value *v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
       //fdja_putdc(v);
 
       expect(fdja_ls(v, "hello", NULL) ===f "world");

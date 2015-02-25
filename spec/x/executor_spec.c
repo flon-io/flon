@@ -197,12 +197,12 @@ context "flon-executor"
       expect(s >== exid);
       free(s);
 
-      // inject ret_ back, towards "green"
+      // inject rcv_ back, towards "green"
 
       expect(flu_unlink("var/spool/dis/tsk_%s-0_0.json", exid) i== 0);
 
       flu_writeall(
-        "var/spool/exe/ret_%s-0_0.json", exid,
+        "var/spool/exe/rcv_%s-0_0.json", exid,
         "{"
           "point: receive\n"
           "exid: %s\n"
@@ -216,8 +216,8 @@ context "flon-executor"
 
       flon_execute(exid);
 
-      expect(flu_fstat("var/spool/exe/ret_%s-0_0.json", exid) == 0);
-      expect(flu_fstat("var/spool/rejected/ret_%s-0_0.json", exid) == 0);
+      expect(flu_fstat("var/spool/exe/rcv_%s-0_0.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/rcv_%s-0_0.json", exid) == 0);
 
       expect(flu_fstat("var/spool/dis/tsk_%s-0_1.json", exid) == 'f');
 
@@ -245,12 +245,12 @@ context "flon-executor"
 
       fdja_free(v);
 
-      // inject ret_ back, towards "eox" (end of execution)
+      // inject rcv_ back, towards "eox" (end of execution)
 
       expect(flu_unlink("var/spool/dis/tsk_%s-0_1.json", exid) == 0);
 
       flu_writeall(
-        "var/spool/exe/ret_%s-0_1.json", exid,
+        "var/spool/exe/rcv_%s-0_1.json", exid,
         "{"
           "point: receive\n"
           "exid: %s\n"
@@ -264,8 +264,8 @@ context "flon-executor"
 
       flon_execute(exid);
 
-      expect(flu_fstat("var/spool/exe/ret_%s-0_1.json", exid) == 0);
-      expect(flu_fstat("var/spool/rejected/ret_%s-0_1.json", exid) == 0);
+      expect(flu_fstat("var/spool/exe/rcv_%s-0_1.json", exid) == 0);
+      expect(flu_fstat("var/spool/rejected/rcv_%s-0_1.json", exid) == 0);
 
       //printf("var/archive/%s/run.json\n", fep);
       expect(flu_fstat("var/run/%s/run.json", fep) == 0);
