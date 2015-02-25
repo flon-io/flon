@@ -6,5 +6,13 @@
 #
 
 
-STDOUT.puts(STDIN.read)
+require 'json'
+
+task = JSON.parse(STDIN.read)
+
+task['state'] = 'completed'
+  # very important, else flon will think the task is still "created"
+  # and hand it back to this tasker in a loop...
+
+STDOUT.puts(JSON.dump(task))
 

@@ -44,10 +44,8 @@ context "flon and taskers:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ stamp: \"ttest.asia.japan stamp\" }");
@@ -65,10 +63,8 @@ context "flon and taskers:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ stamp: \"ttest stamp\" }");
@@ -86,12 +82,34 @@ context "flon and taskers:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "payload.stamp") ^==f "20");
+    }
+  }
+
+  describe "mirrora"
+  {
+    it "mirrors the whole task"
+    {
+      exid = flon_generate_exid("ztest.mirrora");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set f.a: 1\n"
+        "  task mirrora\n"
+        "  trace $(f.a)\n"
+        "",
+        "{ a: 0 }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload") ===f "{ a: 1, ret: 1, trace: [ 1 ] }");
     }
   }
 }

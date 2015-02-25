@@ -522,12 +522,20 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
 
   short r = 2;
 
-  fdja_value *m = fdja_object_malloc();
+  fdja_value *m = NULL;
+
+  if (
+    fdja_l(msg, "point") == NULL ||
+    fdja_l(msg, "state") == NULL ||
+    fdja_l(msg, "payload") == NULL
+  )
+    m = fdja_o("payload", fdja_clone(msg), NULL);
+  else
+    m = fdja_clone(msg);
 
   fdja_psetv(m, "point", "receive");
   fdja_set(m, "exid", fdja_lc(id, "exid"));
   fdja_set(m, "nid", fdja_lc(id, "nid"));
-  fdja_set(m, "payload", fdja_clone(msg));
 
   //flu_putf(fdja_todc(m));
 
