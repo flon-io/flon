@@ -245,7 +245,7 @@ void print_msg_child(size_t indent, fdja_value *tr)
 {
   for (fdja_value *ct = fdja_at(tr, 3)->child; ct; ct = ct->sibling)
   {
-    printf("%*s", indent, " ");
+    printf("%*s", (int)indent, " ");
 
     char *head = fdja_ls(ct, "0", NULL);
     char *atts = fdja_ld(ct, "1");
