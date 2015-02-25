@@ -627,6 +627,8 @@ short flon_dispatch(const char *fname)
     //r = route_or_dispatch(fname, id, msg);
   }
 
+  free(state);
+
 _over:
 
   //fgaj_d("over r:%i rej:%s", r, rej);
