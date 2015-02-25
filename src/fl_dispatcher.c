@@ -167,7 +167,7 @@ static short schedule(const char *fname, fdja_value *id, fdja_value *msg)
 
   fgaj_d("%sschedule order: %s", unschedule ? "un" : "", fname);
 
-  char *exid = flon_get_exid(fname);
+  char *exid = fdja_ls(id, "exid", NULL);
   char *fep = flon_exid_path(exid);
 
   // write to var/spool/tdis/
@@ -468,27 +468,12 @@ static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
     flon_move_to_rejected("var/spool/dis/%s", fname, "no 'point'");
     return -1;
   }
+    // TODO: move that upstream !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   int r = 2; // 'dispatched' for now
 
-  char *exid = fdja_ls(msg, "exid", NULL);
-  char *nid = fdja_ls(msg, "nid", NULL);
-  //
-  if (exid == NULL)
-  {
-    fdja_value *id = flon_parse_nid(fname);
-
-    if (id == NULL)
-    {
-      flon_move_to_rejected("var/spool/dis/%s", fname, "no 'exid'");
-      return -1;
-    }
-
-    exid = fdja_ls(id, "exid", NULL);
-    nid = fdja_ls(id, "nid", NULL);
-
-    fdja_free(id);
-  }
+  char *exid = fdja_ls(id, "exid", NULL);
+  char *nid = fdja_ls(id, "nid", NULL);
 
   char *fep = flon_exid_path(exid);
 
