@@ -1,0 +1,4 @@
+
+if $(taskee) == ostamp
+  set taskee: stamp
+
