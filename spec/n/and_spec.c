@@ -44,10 +44,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result));
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: true }");

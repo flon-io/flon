@@ -180,7 +180,7 @@ int hlp_cancel(char *exid, char *nid)
   return r;
 }
 
-static fdja_value *scan(char *s, char *action, char *nid)
+static fdja_value *scan(char *s, char *point, char *nid)
 {
   fdja_value *r = NULL;
   char *ss = NULL;
@@ -199,9 +199,9 @@ static fdja_value *scan(char *s, char *action, char *nid)
 
   if (v == NULL) goto _prev;
 
-  size_t la = strlen(action);
-  fdja_value *point = fdja_l(v, "point");
-  if (strncmp(action, fdja_src(point), la) != 0) goto _prev;
+  size_t la = strlen(point);
+  fdja_value *pt = fdja_l(v, "point");
+  if (strncmp(point, fdja_src(pt), la) != 0) goto _prev;
 
   if (nid)
   {
@@ -223,10 +223,10 @@ _prev: // because we read from the end line to the first line
   if (lf == NULL) return NULL;
 
   *lf = 0;
-  return scan(s, action, nid);
+  return scan(s, point, nid);
 }
 
-fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
+fdja_value *hlp_wait(char *exid, char *point, char *nid, int maxsec)
 {
   char *fep = flon_exid_path(exid);
   //if (nid == NULL) nid = "0";
@@ -244,7 +244,7 @@ fdja_value *hlp_wait(char *exid, char *action, char *nid, int maxsec)
 
     char *s = flu_readall(path);
     //printf("hlp_wait() -------------------------------------- -\n");
-    r = scan(s, action, nid);
+    r = scan(s, point, nid);
     free(s);
     free(path);
 
