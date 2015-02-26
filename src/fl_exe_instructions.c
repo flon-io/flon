@@ -371,7 +371,7 @@ static char *dol_lookup(void *data, const char *path)
   if (strcmp(path, "domain") == 0)
     return flon_execution_domain();
 
-  if (strncmp(path, "domain-", 6) == 0 || strncmp(path, "domain+", 6) == 0)
+  if (strncmp(path, "domain", 5) == 0 && (path[6] == '-' || path[6] == '+'))
     return flon_execution_domain_delta(strtol(path + 6, NULL, 10));
 
   // regular case, var or fld
