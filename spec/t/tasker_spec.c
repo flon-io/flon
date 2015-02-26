@@ -40,6 +40,8 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
+        "state: created\n"
+        "taskee: stamp\n"
         "tree: [ task, { _0: stamp }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"

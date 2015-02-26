@@ -45,7 +45,9 @@ context "tasker: null"
       flu_writeall(
         path,
         "point: task\n"
-        "tree: [ task, { _0: \"null\" }, [] ]\n"
+        "state: created\n"
+        "taskee: 'null'\n"
+        "tree: [ task, { _0: 'null' }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {\n"

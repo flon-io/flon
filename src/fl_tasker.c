@@ -110,12 +110,12 @@ int flon_task(const char *path)
 
   char *domain = flon_exid_domain(exid);
 
-  char *tasker_name = fdja_ls(tree, "1._0", NULL);
-  char *tasker_path = flon_lookup_tasker(domain, tasker_name);
+  char *taskee = fdja_ls(tsk, "taskee", NULL);
+  char *tasker_path = flon_lookup_tasker(domain, taskee);
 
   if (tasker_path == NULL)
   {
-    fgaj_r("didn't find tasker %s (domain %s)", tasker_name, domain);
+    fgaj_r("didn't find tasker %s (domain %s)", taskee, domain);
     return 1;
   }
 
@@ -155,7 +155,7 @@ int flon_task(const char *path)
     cmd = cmd1;
   }
 
-  fgaj_i("tasker %s running >%s<", tasker_name, cmd);
+  fgaj_i("tasker %s running >%s<", taskee, cmd);
 
   int pds[2];
 
@@ -231,7 +231,7 @@ int flon_task(const char *path)
 
     // over, no wait
 
-    fgaj_i("tasker %s ran >%s< pid %i", tasker_name, cmd, i);
+    fgaj_i("tasker %s ran >%s< pid %i", taskee, cmd, i);
   }
 
   // resource cleanup
@@ -246,7 +246,7 @@ int flon_task(const char *path)
   free(domain);
   free(tasker_path);
   free(cmd);
-  free(tasker_name);
+  free(taskee);
   free(ret);
 
   // exit
