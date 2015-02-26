@@ -27,15 +27,31 @@ context "flon-tasker"
 
     chdir("../tst");
     flon_configure(".");
+
+    char *s = NULL;
+    fdja_value *v = NULL;
+
+    char *exid = NULL;
+    char *nid = NULL;
+    char *path = NULL;
+  }
+  after each
+  {
+    free(s);
+    fdja_free(v);
+
+    free(exid);
+    //free(nid); // no need
+    free(path);
   }
 
   describe "flon_task()"
   {
     it "tasks"
     {
-      char *exid = flon_generate_exid("ttest");
-      char *nid = "0_0_7";
-      char *path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+      exid = flon_generate_exid("ttest");
+      nid = "0_0_7";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
@@ -67,19 +83,49 @@ context "flon-tasker"
 
       expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 'f');
 
-      fdja_value *v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
       //fdja_putdc(v);
 
       expect(fdja_ls(v, "hello", NULL) ===f "world");
       expect(fdja_l(v, "stamp") != NULL);
 
-      fdja_free(v);
-
       flu_unlink("var/spool/tsk/tsk_%s-%s.json", exid, nid);
       flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
+    }
 
-      free(exid);
-      free(path);
+    it "returns the task as failed if it can't find the taskee"
+    {
+      exid = flon_generate_exid("ttest.cant_find_taskee");
+      nid = "0_5";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(
+        path,
+        "point: task\n"
+        "state: created\n"
+        "taskee: nada\n"
+        "tree: [ task, { _0: nada }, [] ]\n"
+        "exid: %s\n"
+        "nid: %s\n"
+        "payload: {\n"
+          "hello: world\n"
+        "}\n",
+        exid, nid
+      );
+
+      int r = flon_task(path);
+
+      expect(r i== 1);
+
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      //fdja_putdc(v);
+
+      expect(v != NULL);
+      expect(fdja_ld(v, "point") ===f "task");
+      expect(fdja_ld(v, "state") ===f "failed");
+      expect(fdja_ld(v, "taskee") ===f "nada");
+      expect(fdja_ld(v, "on") ===f "offer");
+      expect(fdja_ld(v, "payload") ===f "{ hello: world }");
     }
   }
 
@@ -87,7 +133,6 @@ context "flon-tasker"
   {
     it "returns null if it doesn't find"
     {
-//char *flon_lookup_tasker(const char *domain, const char *name);
       expect(flon_lookup_tasker("ttest.asia.japan", "nada") == NULL);
     }
 

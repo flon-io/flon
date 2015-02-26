@@ -84,22 +84,72 @@ char *flon_lookup_tasker(const char *domain, const char *name)
   return NULL;
 }
 
+static void fail(
+  const char *path, fdja_value *tsk, short r, const char *msg)
+{
+  if (r) fgaj_r(msg); else fgaj_e(msg);
+
+  fdja_set(tsk, "state", fdja_v("failed"));
+  fdja_set(tsk, "on", fdja_v("offer"));
+  fdja_set(tsk, "msg", fdja_s(msg));
+
+  if (path)
+  {
+    char *fname = strrchr(path, '/');
+
+    if (flon_lock_write(tsk, "var/spool/dis/%s", fname) != 1)
+    {
+      fgaj_r("failed to write 'failed' tsk_ msg to var/spool/dis/%s", fname);
+    }
+  }
+  else
+  {
+    fdja_putj(tsk);
+  }
+}
+
+static void failf(
+  const char *path, fdja_value *tsk, short r, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *msg = flu_svprintf(format, ap);
+  va_end(ap);
+
+  fail(path, tsk, r, msg);
+
+  free(msg);
+}
+
+static void failo(
+  fdja_value *tsk, short r, const char *format, ...)
+{
+  va_list ap; va_start(ap, format);
+  char *msg = flu_svprintf(format, ap);
+  va_end(ap);
+
+  fail(NULL, tsk, r, msg);
+
+  free(msg);
+}
+
 int flon_task(const char *path)
 {
+  int r = 0;
+
   fgaj_d("path: %s", path);
 
   fdja_value *tsk = fdja_parse_obj_f(path);
+  fdja_value *tasker_conf = NULL;
 
   if (tsk == NULL)
   {
+    // fail without sending back a tsk, the dispatcher/executor are supposed
+    // to send readable json files
+    //
+    // OR FIXME wouldn't it help to receive that piece of info,
+    // "your task is broken"
+
     fgaj_r("couldn't read tsk msg at %s", path); return 1;
-  }
-
-  fdja_value *tree = fdja_lookup(tsk, "tree");
-
-  if (tree == NULL)
-  {
-    fgaj_e("no 'tree' key in the message"); return 1;
   }
 
   fdja_value *payload = fdja_lookup(tsk, "payload");
@@ -113,22 +163,25 @@ int flon_task(const char *path)
   char *taskee = fdja_ls(tsk, "taskee", NULL);
   char *tasker_path = flon_lookup_tasker(domain, taskee);
 
+  char *ret = NULL;
+  char *cmd = NULL;
+
+  fgaj_d("tasker_path: %s", tasker_path);
+
   if (tasker_path == NULL)
   {
-    fgaj_r("didn't find tasker %s (domain %s)", taskee, domain);
-    return 1;
+    failf(path, tsk, 0, "didn't find tasker '%s' (domain %s)", taskee, domain);
+    r = 1; goto _over;
   }
 
-  fdja_value *tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
+  tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
 
   if (tasker_conf == NULL)
   {
-    fgaj_r("didn't find tasker conf at %s/flon.json", tasker_path);
-    return 1;
+    failf(path, tsk, 1, "didn't find tasker conf at %s/flon.json", tasker_path);
+    r = 1; goto _over;
   }
 
-  char *ret = NULL;
-  //
   if (fdja_lk(tasker_conf, "out") == 'd') // discard
     ret = strdup("/dev/null");
   else
@@ -140,12 +193,13 @@ int flon_task(const char *path)
   fgaj_i("exid: %s, nid: %s, domain: %s", exid, nid, domain);
   fgaj_i("tasker at %s", tasker_path);
 
-  char *cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
+  cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
 
   if (cmd == NULL)
   {
-    fgaj_e("no 'run' key in tasker conf at %s/flon.json", tasker_path);
-    return 1;
+    failf(
+      path, tsk, 0, "no 'run' key in tasker conf at %s/flon.json", tasker_path);
+    r = 1; goto _over;
   }
 
   if (strstr(cmd, "$("))
@@ -159,19 +213,21 @@ int flon_task(const char *path)
 
   int pds[2];
 
-  int r = pipe(pds);
-
-  if (r != 0)
+  if (pipe(pds) != 0)
   {
-    fgaj_r("failed to setup pipe between taskmaster and tasker");
-    return 1;
+    failf(path, tsk, 1, "failed to setup pipe between taskmaster and tasker");
+    r = 1; goto _over;
   }
+
+  //
+  // let's fork
 
   pid_t i = fork();
 
   if (i < 0) // failure
   {
-    fgaj_r("taskmaster failed to fork tasker");
+    failf(path, tsk, 1, "taskmaster failed to fork tasker");
+    r = 1; goto _over;
   }
   else if (i == 0) // child
   {
@@ -183,36 +239,36 @@ int flon_task(const char *path)
 
     if (setsid() == -1)
     {
-      fgaj_r("setsid() failed");
-      return 127;
+      failf(path, tsk, 1, "setsid() failed");
+      r = 127; goto _over;
     }
 
     if (freopen(ret, "w", stdout) == NULL)
     {
-      fgaj_r("failed to reopen child stdout to %s", ret);
-      return 127;
+      failf(path, tsk, 1, "failed to reopen child stdout to %s", ret);
+      r = 127; goto _over;
     }
     if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
     {
-      fgaj_r("couldn't lock %s", ret);
-      return 127;
+      failf(path, tsk, 1, "couldn't lock %s", ret);
+      r = 127; goto _over;
     }
 
     if (chdir(tasker_path) != 0)
     {
-      fgaj_r("failed to chdir to %s", tasker_path);
-      return 127;
+      failo(tsk, 1, "failed to chdir to %s", tasker_path);
+      r = 127; goto _over;
     }
 
     fflush(stderr);
 
-    r = execl("/bin/sh", "", "-c", cmd, NULL);
+    int er = execl("/bin/sh", "", "-c", cmd, NULL);
 
     // excl has returned... fail zone...
 
-    fgaj_r("execl failed (%i)", r);
+    fgaj_r("execl failed (%i)", er);
 
-    return 127;
+    r = 127; //goto _over;
   }
   else // parent
   {
@@ -234,6 +290,8 @@ int flon_task(const char *path)
     fgaj_i("tasker %s ran >%s< pid %i", taskee, cmd, i);
   }
 
+_over:
+
   // resource cleanup
   //
   // not really necessary, but it helps when debugging / checking...
@@ -249,8 +307,6 @@ int flon_task(const char *path)
   free(taskee);
   free(ret);
 
-  // exit
-
-  return 0;
+  return r;
 }
 

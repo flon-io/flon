@@ -22,11 +22,13 @@ context "instruction:"
   {
     char *exid = NULL;
     fdja_value *result = NULL;
+    fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
     fdja_free(result);
+    fdja_free(v);
   }
 
   describe "task"
@@ -43,11 +45,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "receive", "0", 9);
 
-      //flon_pp_execution(exid);
-      //hlp_cat_tsk_log(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "point", NULL) ===f "receive");
       expect(fdja_ls(result, "nid", NULL) ===f "0");
@@ -71,11 +70,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 9);
 
-      //flu_putf(hlp_last_msg(exid));
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_tod(fdja_l(result, "payload.args1")) ===f ""
         "{ _0: copyargs }");
@@ -93,11 +89,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 9);
 
-      //flu_putf(hlp_last_msg(exid));
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_l(result, "payload.args") == NULL);
 
@@ -106,7 +99,28 @@ context "instruction:"
     }
 
     it "sets the node as 'failed' if the tasker doesn't exist"
-      // TODO: don't hurry with this one... think about it [later]...
+    {
+      exid = flon_generate_exid("n.task.unknown_tasker");
+
+      hlp_launch(
+        exid,
+        "task nada\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 7);
+
+      expect(result != NULL);
+      fdja_putdc(result);
+
+      v = hlp_read_run_json(exid);
+      fdja_putdc(v);
+
+      expect(fdja_ls(v, "nodes.0.status", NULL) ===f ""
+        "failed");
+      expect(fdja_ls(v, "nodes.0.errors.0.msg", NULL) ===f ""
+        "unknown tasker 'nada'");
+    }
   }
 }
 
