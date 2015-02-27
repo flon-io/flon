@@ -93,6 +93,9 @@ context "flon-tasker"
       flu_unlink("var/spool/dis/ret_%s-%s.json", exid, nid);
     }
 
+    it "moves non-identifiable tasks to var/spool/rejected/"
+    it "moves non-parseable tasks to var/spool/rejected/"
+
     it "returns the task as failed if it can't find the taskee"
     {
       exid = flon_generate_exid("ttest.cant_find_taskee");
@@ -127,6 +130,9 @@ context "flon-tasker"
       expect(fdja_ld(v, "on") ===f "offer");
       expect(fdja_ld(v, "payload") ===f "{ hello: world }");
     }
+
+    it "returns the task as failed if the taskee doesn't have a flon.json"
+    it "returns the task as failed if the taskee doesn't have 'run' key"
   }
 
   describe "flon_lookup_tasker()"
