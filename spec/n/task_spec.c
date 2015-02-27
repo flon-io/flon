@@ -111,15 +111,15 @@ context "instruction:"
       result = hlp_wait(exid, "failed", NULL, 7);
 
       expect(result != NULL);
-      fdja_putdc(result);
+      //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
-      fdja_putdc(v);
+      //fdja_putdc(v);
 
       expect(fdja_ls(v, "nodes.0.status", NULL) ===f ""
         "failed");
       expect(fdja_ls(v, "nodes.0.errors.0.msg", NULL) ===f ""
-        "unknown tasker 'nada'");
+        "didn't find tasker 'nada' (domain n.task.unknown_tasker)");
     }
   }
 }

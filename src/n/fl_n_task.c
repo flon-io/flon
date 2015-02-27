@@ -56,6 +56,19 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
 {
   fdja_pset(rcv, "payload.args", NULL);
 
-  return 'v'; // over
+  //printf("=================== rcv_task()\n");
+  //fdja_putdc(node);
+  //fdja_putdc(rcv);
+
+  fdja_value *state = fdja_l(rcv, "state");
+  //fdja_value *on = fdja_l(rcv, "on");
+
+  // TODO there is "completed", "failed" and some others !!!!
+
+  if (state == NULL || fdja_strcmp(state, "failed") != 0) return 'v'; // over
+
+  push_error(node, fdja_ls(rcv, "msg", NULL), NULL);
+
+  return 'r';
 }
 
