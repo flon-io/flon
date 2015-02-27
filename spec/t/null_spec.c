@@ -38,7 +38,7 @@ context "tasker: null"
   {
     it "swallows any workitem"
     {
-      exid = flon_generate_exid("ttest-null-0");
+      exid = flon_generate_exid("ttest.null.0");
       nid = "0_1";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -58,9 +58,9 @@ context "tasker: null"
 
       int r = flon_task(path);
 
-      expect(r == 0);
+      expect(r i== 0);
 
-      sleep(1);
+      flu_msleep(490);
 
       expect(flu_canopath(".") $==f "/tst/");
 

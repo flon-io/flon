@@ -45,7 +45,7 @@ describe "tasker:"
   {
     it "repeats its command line args in its output"
     {
-      exid = flon_generate_exid("ttest-mirror-0");
+      exid = flon_generate_exid("ttest.mirror.0");
       nid = "0_1";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -67,7 +67,7 @@ describe "tasker:"
 
       int r = flon_task(path);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 7);
       expect(r i== 1);

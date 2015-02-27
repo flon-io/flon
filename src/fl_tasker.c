@@ -111,9 +111,7 @@ static void fail(
 static void failf(
   const char *path, fdja_value *tsk, short r, const char *format, ...)
 {
-  va_list ap; va_start(ap, format);
-  char *msg = flu_svprintf(format, ap);
-  va_end(ap);
+  va_list ap; va_start(ap, format); char *msg = flu_sv(format, ap); va_end(ap);
 
   fail(path, tsk, r, msg);
 
@@ -123,11 +121,20 @@ static void failf(
 static void failo(
   fdja_value *tsk, short r, const char *format, ...)
 {
-  va_list ap; va_start(ap, format);
-  char *msg = flu_svprintf(format, ap);
-  va_end(ap);
+  va_list ap; va_start(ap, format); char *msg = flu_sv(format, ap); va_end(ap);
 
   fail(NULL, tsk, r, msg);
+
+  free(msg);
+}
+
+static void reject(const char *path, short r, const char *format, ...)
+{
+  va_list ap; va_start(ap, format); char *msg = flu_sv(format, ap); va_end(ap);
+
+  if (r) fgaj_r(msg); else fgaj_e(msg);
+
+  flon_move_to_rejected(path, msg);
 
   free(msg);
 }
@@ -138,33 +145,43 @@ int flon_task(const char *path)
 
   fgaj_d("path: %s", path);
 
-  fdja_value *tsk = fdja_parse_obj_f(path);
+  char *fname = strrchr(path, '/');
+
+  fdja_value *id = flon_parse_nid(fname);
+
+  if (id == NULL)
+  {
+    reject(path, 0, "couldn't identify tsk at %s", fname);
+    return 1;
+  }
+
+  char *exid = fdja_ls(id, "exid", NULL);
+  char *nid = fdja_ls(id, "nid", NULL);
+  char *domain = flon_exid_domain(exid);
+
+  fdja_free(id);
+
+  fdja_value *tsk = NULL;
   fdja_value *tasker_conf = NULL;
+
+  char *taskee = NULL;
+  char *tasker_path = NULL;
+  char *ret = NULL;
+  char *cmd = NULL;
+
+  tsk = fdja_parse_obj_f(path);
 
   if (tsk == NULL)
   {
-    // fail without sending back a tsk, the dispatcher/executor are supposed
-    // to send readable json files
-    //
-    // OR FIXME wouldn't it help to receive that piece of info,
-    // "your task is broken"
-
-    fgaj_r("couldn't read tsk msg at %s", path); return 1;
+    reject(path, 1, "couldn't parse tsk at %s", fname);
+    r = 1; goto _over;
   }
 
   fdja_value *payload = fdja_lookup(tsk, "payload");
   if (payload == NULL) payload = fdja_object_malloc();
 
-  char *exid = fdja_ls(tsk, "exid", NULL);
-  char *nid = fdja_ls(tsk, "nid", NULL);
-
-  char *domain = flon_exid_domain(exid);
-
-  char *taskee = fdja_ls(tsk, "taskee", NULL);
-  char *tasker_path = flon_lookup_tasker(domain, taskee);
-
-  char *ret = NULL;
-  char *cmd = NULL;
+  taskee = fdja_ls(tsk, "taskee", NULL);
+  tasker_path = flon_lookup_tasker(domain, taskee);
 
   fgaj_d("tasker_path: %s", tasker_path);
 
@@ -209,7 +226,7 @@ int flon_task(const char *path)
     cmd = cmd1;
   }
 
-  fgaj_i("tasker %s running >%s<", taskee, cmd);
+  fgaj_i("about to run >%s< for taskee '%s'", cmd, taskee);
 
   int pds[2];
 
@@ -299,6 +316,7 @@ _over:
 
   fdja_free(tsk);
   fdja_free(tasker_conf);
+
   free(exid);
   free(nid);
   free(domain);
