@@ -625,13 +625,13 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  char *tstate = fdja_ls(msg, "tstate", NULL);
+  char *ts = fdja_ls(msg, "tstate", NULL);
 
   if (*fname == 's')
   {
     r = schedule(fname, id, msg);
   }
-  else if (*fname == 't' && (tstate == NULL || strcmp(tstate, "created") != 0))
+  else if (*fname == 't' && (ts == NULL || strcmp(ts, "completed") == 0))
   {
     r = receive_task(fname, id, msg);
   }
@@ -641,7 +641,7 @@ short flon_dispatch(const char *fname)
     //r = route_or_dispatch(fname, id, msg);
   }
 
-  free(tstate);
+  free(ts);
 
 _over:
 

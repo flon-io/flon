@@ -39,6 +39,7 @@
 #include "fl_ids.h"
 #include "fl_common.h"
 #include "fl_tasker.h"
+#include "fl_executor.h"
 
 
 char *flon_lookup_tasker_path(
@@ -183,7 +184,39 @@ static int run_rad(tasking_data *td)
 {
   fgaj_d("cmd >%s< taskee >%s< ret >%s<", td->cmd, td->taskee, td->ret);
 
-  return -1;
+  fdja_value *rad =
+    fdja_parse_radial_f("%s/%s", td->tasker_path, td->cmd);
+
+  if (rad == NULL)
+  {
+    failf(td, 1, "failed to parse %s", td->cmd);
+    return 1;
+  }
+
+  //fgaj_d("rad: %s", fdja_tod(rad));
+
+  fdja_value *pl = fdja_lc(td->tsk, "payload");
+  fdja_set(pl, "taskee", fdja_s(td->taskee));
+  // TODO load task history if required...
+  // TODO load taskbox state if required...
+
+  fdja_value *vars = fdja_object_malloc();
+
+  fdja_value *msg = flon_execut(rad, pl, vars);
+
+  //fgaj_d("over: %s", fdja_tod(msg));
+
+  fdja_set(td->tsk, "tstate", fdja_s("offered"));
+  fdja_set(td->tsk, "ton", fdja_s("offer"));
+  fdja_set(td->tsk, "taskee", fdja_lc(msg, "payload.taskee"));
+
+  if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
+  {
+    fgaj_r("failed to write back to var/spool/dis/%s", td->fname);
+    return 1;
+  }
+
+  return 0;
 }
 
 static int run_cmd(tasking_data *td)

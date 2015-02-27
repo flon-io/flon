@@ -40,8 +40,8 @@ XDEPS= \
   $(DEPS) \
   dollar.o fl_executor.o fl_exe_nodes.o fl_exe_instructions.o
 TDEPS= \
-  $(DEPS) \
-  dollar.o fl_tasker.o
+  $(DEPS) $(XDEPS) \
+  fl_tasker.o
 LDEPS= \
   $(DEPS) $(SHV_OS) $(TSI_OS) \
   flu64.o fl_listener.o fl_lis_auth.o
