@@ -41,28 +41,6 @@
 #include "fl_tasker.h"
 
 
-typedef struct { char *exid; char *nid; fdja_value *pl; } lup;
-
-static char *lookup(void *data, const char *path)
-{
-  lup *lu = (lup *)data;
-
-  if (strcmp(path, "exid") == 0) return strdup(lu->exid);
-  if (strcmp(path, "nid") == 0) return strdup(lu->nid);
-
-  if (strncmp(path, "pl.", 3) == 0)
-    return fdja_ls(lu->pl, path + 3, NULL);
-  if (strncmp(path, "payload.", 8) == 0)
-    return fdja_ls(lu->pl, path + 8, NULL);
-
-  return NULL;
-}
-
-static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
-{
-  return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
-}
-
 char *flon_lookup_tasker_path(
   const char *domain, const char *taskee, short created)
 {
@@ -99,46 +77,93 @@ char *flon_lookup_tasker_path(
   return NULL;
 }
 
-static void fail(
-  const char *path, fdja_value *tsk, short r, const char *msg)
+typedef struct {
+  fdja_value *tsk;
+  fdja_value *tasker_conf;
+  char *path;
+  char *fname;
+  char *exid;
+  char *nid;
+  char *domain;
+  char *taskee;
+  char *tasker_path;
+  char *cmd;
+  char *ret;
+} tasking_data;
+
+static void tasking_data_free(tasking_data *td)
+{
+  fdja_free(td->tsk);
+  fdja_free(td->tasker_conf);
+  //free(td->path); // no.
+  //free(td->fname); // no.
+  free(td->exid);
+  free(td->nid);
+  free(td->domain);
+  free(td->taskee);
+  free(td->tasker_path);
+  free(td->cmd);
+  free(td->ret);
+}
+
+static char *lookup(void *data, const char *path)
+{
+  tasking_data *td = (tasking_data *)data;
+
+  if (strcmp(path, "exid") == 0) return strdup(td->exid);
+  if (strcmp(path, "nid") == 0) return strdup(td->nid);
+
+  fdja_value *payload = fdja_l(td->tsk, "payload");
+
+  if (strncmp(path, "pl.", 3) == 0)
+    return fdja_ls(payload, path + 3, NULL);
+  if (strncmp(path, "payload.", 8) == 0)
+    return fdja_ls(payload, path + 8, NULL);
+
+  return NULL;
+}
+
+static char *expand(tasking_data *td)
+{
+  return fdol_quote_expand(td->cmd, td, lookup);
+}
+
+static void fail(char o_or_f, tasking_data *td, short r, const char *msg)
 {
   if (r) fgaj_r(msg); else fgaj_e(msg);
 
-  fdja_set(tsk, "tstate", fdja_v("failed"));
-  fdja_set(tsk, "ton", fdja_v("offer"));
-  fdja_set(tsk, "msg", fdja_s(msg));
+  fdja_set(td->tsk, "tstate", fdja_v("failed"));
+  fdja_set(td->tsk, "ton", fdja_v("offer"));
+  fdja_set(td->tsk, "msg", fdja_s(msg));
 
-  if (path)
+  if (o_or_f == 'f')
   {
-    char *fname = strrchr(path, '/');
-
-    if (flon_lock_write(tsk, "var/spool/dis/%s", fname) != 1)
+    if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
     {
-      fgaj_r("failed to write 'failed' tsk_ msg to var/spool/dis/%s", fname);
+      fgaj_r(
+        "failed to write 'failed' tsk_ msg to var/spool/dis/%s", td->fname);
     }
   }
   else
   {
-    fdja_putj(tsk);
+    fdja_putj(td->tsk);
   }
 }
 
-static void failf(
-  const char *path, fdja_value *tsk, short r, const char *format, ...)
+static void failf(tasking_data *td, short r, const char *format, ...)
 {
   va_list ap; va_start(ap, format); char *msg = flu_sv(format, ap); va_end(ap);
 
-  fail(path, tsk, r, msg);
+  fail('f', td, r, msg);
 
   free(msg);
 }
 
-static void failo(
-  fdja_value *tsk, short r, const char *format, ...)
+static void failo(tasking_data *td, short r, const char *format, ...)
 {
   va_list ap; va_start(ap, format); char *msg = flu_sv(format, ap); va_end(ap);
 
-  fail(NULL, tsk, r, msg);
+  fail('o', td, r, msg);
 
   free(msg);
 }
@@ -154,121 +179,37 @@ static void reject(const char *path, short r, const char *format, ...)
   free(msg);
 }
 
-int flon_task(const char *path)
+static int run_rad(tasking_data *td)
 {
-  int r = 0;
+  fgaj_d("cmd >%s< taskee >%s< ret >%s<", td->cmd, td->taskee, td->ret);
 
-  fgaj_d("path: %s", path);
+  return -1;
+}
 
-  char *fname = strrchr(path, '/');
-
-  fdja_value *id = flon_parse_nid(fname);
-
-  if (id == NULL)
-  {
-    reject(path, 0, "couldn't identify tsk at %s", fname);
-    return 1;
-  }
-
-  char *exid = fdja_ls(id, "exid", NULL);
-  char *nid = fdja_ls(id, "nid", NULL);
-  char *domain = flon_exid_domain(exid);
-
-  fdja_free(id);
-
-  fdja_value *tsk = NULL;
-  fdja_value *tasker_conf = NULL;
-
-  char *taskee = NULL;
-  char *tasker_path = NULL;
-  char *ret = NULL;
-  char *cmd = NULL;
-
-  tsk = fdja_parse_obj_f(path);
-
-  if (tsk == NULL)
-  {
-    reject(path, 1, "couldn't parse tsk at %s", fname);
-    r = 1; goto _over;
-  }
-
-// HERE
-
-  fdja_value *tstate = fdja_l(tsk, "tstate", NULL);
-  short created = tstate != NULL && fdja_strcmp(tstate, "created") == 0;
-
-  taskee = fdja_ls(tsk, "taskee", NULL);
-  tasker_path = flon_lookup_tasker_path(domain, taskee, created);
-
-  fgaj_d("tasker_path: %s", tasker_path);
-
-  if (tasker_path == NULL)
-  {
-    failf(path, tsk, 0, "didn't find tasker '%s' (domain %s)", taskee, domain);
-    r = 1; goto _over;
-  }
-
-  tasker_conf = fdja_parse_obj_f("%s/flon.json", tasker_path);
-
-  if (tasker_conf == NULL)
-  {
-    failf(path, tsk, 1, "didn't find tasker conf at %s/flon.json", tasker_path);
-    r = 1; goto _over;
-  }
-
-  if (fdja_lk(tasker_conf, "out") == 'd') // discard
-    ret = strdup("/dev/null");
-  else
-    ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", exid, nid);
-
-  char cwd[1024 + 1]; getcwd(cwd, 1024);
-  fgaj_i("cwd: %s", cwd);
-
-  fgaj_i("exid: %s, nid: %s, domain: %s", exid, nid, domain);
-  fgaj_i("tasker at %s", tasker_path);
-
-  cmd = fdja_ls(tasker_conf, "run", NULL); // was "invoke"
-
-  if (cmd == NULL)
-  {
-    failf(
-      path, tsk, 0, "no 'run' key in tasker conf at %s/flon.json", tasker_path);
-    r = 1; goto _over;
-  }
-
-// if cmd is xxx.rad, then run "inline" (re-dispatch self?)
-
-  fdja_value *payload = fdja_lookup(tsk, "payload");
-  if (payload == NULL) payload = fdja_object_malloc();
-
-  if (strstr(cmd, "$("))
-  {
-    char *cmd1 = expand(cmd, exid, nid, payload);
-    free(cmd);
-    cmd = cmd1;
-  }
-
-  fgaj_i("about to run >%s< for taskee '%s'", cmd, taskee);
+static int run_cmd(tasking_data *td)
+{
+  fgaj_i(">%s< for taskee '%s'", td->cmd, td->taskee);
 
   int pds[2];
 
   if (pipe(pds) != 0)
   {
-    failf(path, tsk, 1, "failed to setup pipe between taskmaster and tasker");
-    r = 1; goto _over;
+    failf(td, 1, "failed to setup pipe between taskmaster and tasker");
+    return 1;
   }
 
   //
   // let's fork
 
-  pid_t i = fork();
+  pid_t pid = fork();
 
-  if (i < 0) // failure
+  if (pid < 0) // failure
   {
-    failf(path, tsk, 1, "taskmaster failed to fork tasker");
-    r = 1; goto _over;
+    failf(td, 1, "taskmaster failed to fork tasker");
+    return 1;
   }
-  else if (i == 0) // child
+
+  if (pid == 0) // child
   {
     fgaj_i("child, pid %i", getpid());
 
@@ -278,56 +219,153 @@ int flon_task(const char *path)
 
     if (setsid() == -1)
     {
-      failf(path, tsk, 1, "setsid() failed");
-      r = 127; goto _over;
+      failf(td, 1, "setsid() failed");
+      return 127;
     }
 
-    if (freopen(ret, "w", stdout) == NULL)
+    if (freopen(td->ret, "w", stdout) == NULL)
     {
-      failf(path, tsk, 1, "failed to reopen child stdout to %s", ret);
-      r = 127; goto _over;
+      failf(td, 1, "failed to reopen child stdout to %s", td->ret);
+      return 127;
     }
     if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
     {
-      failf(path, tsk, 1, "couldn't lock %s", ret);
-      r = 127; goto _over;
+      failf(td, 1, "couldn't lock %s", td->ret);
+      return 127;
     }
 
-    if (chdir(tasker_path) != 0)
+    if (chdir(td->tasker_path) != 0)
     {
-      failo(tsk, 1, "failed to chdir to %s", tasker_path);
-      r = 127; goto _over;
+      failo(td, 1, "failed to chdir to %s", td->tasker_path);
+      return 127;
     }
 
     fflush(stderr);
 
-    int er = execl("/bin/sh", "", "-c", cmd, NULL);
+    int er = execl("/bin/sh", "", "-c", td->cmd, NULL);
 
     // excl has returned... fail zone...
 
     fgaj_r("execl failed (%i)", er);
 
-    r = 127; //goto _over;
+    return 127;
   }
-  else // parent
+
+  // else we're in the parent
+
+  close(pds[0]);
+
+  FILE *f = fdopen(pds[1], "w");
+
+  char in = fdja_lk(td->tasker_conf, "in");
+
+  if (in == 'a') // "all"
+    fdja_to_j(f, td->tsk, 0);
+  else
+    fdja_to_j(f, fdja_l(td->tsk, "payload"), 0);
+
+  fclose(f);
+
+  // over, no wait
+
+  fgaj_i("tasker %s ran >%s< pid %i", td->taskee, td->cmd, pid);
+
+  return 0;
+}
+
+int flon_task(const char *path)
+{
+  int r = 0;
+
+  fgaj_d("path: %s", path);
+
+  tasking_data td; memset(&td, 0, sizeof(tasking_data));
+
+  td.path = (char *)path;
+  td.fname = strrchr(path, '/');
+
+  fdja_value *id = flon_parse_nid(td.fname);
+
+  if (id == NULL)
   {
-    close(pds[0]);
-
-    FILE *f = fdopen(pds[1], "w");
-
-    char in = fdja_lk(tasker_conf, "in");
-
-    if (in == 'a') // "all"
-      fdja_to_j(f, tsk, 0);
-    else
-      fdja_to_j(f, payload, 0);
-
-    fclose(f);
-
-    // over, no wait
-
-    fgaj_i("tasker %s ran >%s< pid %i", taskee, cmd, i);
+    reject(td.path, 0, "couldn't identify tsk at %s", td.fname);
+    return 1;
   }
+
+  td.exid = fdja_ls(id, "exid", NULL);
+  td.nid = fdja_ls(id, "nid", NULL);
+  td.domain = flon_exid_domain(td.exid);
+
+  fdja_free(id);
+
+  td.tsk = fdja_parse_obj_f(path);
+
+  if (td.tsk == NULL)
+  {
+    reject(td.path, 1, "couldn't parse tsk at %s", td.fname);
+    r = 1; goto _over;
+  }
+
+  fdja_value *tstate = fdja_l(td.tsk, "tstate", NULL);
+  short created = tstate != NULL && fdja_strcmp(tstate, "created") == 0;
+
+  td.taskee = fdja_ls(td.tsk, "taskee", NULL);
+  td.tasker_path = flon_lookup_tasker_path(td.domain, td.taskee, created);
+
+  fgaj_d("tasker_path: %s", td.tasker_path);
+
+  if (td.tasker_path == NULL)
+  {
+    failf(&td, 0, "didn't find tasker '%s' (domain %s)", td.taskee, td.domain);
+    r = 1; goto _over;
+  }
+
+  short offerer = flu_strends(td.tasker_path, "/_");
+
+  td.tasker_conf = fdja_parse_obj_f("%s/flon.json", td.tasker_path);
+
+  if (td.tasker_conf == NULL)
+  {
+    failf(&td, 1, "didn't find tasker conf at %s/flon.json", td.tasker_path);
+    r = 1; goto _over;
+  }
+
+  if (offerer == 0 && fdja_lk(td.tasker_conf, "out") == 'd') // discard
+    td.ret = strdup("/dev/null");
+  else
+    td.ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td.exid, td.nid);
+
+  char cwd[1024 + 1]; getcwd(cwd, 1024);
+  fgaj_i("cwd: %s", cwd);
+
+  fgaj_i("exid: %s, nid: %s, domain: %s", td.exid, td.nid, td.domain);
+  fgaj_i("tasker at %s", td.tasker_path);
+
+  td.cmd = fdja_ls(td.tasker_conf, "run", NULL); // was "invoke"
+
+  if (td.cmd == NULL)
+  {
+    failf(
+      &td, 0, "no 'run' key in tasker conf at %s/flon.json", td.tasker_path);
+    r = 1; goto _over;
+  }
+
+  if (fdja_l(td.tsk, "payload") == NULL)
+  {
+    fdja_set(td.tsk, "payload", fdja_object_malloc());
+  }
+
+  if (strstr(td.cmd, "$("))
+  {
+    char *cmd1 = expand(&td);
+    free(td.cmd);
+    td.cmd = cmd1;
+  }
+
+  if (flu_strends(td.cmd, ".rad"))
+    r = run_rad(&td);
+  else
+    r = run_cmd(&td);
 
 _over:
 
@@ -336,16 +374,7 @@ _over:
   // not really necessary, but it helps when debugging / checking...
   // 0 lost, like all the others (hopefully).
 
-  fdja_free(tsk);
-  fdja_free(tasker_conf);
-
-  free(exid);
-  free(nid);
-  free(domain);
-  free(tasker_path);
-  free(cmd);
-  free(taskee);
-  free(ret);
+  tasking_data_free(&td);
 
   return r;
 }
