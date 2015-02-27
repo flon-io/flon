@@ -63,20 +63,35 @@ static char *expand(char *cmd, char *exid, char *nid, fdja_value *payload)
   return fdol_quote_expand(cmd, &(lup){ exid, nid, payload }, lookup);
 }
 
-char *flon_lookup_tasker(const char *domain, const char *name)
+char *flon_lookup_tasker_path(
+  const char *domain, const char *taskee, short created)
 {
   size_t l = strlen(domain);
 
   while (1)
   {
-    char *path = flu_sprintf("usr/local/tsk/%.*s/%s", l, domain, name);
+    if (created)
+    {
+      char *path = flu_sprintf("usr/local/tsk/%.*s/_", l, domain);
+      if (flu_fstat(path) == 'd')
+      {
+        if (flu_fstat("%s/flon.json", path) != 'f')
+          created = 0; // stop looking for an _ offerer
+        else
+          return path;
+      }
+      free(path);
+    }
+
+    char *path = flu_sprintf("usr/local/tsk/%.*s/%s", l, domain, taskee);
     if (flu_fstat(path) == 'd') return path;
     free(path);
+
     do --l; while (l > 0 && domain[l] != '.');
     if (l == 0) break;
   }
 
-  char *r = flu_sprintf("usr/local/tsk/any/%s", name);
+  char *r = flu_sprintf("usr/local/tsk/any/%s", taskee);
   if (flu_fstat(r) == 'd') return r;
 
   free(r);
@@ -177,8 +192,13 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
+// HERE
+
+  fdja_value *tstate = fdja_l(tsk, "tstate", NULL);
+  short created = tstate != NULL && fdja_strcmp(tstate, "created") == 0;
+
   taskee = fdja_ls(tsk, "taskee", NULL);
-  tasker_path = flon_lookup_tasker(domain, taskee);
+  tasker_path = flon_lookup_tasker_path(domain, taskee, created);
 
   fgaj_d("tasker_path: %s", tasker_path);
 
@@ -215,6 +235,8 @@ int flon_task(const char *path)
       path, tsk, 0, "no 'run' key in tasker conf at %s/flon.json", tasker_path);
     r = 1; goto _over;
   }
+
+// if cmd is xxx.rad, then run "inline" (re-dispatch self?)
 
   fdja_value *payload = fdja_lookup(tsk, "payload");
   if (payload == NULL) payload = fdja_object_malloc();

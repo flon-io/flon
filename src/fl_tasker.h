@@ -28,11 +28,12 @@
 #ifndef FL_TASKER_H
 #define FL_TASKER_H
 
-//#include "djan.h"
 
+char *flon_lookup_tasker_path(
+  const char *domain, const char *name, short created);
 
-char *flon_lookup_tasker(const char *domain, const char *name);
-int flon_task(const char *path);
+int flon_task(
+  const char *path);
 
 #endif // FL_TASKER_H
 
