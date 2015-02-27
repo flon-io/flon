@@ -177,9 +177,6 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
-  fdja_value *payload = fdja_lookup(tsk, "payload");
-  if (payload == NULL) payload = fdja_object_malloc();
-
   taskee = fdja_ls(tsk, "taskee", NULL);
   tasker_path = flon_lookup_tasker(domain, taskee);
 
@@ -218,6 +215,9 @@ int flon_task(const char *path)
       path, tsk, 0, "no 'run' key in tasker conf at %s/flon.json", tasker_path);
     r = 1; goto _over;
   }
+
+  fdja_value *payload = fdja_lookup(tsk, "payload");
+  if (payload == NULL) payload = fdja_object_malloc();
 
   if (strstr(cmd, "$("))
   {
