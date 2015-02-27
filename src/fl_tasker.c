@@ -89,8 +89,8 @@ static void fail(
 {
   if (r) fgaj_r(msg); else fgaj_e(msg);
 
-  fdja_set(tsk, "state", fdja_v("failed"));
-  fdja_set(tsk, "on", fdja_v("offer"));
+  fdja_set(tsk, "tstate", fdja_v("failed"));
+  fdja_set(tsk, "ton", fdja_v("offer"));
   fdja_set(tsk, "msg", fdja_s(msg));
 
   if (path)

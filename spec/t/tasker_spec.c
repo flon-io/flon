@@ -56,7 +56,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "state: created\n"
+        "tstate: created\n"
         "taskee: stamp\n"
         "tree: [ task, { _0: stamp }, [] ]\n"
         "exid: %s\n"
@@ -102,7 +102,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "state: created\n"
+        "tstate: created\n"
         "taskee: stamp\n"
         "tree: [ task, { _0: stamp }, [] ]\n"
         "exid: %s\n"
@@ -142,7 +142,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "state: created\n"
+        "tstate: created\n"
         "taskee: nada\n"
         "tree: [ task, { _0: nada }, [] ]\n"
         "exid: %s\n"
@@ -160,9 +160,9 @@ context "flon-tasker"
 
       expect(v != NULL);
       expect(fdja_ld(v, "point") ===f "task");
-      expect(fdja_ld(v, "state") ===f "failed");
+      expect(fdja_ld(v, "tstate") ===f "failed");
       expect(fdja_ld(v, "taskee") ===f "nada");
-      expect(fdja_ld(v, "on") ===f "offer");
+      expect(fdja_ld(v, "ton") ===f "offer");
       expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
     }
 
@@ -175,7 +175,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "state: created\n"
+        "tstate: created\n"
         "taskee: noflonjson\n"
         "tree: [ task, { _0: noflonjson }, [] ]\n"
         "exid: %s\n"
@@ -193,9 +193,9 @@ context "flon-tasker"
 
       expect(v != NULL);
       expect(fdja_ld(v, "point") ===f "task");
-      expect(fdja_ld(v, "state") ===f "failed");
+      expect(fdja_ld(v, "tstate") ===f "failed");
       expect(fdja_ld(v, "taskee") ===f "noflonjson");
-      expect(fdja_ld(v, "on") ===f "offer");
+      expect(fdja_ld(v, "ton") ===f "offer");
       expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
     }
 
@@ -208,7 +208,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "state: created\n"
+        "tstate: created\n"
         "taskee: norunkey\n"
         "tree: [ task, { _0: norunkey }, [] ]\n"
         "exid: %s\n"
@@ -226,9 +226,9 @@ context "flon-tasker"
 
       expect(v != NULL);
       expect(fdja_ld(v, "point") ===f "task");
-      expect(fdja_ld(v, "state") ===f "failed");
+      expect(fdja_ld(v, "tstate") ===f "failed");
       expect(fdja_ld(v, "taskee") ===f "norunkey");
-      expect(fdja_ld(v, "on") ===f "offer");
+      expect(fdja_ld(v, "ton") ===f "offer");
       expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
     }
   }

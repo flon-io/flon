@@ -33,7 +33,8 @@ static char exe_task(fdja_value *node, fdja_value *exe)
 
   fdja_value *tsk = fdja_v("{ exid: \"%s\", nid: \"%s\" }", exid, nid);
   fdja_psetv(tsk, "point", "task");
-  fdja_psetv(tsk, "state", "created");
+  fdja_psetv(tsk, "tstate", "created");
+  //fdja_psetv(tsk, "ton", "create");
   fdja_set(tsk, "taskee", fdja_lc(exe, "tree.1._0"));
   fdja_set(tsk, "tree", fdja_lc(exe, "tree"));
   fdja_set(tsk, "payload", payload_clone(exe));
@@ -56,12 +57,12 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
 {
   fdja_pset(rcv, "payload.args", NULL);
 
-  //printf("=================== rcv_task()\n");
-  //fdja_putdc(node);
-  //fdja_putdc(rcv);
+  printf("=================== rcv_task()\n");
+  fdja_putdc(node);
+  fdja_putdc(rcv);
 
-  fdja_value *state = fdja_l(rcv, "state");
-  //fdja_value *on = fdja_l(rcv, "on");
+  fdja_value *state = fdja_l(rcv, "tstate");
+  //fdja_value *on = fdja_l(rcv, "ton");
 
   // TODO there is "completed", "failed" and some others !!!!
 

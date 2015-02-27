@@ -526,12 +526,18 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
 
   if (
     fdja_l(msg, "point") == NULL ||
-    fdja_l(msg, "state") == NULL ||
+    fdja_l(msg, "tstate") == NULL ||
     fdja_l(msg, "payload") == NULL
-  )
-    m = fdja_o("payload", fdja_clone(msg), NULL);
+  ) {
+    m = fdja_o(
+      "tstate", fdja_v("completed"),
+      "payload", fdja_clone(msg),
+      NULL);
+  }
   else
+  {
     m = fdja_clone(msg);
+  }
 
   fdja_psetv(m, "point", "receive");
   fdja_set(m, "exid", fdja_lc(id, "exid"));
@@ -619,13 +625,13 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  char *state = fdja_ls(msg, "state", NULL);
+  char *tstate = fdja_ls(msg, "tstate", NULL);
 
   if (*fname == 's')
   {
     r = schedule(fname, id, msg);
   }
-  else if (*fname == 't' && (state == NULL || strcmp(state, "created") != 0))
+  else if (*fname == 't' && (tstate == NULL || strcmp(tstate, "created") != 0))
   {
     r = receive_task(fname, id, msg);
   }
@@ -635,7 +641,7 @@ short flon_dispatch(const char *fname)
     //r = route_or_dispatch(fname, id, msg);
   }
 
-  free(state);
+  free(tstate);
 
 _over:
 
