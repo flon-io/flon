@@ -32,7 +32,6 @@ context "flon-tasker"
     fdja_value *v = NULL;
 
     char *exid = NULL;
-    char *nid = NULL;
     char *path = NULL;
   }
   after each
@@ -41,7 +40,6 @@ context "flon-tasker"
     fdja_free(v);
 
     free(exid);
-    //free(nid); // no need
     free(path);
   }
 
@@ -50,7 +48,7 @@ context "flon-tasker"
     it "tasks"
     {
       exid = flon_generate_exid("ttest");
-      nid = "0_0_7";
+      char *nid = "0_0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
@@ -96,7 +94,7 @@ context "flon-tasker"
     it "moves non-identifiable tasks to var/spool/rejected/"
     {
       exid = flon_generate_exid("ttest");
-      nid = "nada-nada-nada";
+      char *nid = "nada-nada-nada";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
@@ -121,7 +119,7 @@ context "flon-tasker"
     it "moves non-parseable tasks to var/spool/rejected/"
     {
       exid = flon_generate_exid("ttest");
-      nid = "0_2";
+      char *nid = "0_2";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(path, "nada - nada - nada");
@@ -136,7 +134,7 @@ context "flon-tasker"
     it "returns the task as failed if it can't find the taskee"
     {
       exid = flon_generate_exid("ttest.bogus.cant_find_taskee");
-      nid = "0_5";
+      char *nid = "0_5";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
@@ -169,7 +167,7 @@ context "flon-tasker"
     it "returns the task as failed if the taskee doesn't have a flon.json"
     {
       exid = flon_generate_exid("ttest.bogus.noflonjson");
-      nid = "0_6";
+      char *nid = "0_6";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
@@ -202,7 +200,7 @@ context "flon-tasker"
     it "returns the task as failed if the taskee doesn't have 'run' key"
     {
       exid = flon_generate_exid("ttest.bogus.norunkey");
-      nid = "0_7";
+      char *nid = "0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
