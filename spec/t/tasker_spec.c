@@ -69,7 +69,7 @@ context "flon-tasker"
 
       int r = flon_task(path);
 
-      expect(r == 0);
+      expect(r i== 0);
 
       r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 3);
       expect(r i== 1);
@@ -94,6 +94,30 @@ context "flon-tasker"
     }
 
     it "moves non-identifiable tasks to var/spool/rejected/"
+    {
+      exid = flon_generate_exid("ttest");
+      nid = "nada-nada-nada";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(
+        path,
+        "point: task\n"
+        "state: created\n"
+        "taskee: stamp\n"
+        "tree: [ task, { _0: stamp }, [] ]\n"
+        "exid: %s\n"
+        "nid: %s\n"
+        "payload: { a: b }\n",
+        exid, nid
+      );
+
+      int r = flon_task(path);
+
+      expect(r i== 1);
+
+      expect(flu_fstat("var/spool/rejected/tsk_%s-%s.json", exid, nid) c== 'f');
+    }
+
     it "moves non-parseable tasks to var/spool/rejected/"
 
     it "returns the task as failed if it can't find the taskee"
