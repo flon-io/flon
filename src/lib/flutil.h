@@ -107,6 +107,8 @@ char *flu_sbuffer_to_string(flu_sbuffer *b);
  */
 char *flu_svprintf(const char *format, va_list ap);
 
+#define flu_sv(format, ap) flu_svprintf(format, ap)
+
 /* Wraps the sbuffer operations in a single call, yielding the result string.
  *
  * Returns NULL in case of issue.
@@ -504,8 +506,8 @@ void flu_zero_and_free(char *s, ssize_t n);
 
 #endif // FLON_FLUTIL_H
 
-//commit 0eac13d402e3a06f15c3e850830b4f6bf0f9af57
+//commit 86f3f65cab0fc210be3e60d08fb42c7de9ca9afc
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 9 11:26:34 2015 +0900
+//Date:   Fri Feb 27 09:40:05 2015 +0900
 //
-//    implement flu_ts_to_hs()
+//    add flu_sv() as shortcut for flu_svprintf()
