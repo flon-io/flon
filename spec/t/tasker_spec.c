@@ -119,6 +119,19 @@ context "flon-tasker"
     }
 
     it "moves non-parseable tasks to var/spool/rejected/"
+    {
+      exid = flon_generate_exid("ttest");
+      nid = "0_2";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(path, "nada - nada - nada");
+
+      int r = flon_task(path);
+
+      expect(r i== 1);
+
+      expect(flu_fstat("var/spool/rejected/tsk_%s-%s.json", exid, nid) c== 'f');
+    }
 
     it "returns the task as failed if it can't find the taskee"
     {
