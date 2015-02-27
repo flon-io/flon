@@ -168,7 +168,7 @@ context "flon-tasker"
 
     it "returns the task as failed if the taskee doesn't have a flon.json"
     {
-      exid = flon_generate_exid("ttest.bogus.cant_find_taskee");
+      exid = flon_generate_exid("ttest.bogus.noflonjson");
       nid = "0_6";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -200,6 +200,37 @@ context "flon-tasker"
     }
 
     it "returns the task as failed if the taskee doesn't have 'run' key"
+    {
+      exid = flon_generate_exid("ttest.bogus.norunkey");
+      nid = "0_7";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(
+        path,
+        "point: task\n"
+        "state: created\n"
+        "taskee: norunkey\n"
+        "tree: [ task, { _0: norunkey }, [] ]\n"
+        "exid: %s\n"
+        "nid: %s\n"
+        "payload: { hello: bogus }\n",
+        exid, nid
+      );
+
+      int r = flon_task(path);
+
+      expect(r i== 1);
+
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      //fdja_putdc(v);
+
+      expect(v != NULL);
+      expect(fdja_ld(v, "point") ===f "task");
+      expect(fdja_ld(v, "state") ===f "failed");
+      expect(fdja_ld(v, "taskee") ===f "norunkey");
+      expect(fdja_ld(v, "on") ===f "offer");
+      expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
+    }
   }
 
   describe "flon_lookup_tasker()"
