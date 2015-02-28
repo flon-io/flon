@@ -600,12 +600,16 @@ static void log_task(const char *fname, fdja_value *id, fdja_value *msg)
     }
   }
 
-  // TODO: log timestamp, like for msgs.log
-
-  fputs(msg->source, tsk_log); // ! bypasses any changes to msg
+  char *now = fgaj_now();
+  fputs(now, tsk_log);
+  fputc(' ', tsk_log);
+  //fputs(msg->source, tsk_log); // ! bypasses any changes to msg
+  fdja_to_d(tsk_log, msg, FDJA_F_COMPACT, 0);
   fputc('\n', tsk_log);
 
   if (fclose(tsk_log) != 0) { fgaj_r("failed to close %s", lpath); }
+
+  free(now);
 
 _over:
 
