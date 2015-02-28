@@ -324,10 +324,69 @@ static void print_tree(const char *fpath)
 
 static void print_tsk_log(const char *path)
 {
-  char *fname = flu_sprintf("%s/tsk.log", path);
-  char *s = flu_readall(fname);
-  if (s) puts(s);
-  free(s);
+  char *fpath = flu_sprintf("%s/tsk.log", path);
+
+  //char *s = flu_readall(fname);
+  //if (s) puts(s);
+  //free(s);
+
+  FILE *f = fopen(fpath, "r");
+
+  if (f == NULL)
+  {
+    printf("couldn't read file at %s\n", fpath);
+    perror("reason:");
+    free(fpath);
+    return;
+  }
+
+  free(fpath);
+
+  char *line = NULL;
+  size_t len = 0;
+  fdja_value *v = NULL;
+
+  while (getline(&line, &len, f) != -1)
+  {
+    printf("%s%.26s ", cdgrey, line);
+
+    char *br = strchr(line, '{');
+    v = fdja_parse(br); if (v) v->sowner = 0;
+
+    if (v && fdja_l(v, "task") == NULL) // raw tasker output
+    {
+      printf(br);
+    }
+    else if (v) // regular line
+    {
+      size_t line = fdja_li(v, "tree.2", (size_t)0);
+      printf("%s%zu ", cbrown, line);
+
+      char *nid = fdja_ls(v, "nid", NULL);
+      printf("%s%s ", cdgrey, nid);
+      free(nid);
+
+      char *st = fdja_ls(v, "task.state", NULL);
+      char *ev = fdja_ls(v, "task.event", NULL);
+      char *fo = fdja_ls(v, "task.for", NULL);
+      printf("%sst:%s%s ", cdgrey, cdblue, st);
+      printf("%sev:%s%s ", cdgrey, cdblue, ev);
+      printf("%sfo:%s%s ", cdgrey, cgreen, fo);
+      free(st); free(ev); free(fo);
+
+      printf(cclear);
+      fdja_to_d(stdout, fdja_l(v, "payload"), FDJA_F_COMPACT, 0);
+
+      printf("\n");
+    }
+    else // failed to parse
+    {
+      printf(br);
+    }
+    fdja_free(v);
+  }
+  free(line);
+  fclose(f);
 }
 
 void flon_pp_execution(const char *exid)
