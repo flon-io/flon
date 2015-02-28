@@ -241,7 +241,7 @@ static void print_msgs_xmastree(const char *fpath)
   free(anids);
 }
 
-void print_msg_child(size_t indent, fdja_value *tr)
+static void print_msg_child(size_t indent, fdja_value *tr)
 {
   for (fdja_value *ct = fdja_at(tr, 3)->child; ct; ct = ct->sibling)
   {
@@ -259,7 +259,7 @@ void print_msg_child(size_t indent, fdja_value *tr)
   }
 }
 
-void print_msg_tree(const char *date, fdja_value *msg)
+static void print_msg_tree(const char *date, fdja_value *msg)
 {
   fdja_value *tr = fdja_l(msg, "tree");
   if (tr == NULL) return;
@@ -290,7 +290,7 @@ void print_msg_tree(const char *date, fdja_value *msg)
   free(s);
 }
 
-void print_tree(const char *fpath)
+static void print_tree(const char *fpath)
 {
   FILE *f = fopen(fpath, "r");
 
@@ -320,6 +320,14 @@ void print_tree(const char *fpath)
   }
   free(line);
   fclose(f);
+}
+
+static void print_tsk_log(const char *path)
+{
+  char *fname = flu_sprintf("%s/tsk.log", path);
+  char *s = flu_readall(fname);
+  if (s) puts(s);
+  free(s);
 }
 
 void flon_pp_execution(const char *exid)
@@ -360,16 +368,19 @@ void flon_pp_execution(const char *exid)
 
   char *fpath = flu_sprintf("%s/msgs.log", path);
 
-  puts("\n## msgs log (timeline view)\n#");
+  puts("\n## msgs.log (timeline view)\n#");
   print_msgs_timeline(fpath);
 
-  puts("\n## msgs log (xmas view)\n#");
+  puts("\n## msgs.log (xmas view)\n#");
   print_msgs_xmastree(fpath);
 
-  puts("\n## msgs log (forest view)\n#");
+  puts("\n## msgs.log (forest view)\n#");
   print_tree(fpath);
 
   free(fpath);
+
+  puts("\n## tsk.log\n#");
+  print_tsk_log(path);
 
   puts("\n## run.json\n#");
   fdja_value *v = fdja_parse_f("%s/run.json", path);
