@@ -74,7 +74,7 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
 
   if (state == NULL || fdja_strcmp(state, "failed") != 0) return 'v'; // over
 
-  push_error(node, fdja_ls(rcv, "task.msg", NULL), NULL);
+  push_error_value(node, fdja_o("msg", fdja_lc(rcv, "task.msg"), NULL));
 
   return 'r';
 }
