@@ -577,6 +577,43 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
   return r;
 }
 
+static void log_task(const char *fname, fdja_value *id, fdja_value *msg)
+{
+  fgaj_d(fname);
+
+  char *exid = fdja_ls(id, "exid", NULL);
+  char *fep = flon_exid_path(exid);
+
+  char *lpath = flu_sprintf("var/run/%s/tsk.log", fep);
+
+  FILE *tsk_log = fopen(lpath, "a");
+
+  if (tsk_log == NULL)
+  {
+    fgaj_r("failed to open %s, logging to var/log/tsk.log", lpath);
+
+    tsk_log = fopen("var/log/tsk.log", "a");
+
+    if (tsk_log == NULL)
+    {
+      fgaj_r("failed to open var/log/tsk.log"); goto _over;
+    }
+  }
+
+  // TODO: log timestamp, like for msgs.log
+
+  fputs(msg->source, tsk_log); // ! bypasses any changes to msg
+  fputc('\n', tsk_log);
+
+  if (fclose(tsk_log) != 0) { fgaj_r("failed to close %s", lpath); }
+
+_over:
+
+  free(exid);
+  free(fep);
+  free(lpath);
+}
+
 // returns
 //
 //   -1 rejected
@@ -625,9 +662,18 @@ short flon_dispatch(const char *fname)
     goto _over;
   }
 
-  // TODO reroute?
+  // if it's a task, log it
 
-  char *ts = fdja_ls(msg, "task.state", NULL);
+  char *ts = NULL;
+
+  if (*fname == 't')
+  {
+    ts = fdja_ls(msg, "task.state", NULL);
+
+    log_task(fname, id, msg);
+  }
+
+  // TODO reroute?
 
   if (*fname == 's')
   {
