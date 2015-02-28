@@ -631,14 +631,18 @@ short flon_dispatch(const char *fname)
   {
     r = schedule(fname, id, msg);
   }
-  else if (*fname == 't' && (ts == NULL || strcmp(ts, "completed") == 0))
-  {
-    r = receive_task(fname, id, msg);
-  }
-  else
+  else if (*fname != 't')
   {
     r = dispatch(fname, id, msg);
     //r = route_or_dispatch(fname, id, msg);
+  }
+  else if (ts && (strcmp(ts, "created") == 0 || strcmp(ts, "offered") == 0))
+  {
+    r = dispatch(fname, id, msg);
+  }
+  else
+  {
+    r = receive_task(fname, id, msg);
   }
 
   free(ts);
