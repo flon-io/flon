@@ -30,11 +30,16 @@ context "task offering:"
     fdja_free(v);
   }
 
-  describe "the _ offerer"
+  describe "an _ offerer"
+  {
+    it "sees its offer logged in msgs.log"
+  }
+
+  describe "a .rad _ offerer"
   {
     it "offers a task to a taskee"
     {
-      exid = flon_generate_exid("ztest.offerer");
+      exid = flon_generate_exid("ztest.offerer.rad");
 
       hlp_launch(
         exid,
@@ -49,6 +54,13 @@ context "task offering:"
 
       expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
     }
+
+    it "has access to domain variables"
+  }
+
+  describe "a non .rad _ offerer"
+  {
+    it "offers a task to a taskee"
   }
 }
 

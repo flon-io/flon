@@ -53,10 +53,8 @@ context "flon and cancel:"
 
       res = hlp_wait(exid, "execute", "0_1", 7);
 
-      //flon_pp_execution(exid);
-
       expect(res != NULL);
-      //flu_putf(fdja_todc(res));
+      //fdja_putdc(res);
 
       expect(fdja_lj(res, "payload.trace") ===F fdja_vj("[ x ]"));
 
@@ -66,17 +64,15 @@ context "flon and cancel:"
 
       res = hlp_wait(exid, "terminated", NULL, 7);
 
-      //flon_pp_execution(exid);
-
       expect(res != NULL);
-      //flu_putf(fdja_todc(res));
+      //fdja_putdc(res);
 
       v = hlp_read_run_json(exid);
       expect(v == NULL);
 
       v = hlp_read_archive_run_json(exid);
       expect(v != NULL);
-      //flu_putf(fdja_todc(v));
+      //fdja_putdc(res);
 
       fdja_value *nodes = fdja_l(v, "nodes");
       expect(fdja_size(nodes) zu== 0);
