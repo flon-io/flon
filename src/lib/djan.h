@@ -133,9 +133,9 @@ char *fdja_to_djan(fdja_value *v, int flags);
 #define fdja_todc(v) fdja_to_djan(v, 1)
 char *fdja_f_todc(const char *path, ...);
 
-#define fdja_putj(v) flu_putf(fdja_to_json(v));
-#define fdja_putd(v) flu_putf(fdja_to_djan(v, 2 | 16));
-#define fdja_putdc(v) flu_putf(fdja_to_djan(v, 1 | 16));
+#define fdja_putj(v) flu_putf(fdja_to_json(v))
+#define fdja_putd(v) flu_putf(fdja_to_djan(v, 2 | 16))
+#define fdja_putdc(v) flu_putf(fdja_to_djan(v, 1 | 16))
 
 //char *fdja_to_radial(fdja_value *v);
 
@@ -299,8 +299,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit f0adb5c750bf733ab9932aeb7f81334907b51642
+//commit 6c83a8311b8b3a09042d3d960c98d572dca7c87e
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Feb 25 06:03:34 2015 +0900
+//Date:   Sun Mar 1 07:26:22 2015 +0900
 //
-//    let fdja_lk() return 0 when no value
+//    remove macro trailing ;

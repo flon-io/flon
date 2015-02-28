@@ -1787,8 +1787,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit f0adb5c750bf733ab9932aeb7f81334907b51642
+//commit 6c83a8311b8b3a09042d3d960c98d572dca7c87e
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Feb 25 06:03:34 2015 +0900
+//Date:   Sun Mar 1 07:26:22 2015 +0900
 //
-//    let fdja_lk() return 0 when no value
+//    remove macro trailing ;
