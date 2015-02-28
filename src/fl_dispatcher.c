@@ -526,13 +526,15 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
 
   if (
     fdja_l(msg, "point") == NULL ||
-    fdja_l(msg, "tstate") == NULL ||
+    fdja_l(msg, "task.state") == NULL ||
     fdja_l(msg, "payload") == NULL
   ) {
-    m = fdja_o(
-      "tstate", fdja_v("completed"),
-      "payload", fdja_clone(msg),
-      NULL);
+    m = fdja_object_malloc();
+    fdja_set(m, "task", fdja_object_malloc());
+    fdja_psetv(m, "task.state", "completed");
+    fdja_psetv(m, "task.event", "completion");
+    //fdja_psetv(m, "task.msg", "just completed");
+    fdja_set(m, "payload", fdja_clone(msg));
   }
   else
   {
@@ -625,7 +627,7 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  char *ts = fdja_ls(msg, "tstate", NULL);
+  char *ts = fdja_ls(msg, "task.state", NULL);
 
   if (*fname == 's')
   {

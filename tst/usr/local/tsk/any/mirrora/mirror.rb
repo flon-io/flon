@@ -10,7 +10,7 @@ require 'json'
 
 task = JSON.parse(STDIN.read)
 
-task['tstate'] = 'completed'
+task['task']['state'] = 'completed'
   # very important, else flon will think the task is still "created"
   # and hand it back to this tasker in a loop...
 

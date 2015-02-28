@@ -133,9 +133,9 @@ static void fail(char o_or_f, tasking_data *td, short r, const char *msg)
 {
   if (r) fgaj_r(msg); else fgaj_e(msg);
 
-  fdja_set(td->tsk, "tstate", fdja_v("failed"));
-  fdja_set(td->tsk, "ton", fdja_v("offer"));
-  fdja_set(td->tsk, "msg", fdja_s(msg));
+  fdja_psetv(td->tsk, "task.state", "failed");
+  fdja_psetv(td->tsk, "task.event", "offering");
+  fdja_pset(td->tsk, "task.msg", fdja_s(msg));
 
   if (o_or_f == 'f')
   {
@@ -206,9 +206,9 @@ static int run_rad(tasking_data *td)
 
   //fgaj_d("over: %s", fdja_tod(msg));
 
-  fdja_set(td->tsk, "tstate", fdja_s("offered"));
-  fdja_set(td->tsk, "ton", fdja_s("offer"));
-  fdja_set(td->tsk, "taskee", fdja_lc(msg, "payload.taskee"));
+  fdja_psetv(td->tsk, "task.state", "offered");
+  fdja_psetv(td->tsk, "task.event", "offering");
+  fdja_pset(td->tsk, "task.for", fdja_lc(msg, "payload.taskee"));
 
   if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
   {
@@ -339,10 +339,10 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
-  fdja_value *tstate = fdja_l(td.tsk, "tstate", NULL);
+  fdja_value *tstate = fdja_l(td.tsk, "task.state", NULL);
   short created = tstate != NULL && fdja_strcmp(tstate, "created") == 0;
 
-  td.taskee = fdja_ls(td.tsk, "taskee", NULL);
+  td.taskee = fdja_ls(td.tsk, "task.for", NULL);
   td.tasker_path = flon_lookup_tasker_path(td.domain, td.taskee, created);
 
   fgaj_d("tasker_path: %s", td.tasker_path);
