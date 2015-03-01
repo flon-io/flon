@@ -45,7 +45,7 @@
 
 char *execution_id = NULL;
 char *execution_path = NULL;
-FILE *msgs_log = NULL;
+FILE *msg_log = NULL;
 fdja_value *execution = NULL;
 
 static flu_list *msgs = NULL;
@@ -92,18 +92,18 @@ char *flon_execution_domain_delta(int i)
 
 static void do_log(fdja_value *msg)
 {
-  if (msgs_log == NULL) return;
+  if (msg_log == NULL) return;
 
   //flon_stamp(msg, "\be"); // 'e'xecuted at... at the beginning (backslash-b)
 
   char *now = fgaj_now();
 
-  fputs(now, msgs_log);
-  fputc(' ', msgs_log);
-  fdja_to_d(msgs_log, msg, FDJA_F_COMPACT, 0);
-  fputc('\n', msgs_log);
+  fputs(now, msg_log);
+  fputc(' ', msg_log);
+  fdja_to_d(msg_log, msg, FDJA_F_COMPACT, 0);
+  fputc('\n', msg_log);
 
-  fflush(msgs_log);
+  fflush(msg_log);
 
   free(now);
 }
@@ -139,7 +139,7 @@ void flon_schedule_msg(
   fdja_value *tree0, fdja_value *tree1,
   fdja_value *msg)
 {
-  if (msgs_log == NULL && execution_path == NULL) return;
+  if (msg_log == NULL && execution_path == NULL) return;
     // no schedules when running transient executions
 
   //flu_putf(fdja_todc(msg));
@@ -403,9 +403,9 @@ static void load_execution(const char *exid)
   execution_id = strdup((char *)exid);
   execution_path = flon_exid_path(execution_id);
 
-  // TODO: make msgs_log optional!!!
+  // TODO: make msg_log optional!!!
 
-  char *log = flu_sprintf("var/run/%s/msgs.log", execution_path);
+  char *log = flu_sprintf("var/run/%s/msg.log", execution_path);
   char *blog = strdup(log);
   *(strrchr(blog, '/')) = '\0';
 
@@ -415,9 +415,9 @@ static void load_execution(const char *exid)
   }
   free(blog);
 
-  msgs_log = fopen(log, "a");
+  msg_log = fopen(log, "a");
 
-  if (msgs_log == NULL)
+  if (msg_log == NULL)
   {
     fgaj_r("couldn't open %s for appending", log);
   }
@@ -437,7 +437,7 @@ static void unload_execution()
 {
   if (execution_id) free(execution_id); execution_id = NULL;
   if (execution_path) free(execution_path); execution_path = NULL;
-  if (msgs_log) { fclose(msgs_log); msgs_log = NULL; }
+  if (msg_log) { fclose(msg_log); msg_log = NULL; }
   if (execution) fdja_free(execution); execution = NULL;
   if (msgs) flu_list_free(msgs); msgs = NULL;
 }

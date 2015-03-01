@@ -237,9 +237,9 @@ fdja_value *hlp_wait(char *exid, char *point, char *nid, int maxsec)
   {
     flu_msleep(20);
 
-    char *path = flu_sprintf("var/archive/%s/msgs.log", fep);
+    char *path = flu_sprintf("var/archive/%s/msg.log", fep);
     if (flu_fstat(path) != 'f') { free(path); path = NULL; }
-    if ( ! path) path = flu_sprintf("var/run/%s/msgs.log", fep);
+    if ( ! path) path = flu_sprintf("var/run/%s/msg.log", fep);
     if (flu_fstat(path) != 'f') { free(path); continue; }
 
     char *s = flu_readall(path);
@@ -382,7 +382,7 @@ void hlp_cat_tsk_log(char *exid)
 char *hlp_last_msg(char *exid)
 {
   char *path = find_path(exid);
-  char *s = flu_pline("tail -1 %s/msgs.log", path);
+  char *s = flu_pline("tail -1 %s/msg.log", path);
   free(path);
 
   return s;

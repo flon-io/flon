@@ -188,7 +188,7 @@ context "flon-executor"
 
       fdja_free(v);
 
-      char *s = flu_readall("var/run/%s/msgs.log", fep);
+      char *s = flu_readall("var/run/%s/msg.log", fep);
       expect(s != NULL);
       expect(s >== "color:blue}");
       expect(s >== "color:green}");
@@ -300,7 +300,7 @@ context "flon-executor"
 
       //flon_pp_execution(exid);
 
-      char *s = flu_pline("tail -1 var/archive/%s/msgs.log", fep);
+      char *s = flu_pline("tail -1 var/archive/%s/msg.log", fep);
 
       expect(s >===f ",trace:[\"hello world\"]");
     }

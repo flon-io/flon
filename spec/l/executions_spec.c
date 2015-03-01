@@ -259,7 +259,7 @@ context "flon-listener (vs executions)"
 
   describe "flon_exe_sub_handler() /executions/:exid/msg-log"
   {
-    it "serves the msgs.log"
+    it "serves the msg.log"
     {
       exid = hlp_lookup_exid("john", "org.example.a", 0);
       //printf("exid: %s\n", exid);
@@ -285,7 +285,7 @@ context "flon-listener (vs executions)"
 
       char *f = flu_list_get(res->headers, "fshv_file");
       expect(flu_fstat(f) == 'f');
-      expect(f $=== "/msgs.log");
+      expect(f $=== "/msg.log");
 
       char *s = flu_readall(f);
       //puts("---8<---");
@@ -296,7 +296,7 @@ context "flon-listener (vs executions)"
       free(s);
     }
 
-    it "doesn't serve the msgs.log from an off-limit domain execution"
+    it "doesn't serve the msg.log from an off-limit domain execution"
     {
       exid = hlp_lookup_exid(NULL, "org.sample", 0);
 

@@ -406,7 +406,7 @@ static int sub_handler_log(
   char *path = flon_exid_path(exid);
 
   char *file = "exe.log";
-  if (strcmp(sub, "msg-log") == 0) file = "msgs.log";
+  if (strcmp(sub, "msg-log") == 0) file = "msg.log";
 
   ssize_t s = fshv_serve_file(res, params, "var/run/%s/%s", path, file);
 

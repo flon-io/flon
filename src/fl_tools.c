@@ -429,15 +429,15 @@ void flon_pp_execution(const char *exid)
     "find var/log/%s -name \"inv_%s-*.log\" | xargs tail -n +1", fep, exid);
   printf(cclear);
 
-  char *fpath = flu_sprintf("%s/msgs.log", path);
+  char *fpath = flu_sprintf("%s/msg.log", path);
 
-  puts("\n## msgs.log (timeline view)\n#");
+  puts("\n## msg.log (timeline view)\n#");
   print_msgs_timeline(fpath);
 
-  puts("\n## msgs.log (xmas view)\n#");
+  puts("\n## msg.log (xmas view)\n#");
   print_msgs_xmastree(fpath);
 
-  puts("\n## msgs.log (forest view)\n#");
+  puts("\n## msg.log (forest view)\n#");
   print_tree(fpath);
 
   free(fpath);
