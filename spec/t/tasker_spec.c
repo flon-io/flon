@@ -54,7 +54,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: stamp }\n"
+        "task: { state: created, for: stamp, from: executor }\n"
         "tree: [ task, { _0: stamp }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
@@ -137,7 +137,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: nada }\n"
+        "task: { state: created, for: nada, from: executor }\n"
         "tree: [ task, { _0: nada }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
@@ -169,7 +169,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: noflonjson }\n"
+        "task: { state: created, for: noflonjson, from: executor }\n"
         "tree: [ task, { _0: noflonjson }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
@@ -201,7 +201,7 @@ context "flon-tasker"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: norunkey }\n"
+        "task: { state: created, for: norunkey, from: executor }\n"
         "tree: [ task, { _0: norunkey }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"

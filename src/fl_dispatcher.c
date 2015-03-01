@@ -460,46 +460,46 @@ static int executor_not_running(const char *exid)
   return 0;
 }
 
-static void log_task(const char *fname, fdja_value *id, fdja_value *msg)
-{
-  fgaj_d(fname);
-
-  char *exid = fdja_ls(id, "exid", NULL);
-  char *fep = flon_exid_path(exid);
-
-  char *lpath = flu_sprintf("var/run/%s/tsk.log", fep);
-
-  FILE *tsk_log = fopen(lpath, "a");
-
-  if (tsk_log == NULL)
-  {
-    fgaj_r("failed to open %s, logging to var/log/tsk.log", lpath);
-
-    tsk_log = fopen("var/log/tsk.log", "a");
-
-    if (tsk_log == NULL)
-    {
-      fgaj_r("failed to open var/log/tsk.log"); goto _over;
-    }
-  }
-
-  char *now = fgaj_now();
-  fputs(now, tsk_log);
-  fputc(' ', tsk_log);
-  //fputs(msg->source, tsk_log); // ! bypasses any changes to msg
-  fdja_to_d(tsk_log, msg, FDJA_F_COMPACT, 0);
-  fputc('\n', tsk_log);
-
-  if (fclose(tsk_log) != 0) { fgaj_r("failed to close %s", lpath); }
-
-  free(now);
-
-_over:
-
-  free(exid);
-  free(fep);
-  free(lpath);
-}
+//static void log_task(const char *fname, fdja_value *id, fdja_value *msg)
+//{
+//  fgaj_d(fname);
+//
+//  char *exid = fdja_ls(id, "exid", NULL);
+//  char *fep = flon_exid_path(exid);
+//
+//  char *lpath = flu_sprintf("var/run/%s/tsk.log", fep);
+//
+//  FILE *tsk_log = fopen(lpath, "a");
+//
+//  if (tsk_log == NULL)
+//  {
+//    fgaj_r("failed to open %s, logging to var/log/tsk.log", lpath);
+//
+//    tsk_log = fopen("var/log/tsk.log", "a");
+//
+//    if (tsk_log == NULL)
+//    {
+//      fgaj_r("failed to open var/log/tsk.log"); goto _over;
+//    }
+//  }
+//
+//  char *now = fgaj_now();
+//  fputs(now, tsk_log);
+//  fputc(' ', tsk_log);
+//  //fputs(msg->source, tsk_log); // ! bypasses any changes to msg
+//  fdja_to_d(tsk_log, msg, FDJA_F_COMPACT, 0);
+//  fputc('\n', tsk_log);
+//
+//  if (fclose(tsk_log) != 0) { fgaj_r("failed to close %s", lpath); }
+//
+//  free(now);
+//
+//_over:
+//
+//  free(exid);
+//  free(fep);
+//  free(lpath);
+//}
 
 static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
 {
@@ -541,7 +541,7 @@ static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
   //fgaj_d("2f: %s, %s, %s", ctx, logpath, arg);
   fgaj_d("%s, r: %i", fname, r);
 
-  if (*fname == 't' && r == 2) log_task(fname, id, msg);
+  //if (*fname == 't' && r == 2) log_task(fname, id, msg);
 
   if (r == 2 && executor_not_running(exid))
   {
@@ -563,8 +563,6 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
 {
   fgaj_i(fname);
 
-  short r = 2;
-
   fdja_value *m = NULL;
 
   if (
@@ -576,7 +574,7 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
     fdja_set(m, "task", fdja_object_malloc());
     fdja_psetv(m, "task.state", "completed");
     fdja_psetv(m, "task.event", "completion");
-    //fdja_psetv(m, "task.msg", "just completed");
+    fdja_psetv(m, "task.from", "tasker");
     fdja_set(m, "payload", fdja_clone(msg));
   }
   else
@@ -593,17 +591,15 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
   int rr = fdja_to_json_f(m, "var/spool/dis/rcv_%s", fname + 4);
     // no need to lock file when writing, since we're in the reader...
 
+  fdja_free(m);
+
   if (rr != 1)
   {
     flon_move_to_rejected(
       "/var/spool/dis/%s", fname,
       "failed to move to var/spool/dis/rcv_%s", fname + 4);
-    r = -1; goto _over;
+    return -1;
   }
-
-  // log
-
-  log_task(fname, id, m);
 
   // unlink spool/tsk_
 
@@ -619,11 +615,7 @@ static short receive_task(const char *fname, fdja_value *id, fdja_value *msg)
   else
     fgaj_i("failed to unlink var/spool/dis/%s", fname);
 
-_over:
-
-  fdja_free(m);
-
-  return r;
+  return 2;
 }
 
 // returns
@@ -676,8 +668,6 @@ short flon_dispatch(const char *fname)
 
   // TODO reroute?
 
-  char *ts = fdja_ls(msg, "task.state", NULL);
-
   if (*fname == 's')
   {
     r = schedule(fname, id, msg);
@@ -687,16 +677,25 @@ short flon_dispatch(const char *fname)
     r = dispatch(fname, id, msg);
     //r = route_or_dispatch(fname, id, msg);
   }
-  else if (ts && (strcmp(ts, "created") == 0 || strcmp(ts, "offered") == 0))
+  else // task
   {
-    r = dispatch(fname, id, msg);
-  }
-  else
-  {
-    r = receive_task(fname, id, msg);
-  }
+    //fdja_putdc(id);
+    //fdja_putdc(msg);
+    //puts(msg->source);
 
-  free(ts);
+    char *state = fdja_ls(msg, "task.state", NULL);
+    char *from = fdja_ls(msg, "task.from", NULL);
+
+    if (state && strcmp(state, "completed") == 0)
+      r = receive_task(fname, id, msg);
+    else if (from && strcmp(from, "executor") == 0)
+      r = dispatch(fname, id, msg);
+    else
+      r = receive_task(fname, id, msg);
+
+    free(state);
+    free(from);
+  }
 
 _over:
 

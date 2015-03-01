@@ -38,7 +38,7 @@ static char exe_task(fdja_value *node, fdja_value *exe)
   fdja_set(tsk, "task", fdja_object_malloc());
   fdja_psetv(tsk, "task.state", "created");
   fdja_psetv(tsk, "task.event", "creation");
-  //fdja_psetv(tsk, "task.msg", "just created");
+  fdja_psetv(tsk, "task.from", "executor");
   fdja_pset(tsk, "task.for", fdja_lc(exe, "tree.1._0"));
 
   fdja_set(tsk, "tree", fdja_lc(exe, "tree"));
@@ -61,8 +61,6 @@ static char exe_task(fdja_value *node, fdja_value *exe)
 
 static char rcv_task(fdja_value *node, fdja_value *rcv)
 {
-  fdja_pset(rcv, "payload.args", NULL);
-
   //printf("=================== rcv_task()\n");
   //fdja_putdc(node);
   //fdja_putdc(rcv);
@@ -70,12 +68,41 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
   fdja_value *state = fdja_l(rcv, "task.state");
   //fdja_value *event = fdja_l(rcv, "task.event");
 
-  // TODO there is "completed", "failed" and some others !!!!
+  // TODO tsk.log !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  if (state == NULL || fdja_strcmp(state, "failed") != 0) return 'v'; // over
+  if (fdja_strcmp(state, "failed") == 0)
+  {
+    push_error_value(node, fdja_o("msg", fdja_lc(rcv, "task.msg"), NULL));
 
-  push_error_value(node, fdja_o("msg", fdja_lc(rcv, "task.msg"), NULL));
+    return 'r';
+  }
 
-  return 'r';
+  if (fdja_strcmp(state, "completed") == 0)
+  {
+    fdja_pset(rcv, "payload.args", NULL);
+
+    return 'v'; // over
+  }
+
+  // else
+
+  char r = 'k';
+
+  char *exid = fdja_ls(rcv, "exid", NULL);
+  char *nid = fdja_ls(rcv, "nid", NULL);
+
+  fdja_psetv(rcv, "task.from", "executor");
+
+  if (flon_lock_write(rcv, "var/spool/dis/tsk_%s-%s.json", exid, nid) != 1)
+  {
+    fgaj_r("failed writing to var/spool/dis/tsk_%s-%s.json", exid, nid);
+    push_error(node, "failed to write tsk_ file", NULL);
+    r = 'r';
+  }
+
+  free(exid);
+  free(nid);
+
+  return r;
 }
 

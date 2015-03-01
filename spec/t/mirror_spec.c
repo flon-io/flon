@@ -52,7 +52,7 @@ describe "tasker:"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: mirror }\n"
+        "task: { state: created, for: mirror, from: executor }\n"
         "tree: [ task, { _0: mirror }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
@@ -101,7 +101,7 @@ describe "tasker:"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: mirrora }\n"
+        "task: { state: created, for: mirrora, from: executor }\n"
         "tree: [ task, { _0: mirrora }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"

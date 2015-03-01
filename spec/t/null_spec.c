@@ -45,7 +45,7 @@ context "tasker: null"
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: 'null' }\n"
+        "task: { state: created, for: 'null', from: executor }\n"
         "tree: [ task, { _0: 'null' }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"

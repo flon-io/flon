@@ -58,7 +58,7 @@ context "flon-dispatcher"
         "var/spool/dis/tsk_%s-0_2.json", exid,
         "{"
           "point: task\n"
-          "task: { state: created, for: stamp }\n"
+          "task: { state: created, for: stamp, from: executor }\n"
           "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_2\n"
@@ -144,14 +144,11 @@ context "flon-dispatcher"
         "var/spool/tsk/%s", name,
         "{"
           "point: task\n"
-          "state: created\n"
-          "taskee: stamp\n"
+          "task: { state: created, for: stamp, from: executor }\n"
           "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_7-f\n"
-          "payload: {\n"
-            "hello: dtest.rir\n"
-          "}\n"
+          "payload: { hello: dtest.rir }\n"
         "}", exid
       );
       expect(r i== 1);

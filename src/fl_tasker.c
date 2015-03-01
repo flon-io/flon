@@ -135,6 +135,7 @@ static void fail(char o_or_f, tasking_data *td, short r, const char *msg)
 
   fdja_psetv(td->tsk, "task.state", "failed");
   fdja_psetv(td->tsk, "task.event", "offering");
+  fdja_psetv(td->tsk, "task.from", "tasker");
   fdja_pset(td->tsk, "task.msg", fdja_s(msg));
 
   if (o_or_f == 'f')
@@ -208,6 +209,7 @@ static int run_rad(tasking_data *td)
 
   fdja_psetv(td->tsk, "task.state", "offered");
   fdja_psetv(td->tsk, "task.event", "offering");
+  fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
   fdja_pset(td->tsk, "task.for", fdja_lc(msg, "payload.taskee"));
 
   if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
