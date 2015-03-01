@@ -312,6 +312,42 @@ fdja_value *hlp_read_timer(char *exid, char *nid, char *type, char *ts)
   return v;
 }
 
+fdja_value *hlp_read_tsk_log(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+
+  char *fpath = flu_sprintf("var/run/%s/tsk.log", fep);
+  if (flu_fstat(fpath) != 'f')
+  {
+    free(fpath); fpath = flu_sprintf("var/archive/%s/tsk.log", fep);
+  }
+
+  fdja_value *r = fdja_array_malloc();
+
+  FILE *f = fopen(fpath, "r"); if (f == NULL) return r;
+
+  char *line = NULL;
+  size_t len = 0;
+  fdja_value *v = NULL;
+
+  while (getline(&line, &len, f) != -1)
+  {
+    char *br = strchr(line, '{');
+    char *time = strndup(line, br - line - 1);
+    char *s = strdup(br);
+    v = fdja_parse(s);
+    fdja_set(v, "_time", fdja_sym(time));
+    fdja_push(r, v);
+  }
+
+  free(line);
+  fclose(f);
+  free(fep);
+  free(fpath);
+
+  return r;
+}
+
 double hlp_determine_delta(char *exid)
 {
   double r = -1.0;

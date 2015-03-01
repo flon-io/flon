@@ -22,17 +22,48 @@ context "task offering:"
     char *exid = NULL;
     fdja_value *result = NULL;
     fdja_value *v = NULL;
+    fdja_value *l = NULL;
   }
   after each
   {
     free(exid);
     fdja_free(result);
     fdja_free(v);
+    fdja_free(l);
   }
 
   describe "an _ offerer"
   {
     it "sees its offer logged in msgs.log"
+    {
+      exid = flon_generate_exid("ztest.offerer.rad");
+
+      hlp_launch(
+        exid,
+        "task ostamp\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 7);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      l = hlp_read_tsk_log(exid);
+      //fdja_putdc(l);
+
+      expect(fdja_size(l) zu== 3);
+
+      fdja_value *offer = fdja_at(l, 1);
+
+      expect(fdja_ld(offer, "task") ===f ""
+        "{ "
+          "state: offered, "
+          "event: offering, "
+          "from: usr/local/tsk/ztest.offerer/_/offerer.rad, "
+          "for: stamp "
+        "}");
+    }
   }
 
   describe "a .rad _ offerer"
