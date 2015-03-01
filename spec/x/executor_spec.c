@@ -115,11 +115,10 @@ context "flon-executor"
         "var/spool/exe/rcv_%s-0.json", exid,
         "{"
           "point: receive\n"
+          "task: { state: completed, for: stamp, from: tasker }\n"
           "exid: %s\n"
           "nid: 0\n"
-          "payload: {\n"
-            "hello: hiroshima\n"
-          "}\n"
+          "payload: { hello: hiroshima }\n"
         "}",
         exid
       );
@@ -205,11 +204,10 @@ context "flon-executor"
         "var/spool/exe/rcv_%s-0_0.json", exid,
         "{"
           "point: receive\n"
+          "task: { state: completed, for: stamp, from: tasker }\n"
           "exid: %s\n"
           "nid: 0_0\n"
-          "payload: {\n"
-            "hello: chuugoku\n"
-          "}\n"
+          "payload: { hello: chuugoku }\n"
         "}",
         exid
       );
@@ -253,11 +251,10 @@ context "flon-executor"
         "var/spool/exe/rcv_%s-0_1.json", exid,
         "{"
           "point: receive\n"
+          "task: { state: completed, for: stamp, from: tasker }\n"
           "exid: %s\n"
           "nid: 0_1\n"
-          "payload: {\n"
-            "hello: staabakusu\n"
-          "}\n"
+          "payload: { hello: staabakusu }\n"
         "}",
         exid
       );
