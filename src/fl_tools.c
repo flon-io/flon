@@ -368,13 +368,17 @@ static void print_tsk_log(const char *path)
 
       char *st = fdja_ls(v, "task.state", NULL);
       char *ev = fdja_ls(v, "task.event", NULL);
+      char *fr = fdja_ls(v, "task.from", NULL);
       char *fo = fdja_ls(v, "task.for", NULL);
-      printf("%sst:%s%s ", cdgrey, cdblue, st);
-      printf("%sev:%s%s ", cdgrey, cdblue, ev);
+      char *frr = fr ? strstr(fr, "/tsk/") : NULL;
+      printf("%sst:%s%s ", cdgrey, cclear, st);
+      printf("%sev:%s%s ", cdgrey, cclear, ev);
+      printf("%sfr:%s%s ", cdgrey, cclear, frr ? frr + 5 : fr);
       printf("%sfo:%s%s ", cdgrey, cgreen, fo);
-      free(st); free(ev); free(fo);
+      free(st); free(ev); free(fr); free(fo);
 
-      printf(cclear);
+      //printf("\n  ");
+      printf(cbrown);
       fdja_to_d(stdout, fdja_l(v, "payload"), FDJA_F_COMPACT, 0);
 
       printf("\n");

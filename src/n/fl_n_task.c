@@ -24,6 +24,46 @@
 //
 
 
+static void log_task(fdja_value *msg)
+{
+  char *exid = fdja_ls(msg, "exid", NULL);
+  char *fep = flon_exid_path(exid);
+
+  char *lpath = flu_sprintf("var/run/%s/tsk.log", fep);
+
+  FILE *log = fopen(lpath, "a");
+
+  if (log == NULL)
+  {
+    fgaj_r("failed to open %s, logging to var/log/tsk.log", lpath);
+
+    log = fopen("var/log/tsk.log", "a");
+
+    if (log == NULL)
+    {
+      fgaj_r("failed to open var/log/tsk.log");
+      goto _over;
+    }
+  }
+
+  char *now = fgaj_now();
+  fputs(now, log);
+  fputc(' ', log);
+  //fputs(msg->source, log); // ! bypasses any changes to msg
+  fdja_to_d(log, msg, FDJA_F_COMPACT, 0);
+  fputc('\n', log);
+
+  if (fclose(log) != 0) { fgaj_r("failed to close %s", lpath); }
+
+  free(now);
+
+_over:
+
+  free(exid);
+  free(fep);
+  free(lpath);
+}
+
 static char exe_task(fdja_value *node, fdja_value *exe)
 {
   char r = 'k'; // for now, ok
@@ -52,6 +92,10 @@ static char exe_task(fdja_value *node, fdja_value *exe)
     push_error(node, "failed to write tsk_ file", NULL);
     r = 'r';
   }
+  else // wrote successfully to var/spool/dis/
+  {
+    log_task(tsk);
+  }
 
   fdja_free(tsk);
   free(nid);
@@ -65,10 +109,10 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
   //fdja_putdc(node);
   //fdja_putdc(rcv);
 
+  log_task(rcv);
+
   fdja_value *state = fdja_l(rcv, "task.state");
   //fdja_value *event = fdja_l(rcv, "task.event");
-
-  // TODO tsk.log !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   if (fdja_strcmp(state, "failed") == 0)
   {
@@ -84,7 +128,7 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
     return 'v'; // over
   }
 
-  // else
+  // not failed, nor completed
 
   char r = 'k';
 
