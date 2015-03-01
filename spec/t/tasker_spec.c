@@ -236,8 +236,7 @@ context "flon-tasker"
     {
       expect(flon_lookup_tasker_path("ttest.asia.japan", "stamp", 1) ===f ""
         "usr/local/tsk/ttest.asia.japan/stamp");
-      expect(flon_lookup_tasker_path("ttest.asia.philippines", "stamp", 1) ===f ""
-        "usr/local/tsk/ttest/stamp");
+      expect(flon_lookup_tasker_path("ttest.asia.philippines", "stamp", 1) ===f "usr/local/tsk/ttest/stamp");
     }
 
     it "returns the tasker in the 'any' domain by default"
@@ -250,24 +249,24 @@ context "flon-tasker"
     {
       it "returns _ if present"
       {
-        expect(flon_lookup_tasker_path("ztest.offerer", "nada", 1) ===f ""
-          "usr/local/tsk/ztest.offerer/_");
+        expect(flon_lookup_tasker_path("z.test.offerer", "nada", 1) ===f ""
+          "usr/local/tsk/z.test.offerer/_");
       }
 
       it "doesn't return _ when created == 0"
       {
-        expect(flon_lookup_tasker_path("ztest.offerer", "nada", 0) == NULL);
+        expect(flon_lookup_tasker_path("z.test.offerer", "nada", 0) == NULL);
       }
 
       it "looks up from downstream domains"
       {
-        expect(flon_lookup_tasker_path("ztest.offerer.a", "nada", 1) ===f ""
-          "usr/local/tsk/ztest.offerer/_");
+        expect(flon_lookup_tasker_path("z.test.offerer.a", "nada", 1) ===f ""
+          "usr/local/tsk/z.test.offerer/_");
       }
 
       it "stops looking if there is an empty _ offerer"
       {
-        expect(flon_lookup_tasker_path("ztest.offerer.x.y", "nada", 1) == NULL);
+        expect(flon_lookup_tasker_path("z.test.offerer.x.y", "nada", 1) == NULL);
       }
     }
   }

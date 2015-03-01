@@ -36,7 +36,7 @@ context "task offering:"
   {
     it "sees its offer logged in msg.log"
     {
-      exid = flon_generate_exid("ztest.offerer.rad");
+      exid = flon_generate_exid("z.test.offerer.rad");
 
       hlp_launch(
         exid,
@@ -60,7 +60,7 @@ context "task offering:"
         "{ "
           "state: offered, "
           "event: offering, "
-          "from: usr/local/tsk/ztest.offerer/_/offerer.rad, "
+          "from: usr/local/tsk/z.test.offerer/_/offerer.rad, "
           "for: stamp "
         "}");
     }
@@ -70,7 +70,7 @@ context "task offering:"
   {
     it "offers a task to a taskee"
     {
-      exid = flon_generate_exid("ztest.offerer.rad");
+      exid = flon_generate_exid("z.test.offerer.rad");
 
       hlp_launch(
         exid,

@@ -93,7 +93,7 @@ context "flon and taskers:"
   {
     it "mirrors the whole task"
     {
-      exid = flon_generate_exid("ztest.mirrora");
+      exid = flon_generate_exid("z.test.mirrora");
 
       hlp_launch(
         exid,
