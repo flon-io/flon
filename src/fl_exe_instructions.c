@@ -180,7 +180,7 @@ static fdja_value *lookup_domain_var(const char *key)
     while (1)
     {
       dot = strchr(dot + 1, '.');
-      if (dash < dot) dot = dash;
+      if (dot == NULL || dash < dot) dot = dash;
 
       char *dom = strndup(exid, dot - exid);
       merge_domain_vars(dom);

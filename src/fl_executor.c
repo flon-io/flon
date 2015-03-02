@@ -583,9 +583,9 @@ void flon_execute(const char *exid)
 }
 
 fdja_value *flon_execut(
-  fdja_value *tree, fdja_value *payload, fdja_value *vars)
+  const char *domain, fdja_value *tree, fdja_value *payload, fdja_value *vars)
 {
-  execution_id = strdup("transient");
+  execution_id = flu_sprintf("%s-transient", domain);
   execution_path = NULL;
   execution = fdja_v("{ exid: \"%s\", nodes: {} }", execution_id);
 

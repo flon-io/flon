@@ -44,7 +44,7 @@ context "flon-executor"
       fdja_value *payload = fdja_o(NULL);
       fdja_value *vars = fdja_o(NULL);
 
-      msg = flon_execut(tree, payload, vars);
+      msg = flon_execut("x.test", tree, payload, vars);
 
       //fdja_putdc(msg);
       expect(fdja_li(msg, "payload.ret", -1) lli== 42);

@@ -1,4 +1,7 @@
 
-if $(taskee) == ostamp
-  set taskee: stamp
+sequence
+  if $(taskee) == ostamp
+    set taskee: stamp
+  else if $(taskee) == state
+    set taskee: $(dv.location)
 

@@ -203,7 +203,7 @@ static int run_rad(tasking_data *td)
 
   fdja_value *vars = fdja_object_malloc();
 
-  fdja_value *msg = flon_execut(rad, pl, vars);
+  fdja_value *msg = flon_execut(td->domain, rad, pl, vars);
 
   //fgaj_d("over: %s", fdja_tod(msg));
 

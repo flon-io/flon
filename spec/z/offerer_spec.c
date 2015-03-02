@@ -87,6 +87,23 @@ context "task offering:"
     }
 
     it "has access to domain variables"
+    {
+      exid = flon_generate_exid("z.test.offerer.rad");
+
+      hlp_launch(
+        exid,
+        "task state\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 7);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      expect(fdja_ls(result, "error.msg", NULL) ===f ""
+        "didn't find tasker 'Texas' (domain z.test.offerer.rad)");
+    }
   }
 
   describe "a non .rad _ offerer"
