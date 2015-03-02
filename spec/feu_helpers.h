@@ -27,6 +27,7 @@ fdja_value *hlp_read_archive_run_json(char *exid);
 fdja_value *hlp_read_node(char *exid, char *nid);
 fdja_value *hlp_read_timer(char *exid, char *nid, char *type, char *ts);
 fdja_value *hlp_read_tsk_log(char *exid);
+size_t hlp_count_msgs(char *exid);
 
 double hlp_determine_delta(char *exid);
 

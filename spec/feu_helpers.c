@@ -348,6 +348,26 @@ fdja_value *hlp_read_tsk_log(char *exid)
   return r;
 }
 
+size_t hlp_count_msgs(char *exid)
+{
+  char *fep = flon_exid_path(exid);
+
+  char *fpath = flu_sprintf("var/run/%s/msg.log", fep);
+  if (flu_fstat(fpath) != 'f')
+  {
+    free(fpath); fpath = flu_sprintf("var/archive/%s/msg.log", fep);
+  }
+
+  char *lc = flu_pline("wc -l %s", fpath);
+  size_t r = strtoll(lc, NULL, 10);
+  free(lc);
+
+  free(fep);
+  free(fpath);
+
+  return r;
+}
+
 double hlp_determine_delta(char *exid)
 {
   double r = -1.0;
