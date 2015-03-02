@@ -638,22 +638,20 @@ short flon_dispatch(const char *fname)
   }
   else // task
   {
+    //puts("-------- flon_dispatch()");
     //fdja_putdc(id);
     //fdja_putdc(msg);
     //puts(msg->source);
 
-    char *state = fdja_ls(msg, "task.state", NULL);
-    char *from = fdja_ls(msg, "task.from", NULL);
+    fdja_value *state = fdja_l(msg, "task.state");
+    fdja_value *from = fdja_l(msg, "task.from");
 
-    if (state && strcmp(state, "completed") == 0)
+    if (state && fdja_strcmp(state, "completed") == 0)
       r = receive_task(fname, id, msg);
-    else if (from && strcmp(from, "executor") == 0)
+    else if (from && fdja_strcmp(from, "executor") == 0)
       r = dispatch(fname, id, msg);
     else
       r = receive_task(fname, id, msg);
-
-    free(state);
-    free(from);
   }
 
 _over:

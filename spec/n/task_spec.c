@@ -5,6 +5,7 @@
 // Thu Oct 30 12:39:39 JST 2014
 //
 
+#include "flutim.h"
 #include "flutil.h"
 #include "fl_ids.h"
 #include "fl_tools.h"
@@ -21,12 +22,14 @@ context "instruction:"
   before each
   {
     char *exid = NULL;
+    char *fep = NULL;
     fdja_value *result = NULL;
     fdja_value *v = NULL;
   }
   after each
   {
     free(exid);
+    free(fep);
     fdja_free(result);
     fdja_free(v);
   }
@@ -120,6 +123,33 @@ context "instruction:"
         "failed");
       expect(fdja_ls(v, "nodes.0.errors.0.msg", NULL) ===f ""
         "didn't find tasker 'nada' (domain n.task.unknown_tasker)");
+    }
+
+    it "doesn't redispatch if the 'offered' receipt is for the same taskee"
+    {
+      exid = flon_generate_exid("n.task.offering");
+      fep = flon_exid_path(exid);
+
+      hlp_launch(
+        exid,
+        "task trash\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "receive", NULL, 7);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      flu_msleep(770);
+
+      v = hlp_read_run_json(exid);
+      //fdja_putdc(v);
+
+      expect(fdja_ls(v, "nodes.0.taskee", NULL) ===f ""
+        "trash");
+
+      expect(hlp_count_msgs(exid) zu== 3);
     }
   }
 }

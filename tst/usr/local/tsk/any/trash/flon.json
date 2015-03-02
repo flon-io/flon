@@ -1,0 +1,6 @@
+
+# mirrora
+
+in: all
+run: 'ruby trash.rb'
+

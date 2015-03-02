@@ -94,6 +94,7 @@ static char exe_task(fdja_value *node, fdja_value *exe)
   }
   else // wrote successfully to var/spool/dis/
   {
+    fdja_set(node, "taskee", fdja_lc(exe, "tree.1._0"));
     log_task(tsk);
   }
 
@@ -128,24 +129,30 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
     return 'v'; // over
   }
 
-  // not failed, nor completed
-
   char r = 'k';
 
-  char *exid = fdja_ls(rcv, "exid", NULL);
-  char *nid = fdja_ls(rcv, "nid", NULL);
+  // if the msg is a new offer, echo it back, else shut up
 
-  fdja_psetv(rcv, "task.from", "executor");
+  fdja_value *taskee = fdja_l(node, "taskee");
+  fdja_value *tfor = fdja_l(rcv, "task.for");
 
-  if (flon_lock_write(rcv, "var/spool/dis/tsk_%s-%s.json", exid, nid) != 1)
+  if (fdja_strcmp(state, "offered") == 0 && fdja_cmp(taskee, tfor) != 0)
   {
-    fgaj_r("failed writing to var/spool/dis/tsk_%s-%s.json", exid, nid);
-    push_error(node, "failed to write tsk_ file", NULL);
-    r = 'r';
-  }
+    char *exid = fdja_ls(rcv, "exid", NULL);
+    char *nid = fdja_ls(rcv, "nid", NULL);
 
-  free(exid);
-  free(nid);
+    fdja_psetv(rcv, "task.from", "executor");
+
+    if (flon_lock_write(rcv, "var/spool/dis/tsk_%s-%s.json", exid, nid) != 1)
+    {
+      fgaj_r("failed writing to var/spool/dis/tsk_%s-%s.json", exid, nid);
+      push_error(node, "failed to write tsk_ file", NULL);
+      r = 'r';
+    }
+
+    free(exid);
+    free(nid);
+  }
 
   return r;
 }
