@@ -109,6 +109,22 @@ context "task offering:"
   describe "a non .rad _ offerer"
   {
     it "offers a task to a taskee"
+    {
+      exid = flon_generate_exid("z.test.offerer.nonrad");
+
+      hlp_launch(
+        exid,
+        "task ostamp\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 7);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      expect(fdja_ls(result, "payload.stamp", NULL) ^==f "20");
+    }
   }
 }
 

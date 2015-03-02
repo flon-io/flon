@@ -80,6 +80,7 @@ char *flon_lookup_tasker_path(
 
 typedef struct {
   fdja_value *tsk;
+  fdja_value *in;
   fdja_value *tasker_conf;
   char *path;
   char *fname;
@@ -90,12 +91,14 @@ typedef struct {
   char *tasker_path;
   char *cmd;
   char *ret;
+  int offerer;
 } tasking_data;
 
 static void tasking_data_free(tasking_data *td)
 {
   fdja_free(td->tsk);
   fdja_free(td->tasker_conf);
+  //fdja_free(td->in); // no, since in points to tsk or tsk.payload
   //free(td->path); // no.
   //free(td->fname); // no.
   free(td->exid);
@@ -207,9 +210,9 @@ static int run_rad(tasking_data *td)
 
   //fgaj_d("over: %s", fdja_tod(msg));
 
-  fdja_psetv(td->tsk, "task.state", "offered");
-  fdja_psetv(td->tsk, "task.event", "offering");
-  fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
+  //fdja_psetv(td->tsk, "task.state", "offered");
+  //fdja_psetv(td->tsk, "task.event", "offering");
+  //fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
   fdja_pset(td->tsk, "task.for", fdja_lc(msg, "payload.taskee"));
 
   if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
@@ -292,12 +295,7 @@ static int run_cmd(tasking_data *td)
 
   FILE *f = fdopen(pds[1], "w");
 
-  char in = fdja_lk(td->tasker_conf, "in");
-
-  if (in == 'a') // "all"
-    fdja_to_j(f, td->tsk, 0);
-  else
-    fdja_to_j(f, fdja_l(td->tsk, "payload"), 0);
+  fdja_to_j(f, td->in, 0);
 
   fclose(f);
 
@@ -306,6 +304,57 @@ static int run_cmd(tasking_data *td)
   fgaj_i("tasker %s ran >%s< pid %i", td->taskee, td->cmd, pid);
 
   return 0;
+}
+
+static void prepare_tasker_cmd(tasking_data *td)
+{
+  char cwd[1024 + 1]; getcwd(cwd, 1024);
+  //fgaj_i("cwd: %s", cwd);
+
+  fgaj_i("exid: %s, nid: %s, domain: %s", td->exid, td->nid, td->domain);
+  fgaj_i("tasker at %s", td->tasker_path);
+
+  td->cmd = fdja_ls(td->tasker_conf, "run", NULL); // was "invoke"
+
+  if (td->cmd == NULL) return;
+
+  if (strstr(td->cmd, "$("))
+  {
+    char *cmd1 = expand(td);
+    free(td->cmd);
+    td->cmd = cmd1;
+  }
+}
+
+static void prepare_tasker_output(tasking_data *td)
+{
+  if (td->offerer == 0 && fdja_lk(td->tasker_conf, "out") == 'd') // discard
+    td->ret = strdup("/dev/null");
+  else
+    td->ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
+}
+
+static void prepare_tasker_input(tasking_data *td)
+{
+  if (fdja_l(td->tsk, "payload") == NULL)
+  {
+    fdja_set(td->tsk, "payload", fdja_object_malloc());
+  }
+
+  char in = fdja_lk(td->tasker_conf, "in");
+
+  if (in == 'a' || td->offerer)
+    td->in = td->tsk;
+  else
+    td->in = fdja_l(td->tsk, "payload");
+
+  if (td->offerer)
+  {
+    fdja_psetv(td->tsk, "task.state", "offered");
+    fdja_psetv(td->tsk, "task.event", "offering");
+    fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
+    fdja_psetv(td->tsk, "task.for", td->taskee);
+  }
 }
 
 int flon_task(const char *path)
@@ -355,8 +404,6 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
-  short offerer = flu_strends(td.tasker_path, "/_");
-
   td.tasker_conf = fdja_parse_obj_f("%s/flon.json", td.tasker_path);
 
   if (td.tasker_conf == NULL)
@@ -365,18 +412,9 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
-  if (offerer == 0 && fdja_lk(td.tasker_conf, "out") == 'd') // discard
-    td.ret = strdup("/dev/null");
-  else
-    td.ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td.exid, td.nid);
+  td.offerer = flu_strends(td.tasker_path, "/_");
 
-  char cwd[1024 + 1]; getcwd(cwd, 1024);
-  fgaj_i("cwd: %s", cwd);
-
-  fgaj_i("exid: %s, nid: %s, domain: %s", td.exid, td.nid, td.domain);
-  fgaj_i("tasker at %s", td.tasker_path);
-
-  td.cmd = fdja_ls(td.tasker_conf, "run", NULL); // was "invoke"
+  prepare_tasker_cmd(&td);
 
   if (td.cmd == NULL)
   {
@@ -385,17 +423,8 @@ int flon_task(const char *path)
     r = 1; goto _over;
   }
 
-  if (fdja_l(td.tsk, "payload") == NULL)
-  {
-    fdja_set(td.tsk, "payload", fdja_object_malloc());
-  }
-
-  if (strstr(td.cmd, "$("))
-  {
-    char *cmd1 = expand(&td);
-    free(td.cmd);
-    td.cmd = cmd1;
-  }
+  prepare_tasker_output(&td);
+  prepare_tasker_input(&td);
 
   if (flu_strends(td.cmd, ".rad"))
     r = run_rad(&td);
