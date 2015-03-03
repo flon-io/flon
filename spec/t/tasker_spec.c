@@ -47,7 +47,7 @@ context "flon-tasker"
   {
     it "tasks"
     {
-      exid = flon_generate_exid("ttest");
+      exid = flon_generate_exid("t.test");
       char *nid = "0_0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -90,7 +90,7 @@ context "flon-tasker"
 
     it "moves non-identifiable tasks to var/spool/rejected/"
     {
-      exid = flon_generate_exid("ttest");
+      exid = flon_generate_exid("t.test");
       char *nid = "nada-nada-nada";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -115,7 +115,7 @@ context "flon-tasker"
 
     it "moves non-parseable tasks to var/spool/rejected/"
     {
-      exid = flon_generate_exid("ttest");
+      exid = flon_generate_exid("t.test");
       char *nid = "0_2";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -130,7 +130,7 @@ context "flon-tasker"
 
     it "returns the task as failed if it can't find the taskee"
     {
-      exid = flon_generate_exid("ttest.bogus.cant_find_taskee");
+      exid = flon_generate_exid("t.test.bogus.cant_find_taskee");
       char *nid = "0_5";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -162,7 +162,7 @@ context "flon-tasker"
 
     it "returns the task as failed if the taskee doesn't have a flon.json"
     {
-      exid = flon_generate_exid("ttest.bogus.noflonjson");
+      exid = flon_generate_exid("t.test.bogus.noflonjson");
       char *nid = "0_6";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -194,7 +194,7 @@ context "flon-tasker"
 
     it "returns the task as failed if the taskee doesn't have 'run' key"
     {
-      exid = flon_generate_exid("ttest.bogus.norunkey");
+      exid = flon_generate_exid("t.test.bogus.norunkey");
       char *nid = "0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -229,14 +229,14 @@ context "flon-tasker"
   {
     it "returns null if it doesn't find"
     {
-      expect(flon_lookup_tasker_path("ttest.asia.japan", "nada", 1) == NULL);
+      expect(flon_lookup_tasker_path("t.test.asia.japan", "nada", 1) == NULL);
     }
 
     it "returns the tasker with the most specific domain"
     {
-      expect(flon_lookup_tasker_path("ttest.asia.japan", "stamp", 1) ===f ""
-        "usr/local/tsk/ttest.asia.japan/stamp");
-      expect(flon_lookup_tasker_path("ttest.asia.philippines", "stamp", 1) ===f "usr/local/tsk/ttest/stamp");
+      expect(flon_lookup_tasker_path("t.test.asia.japan", "stamp", 1) ===f ""
+        "usr/local/tsk/t.test.asia.japan/stamp");
+      expect(flon_lookup_tasker_path("t.test.asia.philippines", "stamp", 1) ===f "usr/local/tsk/t.test/stamp");
     }
 
     it "returns the tasker in the 'any' domain by default"

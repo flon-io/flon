@@ -34,7 +34,7 @@ context "flon and taskers:"
   {
     it "tasks a specific domain tasker"
     {
-      exid = flon_generate_exid("ttest.asia.japan");
+      exid = flon_generate_exid("t.test.asia.japan");
 
       hlp_launch(
         exid,
@@ -48,12 +48,12 @@ context "flon and taskers:"
       //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ stamp: \"ttest.asia.japan stamp\" }");
+        "{ stamp: \"t.test.asia.japan stamp\" }");
     }
 
     it "tasks a less specific domain tasker"
     {
-      exid = flon_generate_exid("ttest.europe.france");
+      exid = flon_generate_exid("t.test.europe.france");
 
       hlp_launch(
         exid,
@@ -67,7 +67,7 @@ context "flon and taskers:"
       //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ stamp: \"ttest stamp\" }");
+        "{ stamp: \"t.test stamp\" }");
     }
 
     it "tasks an 'any' tasker"

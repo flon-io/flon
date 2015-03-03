@@ -38,7 +38,7 @@ context "tasker: null"
   {
     it "swallows any workitem"
     {
-      exid = flon_generate_exid("ttest.null.0");
+      exid = flon_generate_exid("t.test.null.0");
       nid = "0_1";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 

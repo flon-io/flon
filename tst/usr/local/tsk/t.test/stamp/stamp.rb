@@ -2,7 +2,7 @@
 #
 # a flon stamping service
 #
-# Sun Feb  1 17:48:46 JST 2015
+# Sun Feb  1 17:48:29 JST 2015
 #
 
 require 'json'
@@ -10,7 +10,7 @@ require 'json'
 
 task = JSON.parse(STDIN.read)
 
-task['stamp'] = 'ttest.asia.japan stamp'
+task['stamp'] = 't.test stamp'
 
 STDOUT.puts(JSON.dump(task))
 
