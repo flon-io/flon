@@ -200,9 +200,13 @@ static int run_rad(tasking_data *td)
   //fgaj_d("rad: %s", fdja_tod(rad));
 
   fdja_value *pl = fdja_lc(td->tsk, "payload");
-  fdja_set(pl, "taskee", fdja_s(td->taskee));
-  // TODO load task history if required...
-  // TODO load taskbox state if required...
+
+  if (td->offerer)
+  {
+    fdja_set(pl, "taskee", fdja_s(td->taskee));
+    // TODO load task history if required...
+    // TODO load taskbox state if required...
+  }
 
   fdja_value *vars = fdja_object_malloc();
 
@@ -210,10 +214,19 @@ static int run_rad(tasking_data *td)
 
   //fgaj_d("over: %s", fdja_tod(msg));
 
-  //fdja_psetv(td->tsk, "task.state", "offered");
-  //fdja_psetv(td->tsk, "task.event", "offering");
-  //fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
-  fdja_pset(td->tsk, "task.for", fdja_lc(msg, "payload.taskee"));
+  if (td->offerer)
+  {
+    //fdja_psetv(td->tsk, "task.state", "offered");
+    //fdja_psetv(td->tsk, "task.event", "offering");
+    //fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
+    fdja_pset(td->tsk, "task.for", fdja_lc(msg, "payload.taskee"));
+  }
+  else
+  {
+    fdja_set(td->tsk, "payload", fdja_lc(msg, "payload"));
+  }
+
+  fdja_free(msg);
 
   if (flon_lock_write(td->tsk, "var/spool/dis/%s", td->fname) != 1)
   {
@@ -355,7 +368,7 @@ static void prepare_tasker_input(tasking_data *td)
     fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
     fdja_psetv(td->tsk, "task.for", td->taskee);
   }
-  else if (in == 'a')
+  else //if (in == 'a')
   {
     fdja_psetv(td->tsk, "task.state", "completed");
     fdja_psetv(td->tsk, "task.event", "completion");
