@@ -485,8 +485,6 @@ static fdja_value *attributes(fdja_value *node, fdja_value *msg)
 
 static size_t counter_next()
 {
-  //size_t r = 1;
-  //if (fdja_l(execution, "counter")) r = fdja_li(execution, "counter") + 1;
   size_t r = fdja_li(execution, "counter", (size_t)0) + 1;
   fdja_psetv(execution, "counter", "%d", r);
 
