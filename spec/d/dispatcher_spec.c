@@ -83,8 +83,11 @@ context "flon-dispatcher"
       expect(fdja_l(v, "stamp", NULL) != NULL);
       fdja_free(v);
 
-      s = flu_readall("var/run/%s/taskers/%s-0_2-stamp.log", fep, exid);
+      s = flu_readall("var/archive/%s/taskers/0_2-stamp.log", fep);
+        // since it's not really running, it logs to var/archive/...
+
       //printf(">>>\n%s<<<\n", s);
+
       expect(s != NULL);
       expect(s >== " ran >ruby stamp.rb<");
       expect(s >== " stamp.rb over.");
