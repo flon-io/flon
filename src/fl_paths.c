@@ -68,6 +68,24 @@ char *flon_exid_path(const char *s)
   return r;
 }
 
+char *flon_var_path(const char *exid)
+{
+  char *fep = flon_exid_path(exid);
+  if (fep == NULL) return NULL;
+
+  char *r = flu_sprintf("var/run/%s", fep);
+
+  if (flu_fstat(r) == 'd') goto _over;
+
+  free(r); r = flu_sprintf("var/archive/%s", fep);
+
+_over:
+
+  free(fep);
+
+  return r;
+}
+
 static void find(const char *path, short depth, flu_list *fnames)
 {
   DIR *d = opendir(path);

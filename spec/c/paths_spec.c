@@ -27,6 +27,11 @@ context "fl_paths:"
 
   describe "flon_exid_path()"
   {
+    it "returns NULL if the exid can't be determined"
+    {
+      expect(flon_exid_path("stuck") == NULL);
+    }
+
     it "returns the path to the given exid / nid"
     {
       expect(flon_exid_path("xtest.pn-u0-20141021.0803.kurukuru") ===f ""
@@ -37,6 +42,37 @@ context "fl_paths:"
 
       expect(flon_exid_path("rcv_xtest.pn-u0-20141021.0803.koruluru-0_1-f.json") ===f ""
         "xtest.pn/ko/xtest.pn-u0-20141021.0803.koruluru");
+    }
+  }
+
+  describe "flon_var_path()"
+  {
+    before all
+    {
+      flu_system(
+        "mkdir -p var/run/c.test.nada/ro/c.test.nada-u0-20150303.1504.ronada");
+    }
+    after all
+    {
+      flu_system(
+        "rm -fR var/run/c.test.nada/ro/c.test.nada-u0-20150303.1504.ronada");
+    }
+
+    it "returns NULL if the exid can't be determined"
+    {
+      expect(flon_var_path("stuck") == NULL);
+    }
+
+    it "returns var/archive/{fep} by default"
+    {
+      expect(flon_var_path("c.test.nada-u0-20150303.1504.purenada") ===f ""
+        "var/archive/c.test.nada/pu/c.test.nada-u0-20150303.1504.purenada");
+    }
+
+    it "returns var/run/{fep} if the execution is live"
+    {
+      expect(flon_var_path("c.test.nada-u0-20150303.1504.ronada") ===f ""
+        "var/run/c.test.nada/ro/c.test.nada-u0-20150303.1504.ronada");
     }
   }
 

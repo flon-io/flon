@@ -32,6 +32,8 @@
 
 char *flon_nid_path(fdja_value *nid);
 char *flon_exid_path(const char *s);
+char *flon_var_path(const char *exid);
+
 flu_list *flon_find_json(const char *path, ...);
 flu_list *flon_list_json(const char *path, ...);
 
