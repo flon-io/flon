@@ -482,7 +482,12 @@ static short dispatch(const char *fname, fdja_value *id, fdja_value *msg)
     ct = "tsk";
     ctx = "tasker";
     arg = flu_sprintf("var/spool/tsk/%s", fname);
-    logpath = flu_sprintf("var/log/%s/tsk_%s-%s.log", fep, exid, nid);
+    char *taskee = fdja_ls(msg, "task.for", NULL);
+
+    logpath = flu_sprintf(
+      "var/run/%s/taskers/%s-%s-%s.log", fep, exid, nid, taskee);
+
+    free(taskee);
   }
   else // execute, receive, cancel
   {
