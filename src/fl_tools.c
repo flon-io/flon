@@ -413,8 +413,7 @@ void flon_pp_execution(const char *exid)
 
   puts("\n## dispatcher log\n#");
   printf(cgreen); fflush(stdout);
-  flu_system(
-    "cat var/log/dispatcher.log | grep --colour=never \"%s\"", exid);
+  flu_system("cat var/log/dispatcher.log | grep --colour=never \"%s\"", exid);
   printf(cclear);
 
   puts("\n## execution log\n#");
@@ -423,10 +422,9 @@ void flon_pp_execution(const char *exid)
     "cat %s/exe.log", path);
   printf(cclear);
 
-  puts("\n## invocation log\n#");
+  puts("\n## tasker logs\n#");
   printf(cgreen); fflush(stdout);
-  flu_system(
-    "find var/log/%s -name \"inv_%s-*.log\" | xargs tail -n +1", fep, exid);
+  flu_system("find %s/taskers -name \"*.log\" | xargs tail -n +1", path);
   printf(cclear);
 
   char *fpath = flu_sprintf("%s/msg.log", path);
