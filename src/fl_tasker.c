@@ -90,7 +90,7 @@ typedef struct {
   char *taskee;
   char *tasker_path;
   char *cmd;
-  char *ret;
+  char *out;
   int offerer;
 } tasking_data;
 
@@ -107,7 +107,7 @@ static void tasking_data_free(tasking_data *td)
   free(td->taskee);
   free(td->tasker_path);
   free(td->cmd);
-  free(td->ret);
+  free(td->out);
 }
 
 static char *lookup(void *data, const char *path)
@@ -186,7 +186,7 @@ static void reject(const char *path, short r, const char *format, ...)
 
 static int run_rad(tasking_data *td)
 {
-  fgaj_d("cmd >%s< taskee >%s< ret >%s<", td->cmd, td->taskee, td->ret);
+  fgaj_d("cmd >%s< taskee >%s< out >%s<", td->cmd, td->taskee, td->out);
 
   fdja_value *rad =
     fdja_parse_radial_f("%s/%s", td->tasker_path, td->cmd);
@@ -274,14 +274,14 @@ static int run_cmd(tasking_data *td)
       return 127;
     }
 
-    if (freopen(td->ret, "w", stdout) == NULL)
+    if (freopen(td->out, "w", stdout) == NULL)
     {
-      failf(td, 1, "failed to reopen child stdout to %s", td->ret);
+      failf(td, 1, "failed to reopen child stdout to %s", td->out);
       return 127;
     }
     if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
     {
-      failf(td, 1, "couldn't lock %s", td->ret);
+      failf(td, 1, "couldn't lock %s", td->out);
       return 127;
     }
 
@@ -342,9 +342,9 @@ static void prepare_tasker_cmd(tasking_data *td)
 static void prepare_tasker_output(tasking_data *td)
 {
   if (td->offerer == 0 && fdja_lk(td->tasker_conf, "out") == 'd') // discard
-    td->ret = strdup("/dev/null");
+    td->out = strdup("/dev/null");
   else
-    td->ret = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
+    td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
 }
 
 static void prepare_tasker_input(tasking_data *td)
