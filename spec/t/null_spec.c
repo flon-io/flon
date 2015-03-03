@@ -11,7 +11,7 @@
 #include "fl_tasker.h"
 
 
-context "tasker: null"
+context "tasker:"
 {
   before each
   {
@@ -65,8 +65,8 @@ context "tasker: null"
         // it's still here, it's the dispatcher's work to nuke it,
         // but since there is no answer...
 
-      expect(flu_fstat("var/spool/dis/ret_%s-%s.json", exid, nid) c== 0);
-        // the null tasker nuked it
+      expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 0);
+        // the null tasker prevented it
     }
   }
 }
