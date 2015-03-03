@@ -365,14 +365,14 @@ static void prepare_tasker_input(tasking_data *td)
   {
     fdja_psetv(td->tsk, "task.state", "offered");
     fdja_psetv(td->tsk, "task.event", "offering");
-    fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
+    fdja_pset(td->tsk, "task.from", fdja_s("%s/%s", td->tasker_path, td->cmd));
     fdja_psetv(td->tsk, "task.for", td->taskee);
   }
   else //if (in == 'a')
   {
     fdja_psetv(td->tsk, "task.state", "completed");
     fdja_psetv(td->tsk, "task.event", "completion");
-    fdja_psetv(td->tsk, "task.from", "%s/%s", td->tasker_path, td->cmd);
+    fdja_pset(td->tsk, "task.from", fdja_s("%s/%s", td->tasker_path, td->cmd));
     fdja_psetv(td->tsk, "task.for", td->taskee);
   }
 }
