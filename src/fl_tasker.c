@@ -127,11 +127,6 @@ static char *lookup(void *data, const char *path)
   return NULL;
 }
 
-static char *expand(tasking_data *td)
-{
-  return fdol_quote_expand(td->cmd, td, lookup);
-}
-
 static void fail(char o_or_f, tasking_data *td, short r, const char *msg)
 {
   if (r) fgaj_r(msg); else fgaj_e(msg);
@@ -333,7 +328,7 @@ static void prepare_tasker_cmd(tasking_data *td)
 
   if (strstr(td->cmd, "$("))
   {
-    char *cmd1 = expand(td);
+    char *cmd1 = fdol_quote_expand(td->cmd, td, lookup);
     free(td->cmd);
     td->cmd = cmd1;
   }
