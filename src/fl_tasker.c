@@ -324,9 +324,7 @@ static void prepare_tasker_cmd(tasking_data *td)
 
   td->cmd = fdja_ls(td->tasker_conf, "run", NULL); // was "invoke"
 
-  if (td->cmd == NULL) return;
-
-  if (strstr(td->cmd, "$("))
+  if (td->cmd && strstr(td->cmd, "$("))
   {
     char *cmd1 = fdol_quote_expand(td->cmd, td, lookup);
     free(td->cmd);
@@ -336,7 +334,9 @@ static void prepare_tasker_cmd(tasking_data *td)
 
 static void prepare_tasker_output(tasking_data *td)
 {
-  if (td->offerer == 0 && fdja_lk(td->tasker_conf, "out") == 'd') // discard
+  fdja_value *out = fdja_l(td->tasker_conf, "out");
+
+  if (td->offerer == 0 && fdja_strcmp(out, "discard") == 0)
     td->out = strdup("/dev/null");
   else
     td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
