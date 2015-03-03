@@ -113,6 +113,14 @@ static void do_log(fdja_value *msg)
   free(now);
 }
 
+static size_t n_next()
+{
+  size_t r = fdja_li(execution, "msg_counter", (size_t)0) + 1;
+  fdja_psetv(execution, "msg_counter", "%d", r);
+
+  return r;
+}
+
 void flon_queue_msg(
   const char *type, const char *nid, const char *from_nid, fdja_value *m)
 {
@@ -120,7 +128,8 @@ void flon_queue_msg(
 
   fdja_value *msg = m ? m : fdja_object_malloc();
 
-  fdja_psetv(msg, "point", type);
+  fdja_set(msg, "point", fdja_s(type));
+  fdja_set(msg, "n", fdja_v("%d", n_next()));
 
   if (nid)
     fdja_set(msg, "nid", fdja_s(nid));
