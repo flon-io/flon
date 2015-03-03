@@ -82,7 +82,7 @@ context "flon-tasker"
         "{ en: bicycle, ret: rad, fahr: rad }");
     }
 
-    it "prevents 'task' use in the .rad"
+    it "turns 'task x' into 'set f.taskee: x'"
   }
 }
 
