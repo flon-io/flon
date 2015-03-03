@@ -39,6 +39,8 @@ extern fdja_value *execution;
 char *flon_execution_domain();
 char *flon_execution_domain_delta(int i);
 
+short flon_is_transient_execution();
+
 void flon_execute(const char *exid);
 
 void flon_queue_msg(

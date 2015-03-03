@@ -47,7 +47,7 @@ context "flon-tasker"
   {
     it "tasks"
     {
-      exid = flon_generate_exid("ttest");
+      exid = flon_generate_exid("t.test.rad");
       char *nid = "0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
@@ -83,6 +83,41 @@ context "flon-tasker"
     }
 
     it "turns 'task x' into 'set f.taskee: x'"
+    {
+      exid = flon_generate_exid("t.test.rad.n.task");
+      char *nid = "0_7";
+      path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
+
+      flu_writeall(
+        path,
+        "point: task\n"
+        "task: { state: created, for: motorrad, from: executor }\n"
+        "tree: [ task, { _0: motorrad }, [] ]\n"
+        "exid: %s\n"
+        "nid: %s\n"
+        "payload: { en: motorbike }\n",
+        exid, nid
+      );
+
+      int r = flon_task(path);
+
+      expect(r i== 0);
+
+      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 3);
+
+      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      //fdja_putdc(v);
+
+      expect(fdja_ld(v, "task") ===f ""
+        "{ "
+          "state: completed, "
+          "for: motorrad, "
+          "from: usr/local/tsk/any/motorrad/motor.rad, "
+          "event: completion "
+        "}");
+      expect(fdja_ld(v, "payload") ===f ""
+        "{ en: motorbike, taskee: motor }");
+    }
   }
 }
 

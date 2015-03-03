@@ -51,6 +51,11 @@ fdja_value *execution = NULL;
 static flu_list *msgs = NULL;
 
 
+short flon_is_transient_execution()
+{
+  return (execution_path == NULL && msg_log == NULL);
+}
+
 char *flon_execution_domain()
 {
   if (execution_id == NULL) return NULL;
@@ -139,7 +144,7 @@ void flon_schedule_msg(
   fdja_value *tree0, fdja_value *tree1,
   fdja_value *msg)
 {
-  if (msg_log == NULL && execution_path == NULL) return;
+  if (flon_is_transient_execution()) return;
     // no schedules when running transient executions
 
   //flu_putf(fdja_todc(msg));

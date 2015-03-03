@@ -66,6 +66,12 @@ _over:
 
 static char exe_task(fdja_value *node, fdja_value *exe)
 {
+  if (flon_is_transient_execution())
+  {
+    fdja_pset(exe, "payload.taskee", fdja_lc(exe, "tree.1._0"));
+    return 'v';
+  }
+
   char r = 'k'; // for now, ok
 
   char *exid = execution_id;
@@ -106,6 +112,8 @@ static char exe_task(fdja_value *node, fdja_value *exe)
 
 static char rcv_task(fdja_value *node, fdja_value *rcv)
 {
+  if (flon_is_transient_execution()) return 'v';
+
   //printf("=================== rcv_task()\n");
   //fdja_putdc(node);
   //fdja_putdc(rcv);
