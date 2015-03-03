@@ -1756,7 +1756,7 @@ fdja_value *fdja_psetv(fdja_value *start, const char *path, ...)
   fdja_value *r = NULL;
 
   fdja_value *v = fdja_parse(s);
-  if (v == NULL) goto _over;
+  if (v == NULL) { free(s); goto _over; }
 
   r = fdja_pset(start, p, v);
   if (r == NULL) fdja_free(v);
@@ -1787,8 +1787,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit 6c83a8311b8b3a09042d3d960c98d572dca7c87e
+//commit 2c6b431d255a659f2f02be6cd0ea67e437b3a06e
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Mar 1 07:26:22 2015 +0900
+//Date:   Tue Mar 3 16:42:03 2015 +0900
 //
-//    remove macro trailing ;
+//    fix leak in fdja_psetv() (when v parsing fails)
