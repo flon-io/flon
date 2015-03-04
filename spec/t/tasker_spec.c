@@ -192,16 +192,16 @@ context "flon-tasker"
       expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
     }
 
-    it "returns the task as failed if the taskee doesn't have 'run' key"
+    it "returns the task as failed if the taskee doesn't have 'cmd' key"
     {
-      exid = flon_generate_exid("t.test.bogus.norunkey");
+      exid = flon_generate_exid("t.test.bogus.nocmdkey");
       char *nid = "0_7";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: norunkey, from: executor }\n"
+        "task: { state: created, for: nocmdkey, from: executor }\n"
         "tree: [ task, { _0: norunkey }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
@@ -220,7 +220,7 @@ context "flon-tasker"
       expect(fdja_ld(v, "point") ===f "task");
       expect(fdja_ld(v, "task.state") ===f "failed");
       expect(fdja_ld(v, "task.event") ===f "offering");
-      expect(fdja_ld(v, "task.for") ===f "norunkey");
+      expect(fdja_ld(v, "task.for") ===f "nocmdkey");
       expect(fdja_ld(v, "payload") ===f "{ hello: bogus }");
     }
   }
