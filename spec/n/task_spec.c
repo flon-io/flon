@@ -148,7 +148,7 @@ context "instruction:"
       v = hlp_read_run_json(exid);
       //fdja_putdc(v);
 
-      expect(fdja_ls(v, "nodes.0.taskee", NULL) ===f ""
+      expect(fdja_ls(v, "nodes.0.task.for", NULL) ===f ""
         "trash");
 
       expect(hlp_count_msgs(exid) zu== 3);
@@ -199,7 +199,7 @@ context "instruction:"
       v = hlp_read_node(exid, "0");
       //fdja_putdc(v);
 
-      expect(fdja_ls(v, "taskee", NULL) ===f ""
+      expect(fdja_ls(v, "task.for", NULL) ===f ""
         "bounce1");
     }
   }

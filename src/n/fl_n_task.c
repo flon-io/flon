@@ -100,7 +100,8 @@ static char exe_task(fdja_value *node, fdja_value *exe)
   }
   else // wrote successfully to var/spool/dis/
   {
-    fdja_set(node, "taskee", fdja_lc(exe, "tree.1._0"));
+    fdja_set(node, "task", fdja_lc(tsk, "task"));
+    fdja_pset(node, "task.time", fdja_sym(flu_tstamp(NULL, 1, 'u')));
     log_task(tsk);
   }
 
@@ -141,12 +142,12 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
 
   // if the msg is a new offer, echo it back, else shut up
 
-  fdja_value *taskee = fdja_l(node, "taskee");
-  fdja_value *tfor = fdja_l(rcv, "task.for");
+  fdja_value *ntaskee = fdja_l(node, "task.for");
+  fdja_value *rtaskee = fdja_l(rcv, "task.for");
 
   if (
     (fdja_strcmp(state, "created") == 0) ||
-    (fdja_strcmp(state, "offered") == 0 && fdja_cmp(taskee, tfor) != 0)
+    (fdja_strcmp(state, "offered") == 0 && fdja_cmp(ntaskee, rtaskee) != 0)
   ) {
     char *exid = fdja_ls(rcv, "exid", NULL);
     char *nid = fdja_ls(rcv, "nid", NULL);
@@ -160,11 +161,12 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
       r = 'r';
     }
 
-    fdja_set(node, "taskee", fdja_clone(tfor));
-
     free(exid);
     free(nid);
   }
+
+  fdja_set(node, "task", fdja_lc(rcv, "task"));
+  fdja_pset(node, "task.time", fdja_sym(flu_tstamp(NULL, 1, 'u')));
 
   return r;
 }
