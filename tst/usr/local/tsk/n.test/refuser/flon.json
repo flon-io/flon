@@ -1,0 +1,8 @@
+
+# refuser
+#
+# Wed Mar  4 16:32:32 JST 2015
+
+in: all
+run: 'ruby r.rb'
+

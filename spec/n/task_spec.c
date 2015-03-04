@@ -25,6 +25,7 @@ context "instruction:"
     char *fep = NULL;
     fdja_value *result = NULL;
     fdja_value *v = NULL;
+    char *s = NULL;
   }
   after each
   {
@@ -32,6 +33,7 @@ context "instruction:"
     free(fep);
     fdja_free(result);
     fdja_free(v);
+    free(s);
   }
 
   describe "task"
@@ -150,6 +152,30 @@ context "instruction:"
         "trash");
 
       expect(hlp_count_msgs(exid) zu== 3);
+    }
+
+    it "handles task refusal"
+    {
+      exid = flon_generate_exid("n.test.task.refusal");
+      fep = flon_exid_path(exid);
+
+      hlp_launch(
+        exid,
+        "task refuser\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "receive", NULL, 7);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      flu_msleep(550);
+
+      s = flu_pline("grep receive var/run/%s/msg.log | wc -l", fep);
+      size_t receive_count = strtoll(s, NULL, 10);
+
+      expect(receive_count > 1);
     }
   }
 }

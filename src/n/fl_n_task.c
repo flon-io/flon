@@ -144,8 +144,10 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
   fdja_value *taskee = fdja_l(node, "taskee");
   fdja_value *tfor = fdja_l(rcv, "task.for");
 
-  if (fdja_strcmp(state, "offered") == 0 && fdja_cmp(taskee, tfor) != 0)
-  {
+  if (
+    (fdja_strcmp(state, "created") == 0) ||
+    (fdja_strcmp(state, "offered") == 0 && fdja_cmp(taskee, tfor) != 0)
+  ) {
     char *exid = fdja_ls(rcv, "exid", NULL);
     char *nid = fdja_ls(rcv, "nid", NULL);
 
