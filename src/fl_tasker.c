@@ -116,6 +116,7 @@ static char *lookup(void *data, const char *path)
 
   if (strcmp(path, "exid") == 0) return strdup(td->exid);
   if (strcmp(path, "nid") == 0) return strdup(td->nid);
+  if (strcmp(path, "tasker_out") == 0) return flu_canopath(td->out);
 
   fdja_value *payload = fdja_l(td->tsk, "payload");
 
@@ -269,15 +270,28 @@ static int run_cmd(tasking_data *td)
       return 127;
     }
 
-    if (freopen(td->out, "w", stdout) == NULL)
-    {
-      failf(td, 1, "failed to reopen child stdout to %s", td->out);
-      return 127;
+    fdja_value *out = fdja_l(td->tasker_conf, "out");
+    if (
+      out &&
+      (
+        fdja_strcmp(out, "param") == 0 ||
+        fdja_strcmp(out, "tasker_out") == 0
+      )
+    ) {
+      // no stdout re-opening
     }
-    if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
+    else
     {
-      failf(td, 1, "couldn't lock %s", td->out);
-      return 127;
+      if (freopen(td->out, "w", stdout) == NULL)
+      {
+        failf(td, 1, "failed to reopen child stdout to %s", td->out);
+        return 127;
+      }
+      if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
+      {
+        failf(td, 1, "couldn't lock %s", td->out);
+        return 127;
+      }
     }
 
     if (chdir(td->tasker_path) != 0)
@@ -336,7 +350,14 @@ static void prepare_tasker_output(tasking_data *td)
 {
   fdja_value *out = fdja_l(td->tasker_conf, "out");
 
-  if (td->offerer == 0 && fdja_strcmp(out, "discard") == 0)
+  if (
+    td->offerer == 0 &&
+    (
+      fdja_strcmp(out, "null") == 0 ||
+      fdja_strcmp(out, "/dev/null") == 0 ||
+      fdja_strcmp(out, "discard") == 0
+    )
+  )
     td->out = strdup("/dev/null");
   else
     td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
@@ -429,7 +450,9 @@ int flon_task(const char *path)
 
   td.offerer = flu_strends(td.tasker_path, "/_");
 
+  prepare_tasker_output(&td);
   prepare_tasker_cmd(&td);
+  prepare_tasker_input(&td);
 
   if (td.cmd == NULL)
   {
@@ -437,9 +460,6 @@ int flon_task(const char *path)
       &td, 0, "no 'run' key in tasker conf at %s/flon.json", td.tasker_path);
     r = 1; goto _over;
   }
-
-  prepare_tasker_output(&td);
-  prepare_tasker_input(&td);
 
   if (flu_strends(td.cmd, ".rad"))
     r = run_rad(&td);

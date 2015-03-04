@@ -1,0 +1,6 @@
+
+# mirrora
+
+out: param
+run: 'ruby r.rb $(tasker_out)'
+
