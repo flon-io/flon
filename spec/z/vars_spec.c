@@ -43,7 +43,7 @@ context "flon and vars:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL); //fdja_putdc(result);
 
@@ -67,7 +67,7 @@ context "flon and vars:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL); //fdja_putdc(result);
 

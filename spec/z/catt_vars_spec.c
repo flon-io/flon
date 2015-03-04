@@ -45,12 +45,10 @@ context "flon and catts:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ \"0_0 red\", \"0_1_0 blue\" ] }");
@@ -70,12 +68,10 @@ context "flon and catts:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: blue, trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
@@ -95,12 +91,10 @@ context "flon and catts:"
         "",
         "{}");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: blue, trace: [ \"0_0_1 blue\", \"0_1 red\" ] }");
@@ -118,12 +112,10 @@ context "flon and catts:"
         "{}",
         "{ name: henri, color: blue }");
 
-      result = hlp_wait(exid, "terminated", NULL, 3);
-
-      //flon_pp_execution(exid);
+      result = hlp_wait(exid, "terminated", NULL, 7);
 
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ \"0_0 henri red vw\" ] }");
