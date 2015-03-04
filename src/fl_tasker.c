@@ -271,6 +271,7 @@ static int run_cmd(tasking_data *td)
     }
 
     fdja_value *out = fdja_l(td->tasker_conf, "out");
+
     if (
       out &&
       (
@@ -278,7 +279,18 @@ static int run_cmd(tasking_data *td)
         fdja_strcmp(out, "tasker_out") == 0
       )
     ) {
-      // no stdout re-opening
+      // ok, no stdout tweaking
+    }
+    else if (
+      out &&
+        fdja_strcmp(out, "err") == 0 ||
+        fdja_strcmp(out, "stderr") == 0
+    ) {
+      if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0)
+      {
+        failf(td, 1, "failed to redirect child stdout to stderr");
+        return 127;
+      }
     }
     else
     {

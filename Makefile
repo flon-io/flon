@@ -43,6 +43,7 @@ clean-tst-basic:
 	rm -f tst/var/run/*.pid
 	#rm -f tst/var/log/dispatcher.log
 	echo "" > tst/var/log/dispatcher.log
+	echo "" > tst/var/log/tsk.log
 ctst: clean-tst-basic clean-tst-time
 
 dis:

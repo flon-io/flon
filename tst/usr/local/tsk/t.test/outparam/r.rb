@@ -12,7 +12,7 @@ task = JSON.parse(STDIN.read)
 task['hello'] = 'outparam'
 task['tasker_out'] = ARGV[0]
 
-puts "\npwd:" + `pwd`
+#puts "\npwd:" + `pwd`
 f = File.open(ARGV[0], 'wb')
 
 f.puts(JSON.dump(task))

@@ -2,7 +2,7 @@
 //
 // specifying flon taskers
 //
-// Wed Mar  4 06:55:49 JST 2015
+// Wed Mar  4 13:26:02 JST 2015
 //
 
 #include "gajeta.h"
@@ -37,19 +37,19 @@ context "tasker:"
     free(path);
   }
 
-  describe "outparam"
+  describe "outerr"
   {
-    it "receives the out path via $(tasker_out)"
+    it "outputs everything to stderr "
     {
-      exid = flon_generate_exid("t.test.outparam");
-      nid = "0_1";
+      exid = flon_generate_exid("t.test.outerr");
+      nid = "0_3";
       path = flu_sprintf("var/spool/tsk/tsk_%s-%s.json", exid, nid);
 
       flu_writeall(
         path,
         "point: task\n"
-        "task: { state: created, for: outparam, from: executor }\n"
-        "tree: [ task, { _0: outparam }, [] ]\n"
+        "task: { state: created, for: outerr, from: executor }\n"
+        "tree: [ task, { _0: outerr }, [] ]\n"
         "exid: %s\n"
         "nid: %s\n"
         "payload: {}\n",
@@ -60,17 +60,21 @@ context "tasker:"
 
       expect(r i== 0);
 
-      r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 4);
-      expect(r i== 1);
+      flu_msleep(770);
 
-      v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 0);
+
+      //r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 4);
+      //expect(r i== 1);
+
+      //v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
       //fdja_putdc(v);
 
-      expect(v != NULL);
-      expect(fdja_ls(v, "hello", NULL) ===f ""
-        "outparam");
-      expect(fdja_ls(v, "tasker_out", NULL) ===F flu_canopath(
-        "var/spool/dis/tsk_%s-%s.json", exid, nid));
+      //expect(v != NULL);
+      //expect(fdja_ls(v, "hello", NULL) ===f ""
+      //  "outparam");
+      //expect(fdja_ls(v, "tasker_out", NULL) ===F flu_canopath(
+      //  "var/spool/dis/tsk_%s-%s.json", exid, nid));
     }
   }
 }

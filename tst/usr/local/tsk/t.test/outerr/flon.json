@@ -1,0 +1,6 @@
+
+# outerr
+
+out: stderr
+run: 'ruby r.rb'
+
