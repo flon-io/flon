@@ -3,5 +3,7 @@
 #
 # Wed Mar  4 16:32:32 JST 2015
 
-run: 'ruby r.rb'
+ontask: {
+  cmd: 'ruby r.rb'
+}
 

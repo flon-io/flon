@@ -270,7 +270,7 @@ static int run_cmd(tasking_data *td)
       return 127;
     }
 
-    fdja_value *out = fdja_l(td->tasker_conf, "out");
+    fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
 
     if (
       out &&
@@ -348,7 +348,7 @@ static void prepare_tasker_cmd(tasking_data *td)
   fgaj_i("exid: %s, nid: %s, domain: %s", td->exid, td->nid, td->domain);
   fgaj_i("tasker at %s", td->tasker_path);
 
-  td->cmd = fdja_ls(td->tasker_conf, "run", NULL); // was "invoke"
+  td->cmd = fdja_ls(td->tasker_conf, "ontask.cmd", NULL); // was "invoke"
 
   if (td->cmd && strstr(td->cmd, "$("))
   {
@@ -360,7 +360,7 @@ static void prepare_tasker_cmd(tasking_data *td)
 
 static void prepare_tasker_output(tasking_data *td)
 {
-  fdja_value *out = fdja_l(td->tasker_conf, "out");
+  fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
 
   if (
     td->offerer == 0 &&
@@ -382,7 +382,7 @@ static void prepare_tasker_input(tasking_data *td)
     fdja_set(td->tsk, "payload", fdja_object_malloc());
   }
 
-  char in = fdja_lk(td->tasker_conf, "in");
+  char in = fdja_lk(td->tasker_conf, "ontask.in");
 
   if (in == 'a' || td->offerer)
     td->in = td->tsk;
@@ -469,7 +469,7 @@ int flon_task(const char *path)
   if (td.cmd == NULL)
   {
     failf(
-      &td, 0, "no 'run' key in tasker conf at %s/flon.json", td.tasker_path);
+      &td, 0, "no 'cmd' key in tasker conf at %s/flon.json", td.tasker_path);
     r = 1; goto _over;
   }
 

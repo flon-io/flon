@@ -1,5 +1,7 @@
 
-# ttest.bogus.norunkey
+# ttest.bogus.nocmdkey
 
-nada: "bin/sgmail"
+ontask: {
+  nada: "bin/sgmail"
+}
 

@@ -1,6 +1,8 @@
 
 # null
 
-run: "bin/null -e $(exid) -n $(nid)"
-out: discard
+ontask: {
+  cmd: "bin/null -e $(exid) -n $(nid)"
+  out: discard
+}
 

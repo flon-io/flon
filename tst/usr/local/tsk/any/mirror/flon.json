@@ -1,5 +1,7 @@
 
 # mirror
 
-run: "bin/mirror -e $(exid) -n $(nid) -x $(pl.danger0) -y $(pl.danger1)"
+ontask: {
+  cmd: "bin/mirror -e $(exid) -n $(nid) -x $(pl.danger0) -y $(pl.danger1)"
+}
 

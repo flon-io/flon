@@ -1,3 +1,5 @@
 
-run: "ruby offerer.rb"
+ontask: {
+  cmd: "ruby offerer.rb"
+}
 

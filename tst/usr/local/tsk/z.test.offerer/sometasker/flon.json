@@ -1,3 +1,5 @@
 
-run: "perl tasker.pl"
+ontask: {
+  cmd: "perl tasker.pl"
+}
 

@@ -1,5 +1,7 @@
 
 # copyargs
 
-run: "ruby copyargs.rb"
+ontask: {
+  cmd: "ruby copyargs.rb"
+}
 

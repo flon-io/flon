@@ -1,6 +1,8 @@
 
 # stamp
 
-#run: "ruby stamp.rb -x ${task.x.y.z}"
-run: "bin/sgmail"
+ontask: {
+  #cmd: "ruby stamp.rb -x ${task.x.y.z}"
+  cmd: "bin/sgmail"
+}
 

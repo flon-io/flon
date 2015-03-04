@@ -1,6 +1,8 @@
 
 # stamp
 
-run: "ruby stamp.rb"
-#run: "ruby stamp.rb -x $(pl.x.y.z)"
+ontask: {
+  cmd: "ruby stamp.rb"
+  #cmd: "ruby stamp.rb -x $(pl.x.y.z)"
+}
 

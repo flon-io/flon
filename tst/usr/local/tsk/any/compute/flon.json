@@ -1,5 +1,7 @@
 
 # compute
 
-run: "ruby compute.rb"
+ontask: {
+  cmd: "ruby compute.rb"
+}
 

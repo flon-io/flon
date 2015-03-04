@@ -1,6 +1,8 @@
 
 # mirrora
 
-in: all
-run: 'ruby trash.rb'
+ontask: {
+  in: all
+  cmd: 'ruby trash.rb'
+}
 

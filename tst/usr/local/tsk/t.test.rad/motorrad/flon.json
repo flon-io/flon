@@ -1,5 +1,7 @@
 
 # radfahren...
 
-run: motor.rad
+ontask: {
+  cmd: motor.rad
+}
 

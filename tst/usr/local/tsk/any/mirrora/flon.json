@@ -1,6 +1,8 @@
 
 # mirrora
 
-in: all
-run: 'ruby mirror.rb'
+ontask: {
+  in: all
+  cmd: 'ruby mirror.rb'
+}
 

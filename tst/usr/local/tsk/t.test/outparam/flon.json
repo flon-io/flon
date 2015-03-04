@@ -1,6 +1,8 @@
 
 # outparam
 
-out: param
-run: 'ruby r.rb $(tasker_out)'
+ontask: {
+  out: param
+  cmd: 'ruby r.rb $(tasker_out)'
+}
 

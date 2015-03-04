@@ -1,3 +1,5 @@
 
-run: offerer.rad
+ontask: {
+  cmd: offerer.rad
+}
 

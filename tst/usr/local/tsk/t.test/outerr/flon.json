@@ -1,6 +1,8 @@
 
 # outerr
 
-out: stderr
-run: 'ruby r.rb'
+ontask: {
+  out: stderr
+  cmd: 'ruby r.rb'
+}
 
