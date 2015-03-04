@@ -177,6 +177,31 @@ context "instruction:"
 
       expect(receive_count > 1);
     }
+
+    it "tracks the current 'taskee'"
+    {
+      exid = flon_generate_exid("n.test.task.taskee");
+
+      fep = flon_exid_path(exid);
+
+      hlp_launch(
+        exid,
+        "task bounce0\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "failed", NULL, 7);
+      expect(result != NULL);
+
+      expect(fdja_ls(result, "error.msg", NULL) ===f ""
+        "didn't find tasker 'bounce1' (domain n.test.task.taskee)");
+
+      v = hlp_read_node(exid, "0");
+      //fdja_putdc(v);
+
+      expect(fdja_ls(v, "taskee", NULL) ===f ""
+        "bounce1");
+    }
   }
 }
 

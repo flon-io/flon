@@ -1,0 +1,5 @@
+
+sequence
+  if $(taskee) == bounce0
+    task bounce1
+

@@ -160,6 +160,8 @@ static char rcv_task(fdja_value *node, fdja_value *rcv)
       r = 'r';
     }
 
+    fdja_set(node, "taskee", fdja_clone(tfor));
+
     free(exid);
     free(nid);
   }

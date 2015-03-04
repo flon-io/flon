@@ -34,7 +34,7 @@ context "task offering:"
 
   describe "an _ offerer"
   {
-    it "sees its offer logged in msg.log"
+    it "sees its offer logged in tsk.log"
     {
       exid = flon_generate_exid("z.test.offerer.rad");
 
