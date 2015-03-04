@@ -143,7 +143,7 @@ context "instruction:"
       expect(result != NULL);
       //fdja_putdc(result);
 
-      flu_msleep(770);
+      flu_msleep(1400);
 
       v = hlp_read_run_json(exid);
       //fdja_putdc(v);
@@ -170,7 +170,7 @@ context "instruction:"
       expect(result != NULL);
       //fdja_putdc(result);
 
-      flu_msleep(550);
+      flu_msleep(1400);
 
       s = flu_pline("grep receive var/run/%s/msg.log | wc -l", fep);
       size_t receive_count = strtoll(s, NULL, 10);
