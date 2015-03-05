@@ -210,11 +210,15 @@ scope:
 fflon:
 	$(MAKE) _tmpsrc; $(MAKE) flon-flon
 	mv flon-flon ../tst/bin/
+bins:
+	$(MAKE) _tmpsrc;
+	$(MAKE) flon-executor flon-tasker flon-dispatcher flon-listener flon-scope flon-flon
+	mv flon-* ../tst/bin/
 
 spec:
 	time -p $(MAKE) sum
 vspec:
 	time -p $(MAKE) vsum
 
-.PHONY: clean _tmpsrc _tmpsrcc
+.PHONY: clean _tmpsrc _tmpsrcc bins
 

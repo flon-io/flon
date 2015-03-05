@@ -74,7 +74,33 @@ vlastl: scope
 catdis:
 	cat tst/var/log/dispatcher.log
 
+provision:
+	@if [ -z "$(T)" ]; then echo "missing T={target/path}"; exit 1; fi
+	@echo "\n======= prepare binaries\n"
+	$(MAKE) bins
+	@echo "\n======= prepare tree\n"
+	mkdir -p $(T)/bin
+	mkdir -p $(T)/etc
+	mkdir -p $(T)/usr/local/etc/vars
+	mkdir -p $(T)/usr/local/lib/any
+	mkdir -p $(T)/usr/local/tsk/any
+	mkdir -p $(T)/var/archive
+	mkdir -p $(T)/var/log
+	mkdir -p $(T)/var/run
+	mkdir -p $(T)/var/spool/dis
+	mkdir -p $(T)/var/spool/exe
+	mkdir -p $(T)/var/spool/rejected
+	mkdir -p $(T)/var/spool/tdis
+	mkdir -p $(T)/var/spool/tsk
+	mkdir -p $(T)/var/www/css
+	mkdir -p $(T)/var/www/images
+	mkdir -p $(T)/var/www/js
+	@echo "\n======= copy items\n"
+	cp tst/bin/flon-* $(T)/bin/
+	@echo
+
 .PHONY: \
   spec clean upgrade clean-tst-basic clean-tst-time dis vdis lis vlis \
-  ps killall tt
+  ps killall tt \
+  provision
 
