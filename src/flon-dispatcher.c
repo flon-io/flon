@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <string.h>
 
 #include <ev.h>
 
@@ -123,12 +124,12 @@ int main(int argc, char *argv[])
 {
   // read options
 
-  char *d = ".";
+  char *dir = NULL;
   short badarg = 0;
 
   int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
   {
-    if (opt == 'd') d = optarg;
+    if (opt == 'd') dir = optarg;
     else badarg = 1;
   }
 
@@ -136,16 +137,25 @@ int main(int argc, char *argv[])
 
   // change dir
 
-  if (chdir(d) != 0) { fgaj_r("couldn't chdir to %s", d); return 1; }
-  char *cp = flu_canopath(d); fgaj_i("changed dir to %s", cp); free(cp);
+  dir = flon_path(argv[0], dir);
+
+  if (chdir(dir) != 0)
+  {
+    fgaj_r("couldn't chdir to %s", dir);
+    return 1;
+  }
+
+  fgaj_i("-d %s", dir);
 
   // load configuration
 
   if (flon_configure(".") != 0)
   {
-    fgaj_r("couldn't read %s/etc/flon.json, cannot start", flu_canopath(d));
+    fgaj_r("couldn't read %s/etc/flon.json, cannot start", dir);
     return 1;
   }
+
+  free(dir);
 
   // set up logging
 

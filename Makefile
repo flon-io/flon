@@ -47,17 +47,15 @@ clean-tst-basic:
 ctst: clean-tst-basic clean-tst-time
 
 dis:
-	make clean dispatcher && \
-    ./tst/bin/flon-dispatcher -d tst/
+	make clean dispatcher && ./tst/bin/flon-dispatcher
 vdis:
 	make clean dispatcher && \
-    valgrind --leak-check=full -v ./tst/bin/flon-dispatcher -d tst/
+    valgrind --leak-check=full -v ./tst/bin/flon-dispatcher
 lis:
-	make clean listener && \
-    ./tst/bin/flon-listener -d tst/
+	make clean listener && ./tst/bin/flon-listener
 vlis:
 	make clean listener && \
-    valgrind --leak-check=full -v ./tst/bin/flon-listener -d tst/
+    valgrind --leak-check=full -v ./tst/bin/flon-listener
 
 ps:
 	ps aux | grep flon

@@ -30,6 +30,7 @@
 
 #include "gajeta.h"
 #include "shervin.h"
+#include "fl_paths.h"
 #include "fl_common.h"
 #include "fl_listener.h"
 
@@ -51,7 +52,6 @@ int main(int argc, char *argv[])
 
   int port = -1;
   char *dir = NULL;
-
   short badarg = 0;
 
   int opt; while ((opt = getopt(argc, argv, "d:p:")) != -1)
@@ -63,25 +63,29 @@ int main(int argc, char *argv[])
 
   if (badarg) { print_usage(); return 1; }
 
-  // configure
+  // change dir
 
-  if (dir == NULL) dir = ".";
+  dir = flon_path(argv[0], dir);
 
   if (chdir(dir) != 0)
   {
-    fprintf(stderr, "couldn't chdir to %s", dir); return 1;
+    fgaj_r("couldn't chdir to %s", dir);
+    return 1;
   }
+
+  fgaj_i("-d %s", dir);
+
+  // configure
+
   if (flon_configure(".") != 0)
   {
-    perror(
-      flu_sprintf(
-        "couldn't read %s/etc/flon.json, cannot start", flu_canopath(dir)));
+    fgaj_r("couldn't read %s/etc/flon.json, cannot start", dir);
     return 1;
   }
 
   flon_setup_logging("listener");
 
-  char *cp = flu_canopath(dir); fgaj_i("-d %s", cp); free(cp);
+  free(dir);
 
   fshv_route *routes[] =
   {
