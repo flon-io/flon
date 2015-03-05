@@ -30,6 +30,8 @@
 #include "djan.h"
 
 
+char *flon_path(const char *argv0, const char *dir);
+
 char *flon_nid_path(fdja_value *nid);
 char *flon_exid_path(const char *s);
 char *flon_var_path(const char *exid);

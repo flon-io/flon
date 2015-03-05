@@ -34,6 +34,27 @@
 #include "fl_ids.h"
 
 
+char *flon_path(const char *argv0, const char *dir)
+{
+  if (dir) return flu_canopath(dir);
+
+  char *r = NULL;
+
+  char *d = flu_dirname(argv0);
+
+  if (strcmp(d, "bin") == 0) { r = flu_canopath("."); goto _over; }
+  if ( ! flu_strends(d, "/bin")) { r = flu_canopath("."); goto _over; }
+
+  char *s = strrchr(d, '/'); *s = 0;
+  r = flu_canopath(d);
+
+_over:
+
+  free(d);
+
+  return r;
+}
+
 char *flon_nid_path(fdja_value *nid)
 {
   if (nid == NULL) return NULL;

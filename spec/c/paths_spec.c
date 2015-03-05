@@ -25,6 +25,25 @@ context "fl_paths:"
     ));
   }
 
+  describe "flon_path()"
+  {
+    it "returns the second argument made canonical if it's present"
+    {
+      expect(flon_path("nada", "surf") ===F flu_canopath("surf"));
+    }
+
+    it "returns the reworked first argument if it ends in 'bin'"
+    {
+      expect(flon_path("../tst/bin/xxx", NULL) ===F flu_canopath("../tst"));
+      expect(flon_path("bin/xxx", NULL) ===F flu_canopath("."));
+    }
+
+    it "returns canonical('.') else"
+    {
+      expect(flon_path("x/y/z", NULL) ===F flu_canopath("."));
+    }
+  }
+
   describe "flon_exid_path()"
   {
     it "returns NULL if the exid can't be determined"
