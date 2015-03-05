@@ -211,10 +211,9 @@
   domain: org.example
   execute:
     [ sequence, {}, [
-      [ invoke, { _0: stamp, color: red }, [] ]
-      [ invoke, { _0: stamp, color: green }, [] ]
-      [ invoke, { _0: stamp, color: blue }, [] ]
-      [ invoke, { _0: null }, [] ]
+      [ task, { _0: stamp, color: red }, [] ]
+      [ task, { _0: stamp, color: green }, [] ]
+      [ task, { _0: stamp, color: blue }, [] ]
     ] ]
   payload: {
     hello: world
