@@ -36,6 +36,8 @@ fdja_value *flon_parse_nid(const char *s);
 char *flon_get_exid(const char *s);
 char *flon_get_nid(const char *s);
 
+int flon_is_domain(const char *s);
+
 char *flon_exid_domain(const char *exid);
 
 char *flon_nid_next(const char *nid, int increment);

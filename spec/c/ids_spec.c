@@ -5,10 +5,6 @@
 // Mon Oct 20 09:23:20 JST 2014
 //
 
-//#include <stdio.h>
-
-//#include "flutil.h"
-//#include "djan.h"
 #include "fl_ids.h"
 
 
@@ -292,6 +288,18 @@ context "fl_ids:"
     it "returns NULL if it can't find the domain part"
     {
       expect(flon_exid_domain("xxx") == NULL);
+    }
+  }
+
+  describe "flon_is_domain()"
+  {
+    it "behaves as expected"
+    {
+      expect(flon_is_domain("c.test") i== 1);
+      expect(flon_is_domain("xxx") i== 1);
+
+      expect(flon_is_domain("x-x") i== 0);
+      expect(flon_is_domain("x x") i== 0);
     }
   }
 }

@@ -70,6 +70,7 @@ char *flon_generate_exid(const char *domain)
 
 
 static fabr_parser *flon_nid_parser = NULL;
+static fabr_parser *flon_domain_parser = NULL;
 
 // at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json
 
@@ -117,6 +118,8 @@ static void flon_nid_parser_init()
       exid,
       nid,
       NULL);
+
+  flon_domain_parser = domain;
 }
 
 fdja_value *flon_parse_nid(const char *s)
@@ -178,6 +181,18 @@ char *flon_get_nid(const char *s)
 
   char *r = fdja_ls(v, "nid", NULL);
   fdja_free(v);
+
+  return r;
+}
+
+int flon_is_domain(const char *s)
+{
+  if (flon_nid_parser == NULL) flon_nid_parser_init();
+
+  fabr_tree *t = fabr_parse_all(s, 0, flon_domain_parser);
+  int r = t->result == 1;
+
+  fabr_tree_free(t);
 
   return r;
 }
