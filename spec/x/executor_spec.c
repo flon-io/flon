@@ -304,6 +304,26 @@ context "flon-executor"
 
       expect(s >===f ",trace:[\"hello world\"]");
     }
+
+    it "rejects messages without a 'point'"
+    {
+      exid = flon_generate_exid("xtest.i");
+      fep = flon_exid_path(exid);
+
+      flu_writeall(
+        "var/spool/exe/exe_%s.json", exid,
+        "{"
+          "tree: [ trace, { _0: \"hello $(recipient)\" }, [] ]\n"
+          "exid: %s\n"
+          "payload: { hello: Welt }\n"
+        "}",
+        exid
+      );
+
+      flon_execute(exid);
+
+      expect(flu_fstat("var/spool/rejected/exe_%s.json", exid) == 'f');
+    }
   }
 }
 

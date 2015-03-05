@@ -401,7 +401,7 @@ static void reject_or_discard_msg(char point, fdja_value *msg)
   char *fname = fdja_ls(msg, "fname", NULL);
 
   if (fname)
-    flon_move_to_rejected(fname, "no 'point' key");
+    flon_move_to_rejected("var/spool/exe/%s", fname, "no 'point' key");
   else
     fgaj_w("no 'point' key in message, discarding.");
 
