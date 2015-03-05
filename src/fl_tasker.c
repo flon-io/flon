@@ -283,8 +283,10 @@ static int run_cmd(tasking_data *td)
     }
     else if (
       out &&
+      (
         fdja_strcmp(out, "err") == 0 ||
         fdja_strcmp(out, "stderr") == 0
+      )
     ) {
       if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0)
       {
