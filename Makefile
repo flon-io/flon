@@ -97,6 +97,7 @@ provision:
 	mkdir -p $(T)/var/www/js
 	@echo "\n======= copy items\n"
 	cp tst/bin/flon-* $(T)/bin/
+	cp -pR tst/usr/local/tsk/any/hello $(T)/usr/local/tsk/any/
 	@echo
 
 .PHONY: \
