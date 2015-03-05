@@ -1,0 +1,7 @@
+
+# hello
+
+ontask: {
+  cmd: 'ruby r.rb'
+}
+

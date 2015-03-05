@@ -112,5 +112,29 @@ context "flon and taskers:"
       expect(fdja_ld(result, "payload") ===f "{ a: 1, ret: 1, trace: [ 1 ] }");
     }
   }
+
+  describe "hello"
+  {
+    it "says hello to $(name)"
+    {
+      exid = flon_generate_exid("z.test.hello");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  set name: Kenneth\n"
+        "  task hello\n"
+        "",
+        "{ hello: Kenneth }");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //fdja_putdc(result);
+
+      expect(fdja_ld(result, "payload") ===f ""
+        "{ hello: Kenneth, ret: Kenneth }");
+    }
+  }
 }
 
