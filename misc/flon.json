@@ -1,0 +1,7 @@
+
+# etc/flon.json
+
+all: {
+  log: { level: debug, utc: true }
+}
+
