@@ -92,13 +92,11 @@ provision:
 	mkdir -p $(T)/var/spool/rejected
 	mkdir -p $(T)/var/spool/tdis
 	mkdir -p $(T)/var/spool/tsk
-	mkdir -p $(T)/var/www/css
-	mkdir -p $(T)/var/www/images
-	mkdir -p $(T)/var/www/js
 	@echo "\n======= copy items\n"
 	cp tst/bin/flon-* $(T)/bin/
 	cp -pR tst/usr/local/tsk/any/hello $(T)/usr/local/tsk/any/
 	cp misc/flon.json $(T)/etc/
+	cp -pR tst/var/www $(T)/var/
 	@echo
 
 .PHONY: \
