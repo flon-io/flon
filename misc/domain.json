@@ -1,0 +1,8 @@
+
+john: {
+  org.example.**: rwl
+}
+steve: {
+  org.example.**.sales: r
+}
+

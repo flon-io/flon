@@ -4,4 +4,7 @@
 all: {
   log: { level: debug, utc: true }
 }
+listener: {
+  log: { level: info }
+}
 

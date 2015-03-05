@@ -1,0 +1,6 @@
+
+# passwd.json
+
+john: { pass: $2a$09$tuOq5kEtpQGt/.3ZCNnKKO0rZxNsqi24/t71Jk0uzS5.IJ0GSlZUO }
+steve: { pass: $2a$09$11xlyudJ5MSpAH4HvjOtOeCmifrTPlZTYllRqUpVLyocWbcVrAdYq }
+
