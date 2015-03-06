@@ -63,14 +63,14 @@ killall:
 	killall -i -r flon
 tt:
 	tree -L 3 tst/usr/local/
-last: scope
-	./tst/bin/flon-scope -d tst/
-lastl: scope
-	./tst/bin/flon-scope -d tst/ | less +F -R
-vlast: scope
-	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/
-vlastl: scope
-	valgrind --leak-check=full -v ./tst/bin/flon-scope -d tst/ | less +F -R
+last: fflon
+	./tst/bin/flon scope
+lastl: fflon
+	./tst/bin/flon scope | less +F -R
+vlast: fflon
+	valgrind --leak-check=full -v ./tst/bin/flon scope
+vlastl: fflon
+	valgrind --leak-check=full -v ./tst/bin/flon scope | less +F -R
 catdis:
 	cat tst/var/log/dispatcher.log
 

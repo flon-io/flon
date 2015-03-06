@@ -29,12 +29,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #include "flutil.h"
 #include "flu64.h"
 #include "tsifro.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
+#include "fl_tools.h"
 #include "fl_common.h"
 
 
@@ -64,8 +66,88 @@ static int print_usage()
   fprintf(stderr, "" "\n");
   fprintf(stderr, "  Encodes or decodes a text to base 64\n");
   fprintf(stderr, "" "\n");
+  fprintf(stderr, "  ## execution pretty-printing" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "    flon scope [fragment_of_exid]" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  Pretty prints the first execution whose exid contains\n");
+  fprintf(stderr, "  the given fragment.\n");
+  fprintf(stderr, "" "\n");
 
   return 1;
+}
+
+static char *lookup_exid(char *dir, char *fragment, size_t depth)
+{
+  //printf("dir: %s, depth: %zu\n", dir, depth);
+
+  char *r = NULL;
+  char *path = NULL;
+
+  DIR *d = opendir(dir);
+  if (d == NULL) return NULL;
+
+  struct dirent *ep;
+  while ((ep = readdir(d)) != NULL)
+  {
+    if (*ep->d_name == '.') continue;
+
+    free(path); path = flu_sprintf("%s/%s", dir, ep->d_name);
+    char s = flu_fstat(path);
+
+    //printf("  * %s %c\n", path, s);
+
+    if (depth < 2 && s == 'd')
+    {
+      r = lookup_exid(path, fragment, depth + 1);
+      if (r) goto _over;
+    }
+    else if (depth == 2 && s == 'd')
+    {
+      if (fragment == NULL || strstr(ep->d_name, fragment))
+      {
+        r = strdup(ep->d_name); goto _over;
+      }
+    }
+  }
+
+_over:
+
+  closedir(d);
+
+  free(path);
+
+  return r;
+}
+
+static char *determine_exid(char *fragment)
+{
+  char *r = NULL;
+
+  r = lookup_exid("var/run/", fragment, 0);
+  if (r == NULL) r = lookup_exid("var/archive/", fragment, 0);
+
+  return r;
+}
+
+static int scope(char **args)
+{
+  char *exid = determine_exid(args[1]);
+
+  printf("-----------------------------------------------------------------\n");
+  printf("fragment  >%s<\n", args[1]);
+  printf("exid      >%s<\n", exid);
+  printf("--------------------------------------------------- flon scope --\n");
+
+  if (exid == NULL)
+  {
+    fprintf(stderr, "\n ** no execution matching >%s< **\n\n", args[1]);
+    return 1;
+  }
+
+  flon_pp_execution(exid);
+
+  return 0;
 }
 
 static int exid(char **args)
@@ -175,6 +257,8 @@ int main(int argc, char *argv[])
     return c64(args);
   if (strcmp(a, "d64") == 0)
     return d64(args);
+  if (strcmp(a, "scope") == 0)
+    return scope(args);
 
   // else
   return unknown(args);
