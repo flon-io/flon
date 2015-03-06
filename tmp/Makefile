@@ -190,7 +190,7 @@ flon-listener: $(LDEPS)
       -lev -o flon-listener
 #
 flon-scope: $(DEPS)
-flon-flon: $(DEPS) $(TSI_OS) flu64.o
+flon: $(DEPS) $(TSI_OS) flu64.o
 
 executor:
 	$(MAKE) _tmpsrc; $(MAKE) flon-executor
@@ -208,12 +208,13 @@ scope:
 	$(MAKE) _tmpsrc; $(MAKE) flon-scope
 	mv flon-scope ../tst/bin/
 fflon:
-	$(MAKE) _tmpsrc; $(MAKE) flon-flon
-	mv flon-flon ../tst/bin/
+	$(MAKE) _tmpsrc; $(MAKE) flon
+	mv flon ../tst/bin/
 bins:
 	$(MAKE) _tmpsrc;
-	$(MAKE) flon-executor flon-tasker flon-dispatcher flon-listener flon-scope flon-flon
+	$(MAKE) flon-executor flon-tasker flon-dispatcher flon-listener flon-scope flon
 	mv flon-* ../tst/bin/
+	mv flon ../tst/bin/
 
 spec:
 	time -p $(MAKE) sum
