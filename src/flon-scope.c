@@ -103,7 +103,7 @@ static char *determine_exid(char *fragment)
 
 int main(int argc, char *argv[])
 {
-  char *d = ".";
+  char *d = NULL;
   short badarg = 0;
 
   int opt; while ((opt = getopt(argc, argv, "d:")) != -1)
@@ -111,6 +111,8 @@ int main(int argc, char *argv[])
     if (opt == 'd') d = optarg;
     else badarg = 1;
   }
+
+  d = flon_path(argv[0], d);
 
   if (argc > optind + 1) badarg = 1;
   if (badarg) { print_usage(); return 1; }
