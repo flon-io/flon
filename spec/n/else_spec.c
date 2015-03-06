@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -46,10 +45,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ a, d ] }");
@@ -72,10 +70,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: false, trace: [ a, b, c, d ] }");
@@ -106,10 +103,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ a, b, c, h, i, j ], ret: false }");

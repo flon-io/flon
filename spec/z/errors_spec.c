@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -43,7 +42,6 @@ context "flon and errors:"
         "{ hello: unknown }");
 
       result = hlp_wait(exid, "failed", "0", 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
       //fdja_putdc(result);

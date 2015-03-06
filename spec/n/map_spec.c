@@ -7,7 +7,6 @@
 
 #include "flutil.h"
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -47,7 +46,7 @@ context "instruction:"
         result = hlp_wait(exid, "failed", NULL, 7);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ls(result, "error.msg", NULL) ^==f ""
           "no values to map from: ");
@@ -65,10 +64,9 @@ context "instruction:"
           "{ i: 4 }");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ i: 4, ret: [ 5, 6, 7 ] }");
@@ -90,7 +88,7 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ i: 6, ret: [ 7, 8, 9 ] }");
@@ -112,7 +110,7 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: [ 0, 2, 12 ] }");
@@ -134,7 +132,7 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: [ 1, 4, 7 ] }");
@@ -157,7 +155,7 @@ context "instruction:"
         result = hlp_wait(exid, "terminated", NULL, 7);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: [ 0-a:1, 1-b:2, 2-c:3 ] }");
@@ -177,10 +175,9 @@ context "instruction:"
           "{}");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: [ 0-a:10, 1-b:20, 2-c:30 ] }");
@@ -200,10 +197,9 @@ context "instruction:"
           "{}");
 
         result = hlp_wait(exid, "terminated", NULL, 7);
-        //flon_pp_execution(exid);
 
         expect(result != NULL);
-        //puts(fdja_todc(result));
+        //fdja_putdc(result);
 
         expect(fdja_ld(result, "payload") ===f ""
           "{ ret: [ 10/a/0, 20/b/1, 30/c/2 ] }");

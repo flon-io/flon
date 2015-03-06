@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -46,10 +45,8 @@ context "flon and misc:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ \"billy the kid\" ] }");
@@ -70,10 +67,8 @@ context "flon and misc:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: nada }");
@@ -94,10 +89,8 @@ context "flon and misc:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: 7 }");

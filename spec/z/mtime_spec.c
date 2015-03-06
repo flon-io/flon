@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -44,10 +43,8 @@ context "flon and mtime:"
 
       result = hlp_wait(exid, "failed", "0", 3);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //puts(fdja_todc(result));
+      //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
       //fdja_putdc(v);

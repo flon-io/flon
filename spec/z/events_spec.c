@@ -7,7 +7,6 @@
 
 #include "flutil.h"
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -43,10 +42,8 @@ context "flon and events:"
 
       result = hlp_wait(exid, "launched", NULL, 2);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "point", NULL) ===f ""
         "launched");
@@ -66,10 +63,8 @@ context "flon and events:"
 
       result = hlp_wait(exid, "terminated", NULL, 2);
 
-      //flon_pp_execution(exid);
-
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ls(result, "point", NULL) ===f ""
         "terminated");

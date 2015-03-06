@@ -9,7 +9,6 @@
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
-#include "fl_tools.h"
 #include "fl_common.h"
 #include "fl_executor.h"
 
@@ -54,8 +53,6 @@ context "flon-executor"
         fdja_v("{ point: receive, exid: %s, nid: 0_0 }", exid)
       );
 
-      //flon_pp_execution(exid);
-
       v = fdja_parse_f("var/spool/dis/sch_%s-0_0.json", exid);
 
       //flu_putf(fdja_todc(v));
@@ -83,8 +80,6 @@ context "flon-executor"
         fdja_v("[ cron, { _0: \"* * * * *\" }, [ 1 ]]"),
         fdja_v("{ point: execute, exid: %s, nid: 0_0, tree: [] }", exid)
       );
-
-      //flon_pp_execution(exid);
 
       v = fdja_parse_f("var/spool/dis/sch_%s-0_0.json", exid);
 

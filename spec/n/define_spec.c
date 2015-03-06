@@ -7,7 +7,6 @@
 
 #include "flutil.h"
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -53,13 +52,13 @@ context "instruction:"
       //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
-      //fdja_todc(v);
+      //fdja_putdc(v);
 
       expect(v != NULL);
 
       fdja_value *v1 = fdja_l(v, "nodes.0.vars");
       expect(fdja_size(v1) zu== 1);
-      //fdja_todc(v);
+      //fdja_putdc(v);
 
       v1 = fdja_l(v, "nodes.0.vars.sub.args");
       expect(fdja_tod(v1) ===f "[ a0, a1 ]");
@@ -113,7 +112,8 @@ context "instruction:"
 
       result = hlp_wait(exid, "execute", "0_1", 7);
 
-      expect(result != NULL); //flu_putf(fdja_todc(result));
+      expect(result != NULL);
+      //fdja_putdc(result);
 
       v = hlp_read_run_json(exid);
       //fdja_putdc(v);

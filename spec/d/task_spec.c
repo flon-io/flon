@@ -12,7 +12,6 @@
 #include "fl_paths.h"
 #include "fl_common.h"
 #include "fl_dispatcher.h"
-#include "fl_tools.h"
 
 #include "flon_helpers.h"
 
@@ -62,9 +61,7 @@ context "flon-dispatcher"
           "tree: [ task, { _0: stamp }, [] ]\n"
           "exid: %s\n"
           "nid: 0_2\n"
-          "payload: {\n"
-            "hello: world\n"
-          "}\n"
+          "payload: { hello: world }\n"
         "}", exid
       );
       expect(r i== 1);

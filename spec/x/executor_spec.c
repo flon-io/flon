@@ -9,7 +9,6 @@
 #include "gajeta.h"
 #include "fl_ids.h"
 #include "fl_paths.h"
-#include "fl_tools.h"
 #include "fl_common.h"
 #include "fl_executor.h"
 
@@ -159,8 +158,6 @@ context "flon-executor"
 
       flon_execute(exid);
 
-      //flon_pp_execution(exid);
-
       expect(flu_fstat("var/spool/dis/tsk_%s-0_0.json", exid) == 'f');
 
       //puts(flu_readall("var/spool/dis/tsk_%s-0.0.json", exid));
@@ -297,8 +294,6 @@ context "flon-executor"
       );
 
       flon_execute(exid);
-
-      //flon_pp_execution(exid);
 
       char *s = flu_pline("tail -1 var/archive/%s/msg.log", fep);
 

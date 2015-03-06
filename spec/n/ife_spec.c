@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -41,10 +40,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
     }
 
     it "goes on when true and no then branch"
@@ -59,10 +57,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: true }");
@@ -80,10 +77,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: false }");
@@ -103,10 +99,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: then }");
@@ -126,10 +121,9 @@ context "instruction:"
         "{}");
 
       result = hlp_wait(exid, "terminated", NULL, 3);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: else }");

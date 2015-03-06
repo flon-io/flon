@@ -23,11 +23,11 @@
 // Made in Japan.
 //
 
-#ifndef FL_TOOLS_H
-#define FL_TOOLS_H
+#ifndef FL_SCOPE_H
+#define FL_SCOPE_H
 
 
 void flon_pp_execution(const char *exid);
 
-#endif // FL_TOOLS_H
+#endif // FL_SCOPE_H
 

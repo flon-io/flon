@@ -7,7 +7,6 @@
 
 #include "fl_ids.h"
 #include "fl_paths.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -50,10 +49,9 @@ context "instruction:"
 //        "{}");
 //
 //      result = hlp_wait(exid, "terminated", NULL, 7);
-//      //flon_pp_execution(exid);
 //
 //      expect(result != NULL);
-//      //flu_putf(fdja_todc(result));
+//      //fdja_putdc(result);
 //
 //      expect(fdja_ld(result, "payload.trace") ===f ""
 //        "[ \"a 0_0_0\", \"b 0_1_0\", \"a 0_0_1\", \"a 0_1_1\" ]");

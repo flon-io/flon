@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -45,7 +44,8 @@ context "flon and vars:"
 
       result = hlp_wait(exid, "terminated", NULL, 7);
 
-      expect(result != NULL); //fdja_putdc(result);
+      expect(result != NULL);
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ trace: [ Dover ] }");
@@ -69,7 +69,8 @@ context "flon and vars:"
 
       result = hlp_wait(exid, "terminated", NULL, 7);
 
-      expect(result != NULL); //fdja_putdc(result);
+      expect(result != NULL);
+      //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
         "{ ret: Dublin, trace: [ Dublin, Dover, Dover, Dover ] }");

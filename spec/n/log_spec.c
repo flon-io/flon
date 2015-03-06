@@ -6,7 +6,6 @@
 //
 
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -48,10 +47,9 @@ context "instruction:"
         "{ x: 123, y: [ 4, 5, 6 ] }");
 
       result = hlp_wait(exid, "terminated", NULL, 7);
-      //flon_pp_execution(exid);
 
       expect(result != NULL);
-      //flu_putf(fdja_todc(result));
+      //fdja_putdc(result);
 
       s = flu_readall("var/archive/%s/exe.log", fep);
       //printf("exe.log >>>\n%s\n<<<\n", s);

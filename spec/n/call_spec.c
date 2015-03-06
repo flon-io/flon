@@ -7,7 +7,6 @@
 
 #include "flutil.h"
 #include "fl_ids.h"
-#include "fl_tools.h"
 #include "feu_helpers.h"
 
 
@@ -268,6 +267,7 @@ context "instruction:"
           "couldn't find lib 'nada.rad'");
       }
     }
+
     context "uris"
     {
       it "calls rad files behind URIs"
