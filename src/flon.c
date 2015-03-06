@@ -76,6 +76,8 @@ static int exid(char **args)
     return print_usage();
   }
 
+  flon_configure(".");
+
   printf("%s\n", flon_generate_exid(args[1]));
 
   return 0;
