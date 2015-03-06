@@ -189,7 +189,6 @@ flon-listener: $(LDEPS)
 	$(CC) -I../src $(CFLAGS) ../src/flon-listener.c $(LDEPS) \
       -lev -o flon-listener
 #
-flon-scope: $(DEPS)
 flon: $(DEPS) $(TSI_OS) flu64.o
 
 executor:
@@ -204,15 +203,12 @@ dispatcher:
 listener:
 	$(MAKE) _tmpsrc; $(MAKE) flon-listener
 	mv flon-listener ../tst/bin/
-scope:
-	$(MAKE) _tmpsrc; $(MAKE) flon-scope
-	mv flon-scope ../tst/bin/
 fflon:
 	$(MAKE) _tmpsrc; $(MAKE) flon
 	mv flon ../tst/bin/
 bins:
 	$(MAKE) _tmpsrc;
-	$(MAKE) flon-executor flon-tasker flon-dispatcher flon-listener flon-scope flon
+	$(MAKE) flon-executor flon-tasker flon-dispatcher flon-listener flon
 	mv flon-* ../tst/bin/
 	mv flon ../tst/bin/
 
