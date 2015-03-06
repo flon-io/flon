@@ -40,7 +40,7 @@
 #include "fl_dispatcher.h"
 
 
-int scan_dir_count = 0;
+size_t scan_dir_count = 0;
 
 
 static void print_usage()
@@ -54,7 +54,7 @@ static void print_usage()
   fprintf(stderr, "" "\n");
 }
 
-static size_t scan_dir()
+static void scan_dir()
 {
   //fgaj_d(". sdc: %i", scan_dir_count);
 
@@ -78,10 +78,12 @@ static size_t scan_dir()
 
   closedir(dir);
 
-  //fgaj_i("> scanning over.");
   if (seen > 0) fgaj_d("dispatched: %zu/%zu", dispatched, seen);
 
-  return dispatched;
+  if (dispatched > 0)
+    scan_dir_count++;
+  else if (scan_dir_count > 0)
+    scan_dir_count--;
 }
 
 static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
@@ -99,9 +101,9 @@ static void trigger_cb(struct ev_loop *loop, ev_periodic *ep, int revents)
 
   flon_trigger(ev_now(loop));
 
-  if (scan_dir_count < 1) return;
+  //fgaj_d("sdc: %zu", scan_dir_count);
 
-  scan_dir_count += scan_dir() < 1 ? -1 : 1;
+  if (scan_dir_count > 0) scan_dir();
 }
 
 static ev_tstamp trigger_reschedule_cb(ev_periodic *ep, ev_tstamp now)
