@@ -166,7 +166,7 @@ static void print_msgs_xmastree(const char *fpath)
       int depth = nid ? flon_nid_depth(nid) : 0;
       printf("%*s", 2 * depth, "");
 
-      char *point = fdja_ls(v, "point", NULL);
+      char *point = fdja_lsd(v, "point", "none");
       char *color = *point == 'f' ? cdred : cclear;
       printf("%s%.2s%s ", color, point, cclear);
       free(point);
@@ -264,8 +264,8 @@ static void print_msg_tree(const char *date, fdja_value *msg)
   fdja_value *tr = fdja_l(msg, "tree");
   if (tr == NULL) return;
 
-  char *pt = fdja_ls(msg, "point", NULL); if (pt == NULL) pt = strdup("??");
-  char *nid = fdja_ls(msg, "nid", NULL); if (nid == NULL) nid = strdup(" ");
+  char *pt = fdja_lsd(msg, "point", "none");
+  char *nid = fdja_lsd(msg, "nid", " ");
   size_t l = fdja_li(tr, "2", (size_t)0);
 
   printf(
