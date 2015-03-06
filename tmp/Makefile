@@ -189,7 +189,7 @@ flon-listener: $(LDEPS)
 	$(CC) -I../src $(CFLAGS) ../src/flon-listener.c $(LDEPS) \
       -lev -o flon-listener
 #
-flon: $(DEPS) $(TSI_OS) flu64.o
+flon: $(DEPS) $(TSI_OS) flu64.o fl_flon.o
 
 executor:
 	$(MAKE) _tmpsrc; $(MAKE) flon-executor

@@ -34,9 +34,13 @@
 #include "flu64.h"
 #include "tsifro.h"
 #include "fl_ids.h"
+#include "fl_flon.h"
 #include "fl_paths.h"
 #include "fl_scope.h"
 #include "fl_common.h"
+
+
+char *original_dir = NULL;
 
 
 static int print_usage()
@@ -71,6 +75,12 @@ static int print_usage()
   fprintf(stderr, "" "\n");
   fprintf(stderr, "  Pretty prints the first execution whose exid contains\n");
   fprintf(stderr, "  the given fragment.\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  ## launching" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "    flon launch {file.flon}" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "  Parses a .flon file and launches execution accordingly.\n");
   fprintf(stderr, "" "\n");
 
   return 1;
@@ -160,6 +170,34 @@ static int d64(char **args)
   return 0;
 }
 
+static int launch(char **args)
+{
+  if (args[1] == NULL)
+  {
+    fprintf(stderr, "\n** missing path to .flon file **\n\n");
+    return print_usage();
+  }
+
+  flon_configure(".");
+
+  char *path = flu_path("%s/%s", original_dir, args[1]);
+
+  char *exid = flon_launch(path);
+
+  if (exid == NULL)
+  {
+    fprintf(stderr, "\n** read failure for %s **\n\n", path);
+    return 2;
+  }
+
+  printf("%s\n", exid);
+
+  free(exid);
+  free(path);
+
+  return 0;
+}
+
 static int unknown(char **args)
 {
   fprintf(stderr, "\n** unknown command '%s' **\n\n", args[0]);
@@ -168,6 +206,8 @@ static int unknown(char **args)
 
 int main(int argc, char *argv[])
 {
+  original_dir = flu_canopath(".");
+
   char *d = NULL;
   char **args = calloc(argc + 1, sizeof(char *));
 
@@ -205,6 +245,8 @@ int main(int argc, char *argv[])
     return d64(args);
   if (strcmp(a, "scope") == 0)
     return scope(args);
+  if (strcmp(a, "launch") == 0)
+    return launch(args);
 
   // else
   return unknown(args);
