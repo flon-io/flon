@@ -28,6 +28,7 @@
 
 
 void flon_pp_execution(const char *exid);
+char *flon_lookup_exid(char *fragment);
 
 #endif // FL_SCOPE_H
 

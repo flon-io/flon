@@ -27,6 +27,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 
 #include "flutil.h"
 #include "fl_ids.h"
@@ -482,5 +483,58 @@ void flon_pp_execution(const char *exid)
 
   free(fep);
   free(path);
+}
+
+static char *lookup_exid(char *dir, char *fragment, size_t depth)
+{
+  //printf("dir: %s, depth: %zu\n", dir, depth);
+
+  char *r = NULL;
+  char *path = NULL;
+
+  DIR *d = opendir(dir);
+  if (d == NULL) return NULL;
+
+  struct dirent *ep;
+  while ((ep = readdir(d)) != NULL)
+  {
+    if (*ep->d_name == '.') continue;
+
+    free(path); path = flu_sprintf("%s/%s", dir, ep->d_name);
+    char s = flu_fstat(path);
+
+    //printf("  * %s %c\n", path, s);
+
+    if (depth < 2 && s == 'd')
+    {
+      r = lookup_exid(path, fragment, depth + 1);
+      if (r) goto _over;
+    }
+    else if (depth == 2 && s == 'd')
+    {
+      if (fragment == NULL || strstr(ep->d_name, fragment))
+      {
+        r = strdup(ep->d_name); goto _over;
+      }
+    }
+  }
+
+_over:
+
+  closedir(d);
+
+  free(path);
+
+  return r;
+}
+
+char *flon_lookup_exid(char *fragment)
+{
+  char *r = NULL;
+
+  r = lookup_exid("var/run/", fragment, 0);
+  if (r == NULL) r = lookup_exid("var/archive/", fragment, 0);
+
+  return r;
 }
 
