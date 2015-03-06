@@ -50,7 +50,7 @@ static void print_usage(short explain_dir)
   fprintf(stderr, "" "\n");
   fprintf(stderr, "  ## password hashing" "\n");
   fprintf(stderr, "" "\n");
-  fprintf(stderr, "    flon-flon [-d {dir}] -h {pass} -f {work_factor}" "\n");
+  fprintf(stderr, "    flon-flon [-d {dir}] -h {pass} [-f {work_factor}]" "\n");
   fprintf(stderr, "" "\n");
   fprintf(stderr, "  Hashes a password." "\n");
   fprintf(stderr, "" "\n");
