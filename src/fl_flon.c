@@ -104,7 +104,11 @@ char *flon_launch(const char *path)
   fdja_set(msg, "payload", payload);
   if (vars) fdja_set(msg, "vars", vars);
 
-  fdja_to_json_f(msg, "var/spool/dis/exe_%s.json", exid);
+
+  if (flon_lock_write(msg, "var/spool/dis/exe_%s.json", exid) != 1)
+  {
+    return NULL;
+  }
 
   free(domain);
 

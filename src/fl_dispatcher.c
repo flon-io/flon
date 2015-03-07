@@ -627,6 +627,7 @@ short flon_dispatch(const char *fname)
   {
     r = (errno == 0) ? -1 : 1;
     if (r == -1) rej = "couldn't parse json";
+    else if (errno == 11) errno = 0; // file still locked...
     else fgaj_r("couldn't read var/spool/dis/%s", fname);
     goto _over;
   }

@@ -91,7 +91,7 @@ static void spool_cb(struct ev_loop *loop, ev_stat *w, int revents)
   if (EV_ERROR & revents) { fgaj_r("invalid event"); return; }
     // TODO: shutdown flon-dispatcher
 
-  scan_dir_count = 3;
+  scan_dir_count = 7;
 }
 
 static void trigger_cb(struct ev_loop *loop, ev_periodic *ep, int revents)
@@ -108,7 +108,7 @@ static void trigger_cb(struct ev_loop *loop, ev_periodic *ep, int revents)
 
 static ev_tstamp trigger_reschedule_cb(ev_periodic *ep, ev_tstamp now)
 {
-  return now + (scan_dir_count > 0 ? .07 : .32);
+  return now + (scan_dir_count > 0 ? .007 : .350);
 }
 
 static void sighup_cb(struct ev_loop *loop, ev_signal *es, int revents)
