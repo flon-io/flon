@@ -47,10 +47,10 @@ LDEPS= \
   flu64.o fl_listener.o fl_lis_auth.o
 
 _tmpsrc:
-	cp -u ../src/*.[ch] src/
-	cp -u ../src/n/*.[ch] src/
-	cp -u ../src/lib/*.[ch] src/
-	find ../spec/ -name "*_helpers.[ch]" -exec cp -u {} src/ \;
+	cp ../src/*.[ch] src/
+	cp ../src/n/*.[ch] src/
+	cp ../src/lib/*.[ch] src/
+	find ../spec/ -name "*_helpers.[ch]" -exec cp {} src/ \;
 _tmpsrcc:
 	rm -f src/*.[ch]
 	$(MAKE) _tmpsrc
