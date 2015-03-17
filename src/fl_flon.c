@@ -32,6 +32,7 @@
 #include "djan.h"
 #include "fl_ids.h"
 #include "fl_flon.h"
+#include "fl_common.h"
 
 
 char *flon_launch(const char *path)

@@ -69,6 +69,10 @@ static int print_usage()
   fprintf(stderr, "" "\n");
   fprintf(stderr, "  Encodes or decodes a text to base 64\n");
   fprintf(stderr, "" "\n");
+  fprintf(stderr, "  ## execution listing" "\n");
+  fprintf(stderr, "" "\n");
+  fprintf(stderr, "    flon list [fragment_of_exid]" "\n");
+  fprintf(stderr, "" "\n");
   fprintf(stderr, "  ## execution pretty-printing" "\n");
   fprintf(stderr, "" "\n");
   fprintf(stderr, "    flon scope [fragment_of_exid]" "\n");
@@ -84,6 +88,18 @@ static int print_usage()
   fprintf(stderr, "" "\n");
 
   return 1;
+}
+
+static int list(char **args)
+{
+  flu_list *paths = flon_list_expaths(args[1]);
+
+  for (flu_node *n = paths->first; n; n = n->next)
+  {
+    printf("* %s\n", (char *)n->item);
+  }
+
+  return 0;
 }
 
 static int scope(char **args)
@@ -243,6 +259,8 @@ int main(int argc, char *argv[])
     return c64(args);
   if (strcmp(a, "d64") == 0)
     return d64(args);
+  if (strcmp(a, "list") == 0)
+    return list(args);
   if (strcmp(a, "scope") == 0)
     return scope(args);
   if (strcmp(a, "launch") == 0)

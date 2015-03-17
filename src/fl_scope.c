@@ -485,6 +485,58 @@ void flon_pp_execution(const char *exid)
   free(path);
 }
 
+static void lookup_expaths(
+  flu_list *l, int only_one, char *dir, char *fragment, size_t depth)
+{
+  char *r = NULL;
+  char *path = NULL;
+
+  DIR *d = opendir(dir);
+  if (d == NULL) return;
+
+  struct dirent *ep;
+  while ((ep = readdir(d)) != NULL)
+  {
+    if (*ep->d_name == '.') continue;
+
+    free(path); path = flu_sprintf("%s/%s", dir, ep->d_name);
+    char s = flu_fstat(path);
+
+    //printf("  * %s %c\n", path, s);
+
+    if (depth < 2 && s == 'd')
+    {
+      lookup_expaths(l, only_one, path, fragment, depth + 1);
+      if (only_one && l->size > 0) goto _over;
+    }
+    else if (depth == 2 && s == 'd')
+    {
+      if (fragment == NULL || strstr(ep->d_name, fragment))
+      {
+        //flu_list_add(l, strdup(ep->d_name));
+        flu_list_add(l, strdup(path));
+        if (only_one) goto _over;
+      }
+    }
+  }
+
+_over:
+
+  closedir(d);
+
+  free(path);
+}
+
+flu_list *flon_list_expaths(char *fragment)
+{
+  flu_list *r = flu_list_malloc();
+
+  lookup_expaths(r, 0, "var/run", fragment, 0);
+  lookup_expaths(r, 0, "var/archive", fragment, 0);
+
+  return r;
+}
+
 static char *lookup_exid(char *dir, char *fragment, size_t depth)
 {
   //printf("dir: %s, depth: %zu\n", dir, depth);
