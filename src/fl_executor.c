@@ -108,7 +108,14 @@ static void do_log(fdja_value *msg)
   fdja_to_d(msg_log, msg, FDJA_F_COMPACT, 0);
   fputc('\n', msg_log);
 
-  fflush(msg_log);
+  //fflush(msg_log);
+    //
+  //sync(fileno(msg_log));
+  //char *path = flu_sprintf("var/run/%s", execution_path);
+  //int d = open(path, 0);
+  //free(path);
+  //sync(d);
+  //close(d);
 
   free(now);
 }

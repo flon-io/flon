@@ -238,8 +238,12 @@ fdja_value *hlp_wait(char *exid, char *point, char *nid, int maxsec)
     flu_msleep(20);
 
     char *path = flu_sprintf("var/archive/%s/msg.log", fep);
+//printf("a");
+//if (i == maxsec * 49) puts(path);
     if (flu_fstat(path) != 'f') { free(path); path = NULL; }
     if ( ! path) path = flu_sprintf("var/run/%s/msg.log", fep);
+//printf("r");
+//if (i == maxsec * 49) puts(path);
     if (flu_fstat(path) != 'f') { free(path); continue; }
 
     char *s = flu_readall(path);
