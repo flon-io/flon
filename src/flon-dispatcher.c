@@ -108,7 +108,8 @@ static void trigger_cb(struct ev_loop *loop, ev_periodic *ep, int revents)
 
 static ev_tstamp trigger_reschedule_cb(ev_periodic *ep, ev_tstamp now)
 {
-  return now + (scan_dir_count > 0 ? .007 : .350);
+  //return now + (scan_dir_count > 0 ? .007 : .350);
+  return now + (scan_dir_count > 0 ? .014 : .350);
 }
 
 static void sighup_cb(struct ev_loop *loop, ev_signal *es, int revents)
