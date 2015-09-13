@@ -74,23 +74,15 @@ char *flon_generate_exid(const char *domain)
 /*
 static void flon_nid_parser_init()
 {
-  fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
-  fabr_parser *symb = fabr_rex("[a-z0-9_]+");
-  fabr_parser *dash = fabr_string("-");
-  fabr_parser *dot = fabr_string(".");
-
-  fabr_parser *node =
-    fabr_n_seq("node", hex, fabr_seq(fabr_string("_"), hex, fabr_r("*")), NULL);
-  fabr_parser *counter =
-    fabr_name("counter", hex);
-
   fabr_parser *domain =
     fabr_n_seq("domain", symb, fabr_seq(dot, symb, fabr_r("*")), NULL);
+
   fabr_parser *feu =
     fabr_n_seq(
       "feu",
       fabr_n_seq("group", symb, dot, fabr_r("?")),
       fabr_name("unit", symb), NULL);
+
   fabr_parser *tid =
     fabr_n_seq(
       "tid",
@@ -103,38 +95,62 @@ static void flon_nid_parser_init()
     fabr_n_seq("exid", domain, dash, feu, dash, tid, NULL);
   fabr_parser *nid =
     fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
-
-  fabr_parser *msg =
-    fabr_n_rex("msg", "((exe|tsk|rcv|ret|sch|can)_|at-[^-]+-)");
-  fabr_parser *ftype =
-    fabr_n_rex("ftype", "\\.[^\\.]+");
-
-  flon_nid_parser =
-    fabr_alt(
-      fabr_seq(msg, exid, fabr_seq(dash, nid, fabr_r("?")), ftype, NULL),
-      fabr_seq(exid, dash, nid, NULL),
-      exid,
-      nid,
-      NULL);
-
-  flon_domain_parser = domain;
 }
 */
+static fabr_tree *_dash(fabr_input *i) { return fabr_str(NULL, i, "-"); }
+static fabr_tree *_dot(fabr_input *i) { return fabr_str(NULL, i, "."); }
+static fabr_tree *_us(fabr_input *i) { return fabr_str(NULL, i, "_"); }
+
+static fabr_tree *_hex(fabr_input *i)
+{ return fabr_rex(NULL, i, "(0|[1-9a-f][0-9a-f]*)"); }
+
+static fabr_tree *_symb(fabr_input *i)
+{ return fabr_rex(NULL, i, "[a-z0-9_]+"); }
+
+static fabr_tree *_counter(fabr_input *i)
+{ return fabr_rename("counter", i, _hex); }
+
+static fabr_tree *_node(fabr_input *i)
+{ return fabr_jseq("node", i, _hex, _us); }
+
+static fabr_tree *_msg(fabr_input *i)
+{ return fabr_rex("msg", i, "((exe|tsk|rcv|ret|sch|can)_|at-[^-]+-)"); }
+
+static fabr_tree *_ftype(fabr_input *i)
+{ return fabr_rex("ftype", i, "\\.[^\\.]+"); }
 
 static fabr_tree *_domain(fabr_input *i)
-{
-  return NULL;
-}
+{ return NULL; }
+
+static fabr_tree *_fname(fabr_input *i)
+{ return NULL; }
+
+static fabr_tree *_exid_nid(fabr_input *i)
+{ return NULL; }
+
+static fabr_tree *_nodcou(fabr_input *i) // node and counter?
+{ return NULL; }
+
+//  flon_nid_parser =
+//    fabr_alt(
+//      fabr_seq(msg, exid, fabr_seq(dash, nid, fabr_r("?")), ftype, NULL),
+//      fabr_seq(exid, dash, nid, NULL),
+//      exid,
+//      nid,
+//      NULL);
+
 static fabr_tree *_nid(fabr_input *i)
-{
-  return NULL;
-}
+{ return fabr_alt(NULL, i, _fname, _exid_nid, _nodcou, NULL); }
 
 fdja_value *flon_parse_nid(const char *s)
 {
+  //printf("flon_parse_nid() s   >[1;33m%s[0;0m<\n", s);
+
   char *ss = (char *)s;
   char *slash = strrchr(ss, '/');
   if (slash) ss = slash + 1;
+
+  //printf("flon_parse_nid() ss  >[1;33m%s[0;0m<\n", ss);
 
   //fabr_tree *tt = fabr_parse_f(ss, _nid, FABR_F_ALL);
   //printf("flon_parse_nid():\n"); fabr_puts_tree(tt, ss, 1);
