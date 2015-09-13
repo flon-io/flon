@@ -60,13 +60,13 @@ static void expand_rels(fdja_value *doc)
   }
 }
 
-static fdja_value *link(fshv_request *req, char meth, const char *path, ...)
+static fdja_value *link(fshv_env *env, char meth, const char *path, ...)
 {
   va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);
   va_end(ap);
 
-  char *uri = fshv_abs(0, req->uri_d);
+  char *uri = fshv_abs(0, env->req->uri);
   char *i = strstr(uri, "/i/");
   if (i) *(i + 2) = 0;
 
@@ -81,10 +81,12 @@ static fdja_value *link(fshv_request *req, char meth, const char *path, ...)
   return r;
 }
 
-static int respond(fshv_request *req, fshv_response *res, fdja_value *r)
+static int respond(fshv_env *env, fdja_value *r)
 {
   flu_list_set(
-    res->headers, "content-type", strdup("application/json; charset=UTF-8"));
+    env->res->headers,
+    "content-type",
+    strdup("application/json; charset=UTF-8"));
 
   fdja_set(r, "tstamp", fdja_sym(flu_tstamp(NULL, 1, 's')));
 
@@ -92,17 +94,17 @@ static int respond(fshv_request *req, fshv_response *res, fdja_value *r)
 
   // add home and self links
 
-  char *uri = fshv_abs(0, req->uri_d);
+  char *uri = fshv_abs(0, env->req->uri);
   fdja_pset(r, "_links.self", fdja_v("{ href: \"%s\" }", uri));
-  if (req->method != 'g')
+  if (env->req->method != 'g')
   {
-    fdja_psetv(r, "_links.self.method", fshv_char_to_method(req->method));
+    fdja_psetv(r, "_links.self.method", fshv_char_to_method(env->req->method));
   }
   free(uri);
 
-  fdja_pset(r, "_links.home", link(req, 'g', ""));
+  fdja_pset(r, "_links.home", link(env, 'g', ""));
 
-  flu_list_add(res->body, fdja_to_json(r));
+  flu_list_add(env->res->body, fdja_to_json(r));
 
   fdja_free(r);
 
@@ -110,12 +112,11 @@ static int respond(fshv_request *req, fshv_response *res, fdja_value *r)
 }
 
 static void in_handle_launch(
-  fshv_request *req, fdja_value *v, char *dom,
-  fshv_response *res, fdja_value *r)
+  fshv_env *env, fdja_value *v, char *dom, fdja_value *r)
 {
-  if ( ! flon_may_r('l', req, dom))
+  if ( ! flon_may_r('l', env, dom))
   {
-    res->status_code = 403;
+    env->res->status_code = 403;
     fdja_set(r, "message", fdja_s("not authorized to launch in that domain"));
 
     return;
@@ -127,7 +128,7 @@ static void in_handle_launch(
 
   if (flon_lock_write(v, "var/spool/dis/exe_%s.json", i) != 1)
   {
-    res->status_code = 500;
+    env->res->status_code = 500;
     fdja_set(r, "message", fdja_s("couldn't pass msg to dispatcher"));
   }
   else
@@ -135,29 +136,28 @@ static void in_handle_launch(
     fdja_set(r, "exid", fdja_s(i));
     fdja_set(r, "message", fdja_s("launched"));
 
-    fdja_pset(r, "_links.#execution", link(req, 'g', "executions/%s", i));
+    fdja_pset(r, "_links.#execution", link(env, 'g', "executions/%s", i));
   }
 
   free(i);
 }
 
-int flon_in_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_in_handler(fshv_env *env)
 {
   char *dom = NULL;
 
-  res->status_code = 200;
+  env->res->status_code = 200;
   fdja_value *r = fdja_v("{ message: ok, _links: {} }");
 
   // handle incoming message
 
   fdja_value *v = NULL;
-  if (req->body) v = fdja_parse(req->body);
+  if (env->req->body) v = fdja_parse(env->req->body);
   if (v) v->sowner = 0; // since the string is owned by the req
 
   if (v == NULL || v->type != 'o')
   {
-    res->status_code = 400;
+    env->res->status_code = 400; // bad request
     fdja_set(r, "message", fdja_s("not json"));
     goto _respond;
   }
@@ -167,8 +167,8 @@ int flon_in_handler(
   dom = fdja_ls(v, "domain", NULL);
   //
   fdja_value *exe = fdja_l(v, "execute");
-  fdja_value *inv = fdja_l(v, "invoke");
-  fdja_value *rec = fdja_l(v, "receive");
+  //fdja_value *inv = fdja_l(v, "invoke");
+  //fdja_value *rec = fdja_l(v, "receive");
   //
   fdja_value *pl = fdja_l(v, "payload");
   //
@@ -177,19 +177,19 @@ int flon_in_handler(
 
   if (pl && pl->type != 'o')
   {
-    res->status_code = 400;
+    env->res->status_code = 400; // bad request
     fdja_psetv(r, "message", "payload must be a json object");
     goto _respond;
   }
 
   if (dom && exe && exe->type == 'a' && pl && exid == NULL && nid == NULL)
   {
-    in_handle_launch(req, v, dom, res, r); goto _respond;
+    in_handle_launch(env, v, dom, r); goto _respond;
   }
 
   // no fit, reject...
 
-  res->status_code = 400;
+  env->res->status_code = 400; // bad request
   fdja_psetv(r, "message", "rejected");
   goto _respond;
 
@@ -198,7 +198,7 @@ _respond:
   free(dom);
   if (v) fdja_free(v);
 
-  return respond(req, res, r);
+  return respond(env, r);
 }
 
 //
@@ -253,7 +253,7 @@ flu_list *flon_list_executions(
   return r;
 }
 
-static fdja_value *embed_exe(fshv_request *req, const char *path, fdja_value *r)
+static fdja_value *embed_exe(fshv_env *env, const char *path, fdja_value *r)
 {
   if (r == NULL) r = fdja_object_malloc();
   if (fdja_l(r, "_links") == NULL) fdja_set(r, "_links", fdja_object_malloc());
@@ -264,67 +264,63 @@ static fdja_value *embed_exe(fshv_request *req, const char *path, fdja_value *r)
 
   fdja_psetv(r, "exid", exid);
 
-  fdja_pset(r, "_links.self", link(req, 'g', "executions/%s", exid));
-  fdja_pset(r, "_links.#log", link(req, 'g', "executions/%s/log", exid));
-  fdja_pset(r, "_links.#msg-log", link(req, 'g', "executions/%s/msg-log", exid));
-  fdja_pset(r, "_links.#msgs", link(req, 'g', "executions/%s/msgs", exid));
+  fdja_pset(r, "_links.self", link(env, 'g', "executions/%s", exid));
+  fdja_pset(r, "_links.#log", link(env, 'g', "executions/%s/log", exid));
+  fdja_pset(r, "_links.#msg-log", link(env, 'g', "executions/%s/msg-log", exid));
+  fdja_pset(r, "_links.#msgs", link(env, 'g', "executions/%s/msgs", exid));
 
   expand_rels(r);
 
   return r;
 }
 
-static int list_exes(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *dom)
+static int list_exes(fshv_env *env, const char *dom)
 {
-  res->status_code = 200;
+  env->res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {}, _embedded: { executions: [] } }");
 
   // list running executions
 
   flu_list *l =
-    flon_list_executions(fshv_get_user(req, NULL), "var/run", dom);
+    flon_list_executions(fshv_get_user(env, NULL), "var/run", dom);
 
   for (flu_node *n = l->first; n; n = n->next)
   {
     fdja_pset(
-      r, "_embedded.executions.]", embed_exe(req, (char *)n->item, NULL));
+      r, "_embedded.executions.]", embed_exe(env, (char *)n->item, NULL));
   }
 
   // return result
 
-  int result = respond(req, res, r);
+  int result = respond(env, r);
 
   flu_list_free_all(l);
 
   return result;
 }
 
-int flon_exes_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_exes_handler(fshv_env *env)
 {
-  return list_exes(req, res, params, NULL);
+  return list_exes(env, NULL);
 }
 
 //
 // /i/executions/:domain or /:exid
 
-static int exe_handler_dom(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *dom)
+static int exe_handler_dom(fshv_env *env, const char *dom)
 {
   //if ( ! flon_may_r('r', req, dom)) return 0;
     // the user might be allowed to see some subdomain of dom, so let it go
 
-  return list_exes(req, res, params, dom);
+  return list_exes(env, dom);
 }
 
-static int exe_handler_exid(
-  fshv_request *req, fshv_response *res, fdja_value *nid)
+static int exe_handler_exid(fshv_env *env, fdja_value *nid)
 {
   char *dom = fdja_ls(nid, "domain", NULL);
   char *path = NULL;
 
-  if ( ! flon_may_r('r', req, dom)) goto _over;
+  if ( ! flon_may_r('r', env, dom)) goto _over;
 
   path = flon_nid_path(nid);
 
@@ -335,27 +331,26 @@ static int exe_handler_exid(
     goto _over;
   }
 
-  res->status_code = 200;
-  embed_exe(req, path, r);
+  env->res->status_code = 200;
+  embed_exe(env, path, r);
 
 _over:
 
   free(dom);
   free(path);
 
-  if (res->status_code == 200) return respond(req, res, r);
+  if (env->res->status_code == 200) return respond(env, r);
   return 0; // goes 404
 }
 
-int flon_exe_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_exe_handler(fshv_env *env)
 {
-  char *id = flu_list_get(req->routing_d, "id");
+  char *id = flu_list_get(env->bag, "id");
   fdja_value *vid = flon_parse_nid(id);
 
-  if (vid == NULL) return exe_handler_dom(req, res, params, id);
+  if (vid == NULL) return exe_handler_dom(env, id);
 
-  int r = exe_handler_exid(req, res, vid);
+  int r = exe_handler_exid(env, vid);
 
   fdja_free(vid);
 
@@ -365,9 +360,7 @@ int flon_exe_handler(
 //
 // /i/executions/:exid/log /msg-log /msgs
 
-static int sub_handler_msgs(
-  fshv_request *req, fshv_response *res,
-  flu_dict *params, char *exid, char *sub)
+static int sub_handler_msgs(fshv_env *env, char *exid, char *sub)
 {
   char *pa = flon_exid_path(exid);
   char *d = flu_path("var/run/%s/processed", pa);
@@ -377,7 +370,7 @@ static int sub_handler_msgs(
 
   if (dir == NULL) { fgaj_r("couldn't read %s", d); free(d); return 0; }
 
-  res->status_code = 200;
+  env->res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {}, _embedded: { msgs: [] } }");
 
   struct dirent *ep; while ((ep = readdir(dir)) != NULL)
@@ -390,60 +383,56 @@ static int sub_handler_msgs(
       "{ _links: {} }");
     fdja_pset(
       r, "_embedded.msgs.-1._links.self",
-      link(req, 'g', "msgs/%s", ep->d_name));
+      link(env, 'g', "msgs/%s", ep->d_name));
   }
 
   closedir(dir);
   free(d);
 
-  return respond(req, res, r);
+  return respond(env, r);
 }
 
-static int sub_handler_log(
-  fshv_request *req, fshv_response *res,
-  flu_dict *params, char *exid, char *sub)
+static int sub_handler_log(fshv_env *env, char *exid, char *sub)
 {
   char *path = flon_exid_path(exid);
 
   char *file = "exe.log";
   if (strcmp(sub, "msg-log") == 0) file = "msg.log";
 
-  ssize_t s = fshv_serve_file(res, params, "var/run/%s/%s", path, file);
+  ssize_t s = fshv_serve_file(env, "var/run/%s/%s", path, file);
 
   free(path);
 
   return s > 0;
 }
 
-int flon_exe_sub_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_exe_sub_handler(fshv_env *env)
 {
-  char *exid = flu_list_get(req->routing_d, "id");
-  char *sub = flu_list_get(req->routing_d, "sub");
+  char *exid = flu_list_get(env->bag, "id");
+  char *sub = flu_list_get(env->bag, "sub");
 
-  if ( ! flon_may_r('r', req, exid)) return 0;
+  if ( ! flon_may_r('r', env, exid)) return 0;
 
   return strcmp(sub, "msgs") == 0 ?
-    sub_handler_msgs(req, res, params, exid, sub) :
-    sub_handler_log(req, res, params, exid, sub);
+    sub_handler_msgs(env, exid, sub) :
+    sub_handler_log(env, exid, sub);
 }
 
 //
 // /i/msgs/:id
 
-int flon_msg_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_msg_handler(fshv_env *env)
 {
-  char *id = flu_list_get(req->routing_d, "id");
+  char *id = flu_list_get(env->bag, "id");
   char *exid = flon_get_exid(id);
 
   if (exid == NULL) return 0;
-  if ( ! flon_may_r('r', req, exid)) { free(exid); return 0; }
+  if ( ! flon_may_r('r', env, exid)) { free(exid); return 0; }
 
   char *path = flon_exid_path(exid);
   char *fpath = flu_path("var/run/%s/processed/%s", path, id);
 
-  ssize_t s = fshv_serve_file(res, params, fpath);
+  ssize_t s = fshv_serve_file(env, fpath);
 
   free(path);
   free(fpath);
@@ -455,8 +444,7 @@ int flon_msg_handler(
 //
 // /i/metrics
 
-int flon_metrics_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_metrics_handler(fshv_env *env)
 {
   return 1;
 }
@@ -464,23 +452,22 @@ int flon_metrics_handler(
 //
 // /i
 
-int flon_i_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int flon_i_handler(fshv_env *env)
 {
-  res->status_code = 200;
+  env->res->status_code = 200;
   fdja_value *r = fdja_v("{ _links: {} }");
 
-  fdja_pset(r, "_links.#in", link(req, 'p', "in"));
+  fdja_pset(r, "_links.#in", link(env, 'p', "in"));
 
   fdja_pset(
-    r, "_links.#executions", link(req, 'g', "executions"));
+    r, "_links.#executions", link(env, 'g', "executions"));
   fdja_pset(
-    r, "_links.#domain-executions", link(req, 'g', "executions/{domain}"));
+    r, "_links.#domain-executions", link(env, 'g', "executions/{domain}"));
   fdja_pset(
-    r, "_links.#execution", link(req, 'g', "executions/{exid}"));
+    r, "_links.#execution", link(env, 'g', "executions/{exid}"));
   fdja_pset(
-    r, "_links.#metrics", link(req, 'g', "metrics"));
+    r, "_links.#metrics", link(env, 'g', "metrics"));
 
-  return respond(req, res, r);
+  return respond(env, r);
 }
 
