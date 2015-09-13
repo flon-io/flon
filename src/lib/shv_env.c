@@ -23,32 +23,43 @@
 // Made in Japan.
 //
 
-// https://github.com/flon-io/mnemo
+// https://github.com/flon-io/shervin
 
-#ifndef FLON_MNEMO_H
-#define FLON_MNEMO_H
+#define _POSIX_C_SOURCE 200809L
+
+#include <stdlib.h>
+
+#include "flutil.h"
+#include "shv_protected.h"
 
 
-char *fmne_to_s(long long i);
+fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf)
+{
+  fshv_env *r = calloc(1, sizeof(fshv_env));
 
-// The result type for mne_tol()
-//
-// error if err != 0,
-// result if err == 0
-//
-typedef struct {
-  int err;
-  long long result;
-} fmne_toi_result;
+  r->bag = flu_list_malloc();
+  r->req = fshv_parse_request_head(req_head);
+  r->res = fshv_response_malloc();
+  r->conf = conf;
 
-fmne_toi_result fmne_to_i(char *s);
+  return r;
+}
 
-int fmne_is_mnemo(char *s);
+void fshv_env_free(fshv_env *e)
+{
+  if (e == NULL) return;
 
-#endif // FLON_MNEMO_H
+  e->conf = NULL; // simply unlink
+  fshv_request_free(e->req);
+  fshv_response_free(e->res);
+  flu_list_free_all(e->bag);
+  free(e);
+}
 
-//commit dc0631162d3f34e68eec1921199b4f6c6207bf65
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Sep 3 20:55:28 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    2015
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

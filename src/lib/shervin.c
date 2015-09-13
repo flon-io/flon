@@ -27,8 +27,6 @@
 
 #define _POSIX_C_SOURCE 200809L
 
-#include <shervin.h>
-
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -40,10 +38,15 @@
 
 #include <ev.h>
 
-#include "flutil.h"
 #include "gajeta.h"
+#include "shervin.h"
 #include "shv_protected.h"
 
+
+typedef struct {
+  fshv_handler *handler;
+  flu_dict *conf;
+} fshv_root;
 
 static void fshv_close(struct ev_loop *l, struct ev_io *eio)
 {
@@ -54,6 +57,18 @@ static void fshv_close(struct ev_loop *l, struct ev_io *eio)
   ev_io_stop(l, eio);
   close(eio->fd);
   free(eio);
+}
+
+void fshv_handle(struct ev_loop *l, struct ev_io *eio)
+{
+  fshv_con *con = (fshv_con *)eio->data;
+
+  int r = con->handler(con->env);
+
+  if (r == 0) fshv_status(con->env, 404);
+  else if (con->env->res->status_code == -1) fshv_status(con->env, 200);
+
+  fshv_respond(l, eio);
 }
 
 static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -114,7 +129,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   else
   {
     if (con->head == NULL) con->head = flu_sbuffer_malloc();
-    flu_sbwrite(con->head, buffer, i + 1);
+    flu_sbwrite(con->head, buffer, i);
     con->body = flu_sbuffer_malloc();
     flu_sbwrite(con->body, buffer + i, r - i);
     con->blen = r - i;
@@ -122,7 +137,7 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   //fgaj_sd(eio, "con->blen %zu", con->blen);
 
-  if (con->req == NULL)
+  if (con->env == NULL)
   {
     if (con->hend < 4) return;
       // end of head not yet found
@@ -130,19 +145,21 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
-    con->req = fshv_parse_request_head(head);
-    con->req->startus = ev_now(l) * 1000000;
-    con->rqount++;
+    con->env = fshv_env_malloc(head, con->conf);
+    con->env->req->startus = ev_now(l) * 1000000;
+    con->req_count++;
 
     free(head);
 
     fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
 
-    if (con->req->status_code != 200)
+    if (con->env->req == NULL)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
-      con->res = fshv_response_malloc(con->req->status_code);
+      fshv_response_free(con->env->res);
+      con->env->res = fshv_response_malloc(400);
+
       fshv_respond(l, eio);
       return;
     }
@@ -152,52 +169,14 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   //  eio, "req content-length %zd", fshv_request_content_length(con->req));
 
   if (
-    (con->req->method == 'p' || con->req->method == 'u') &&
-    (con->blen < fshv_request_content_length(con->req))
+    (con->env->req->method == 'p' || con->env->req->method == 'u') &&
+    (con->blen < fshv_request_content_length(con->env->req))
   ) return; // request body not yet complete
 
-  con->req->body = flu_sbuffer_to_string(con->body);
+  con->env->req->body = flu_sbuffer_to_string(con->body);
   con->body = NULL;
 
   fshv_handle(l, eio);
-}
-
-void fshv_handle(struct ev_loop *l, struct ev_io *eio)
-{
-  fshv_con *con = (fshv_con *)eio->data;
-
-  con->res = fshv_response_malloc(404);
-
-  int handled = 0;
-
-  for (size_t i = 0; ; ++i)
-  {
-    fshv_route *route = con->routes[i];
-
-    if (route == NULL) break; // end reached
-
-    int flags = 0;
-    if (handled) flags |= FSHV_F_HANDLED;
-
-    int guarded = 0;
-    //
-    if (route->guard == NULL)
-      guarded = 1;
-    else if (handled == 0)
-      guarded = route->guard(con->req, con->res, flags, route->params);
-    //else if (handled == 1)
-      //guarded = 0;
-
-    if (guarded == 0) continue;
-
-    if (route->guard == NULL) flags |= FSHV_F_NULL_GUARD;
-
-    handled = route->handler(con->req, con->res, flags, route->params);
-  }
-
-  if (handled == 0) con->res->status_code = 404;
-
-  fshv_respond(l, eio);
 }
 
 static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -220,7 +199,9 @@ static void fshv_accept_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // client connected...
 
-  fshv_con *con = fshv_con_malloc(ca, (fshv_route **)eio->data);
+  fshv_root *r = eio->data;
+
+  fshv_con *con = fshv_con_malloc(ca, r->handler, r->conf);
   con->startus = 1000 * 1000 * ev_now(l);
   ceio->data = con;
 
@@ -246,13 +227,13 @@ static ssize_t subjecter(
 
     fshv_con *con = eio->data; if (con)
     {
-      w = snprintf(buffer + off, rem, "c%p rq%li ", con, con->rqount);
+      w = snprintf(buffer + off, rem, "c%p rqc%li ", con, con->req_count);
       if (w < 0) return -1; off += w; rem -= w;
 
-      fshv_request *req = con->req; if (req)
+      fshv_request *req = con->env ? con->env->req : NULL; if (req)
       {
         char *met = fshv_char_to_method(req->method);
-        w = snprintf(buffer + off, rem, "%s %s ", met, req->uri);
+        w = snprintf(buffer + off, rem, "%s %s ", met, req->u);
         if (w < 0) return -1; off += w; rem -= w;
       }
     }
@@ -263,7 +244,7 @@ static ssize_t subjecter(
   return off - ooff;
 }
 
-void fshv_serve(int port, fshv_route **routes)
+void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf)
 {
   fgaj_conf_get()->subjecter = subjecter;
 
@@ -304,8 +285,10 @@ void fshv_serve(int port, fshv_route **routes)
   if (r < 0) { fgaj_r("listen error"); exit(3); }
   fgaj_dr("listening");
 
+  fshv_root root = { root_handler, conf };
+
   ev_io_init(eio, fshv_accept_cb, sd, EV_READ);
-  eio->data = routes;
+  eio->data = &root;
   ev_io_start(l, eio);
 
   fgaj_i("serving on %d...", port);
@@ -317,40 +300,10 @@ void fshv_serve(int port, fshv_route **routes)
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }
 
-fshv_route *fshv_route_malloc(fshv_handler *guard, fshv_handler *handler, ...)
-{
-  va_list ap; va_start(ap, handler);
-  flu_dict *params = flu_vd(ap);
-  va_end(ap);
-
-  fshv_route *r = calloc(1, sizeof(fshv_route));
-
-  r->guard = guard;
-  r->handler = handler;
-  r->params = params;
-
-  return r;
-}
-
-fshv_route *fshv_rp(char *path, fshv_handler *handler, ...)
-{
-  va_list ap; va_start(ap, handler);
-  flu_dict *params = flu_vd(ap);
-  va_end(ap);
-
-  flu_list_set(params, "path", path);
-
-  fshv_route *r = calloc(1, sizeof(fshv_route));
-
-  r->guard = fshv_path_guard;
-  r->handler = handler;
-  r->params = params;
-
-  return r;
-}
-
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

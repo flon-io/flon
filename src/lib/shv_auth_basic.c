@@ -27,37 +27,41 @@
 
 #define _POSIX_C_SOURCE 200809L
 
+
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
-#include "flutil.h"
 #include "flu64.h"
-#include "shervin.h"
 #include "shv_protected.h"
 
 
-static int no_auth(
-  const char *user, const char *pass, fshv_request *req, flu_dict *params)
+static int is_logout_request(fshv_env *env)
 {
-  return 0;
+  char *lo = flu_list_get(env->req->uri->qentries, "logout");
+
+  return
+    lo &&
+    (
+      strlen(lo) < 1 ||
+      strcmp(lo, "1") == 0 ||
+      strcasecmp(lo, "yes") == 0 ||
+      strcasecmp(lo, "true") == 0
+    );
 }
 
-
-//
-// basic authentication
-
-int fshv_basic_auth_filter(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int fshv_basic_auth(
+  fshv_env *env, const char *realm, fshv_user_pass_authentifier *a)
 {
+  //printf("uri: %s\n", flu_list_to_sm(env->req->uri->qentries));
+  //printf("bag: %s\n", flu_list_to_sm(env->bag));
+
   int authentified = 0;
   char *user = NULL;
 
-  if (params == NULL) goto _over;
+  if (is_logout_request(env)) goto _over;
 
-  if (flu_list_get(req->uri_d, "logout")) goto _over;
-    // /?logout logs out...
-
-  char *auth = flu_list_get(req->headers, "authorization");
+  char *auth = flu_list_get(env->req->headers, "authorization");
   if (auth == NULL) goto _over;
 
   if (strncmp(auth, "Basic ", 6) != 0) goto _over;
@@ -68,35 +72,39 @@ int fshv_basic_auth_filter(
 
   *pass = 0; pass = pass + 1;
 
-  fshv_authenticate *a = flu_list_get(params, "func");
-  if (a == NULL) a = flu_list_get(params, "a");
-  if (a == NULL) a = no_auth;
+  char *nuser = a(env, realm, user, pass);
+  authentified = (nuser != NULL);
 
-  if (a(user, pass, req, params) == 0) goto _over;
-
-  authentified = 1;
-  fshv_set_user(req, "basic", user);
+  if (nuser)
+  {
+    fshv_set_user(env, realm, nuser);
+    free(nuser);
+  }
 
 _over:
 
-  if ( ! authentified)
-  {
-    flu_list_set(
-      res->headers,
-      "WWW-Authenticate",
-      flu_sprintf(
-        "Basic realm=\"%s\"", flu_list_getd(params, "realm", "shervin")));
-
-    res->status_code = 401;
-  }
-
   free(user);
 
-  return 0;
+  if ( ! authentified)
+  {
+    env->res->status_code = 401;
+      // users of the auth are free to override that downstream
+
+    if (realm)
+    {
+      flu_list_set(
+        env->res->headers,
+        "WWW-Authenticate", flu_sprintf("Basic realm=\"%s\"", realm));
+    }
+  }
+
+  return authentified;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

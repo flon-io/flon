@@ -434,8 +434,10 @@ double flu_parse_d(const char *s)
   return r;
 }
 
-//commit 86f3f65cab0fc210be3e60d08fb42c7de9ca9afc
+//commit 02c7844e77f6c0f7da9f782a9f230efec5b05a32
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Feb 27 09:40:05 2015 +0900
+//Date:   Sun Aug 23 06:34:12 2015 +0900
 //
-//    add flu_sv() as shortcut for flu_svprintf()
+//    compare ssize_t with -1
+//    
+//    and not < 0, which happens also when l > INT_MAX...

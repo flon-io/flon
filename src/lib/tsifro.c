@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -92,8 +92,8 @@ int ftsi_bc_verify(const char *pass, const char *hash)
   return r;
 }
 
-//commit d005450e9235deff0d7a0af48ac58f5e057eaaa9
+//commit ed046108f04b22ddb69795b05b71087be7a56ab9
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Nov 13 17:17:29 2014 +0900
+//Date:   Sun Jul 19 10:05:06 2015 +0900
 //
-//    fix issue with ftsi_bc_verify() and short hashes
+//    2015

@@ -31,46 +31,40 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "flutil.h"
-#include "gajeta.h"
-#include "shervin.h"
 #include "shv_protected.h"
 
 
-//int fshv_filter_guard(
-//  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-//{
-//  return 1;
-//}
-
-int fshv_any_guard(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int fshv_path_match(fshv_env *e, int sub, const char *path)
 {
-  return 1;
-}
+  char *rpath = NULL;
+  if (sub) rpath = flu_list_get(e->bag, "**");
+  else rpath = e->req->uri->path;
 
-int fshv_path_guard(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-{
-  char *path = (char *)flu_list_get(params, "path");
-  char *rpath = (char *)flu_list_get(req->uri_d, "_path");
+  //printf(
+  //  "fshv_path_match() sub%d path >%s<\nrpath >%s<\n",
+  //  sub, path, rpath);
 
-  //printf("path >%s<\nrpath >%s<\n", path, rpath);
+  if (rpath == NULL) return 0;
 
   if (*path != '/')
   {
     char m = tolower(path[0]);
     if (tolower(path[1]) == 'u') m = 'u';
-    char rm = req->method;
+    char rm = e->req->method;
     if (rm == 'h') rm = 'g';
     if (m != rm) return 0;
     path = strchr(path, ' ') + 1;
   }
 
   int success = 1;
+  flu_list *bag = flu_list_malloc();
 
   while (1)
   {
+    //printf("***\n");
+    //printf("path  >%s<\n", path);
+    //printf("rpath >%s<\n", rpath);
+
     char *slash = strchr(path, '/');
     char *rslash = strchr(rpath, '/');
 
@@ -80,12 +74,13 @@ int fshv_path_guard(
     if (*path == ':')
     {
       char *k = strndup(path + 1, slash - path - 1);
-      flu_list_set(req->routing_d, k, strndup(rpath, rslash - rpath));
+      //printf("k >%s<\n", k);
+      flu_list_set(bag, k, strndup(rpath, rslash - rpath));
       free(k);
     }
     else if (strcmp(path, "**") == 0)
     {
-      flu_list_set(req->routing_d, "**", strdup(rpath)); break;
+      flu_list_set(bag, "**", strdup(rpath)); break;
     }
     else
     {
@@ -99,7 +94,7 @@ int fshv_path_guard(
 
     if (*rslash == 0 && strcmp(slash, "/**") == 0)
     {
-      flu_list_set(req->routing_d, "**", strdup("")); break;
+      flu_list_set(bag, "**", strdup("")); break;
     }
     if (*slash == 0 || *rslash == 0)
     {
@@ -110,11 +105,33 @@ int fshv_path_guard(
     rpath = rslash + 1;
   }
 
+  if (success)
+  {
+    for (flu_node *n = bag->first; n; n = n->next)
+    {
+      flu_list_set(e->bag, n->key, n->item);
+    }
+
+    flu_list_free(bag);
+  }
+  else
+  {
+    flu_list_free_all(bag);
+  }
+
   return success;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+int fshv_path_match_and_auth(
+  fshv_env *env, int sub, const char *path, const char *realm)
+{
+  return 0;
+}
+
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

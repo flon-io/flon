@@ -28,7 +28,7 @@
 #ifndef FLON_SHV_PROTECTED_H
 #define FLON_SHV_PROTECTED_H
 
-#include <netinet/in.h>
+//#include <netinet/in.h>
 #include <ev.h>
 
 #include "flutil.h"
@@ -36,35 +36,57 @@
 
 
 //
+// misc
+
+char fshv_method_to_char(char *s);
+char *fshv_char_to_method(char c);
+
+ssize_t fshv_serve_file(fshv_env *env, const char *path, ...);
+
+
+//
 // request
 
+char *fshv_uri_to_s(fshv_uri *u);
+
 fshv_request *fshv_parse_request_head(char *s);
+fshv_request *fshv_parse_request_head_f(const char *s, ...);
 
-void fshv_request_free(fshv_request *r);
 ssize_t fshv_request_content_length(fshv_request *r);
-
-void fshv_handle(struct ev_loop *l, struct ev_io *eio);
-
 int fshv_request_is_https(fshv_request *r);
+
+//void fshv_handle(struct ev_loop *l, struct ev_io *eio);
+
+fshv_uri *fshv_uri_malloc();
+void fshv_uri_free(fshv_uri *u);
+void fshv_request_free(fshv_request *r);
+
 
 //
 // response
 
-fshv_response *fshv_response_malloc(short status_code);
+fshv_response *fshv_response_malloc();
 void fshv_response_free(fshv_response *r);
 
 void fshv_respond(struct ev_loop *l, struct ev_io *eio);
 
+//
+// env
+
+fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf);
+void fshv_env_free(fshv_env *e);
+
 
 //
-// connection
+// con
 
 typedef struct {
 
   struct sockaddr_in *client;
   long long startus;
 
-  fshv_route **routes;
+  fshv_handler *handler;
+  flu_dict *conf;
 
   flu_sbuffer *head;
   short hend;
@@ -72,9 +94,8 @@ typedef struct {
   flu_sbuffer *body;
   size_t blen;
 
-  ssize_t rqount;
-  fshv_request *req;
-  fshv_response *res;
+  ssize_t req_count;
+  fshv_env *env;
 
   char *hout;
   size_t houtlen;
@@ -83,7 +104,8 @@ typedef struct {
   FILE *bout;
 } fshv_con;
 
-fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes);
+fshv_con *fshv_con_malloc(
+  struct sockaddr_in *client, fshv_handler *handler, flu_dict *conf);
 void fshv_con_reset(fshv_con *c);
 void fshv_con_free(fshv_con *c);
 
@@ -91,64 +113,23 @@ void fshv_con_free(fshv_con *c);
 //
 // uri
 
-flu_dict *fshv_parse_uri(char *uri);
-flu_dict *fshv_parse_host_and_path(char *host, char *path);
+fshv_uri *fshv_parse_uri(char *uri);
+fshv_uri *fshv_parse_host_and_path(char *host, char *path);
 
 /* Renders the uri_d as an absolute URI. When ssl is set to 1, the
  * scheme will be "https://".
  */
-char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...);
+char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...);
 
-#define fshv_abs(ssl, uri_d) fshv_absolute_uri(ssl, uri_d, NULL)
-#define fshv_rel(ssl, uri_d, ...) fshv_absolute_uri(ssl, uri_d, __VA_ARGS__)
-
-
-//
-// auth
-
-typedef struct {
-  char *sid;
-  char *user;
-  char *id;
-  long long expus; // microseconds, expiration point
-  short used;
-} fshv_session;
-
-char *fshv_session_to_s(fshv_session *s);
-
-void fshv_session_free(fshv_session *s);
-
-/* * pushing will all the parameters set and expiry time: start
- *   or refreshes a session
- *   returns the new session in case of success, NULL else
- * * pushing with only the sid set and now: queries and expires
- *   returns a session in case of success, NULL else
- * * pushing with only the sid set and -1: stops the session
- *   returns NULL
- * * pushing with all NULL and -1: resets the store
- *   returns NULL
- */
-typedef fshv_session *fshv_session_push(
-  const char *sid, const char *user, const char *id, long long tus);
-
-
-//
-// spec tools
-
-fshv_request *fshv_parse_request_head_f(const char *s, ...);
-int fshv_do_route(char *path, fshv_request *req);
-
-
-//
-// misc handlers
-
-int fshv_debug_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+#define fshv_abs(ssl, uri) fshv_absolute_uri(ssl, uri, NULL)
+#define fshv_rel(ssl, uri, ...) fshv_absolute_uri(ssl, uri, __VA_ARGS__)
 
 #endif // FLON_SHV_PROTECTED_H
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

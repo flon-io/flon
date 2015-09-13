@@ -49,8 +49,8 @@ char *fdol_dlup(void *data, const char *path);
 
 #endif // FLON_DOLLAR_H
 
-//commit 647ebfb04cb9f4a4ebfe2073ec7c6bb6a7228b3c
+//commit 5e968793eb0622b3dc996261e1358eb23f3f2487
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 9 14:37:59 2015 +0900
+//Date:   Thu Jul 16 06:19:17 2015 +0900
 //
-//    upgrade dependencies
+//    upgrade aabro (various -1 fixes)

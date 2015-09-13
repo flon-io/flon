@@ -39,105 +39,32 @@
 #include "shv_protected.h"
 
 
-static char *fshv_determine_content_type(const char *path)
+int fshv_serve_files(fshv_env *env, char *root)
 {
-  // TODO: utf-8? "text/html; charset=UTF-8"
-  // TODO: manage that with a conf file
+  int r = 0;
+  char *path = NULL;
 
-  char *suffix = strrchr(path, '.');
-  char *r = NULL;
-
-  if (suffix == NULL) r = "text/plain";
-  else if (strcmp(suffix, ".txt") == 0) r = "text/plain";
-  else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
-  else if (strcmp(suffix, ".json") == 0) r = "application/json";
-  else if (strcmp(suffix, ".css") == 0) r = "text/css";
-  else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
-  else if (strcmp(suffix, ".html") == 0) r = "text/html";
-  else if (strcmp(suffix, ".pdf") == 0) r = "application/pdf";
-  else r = "text/plain";
-
-  return strdup(r);
-}
-
-ssize_t fshv_serve_file(
-  fshv_response *res, flu_dict *params, const char *path, ...)
-{
-  va_list ap; va_start(ap, path);
-  char *pa = flu_vpath(path, ap);
-  va_end(ap);
-
-  struct stat sta;
-  if (stat(pa, &sta) != 0) { free(pa); return -1; }
-  if (S_ISDIR(sta.st_mode)) { free(pa); return 0; }
-
-  res->status_code = 200;
-
-  flu_list_set(
-    res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
-  flu_list_set(
-    res->headers, "content-type", fshv_determine_content_type(pa));
-  flu_list_set(
-    res->headers, "fshv_file", strdup(pa));
-
-  char *h = flu_list_get(params, "header");
-  if (h == NULL) h = flu_list_get(params, "h");
-  if (h == NULL) h = "X-Accel-Redirect";
-  flu_list_set(res->headers, h, pa);
-
-  return sta.st_size;
-}
-
-int fshv_dir_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
-{
-  char *p = flu_list_get(req->routing_d, "**");
-  if (p == NULL)
-  {
-    char *path = (char *)flu_list_get(params, "path");
-    char *rpath = (char *)flu_list_get(req->uri_d, "_path");
-
-    if (path && strstr(path, "**")) return 0;
-
-    char *s = (char *)flu_list_get(params, "start");
-    if (s == NULL) s = (char *)flu_list_get(params, "s");
-
-    if (s)
-    {
-      size_t sl = strlen(s);
-      if (strncmp(rpath, s, sl) != 0) return 0;
-      p = rpath + sl;
-    }
-    else
-    {
-      p = rpath;
-    }
-  }
+  char *p = flu_list_get(env->bag, "**");
+  if (p == NULL) p = env->req->uri->path;
 
   //fgaj_d("p: %s", p);
 
-  if (strstr(p, "..")) return 0;
+  if (strstr(p, "..")) { env->res->status_code = 403; goto _over; }
 
-  char *r = flu_list_get(params, "root");
-  if (r == NULL) r = flu_list_get(params, "r");
-  if (r == NULL) return 0;
-  //printf("r: %s\n", r);
+  path = flu_path("%s/%s", root, p);
 
-  char *path = flu_path("%s/%s", r, p);
+  ssize_t s = fshv_serve_file(env, path);
 
-  ssize_t s = fshv_serve_file(res, params, path);
-
-  if (s < 0) { free(path); return 0; }
-
-  if (s == 0 && flu_list_get(res->headers, "fshv_file") == NULL)
+  if (s < 0) goto _over;
+  if (s == 0 && flu_list_get(env->res->headers, "fshv_file") == NULL)
   {
-    char *i = flu_list_getd(params, "index", "index.html");
+    char *i = flu_list_getod(env->conf, "index", "index.html");
     flu_list *is = flu_split(i, ",");
 
     for (flu_node *n = is->first; n; n = n->next)
     {
       char *p = flu_path("%s/%s", path, (char *)n->item);
-      s = fshv_serve_file(res, params, p);
+      s = fshv_serve_file(env, p);
       free(p);
       if (s > 0) break;
     }
@@ -145,37 +72,44 @@ int fshv_dir_handler(
     flu_list_free_all(is);
   }
 
+  r = (s > 0 || flu_list_get(env->res->headers, "fshv_file") != NULL);
+
+_over:
+
   free(path);
 
-  return (s > 0 || flu_list_get(res->headers, "fshv_file") != NULL);
+  if (env->res->status_code < 0) env->res->status_code = 404;
+
+  return r;
 }
 
-int fshv_debug_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+
+int fshv_mirror(fshv_env *env, short do_log)
 {
-  res->status_code = 200;
+  env->res->status_code = 200;
   //flu_list_set(res->headers, "content-type", "text/plain; charset=utf-8");
 
-  char *suri = flu_list_to_s(req->uri_d);
+  char *suri = fshv_uri_to_s(env->req->uri);
 
   // prepare response body
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
   flu_sbprintf(
-    b, "%s %s HTTP/1.1\r\n", fshv_char_to_method(req->method), req->uri);
+    b, "%s %s HTTP/1.1\r\n",
+    fshv_char_to_method(env->req->method), env->req->u);
 
-  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
   {
     flu_sbprintf(b, "%s: %s\r\n", fn->key, fn->item);
   }
-  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(req->method));
-  flu_sbprintf(b, "path: %s\r\n", req->uri);
-  flu_sbprintf(b, "uri_d: %s\r\n", suri);
+  flu_sbprintf(b, "method: %s\r\n", fshv_char_to_method(env->req->method));
+  flu_sbprintf(b, "path: %s\r\n", env->req->u);
+  flu_sbprintf(b, "uri: %s\r\n", suri);
   flu_sbputs(b, "\r\n");
-  if (req->body) flu_sbputs(b, req->body);
+  if (env->req->body) flu_sbputs(b, env->req->body);
 
-  flu_list_add(res->body, flu_sbuffer_to_string(b));
+  flu_list_add(env->res->body, flu_sbuffer_to_string(b));
 
   // log request
 
@@ -183,22 +117,22 @@ int fshv_debug_handler(
 
   fgaj_d(
     "|%05x| %s %s HTTP/1.1\r\n",
-    us, fshv_char_to_method(req->method), req->uri);
+    us, fshv_char_to_method(env->req->method), env->req->u);
   fgaj_d(
-    "|%05x| uri_d: %s",
+    "|%05x| uri: %s",
     us, suri);
 
-  for (flu_node *fn = req->headers->first; fn; fn = fn->next)
+  for (flu_node *fn = env->req->headers->first; fn; fn = fn->next)
   {
     fgaj_d("|%05x|  * %s: \"%s\"", us, fn->key, fn->item);
   }
 
-  ssize_t l = req->body ? strlen(req->body) : -1;
+  ssize_t l = env->req->body ? strlen(env->req->body) : -1;
   size_t maxl = 35;
   if (l > maxl)
-    fgaj_d("|%05x| body: >%.*s...< l%lli", us, maxl, req->body, l);
+    fgaj_d("|%05x| body: >%.*s...< l%lli", us, maxl, env->req->body, l);
   else
-    fgaj_d("|%05x| body: >%s< l%lli", us, req->body, l);
+    fgaj_d("|%05x| body: >%s< l%lli", us, env->req->body, l);
 
   // done
 
@@ -207,8 +141,17 @@ int fshv_debug_handler(
   return 1;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+int fshv_status(fshv_env *env, int status)
+{
+  env->res->status_code = status;
+
+  return 1;
+}
+
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

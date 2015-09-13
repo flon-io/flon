@@ -29,7 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <netinet/in.h>
+#include <sys/stat.h>
 
 #include "flutim.h"
 #include "gajeta.h"
@@ -37,7 +37,7 @@
 
 
 //
-// request
+// misc
 
 char fshv_method_to_char(char *s)
 {
@@ -65,82 +65,73 @@ char *fshv_char_to_method(char c)
   return "???";
 }
 
-
-//
-// response
-
-
-//
-// connection
-
-static void con_reset(fshv_con *c)
+static char *fshv_determine_content_type(const char *path)
 {
-  flu_sbuffer_free(c->head);
-  c->head = NULL;
-  c->hend = 0;
+  // TODO: utf-8? "text/html; charset=UTF-8"
+  // TODO: manage that with a conf file
 
-  flu_sbuffer_free(c->body);
-  c->body = NULL;
-  c->blen = 0;
+  char *suffix = strrchr(path, '.');
+  char *r = NULL;
 
-  fshv_request_free(c->req);
-  c->req = NULL;
+  if (suffix == NULL) r = "text/plain";
+  else if (strcmp(suffix, ".txt") == 0) r = "text/plain";
+  else if (strcmp(suffix, ".js") == 0) r = "application/javascript";
+  else if (strcmp(suffix, ".json") == 0) r = "application/json";
+  else if (strcmp(suffix, ".css") == 0) r = "text/css";
+  else if (strcmp(suffix, ".scss") == 0) r = "text/css"; // ?
+  else if (strcmp(suffix, ".html") == 0) r = "text/html";
+  else if (strcmp(suffix, ".pdf") == 0) r = "application/pdf";
+  else r = "text/plain";
 
-  fshv_response_free(c->res);
-  c->res = NULL;
+  return strdup(r);
 }
 
-fshv_con *fshv_con_malloc(struct sockaddr_in *client, fshv_route **routes)
+ssize_t fshv_serve_file(fshv_env *env, const char *path, ...)
 {
-  fshv_con *c = calloc(1, sizeof(fshv_con));
-  c->client = client;
-  //c->startus = flu_gets('u');
-  c->routes = routes;
-  con_reset(c);
-  c->rqount = -1;
-  return c;
-}
+  va_list ap; va_start(ap, path);
+  char *pa = flu_vpath(path, ap);
+  va_end(ap);
 
-void fshv_con_reset(fshv_con *c)
-{
-  fgaj_d("con %p", c);
+  struct stat sta;
+  if (stat(pa, &sta) != 0) { free(pa); return -1; }
+  if (S_ISDIR(sta.st_mode)) { free(pa); return 0; }
 
-  con_reset(c);
-}
+  env->res->status_code = 200;
 
-void fshv_con_free(fshv_con *c)
-{
-  fgaj_d("con %p", c);
+  flu_list_set(
+    env->res->headers, "fshv_content_length", flu_sprintf("%zu", sta.st_size));
+  flu_list_set(
+    env->res->headers, "content-type", fshv_determine_content_type(pa));
+  flu_list_set(
+    env->res->headers, "fshv_file", strdup(pa));
 
-  if (c == NULL) return;
+  char *h = flu_list_getod(env->conf, "accel-header", "X-Accel-Redirect");
+  flu_list_set(env->res->headers, h, pa);
 
-  con_reset(c);
-  free(c->client);
-  free(c);
+  return sta.st_size;
 }
 
 
 //
 // auth
 
-void fshv_set_user(fshv_request *req, const char *auth, const char *user)
+void fshv_set_user(fshv_env *env, const char *realm, const char *user)
 {
-  flu_list_setk(
-    req->routing_d, flu_sprintf("_%s_user", auth), strdup(user), 0);
+  flu_list_setk(env->bag, flu_sprintf("_%s_user", realm), strdup(user), 0);
 }
 
-char *fshv_get_user(fshv_request *req, const char *auth)
+char *fshv_get_user(fshv_env *env, const char *realm)
 {
-  if (auth)
+  if (realm)
   {
-    char *k = flu_sprintf("_%s_user", auth);
-    char *r = flu_list_get(req->routing_d, k);
+    char *k = flu_sprintf("_%s_user", realm);
+    char *r = flu_list_get(env->bag, k);
     free(k);
 
     return r;
   }
 
-  for (flu_node *fn = req->routing_d->first; fn; fn = fn->next)
+  for (flu_node *fn = env->bag->first; fn; fn = fn->next)
   {
     if (*fn->key != '_') continue;
     char *u = strrchr(fn->key, '_');
@@ -152,8 +143,10 @@ char *fshv_get_user(fshv_request *req, const char *auth)
   return NULL;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

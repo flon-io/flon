@@ -1,6 +1,6 @@
 
 //
-// Copyright (c) 2013-2014, John Mettraux, jmettraux+flon@gmail.com
+// Copyright (c) 2013-2015, John Mettraux, jmettraux+flon@gmail.com
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -122,8 +122,8 @@ int fmne_is_mnemo(char *s)
   return (fmne_to_i(s).err == 0);
 }
 
-//commit 83e4560c70fd6dff8f5bcad019eb0d815eeb75af
+//commit dc0631162d3f34e68eec1921199b4f6c6207bf65
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sat Oct 25 19:08:14 2014 +0900
+//Date:   Thu Sep 3 20:55:28 2015 +0900
 //
-//    make readme clearer (hopefully)
+//    2015

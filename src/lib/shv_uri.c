@@ -35,89 +35,99 @@
 #include "shv_protected.h"
 
 
-fabr_parser *uri_parser = NULL;
+static fabr_tree *_amp(fabr_input *i) { return fabr_str(NULL, i, "&"); }
+static fabr_tree *_qmark(fabr_input *i) { return fabr_str(NULL, i, "?"); }
+static fabr_tree *_equal(fabr_input *i) { return fabr_str(NULL, i, "="); }
+static fabr_tree *_sharp(fabr_input *i) { return fabr_rex(NULL, i, "#"); }
+static fabr_tree *_colslasla(fabr_input *i) { return fabr_str(NULL, i, "://"); }
+static fabr_tree *_colon(fabr_input *i) { return fabr_str(NULL, i, ":"); }
 
+static fabr_tree *_qkey(fabr_input *i)
+{ return fabr_rex("qkey", i, "[^ \t=&#]+"); }
 
-static void fshv_init_uri_parser()
+static fabr_tree *_val(fabr_input *i)
+{ return fabr_rex("qval", i, "[^ \t&#]+"); }
+
+static fabr_tree *_qval(fabr_input *i)
+{ return fabr_seq(NULL, i, _equal, _val, NULL); }
+
+static fabr_tree *_qentry(fabr_input *i)
+{ return fabr_seq("qentry", i, _qkey, _qval, fabr_qmark, NULL); }
+
+static fabr_tree *_query(fabr_input *i)
+{ return fabr_eseq("query", i, _qmark, _qentry, _amp, NULL); }
+
+static fabr_tree *_ragment(fabr_input *i)
+{ return fabr_rex("fragment", i, ".+"); }
+
+static fabr_tree *_fragment(fabr_input *i)
+{ return fabr_seq(NULL, i, _sharp, _ragment, NULL); }
+
+static fabr_tree *_path(fabr_input *i)
+{ return fabr_rex("path", i, "[^\\?#]+"); }
+
+static fabr_tree *_scheme(fabr_input *i)
+{ return fabr_rex("scheme", i, "https?"); }
+
+static fabr_tree *_host(fabr_input *i)
+{ return fabr_rex("host", i, "[^:/]+"); }
+
+static fabr_tree *_ort(fabr_input *i)
+{ return fabr_rex("port", i, "[1-9][0-9]*"); }
+
+static fabr_tree *_port(fabr_input *i)
+{ return fabr_seq(NULL, i, _colon, _ort, NULL); }
+
+static fabr_tree *_shp(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _scheme, _colslasla, _host, _port, fabr_qmark,
+    NULL); }
+
+static fabr_tree *_uri(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _shp, fabr_qmark, _path, _query, fabr_qmark, _fragment, fabr_qmark,
+    NULL); }
+
+fshv_uri *fshv_parse_uri(char *uri)
 {
-  fabr_parser *scheme =
-    fabr_n_rex("scheme", "https?");
-  fabr_parser *host =
-    fabr_n_rex("host", "[^:/]+");
-  fabr_parser *port =
-    fabr_seq(fabr_string(":"), fabr_n_rex("port", "[1-9][0-9]+"), NULL);
+  //printf("fshv_parse_uri() >[1;33m%s[0;0m<\n", uri);
 
-  fabr_parser *path =
-    fabr_n_rex("path", "[^\\?#]+");
-  fabr_parser *quentry =
-    fabr_n_seq("quentry",
-      fabr_n_rex("key", "[^=&#]+"),
-      fabr_seq(fabr_string("="), fabr_n_rex("val", "[^&#]+"), fabr_r("?")),
-      NULL);
-  fabr_parser *query =
-    fabr_n_seq("query",
-      quentry,
-      fabr_seq(fabr_string("&"), quentry, fabr_r("*")),
-      NULL);
-  fabr_parser *fragment =
-    fabr_n_rex("fragment", ".+");
+  //fabr_tree *tt = fabr_parse_f(uri, _uri, FABR_F_ALL);
+  //printf("fshv_parse_uri():\n"); fabr_puts_tree(tt, uri, 1);
+  //fabr_tree_free(tt);
 
-  fabr_parser *shp =
-    fabr_seq(
-      scheme,
-      fabr_string("://"),
-      host,
-      port, fabr_q("?"),
-      NULL);
+  fabr_tree *r = fabr_parse_all(uri, _uri);
+  //printf("fshv_parse_uri() (pruned):\n"); fabr_puts(r, uri, 3);
 
-  uri_parser =
-    fabr_seq(
-      shp, fabr_q("?"),
-      path,
-      fabr_seq(fabr_string("?"), query, fabr_r("?")),
-      fabr_seq(fabr_string("#"), fragment, fabr_r("?")),
-      NULL);
-}
-
-flu_dict *fshv_parse_uri(char *uri)
-{
-  if (uri_parser == NULL) fshv_init_uri_parser();
-
-  fabr_tree *r = fabr_parse(uri, 0, uri_parser);
-  //fabr_tree *r = fabr_parse_f(uri, 0, uri_parser, ABR_F_ALL);
   fabr_tree *t = NULL;
 
-  //printf("uri >%s<\n", uri);
-  //puts(fabr_tree_to_string(r, uri, 1));
-
-  flu_dict *d = flu_list_malloc();
+  fshv_uri *u = fshv_uri_malloc();
 
   t = fabr_tree_lookup(r, "scheme");
-  if (t != NULL) flu_list_set(d, "_scheme", fabr_tree_string(uri, t));
+  if (t) u->scheme = fabr_tree_string(uri, t);
   t = fabr_tree_lookup(r, "host");
-  if (t != NULL) flu_list_set(d, "_host", fabr_tree_string(uri, t));
+  if (t) u->host = fabr_tree_string(uri, t);
   t = fabr_tree_lookup(r, "port");
-  if (t != NULL) flu_list_set(d, "_port", fabr_tree_string(uri, t));
+  if (t) u->port = fabr_tree_llong(uri, t, 10); // base 10
 
   t = fabr_tree_lookup(r, "path");
-  flu_list_set(d, "_path", fabr_tree_string(uri, t));
-  //printf("_path >%s<\n", flu_list_get(d, "_path"));
+  u->path = fabr_tree_string(uri, t);
 
   t = fabr_tree_lookup(r, "query");
-  if (t) flu_list_set(d, "_query", fabr_tree_string(uri, t));
+  if (t) u->query = fabr_tree_string(uri, t);
 
-  flu_list *l = fabr_tree_list_named(r, "quentry");
+  flu_list *l = fabr_tree_list_named(r, "qentry");
   for (flu_node *n = l->first; n != NULL; n = n->next)
   {
-    t = fabr_tree_lookup((fabr_tree *)n->item, "key");
+    t = fabr_tree_lookup((fabr_tree *)n->item, "qkey");
     char *k = fabr_tree_string(uri, t);
 
     char *v = NULL; char *vv = NULL;
-    t = fabr_tree_lookup((fabr_tree *)n->item, "val");
+    t = fabr_tree_lookup((fabr_tree *)n->item, "qval");
     if (t) { v = fabr_tree_string(uri, t); vv = flu_urldecode(v, -1); }
     else { vv = strdup(""); }
 
-    flu_list_set(d, k, vv);
+    flu_list_set(u->qentries, k, vv);
 
     free(k); // since flu_list_set() copies it
     free(v);
@@ -125,14 +135,14 @@ flu_dict *fshv_parse_uri(char *uri)
   flu_list_free(l);
 
   t = fabr_tree_lookup(r, "fragment");
-  if (t != NULL) flu_list_set(d, "_fragment", fabr_tree_string(uri, t));
+  if (t) u->fragment = fabr_tree_string(uri, t);
 
   fabr_tree_free(r);
 
-  return d;
+  return u;
 }
 
-flu_dict *fshv_parse_host_and_path(char *host, char *path)
+fshv_uri *fshv_parse_host_and_path(char *host, char *path)
 {
   if (host == NULL) return fshv_parse_uri(path);
 
@@ -143,36 +153,33 @@ flu_dict *fshv_parse_host_and_path(char *host, char *path)
   else
     s = flu_sprintf("http://%s%s", host, path);
 
-  flu_dict *d = fshv_parse_uri(s);
+  fshv_uri *u = fshv_parse_uri(s);
 
   free(s);
 
-  return d;
+  return u;
 }
 
-char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
+char *fshv_absolute_uri(int ssl, fshv_uri *u, const char *rel, ...)
 {
-  //for (flu_node *n = uri_d->first; n; n = n->next)
-  //  printf("      * %s: %s\n", n->key, (char *)n->item);
-
-  char *s = NULL;
-
-  char *scheme = flu_list_getd(uri_d, "_scheme", "http");
+  char *scheme = u->scheme;
   if (ssl) scheme = "https";
+  if (scheme == NULL) scheme = "http";
 
-  char *port = "";
-  s = flu_list_get(uri_d, "_port");
-  if (s) port = flu_sprintf(":%s", s);
+  char *host =
+    strdup(u->host ? u->host : "127.0.0.1"); // what about IPv6?
 
-  char *frag = "";
-  s = flu_list_get(uri_d, "_fragment");
-  if (s) frag = flu_sprintf("#%s", s);
+  char *port =
+    (u->port > -1 && u->port != 80) ? flu_sprintf(":%d", u->port) : "";
 
-  char *query = "";
-  s = flu_list_get(uri_d, "_query");
-  if (s) query = flu_sprintf("?%s", s);
+  char *frag =
+    u->fragment ? flu_sprintf("#%s", u->fragment) : "";
 
-  char *path = strdup(flu_list_getd(uri_d, "_path", "/"));
+  char *query =
+    u->query ? strdup(u->query) : "";
+
+  char *path =
+    strdup((u->path && strlen(u->path) > 0) ? u->path : "/");
 
   char *rl = NULL;
   if (rel)
@@ -191,21 +198,17 @@ char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
   {
     char *end = strrchr(path, '/');
     if (strchr(end, '.')) *end = 0;
-    s = flu_canopath("%s/%s", path, rl);
+    char *s = flu_canopath("%s/%s", path, rl);
     free(path);
     free(rl);
     path = s;
   }
 
-  s = flu_sprintf(
+  char *s = flu_sprintf(
     "%s://%s%s%s%s%s",
-    scheme,
-    flu_list_getd(uri_d, "_host", "127.0.0.1"),
-    port,
-    path,
-    query,
-    frag);
+    scheme, host, port, path, query, frag);
 
+  free(host);
   if (*port != 0) free(port);
   if (*query != 0) free(query);
   if (*frag != 0) free(frag);
@@ -214,8 +217,56 @@ char *fshv_absolute_uri(int ssl, flu_dict *uri_d, const char *rel, ...)
   return s;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+fshv_uri *fshv_uri_malloc()
+{
+  fshv_uri *u = calloc(1, sizeof(fshv_uri));
+  u->port = 80;
+  u->qentries = flu_list_malloc();
+
+  return u;
+}
+
+char *fshv_uri_to_s(fshv_uri *u)
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+
+  flu_sbputs(b, "(uri");
+  flu_sbprintf(b, " s\"%s\"", u->scheme);
+  flu_sbprintf(b, " h\"%s\"", u->host);
+  flu_sbprintf(b, " p%i", u->port);
+  flu_sbprintf(b, " p\"%s\"", u->path);
+  if (u->query) flu_sbprintf(b, " q\"%s\"", u->query);
+  if (u->fragment) flu_sbprintf(b, " f\"%s\"", u->fragment);
+
+  if (u->query)
+  {
+    char *qes = flu_list_to_s(u->qentries);
+    flu_sbprintf(b, " q%s", qes);
+    free(qes);
+  }
+
+  flu_sbputs(b, ")");
+
+  return flu_sbuffer_to_string(b);
+}
+
+void fshv_uri_free(fshv_uri *u)
+{
+  if (u == NULL) return;
+
+  free(u->scheme);
+  free(u->host);
+  free(u->path);
+  free(u->query);
+  free(u->fragment);
+  flu_list_free_all(u->qentries);
+  free(u);
+}
+
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

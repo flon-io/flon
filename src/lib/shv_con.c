@@ -23,32 +23,71 @@
 // Made in Japan.
 //
 
-// https://github.com/flon-io/mnemo
+// https://github.com/flon-io/shervin
 
-#ifndef FLON_MNEMO_H
-#define FLON_MNEMO_H
+#define _POSIX_C_SOURCE 200809L
 
 
-char *fmne_to_s(long long i);
+#include <stdlib.h>
 
-// The result type for mne_tol()
+#include "gajeta.h"
+#include "shv_protected.h"
+
+
 //
-// error if err != 0,
-// result if err == 0
-//
-typedef struct {
-  int err;
-  long long result;
-} fmne_toi_result;
+// fshv_con
 
-fmne_toi_result fmne_to_i(char *s);
+static void con_reset(fshv_con *c)
+{
+  flu_sbuffer_free(c->head);
+  c->head = NULL;
+  c->hend = 0;
 
-int fmne_is_mnemo(char *s);
+  flu_sbuffer_free(c->body);
+  c->body = NULL;
+  c->blen = 0;
 
-#endif // FLON_MNEMO_H
+  fshv_env_free(c->env);
+  c->env = NULL;
+}
 
-//commit dc0631162d3f34e68eec1921199b4f6c6207bf65
+fshv_con *fshv_con_malloc(
+  struct sockaddr_in *client, fshv_handler *handler, flu_dict *conf)
+{
+  fshv_con *c = calloc(1, sizeof(fshv_con));
+
+  c->client = client;
+  //c->startus = flu_gets('u');
+  c->handler = handler;
+  c->conf = conf;
+  con_reset(c);
+  c->req_count = -1;
+
+  return c;
+}
+
+void fshv_con_reset(fshv_con *c)
+{
+  fgaj_d("con %p", c);
+
+  con_reset(c);
+}
+
+void fshv_con_free(fshv_con *c)
+{
+  fgaj_d("con %p", c);
+
+  if (c == NULL) return;
+
+  con_reset(c);
+  free(c->client);
+  free(c);
+}
+
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Sep 3 20:55:28 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    2015
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

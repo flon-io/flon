@@ -37,83 +37,77 @@
 #include "shv_protected.h"
 
 
-fabr_parser *request_parser = NULL;
+static fabr_tree *_sp(fabr_input *i) { return fabr_str(NULL, i, " "); }
+static fabr_tree *_col(fabr_input *i) { return fabr_str(NULL, i, ":"); }
+static fabr_tree *_crlf(fabr_input *i) { return fabr_str(NULL, i, "\r\n"); }
 
+static fabr_tree *_lws(fabr_input *i)
+{ return fabr_rex(NULL, i, "(\r\n)?[ \t]+"); }
 
-static void fshv_init_parser()
-{
-  fabr_parser *sp = fabr_string(" ");
-  fabr_parser *crlf = fabr_string("\r\n");
+static fabr_tree *_text(fabr_input *i)
+{ return fabr_rex(NULL, i, "[^\x01-\x1F\x7F]+"); }
 
-  fabr_parser *lws = fabr_rex("(\r\n)?[ \t]+");
+static fabr_tree *_token(fabr_input *i)
+{ return fabr_rex(NULL, i, "[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+"); }
 
-  //fabr_parser *text =
-  //  fabr_alt(fabr_rex("[^\x01-\x1F\x7F]"), lws, fabr_r("+"));
-  fabr_parser *text =
-    fabr_rex("[^\x01-\x1F\x7F]+");
+//  fabr_parser *method =
+//    fabr_n_alt(
+//      "method",
+//      fabr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
+//      fabr_name("extension_method", token),
+//      NULL);
+//
+static fabr_tree *_method(fabr_input *i)
+{ return fabr_rex("method", i, "GET|POST|PUT|DELETE|HEAD|OPTIONS"); }
 
-  fabr_parser *token =
-    fabr_rex("[^\x01-\x1F\x7F()<>@,;:\\\\\"/[\\]?={} \t]+");
+static fabr_tree *_request_uri(fabr_input *i)
+{ return fabr_rex("request_uri", i, "[^ \t\r\n]{1,2048}"); }
+  // arbitrary limit
 
-  fabr_parser *method =
-    fabr_n_alt(
-      "method",
-      fabr_rex("GET|POST|PUT|DELETE|HEAD|OPTIONS|TRACE|CONNECT|LINK|UNLINK"),
-      fabr_name("extension_method", token),
-      NULL);
-  fabr_parser *request_uri =
-    fabr_n_rex("request_uri", "[^ \t\r\n]{1,2048}"); // arbitrary limit
-  fabr_parser *http_version =
-    fabr_n_rex("http_version", "HTTP/[0-9]+\\.[0-9]+");
+static fabr_tree *_http_version(fabr_input *i)
+{ return fabr_rex("http_version", i, "HTTP/[0-9]+\\.[0-9]+"); }
 
-  fabr_parser *request_line =
-    fabr_seq(method, sp, request_uri, sp, http_version, crlf, NULL);
+static fabr_tree *_request_line(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _method, _sp, _request_uri, _sp, _http_version, _crlf,
+    NULL); }
 
-  fabr_parser *field_content =
-    text;
+static fabr_tree *_fv(fabr_input *i)
+{ return fabr_alt(NULL, i, _text, _lws, NULL); }
 
-  fabr_parser *field_name =
-    fabr_name("field_name", token);
-  fabr_parser *field_value =
-    fabr_n_rep("field_value", fabr_alt(field_content, lws, NULL), 0, -1);
+static fabr_tree *_field_value(fabr_input *i)
+{ return fabr_rep("field_value", i, _fv, 0, 0); }
 
-  fabr_parser *message_header =
-    fabr_n_seq("message_header", field_name, fabr_string(":"), field_value, NULL);
+static fabr_tree *_field_name(fabr_input *i)
+{ return fabr_rename("field_name", i, _token); }
 
-  //fabr_parser *message_body =
-  //  fabr_n_regex("message_body", "^.+"); // well, the rest
+static fabr_tree *_mh(fabr_input *i)
+{ return fabr_seq("message_header", i, _field_name, _col, _field_value, NULL); }
 
-  request_parser =
-    fabr_seq(
-      request_line,
-      fabr_seq(message_header, crlf, NULL), fabr_q("*"),
-      crlf,
-      //fabr_rep(message_body, 0, 1),
-      NULL);
-  // do not include the message_body
+static fabr_tree *_message_header(fabr_input *i)
+{ return fabr_seq(NULL, i, _mh, _crlf, NULL); }
 
-  //puts(fabr_parser_to_string(request_parser));
-}
+static fabr_tree *_request_head(fabr_input *i)
+{ return fabr_seq(NULL, i,
+    _request_line, _message_header, fabr_star, _crlf,
+    NULL); } // does not include the message body
+
 
 fshv_request *fshv_parse_request_head(char *s)
 {
-  //
-  // parse
+  //printf("fshv_parse_request_head() >[1;33m%s[0;0m<\n", s);
 
-  if (request_parser == NULL) fshv_init_parser();
+  //fabr_tree *tt = fabr_parse_f(s, _request_head, FABR_F_ALL);
+  //printf("fshv_parse_request_head():\n"); fabr_puts_tree(tt, s, 1);
+  //fabr_tree_free(tt);
 
-  fabr_tree *r = fabr_parse(s, 0, request_parser);
-  //fabr_tree *r = fabr_parse_f(s, 0, request_parser, ABR_F_ALL);
+  fabr_tree *r = fabr_parse_all(s, _request_head);
+  //printf("fshv_parse_request_head() (pruned):\n"); fabr_puts(t, input, 3);
 
-  //puts(fabr_tree_to_string_with_leaves(s, r));
+  if (r->result != 1) { fabr_tree_free(r); return NULL; }
 
   fshv_request *req = calloc(1, sizeof(fshv_request));
   //req->startus = flu_gets('u');
-  req->status_code = 400; // Bad Request
-
-  if (r->result != 1) { fabr_tree_free(r); return req; }
-
-  req->status_code = 200; // ok, for now
 
   fabr_tree *t = NULL;
 
@@ -125,12 +119,12 @@ fshv_request *fshv_parse_request_head(char *s)
   // uri
 
   t = fabr_tree_lookup(r, "request_uri");
-  req->uri = fabr_tree_string(s, t);
+  req->u = fabr_tree_string(s, t);
     //
   while (1)
   {
-    char *last = strrchr(req->uri, '/');
-    if (last && last != req->uri && *(last + 1) == 0) *last = 0;
+    char *last = strrchr(req->u, '/');
+    if (last && last != req->u && *(last + 1) == 0) *last = 0;
     else break;
   }
     //
@@ -164,16 +158,12 @@ fshv_request *fshv_parse_request_head(char *s)
 
   flu_list_free(hs);
 
-  req->uri_d =
+  req->uri =
     fshv_parse_host_and_path(
       flu_list_get(req->headers, "host"),
-      req->uri);
+      req->u);
 
-  req->routing_d =
-    flu_list_malloc();
-
-  //
-  // over
+  // over.
 
   fabr_tree_free(r);
 
@@ -191,17 +181,16 @@ void fshv_request_free(fshv_request *r)
 {
   if (r == NULL) return;
 
-  free(r->uri);
-  flu_list_free_all(r->uri_d);
+  free(r->u);
+  fshv_uri_free(r->uri);
   flu_list_free_all(r->headers);
-  flu_list_free_all(r->routing_d);
   free(r->body);
   free(r);
 }
 
 int fshv_request_is_https(fshv_request *r)
 {
-  if (strcmp(flu_list_getd(r->uri_d, "_scheme", ""), "https") == 0) return 1;
+  if (strcmp(r->uri->scheme, "https") == 0) return 1;
 
   char *s = flu_list_getd(r->headers, "forwarded", "");
   if (strstr(s, "proto=https")) return 1;
@@ -228,20 +217,10 @@ fshv_request *fshv_parse_request_head_f(const char *s, ...)
   return r;
 }
 
-int fshv_do_route(char *path, fshv_request *req)
-{
-  flu_dict *params = flu_list_malloc();
-  flu_list_set(params, "path", path);
-
-  int r = fshv_path_guard(req, NULL, 0, params);
-
-  flu_list_free(params);
-
-  return r;
-}
-
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

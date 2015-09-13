@@ -33,27 +33,35 @@
 #include "flutil.h"
 
 
-#define FSHV_VERSION "1.0.0"
+#define FSHV_VERSION "1.1.0"
 
 #define FSHV_BUFFER_SIZE 4096
 
 
+//
 // request
+
+typedef struct {
+  char *scheme;
+  char *host;
+  int port;
+  char *path;
+  char *query;
+  char *fragment;
+  flu_dict *qentries;
+} fshv_uri;
 
 typedef struct {
   long long startus; // microseconds since the Epoch
   char method;
-  char *uri;
-  flu_dict *uri_d;
+  char *u; // raw uri
+  fshv_uri *uri;
   flu_dict *headers;
   char *body;
-  short status_code; // 4xx code set by shervin, 200 else
-  flu_dict *routing_d; // used by guards to pass info to handlers
 } fshv_request;
 
-char fshv_method_to_char(char *s);
-char *fshv_char_to_method(char c);
 
+//
 // response
 
 typedef struct {
@@ -62,89 +70,128 @@ typedef struct {
   flu_list *body;
 } fshv_response;
 
-// route
+char *fshv_response_body_to_s(fshv_response *res);
 
-typedef int fshv_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+
+//
+// env
 
 typedef struct {
-  fshv_handler *guard;
-  fshv_handler *handler;
-  flu_dict *params;
-} fshv_route;
-
-fshv_route *fshv_route_malloc(fshv_handler *guard, fshv_handler *handler, ...);
-#define fshv_r(...) fshv_route_malloc(__VA_ARGS__)
-
-fshv_route *fshv_rp(char *path, fshv_handler *handler, ...);
+  flu_dict *conf; // application level conf
+  fshv_request *req;
+  fshv_response *res;
+  flu_dict *bag; // req-res scoped databag
+} fshv_env;
 
 
-enum // flags guards and handlers "mode"
-{
-  FSHV_F_NULL_GUARD = 1 << 0, // only for handlers, set when guard was NULL
-  FSHV_F_HANDLED    = 1 << 1, // set when a previous "handled" the request
-};
+//
+// [root] handler
 
-// guards
-
-/* Merely a marker function, corresponding handlers are called as filters.
- */
-int fshv_filter_guard(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
-
-int fshv_any_guard(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
-int fshv_path_guard(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+typedef int fshv_handler(fshv_env *env);
 
 
+//
 // handlers
 
-/* Used by shv_dir_handler(), public since it could get useful on its own.
+int fshv_serve_files(fshv_env *env, char *root);
+int fshv_mirror(fshv_env *env, short do_log);
+
+int fshv_status(fshv_env *env, int status);
+
+
+//
+// basic auth
+
+void fshv_set_user(fshv_env *e, const char *realm, const char *user);
+char *fshv_get_user(fshv_env *e, const char *realm);
+
+/* Given a realm, a user and a pass, returns the (new) username in case
+ * of valid user/pass combination or NULL instead.
+ * Generally the same username is given back, but who knows, certain
+ * systems might be more byzantine.
+ *
+ * Warning: the returned string must be a newly malloced string
+ * (usually strdup(user)), else you're in for memory issues.
  */
-ssize_t fshv_serve_file(
-  fshv_response *res, flu_dict *params, const char *path, ...);
+typedef char *fshv_user_pass_authentifier(
+  fshv_env *e, const char *realm, const char *user, const char *pass);
 
-int fshv_dir_handler(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+/* Vanilla basic authentication implementation.
+ * Returns 1 in case of successful authentication, 0 else.
+ */
+int fshv_basic_auth(
+  fshv_env *e, const char *realm, fshv_user_pass_authentifier *a);
 
 
-// filters
+//
+// session auth
 
-typedef int fshv_authenticate(
-  const char *user, const char *pass, fshv_request *req, flu_dict *params);
+typedef struct {
+  char *sid;
+  char *user;
+  char *id;
+  long long expus; // microseconds, expiration point
+  short used;
+} fshv_session;
 
-void fshv_set_user(fshv_request *req, const char *auth, const char *user);
-char *fshv_get_user(fshv_request *req, const char *auth);
+char *fshv_session_to_s(fshv_session *s);
 
-int fshv_basic_auth_filter(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+void fshv_session_free(fshv_session *s);
 
-int fshv_session_auth_filter(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params);
+/* * pushing with all the parameters set and expiry time:
+ *   start or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * * pushing with only the sid set and now:
+ *   queries and expires,
+ *   returns a session in case of success, NULL else
+ * * pushing with only the sid set and -1:
+ *   stops the session and returns NULL
+ * * pushing with all NULL and -1:
+ *   resets the store and returns NULL
+ */
+typedef fshv_session *fshv_session_push(
+  fshv_env *e,
+  const char *sid,
+  const char *user,
+  const char *id,
+  long long tus);
 
 /* Used by login endpoints to start a session.
  */
 void fshv_start_session(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *user);
+  fshv_env *e, fshv_session_push *p, const char *cookie_name, const char *user);
 
 /* Used by logout endpoints to leave a session.
  */
 void fshv_stop_session(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid);
+  fshv_env *env, fshv_session_push *p, const char *sid);
+
+int fshv_session_auth(
+  fshv_env *e, fshv_session_push *p, const char *cookie_name);
 
 
-// serving
+//
+// guards
 
-void fshv_serve(int port, fshv_route **routes);
-  // NULL terminated route array
+int fshv_path_match(fshv_env *env, int sub, const char *path);
+#define fshv_m(env, path) fshv_path_match(env, 0, path)
+#define fshv_match(env, path) fshv_path_match(env, 0, path)
+#define fshv_smatch(env, path) fshv_path_match(env, 1, path)
 
-// TODO: fshv_stop_serve?
+
+//
+// serve
+
+void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf);
+  // interfaces?
+
 
 #endif // FLON_SHERVIN_H
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

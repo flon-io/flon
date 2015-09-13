@@ -128,7 +128,7 @@ static fshv_session *start_session(
 }
 
 fshv_session *fshv_session_memstore_push(
-  const char *sid, const char *user, const char *id, long long tus)
+  fshv_env *e, const char *sid, const char *user, const char *id, long long tus)
 {
   if (store == NULL) store = flu_list_malloc();
 
@@ -145,8 +145,20 @@ flu_list *fshv_session_memstore()
   return store;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+size_t fshv_session_memstore_clear()
+{
+  if (store == NULL) return 0;
+
+  size_t r = store->size;
+  fshv_session_memstore_push(NULL, NULL, NULL, NULL, -1);
+
+  return r;
+}
+
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

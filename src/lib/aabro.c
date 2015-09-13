@@ -28,53 +28,73 @@
 #define _POSIX_C_SOURCE 200809L
 
 #include <stdlib.h>
-#include <stdio.h>
 #include <string.h>
-#include <stdarg.h>
-#include <stdint.h>
-#include <limits.h>
 
 #include "aabro.h"
 
-#define MAX_DEPTH 2048
-
 
 fabr_tree *fabr_tree_malloc(
-  short result,
-  size_t offset,
-  size_t length,
-  char *note,
-  fabr_parser *p,
-  fabr_tree *child
-)
+  char *name, char *parter, fabr_input *i, size_t rexlen)
 {
   fabr_tree *t = calloc(1, sizeof(fabr_tree));
 
-  t->name = (p->name == NULL) ? NULL : strdup(p->name);
-  t->result = result;
-  t->offset = offset;
-  t->length = length;
-  t->note = (note == NULL) ? NULL : strdup(note);
-  t->parser = p;
+  t->name = name ? strdup(name) : NULL;
+  t->result = 1;
+  t->parter = parter;
+  t->offset = i->offset;
+  t->rexlen = rexlen;
+  t->length = 0;
+  t->note = NULL;
   t->sibling = NULL;
-  t->child = child;
+  t->child = NULL;
 
   return t;
 }
 
-void fabr_tree_free(fabr_tree *t)
+static void fabr_tree_free_children(fabr_tree *t)
 {
-  if (t->name != NULL) free(t->name);
-  if (t->note != NULL) free(t->note);
-
   for (fabr_tree *c = t->child; c != NULL; )
   {
     fabr_tree *s = c->sibling;
     fabr_tree_free(c);
     c = s;
   }
+  t->child = NULL;
+}
+
+void fabr_tree_free(fabr_tree *t)
+{
+  if (t == NULL) return;
+
+  free(t->name);
+  free(t->note);
+
+  fabr_tree_free_children(t);
 
   free(t);
+}
+
+void fabr_prune(fabr_tree *t)
+{
+  fabr_tree **next = &t->child;
+
+  for (fabr_tree *c = t->child; c; )
+  {
+    fabr_tree *s = c->sibling;
+
+    if (c->result != 0)
+    {
+      *next = c;
+      next = &c->sibling;
+      *next = NULL;
+    }
+    else
+    {
+      fabr_tree_free(c);
+    }
+
+    c = s;
+  }
 }
 
 char *fabr_tree_string(const char *input, fabr_tree *t)
@@ -82,37 +102,10 @@ char *fabr_tree_string(const char *input, fabr_tree *t)
   return strndup(input + t->offset, t->length);
 }
 
-char *fabr_tree_str(char *input, fabr_tree *t)
+char *fabr_tree_str(const char *input, fabr_tree *t)
 {
-  return input + t->offset;
+  return (char *)input + t->offset;
 }
-
-typedef enum fabr_p_type
-{
-  fabr_pt_string,
-  fabr_pt_rep,
-  fabr_pt_alt,
-  fabr_pt_altg,
-  fabr_pt_seq,
-  fabr_pt_not,
-  fabr_pt_name,
-  fabr_pt_presence,
-  fabr_pt_absence,
-  fabr_pt_n,
-  fabr_pt_r,
-  fabr_pt_q,
-  fabr_pt_range,
-  fabr_pt_rex,
-  fabr_pt_error
-} fabr_p_type;
-
-char *fabr_p_names[] = { // const ?
-  "string",
-  "rep", "alt", "altg", "seq",
-  "not", "name", "presence", "absence", "n",
-  "r", "q", "range", "rex",
-  "error"
-};
 
 static void fabr_t_to_s(
   fabr_tree *t, const char *input,
@@ -120,11 +113,7 @@ static void fabr_t_to_s(
 {
   for (size_t i = 0; i < indent; i++) flu_sbprintf(b, "  ");
 
-  if (t == NULL)
-  {
-    flu_sbprintf(b, "{null}");
-    return;
-  }
+  if (t == NULL) { flu_sbprintf(b, "null"); return; }
 
   char *stringc = color ? "[1;33m" : ""; // yellow
   char *clearc = color ? "[0;0m" : "";
@@ -139,14 +128,13 @@ static void fabr_t_to_s(
   //
   flu_sbprintf(
     b,
-    "%s[ %s, %d, %d, %d, %s, \"%s-%s\", ",
-    resultc, name, t->result, t->offset, t->length,
-    note, fabr_p_names[t->parser->type], t->parser->id);
+    "%s[ %s, %d, %d, %d, %s, \"%s\", %d, ",
+    resultc, name, t->result, t->offset, t->length, note, t->parter, t->rexlen);
   //
   if (t->name) free(name);
   if (t->note) free(note);
 
-  if (children != 1 && (input == NULL || t->result != 1 || t->child))
+  if (children == 0 && (input == NULL || t->result != 1 || t->child))
   {
     size_t cc = 0; for (fabr_tree *c = t->child; c; c = c->sibling) ++cc;
     flu_sbprintf(b, "%zu ]%s", cc, clearc);
@@ -186,936 +174,32 @@ char *fabr_tree_to_string(fabr_tree *t, const char *input, short color)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
   fabr_t_to_s(t, input, b, 0, 1, color);
+
   return flu_sbuffer_to_string(b);
+}
+
+void fabr_puts_tree(fabr_tree *t, const char *input, short color)
+{
+  char *s = fabr_tree_to_string(t, input, color); puts(s); free(s);
 }
 
 char *fabr_tree_to_str(fabr_tree *t, const char *input, short color)
 {
   flu_sbuffer *b = flu_sbuffer_malloc();
   fabr_t_to_s(t, input, b, 0, 0, color);
+
   return flu_sbuffer_to_string(b);
 }
 
-//
-// the fabr_parser methods
-
-static flu_list *fabr_p_list(flu_list *l, fabr_parser *p)
+void fabr_tree_puts(fabr_tree *t, const char *input, short flags)
 {
-  // using the [not] cheap flu_list_add_unique trick
-  // but parsers shan't be that big
-
-  if (l == NULL) l = flu_list_malloc();
-  int r = flu_list_add_unique(l, p);
-  if (r && p->children) for (size_t i = 0; p->children[i] != NULL; i++)
-  {
-    fabr_p_list(l, p->children[i]);
-  }
-  return l;
-}
-
-static void fabr_p_free(void *v)
-{
-  fabr_parser *p = v;
-
-  if (p->id != NULL) free(p->id);
-  if (p->name != NULL) free(p->name);
-  if (p->string != NULL) free(p->string);
-  if (p->children != NULL) free(p->children);
-
-  free(p);
-}
-
-void fabr_parser_free(fabr_parser *p)
-{
-  // list all parsers, then free them
-
-  flu_list *ps = fabr_p_list(NULL, p);
-  flu_list_and_items_free(ps, fabr_p_free);
-}
-
-static fabr_parser *fabr_parser_malloc(fabr_p_type type, const char *name)
-{
-  fabr_parser *p = calloc(1, sizeof(fabr_parser));
-
-  p->id = NULL;
-  p->name = (name == NULL) ? NULL : strdup(name);
-  p->type = type;
-  p->string = NULL;
-  p->min = -1; p->max = -1;
-  p->children = NULL;
-
-  return p;
-}
-
-#define FABR_IDS "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-#define FABR_IDS_LENGTH 62
-
-static void fabr_set_id(fabr_parser *p, size_t depth, char *id)
-{
-  if (p->id != NULL) { free(id); return; }
-
-  p->id = id;
-
-  if (p->children == NULL) return;
-
-  for (size_t i = 0; p->children[i] != NULL; ++i)
-  {
-    char *cid = calloc(depth + 3, sizeof(char));
-    strcpy(cid, id);
-    cid[depth + 1] = (i >= FABR_IDS_LENGTH) ? '+' : FABR_IDS[i];
-    fabr_set_id(p->children[i], depth + 1, cid);
-  }
-}
-
-static void fabr_set_ids(fabr_parser *p)
-{
-  fabr_set_id(p, 0, strdup("0"));
-}
-
-//
-// the builder methods
-
-static fabr_parser **fabr_single_child(fabr_parser *p)
-{
-  fabr_parser **children = calloc(2, sizeof(fabr_parser *));
-  children[0] = p;
-  return children;
-}
-
-static void fabr_do_name(fabr_parser *named, fabr_parser *target)
-{
-  if (named->name == NULL) return;
-
-  if (target->type == fabr_pt_n)
-  {
-    if (strcmp(target->name, named->name) != 0) return;
-    if (target->children == NULL) target->children = fabr_single_child(named);
-    return;
-  }
-
-  if (target->children == NULL) return;
-
-  for (size_t i = 0; target->children[i] != NULL; i++)
-  {
-    fabr_do_name(named, target->children[i]);
-  }
-}
-
-static size_t fabr_parse_rex_quant(const char *s, fabr_parser *p);
-  // defined below
-
-static fabr_parser *fabr_r_expand(fabr_parser *r, fabr_parser *child)
-{
-  fabr_parse_rex_quant(r->string, r);
-
-  r->type = fabr_pt_rep;
-  free(r->string); r->string = NULL;
-
-  r->children = fabr_single_child(child);
-
-  if (r->name == NULL && child->name != NULL)
-  {
-    r->name = child->name;
-    child->name = NULL;
-  }
-
-  return r;
-}
-
-static void fabr_q_wrap(fabr_parser *last, fabr_parser *q)
-{
-  char *quantifier = q->string;
-  char *q_name = q->name;
-
-  // last becomes q, q becomes last
-
-  q->type = last->type;
-  q->name = last->name;
-  q->string = last->string;
-  q->min = last->min;
-  q->max = last->max;
-  q->children = last->children;
-
-  last->type = fabr_pt_rep;
-  last->name = q_name;
-  last->string = NULL;
-  fabr_parse_rex_quant(quantifier, last); free(quantifier);
-  last->children = fabr_single_child(q);
-}
-
-static fabr_parser *fabr_wrap_children(
-  fabr_parser *p, fabr_parser *c0, va_list ap)
-{
-  if (c0->type == fabr_pt_q)
-  {
-    c0->type = fabr_pt_error;
-    char *ns = flu_sprintf("'%s': no preceding parser to wrap", c0->string);
-    free(c0->string);
-    c0->string = ns;
-  }
-
-  flu_list *l = flu_list_malloc();
-
-  flu_list_add(l, c0);
-
-  fabr_parser *child = NULL;
-
-  while (1)
-  {
-    child = va_arg(ap, fabr_parser *);
-
-    if (child == NULL) break;
-    if (child->type == fabr_pt_r) break;
-
-    if (child->type == fabr_pt_q)
-    {
-      fabr_q_wrap((fabr_parser *)l->last->item, child); continue;
-    }
-
-    flu_list_add(l, child);
-  }
-
-  p->children = (fabr_parser **)flu_list_to_array(l, FLU_F_EXTRA_NULL);
-
-  flu_list_free(l);
-
-  if (child == NULL || child->type == fabr_pt_q) return p;
-
-  return fabr_r_expand(child, p);
-}
-
-fabr_parser *fabr_string(const char *s)
-{
-  return fabr_n_string(NULL, s);
-}
-
-fabr_parser *fabr_n_string(const char *name, const char *s)
-{
-  fabr_parser *p = fabr_parser_malloc(fabr_pt_string, name);
-  p->string = strdup(s);
-  return p;
-}
-
-fabr_parser *fabr_range(const char *range)
-{
-  return fabr_n_range(NULL, range);
-}
-
-fabr_parser *fabr_n_range(const char *name, const char *range)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_range, name);
-  r->string = strdup(range);
-  fabr_do_name(r, r);
-  return r;
-}
-
-static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n);
-  // defined below
-
-fabr_parser *fabr_rex(const char *s)
-{
-  return fabr_n_rex(NULL, s);
-}
-
-fabr_parser *fabr_n_rex(const char *name, const char *s)
-{
-  fabr_parser *p = fabr_parser_malloc(fabr_pt_rex, name);
-  p->string = strdup(s);
-  p->children = fabr_single_child(fabr_decompose_rex_group(s, -1));
-  return p;
-}
-
-fabr_parser *fabr_rep(fabr_parser *p, ssize_t min, ssize_t max)
-{
-  return fabr_n_rep(NULL, p, min, max);
-}
-
-fabr_parser *fabr_n_rep(const char *name, fabr_parser *p, ssize_t min, ssize_t max)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_rep, name);
-  r->min = min;
-  r->max = max;
-  r->children = fabr_single_child(p);
-  fabr_do_name(r, p);
-  return r;
-}
-
-fabr_parser *fabr_alt(fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_alt, NULL);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-
-  return r;
-}
-
-fabr_parser *fabr_altg(fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_altg, NULL);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-
-  return r;
-}
-
-fabr_parser *fabr_n_alt(const char *name, fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_alt, name);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-fabr_parser *fabr_n_altg(const char *name, fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_altg, name);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-fabr_parser *fabr_seq(fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_seq, NULL);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-
-  return r;
-}
-
-fabr_parser *fabr_n_seq(const char *name, fabr_parser *p, ...)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_seq, name);
-
-  va_list l; va_start(l, p); r = fabr_wrap_children(r, p, l); va_end(l);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-fabr_parser *fabr_name(const char *name, fabr_parser *p)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_name, name);
-  r->children = fabr_single_child(p);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-fabr_parser *fabr_n(const char *name)
-{
-  return fabr_parser_malloc(fabr_pt_n, name);
-}
-
-fabr_parser *fabr_r(const char *code)
-{
-  return fabr_n_r(NULL, code);
-}
-
-fabr_parser *fabr_n_r(const char *name, const char *code)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_r, name);
-  r->string = strdup(code);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-fabr_parser *fabr_q(const char *code)
-{
-  return fabr_n_q(NULL, code);
-}
-
-fabr_parser *fabr_n_q(const char *name, const char *code)
-{
-  fabr_parser *r = fabr_parser_malloc(fabr_pt_q, name);
-  r->string = strdup(code);
-  fabr_do_name(r, r);
-
-  return r;
-}
-
-//
-// the to_s methods
-
-typedef void fabr_p_to_s_func(flu_sbuffer *, flu_list *, int, fabr_parser *);
-
-static void fabr_p_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p);
-
-static void fabr_p_string_to_s( // works for range and rex as well
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  if (p->name == NULL)
-    flu_sbprintf(
-      b, "fabr_%s(\"%s\") /* %s */",
-      fabr_p_names[p->type], p->string, p->id);
-  else
-    flu_sbprintf(
-      b, "fabr_n_%s(\"%s\", \"%s\") /* %s */",
-      fabr_p_names[p->type], p->name, p->string, p->id);
-}
-
-static void fabr_p_rep_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  if (p->name == NULL)
-  {
-    flu_sbprintf(b, "fabr_rep( /* %s */\n", p->id);
-  }
-  else
-  {
-    flu_sbprintf(b, "fabr_n_rep( /* %s */\n", p->id);
-    for (int i = 0; i < indent + 1; i++) flu_sbprintf(b, "  ");
-    flu_sbprintf(b, "\"%s\",\n", p->name);
-  }
-  fabr_p_to_s(b, seen, indent + 1, p->children[0]);
-  flu_sbprintf(b, ", %i, %i)", p->min, p->max);
-}
-
-static void fabr_p_wchildren_to_s(
-  const char *n, flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  if (p->name == NULL)
-  {
-    flu_sbprintf(b, "fabr_%s( /* %s */\n", n, p->id);
-  }
-  else
-  {
-    flu_sbprintf(b, "fabr_n_%s( /* %s */\n", n, p->id);
-    for (int i = 0; i < indent + 1; i++) flu_sbprintf(b, "  ");
-    flu_sbprintf(b, "\"%s\",\n", p->name);
-  }
-  if (p->children != NULL) for (size_t i = 0; ; i++)
-  {
-    fabr_parser *c = p->children[i];
-    fabr_p_to_s(b, seen, indent + 1, c);
-    if (c == NULL) break;
-    flu_sbprintf(b, ",\n");
-  }
-  flu_sbprintf(b, ")");
-}
-
-static void fabr_p_alt_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  fabr_p_wchildren_to_s(
-    p->type == fabr_pt_alt ? "alt" : "altg", b, seen, indent, p);
-}
-
-static void fabr_p_seq_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  fabr_p_wchildren_to_s("seq", b, seen, indent, p);
-}
-
-static void fabr_p_name_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_name( /* %s */\n", p->id);
-  for (int i = 0; i < indent + 1; i++) flu_sbprintf(b, "  ");
-  flu_sbprintf(b, "\"%s\",\n", p->name);
-  fabr_p_to_s(b, seen, indent + 1, p->children[0]);
-  flu_sbprintf(b, ")");
-}
-
-static void fabr_p_not_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_not(...)");
-}
-
-static void fabr_p_presence_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_presence(...)");
-}
-
-static void fabr_p_absence_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_absence(...)");
-}
-
-static void fabr_p_n_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_n(\"%s\") /* %s */", p->name, p->id);
-  if (p->children == NULL) flu_sbprintf(b, " /* not linked */", p->name);
-  //else flu_sbprintf(b, " /* linked */", p->name);
-}
-
-static void fabr_p_r_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_r(\"%s\") /* %s */", p->string, p->id);
-}
-
-static void fabr_p_q_to_s(
-  flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  flu_sbprintf(b, "fabr_q(\"%s\") /* %s */", p->string, p->id);
-}
-
-fabr_p_to_s_func *fabr_p_to_s_funcs[] = { // const ?
-  fabr_p_string_to_s,
-  fabr_p_rep_to_s,
-  fabr_p_alt_to_s,
-  fabr_p_alt_to_s, // altg
-  fabr_p_seq_to_s,
-  fabr_p_not_to_s,
-  fabr_p_name_to_s,
-  fabr_p_presence_to_s,
-  fabr_p_absence_to_s,
-  fabr_p_n_to_s,
-  fabr_p_r_to_s,
-  fabr_p_q_to_s,
-  fabr_p_string_to_s, // range
-  fabr_p_string_to_s, // rex
-  fabr_p_string_to_s  // "error" parser
-};
-
-void fabr_p_to_s(flu_sbuffer *b, flu_list *seen, int indent, fabr_parser *p)
-{
-  for (int i = 0; i < indent; i++) flu_sbprintf(b, "  ");
-  if (p == NULL)
-  {
-    flu_sbprintf(b, "NULL");
-  }
-  else
-  {
-    int r = flu_list_add_unique(seen, p);
-    if (r) fabr_p_to_s_funcs[p->type](b, seen, indent, p);
-    else flu_sbprintf(b, "fabr_n(\"%s\") /* %s */", p->name, p->id);
-  }
-}
-
-char *fabr_parser_to_string(fabr_parser *p)
-{
-  if (p->id == NULL) fabr_set_ids(p);
-
   flu_sbuffer *b = flu_sbuffer_malloc();
-  flu_list *seen = flu_list_malloc();
+  fabr_t_to_s(t, input, b, 0, flags & 2, flags & 1);
+  char *s = flu_sbuffer_to_string(b);
 
-  fabr_p_to_s(b, seen, 0, p);
+  puts(s);
 
-  flu_list_free(seen);
-
-  return flu_sbuffer_to_string(b);
-}
-
-char *fabr_parser_to_s(fabr_parser *p)
-{
-  //if (p->id == NULL) fabr_set_ids(p);
-
-  size_t ccount = 0;
-  if (p->children) while (p->children[ccount] != NULL) { ++ccount; }
-
-  char *name = "";
-  if (p->name) name = flu_sprintf("'%s' ", p->name);
-
-  char *string = "";
-  if (p->string) string = flu_sprintf("\"%s\" ", p->string);
-
-  char *minmax = "";
-  if (p->type == fabr_pt_rep) minmax = flu_sprintf(" mn%i mx%i", p->min, p->max);
-
-  char *s = flu_sprintf(
-    "%s t%i %s%sc%i%s",
-    fabr_p_names[p->type], p->type, name, string, ccount, minmax);
-
-  if (*name != '\0') free(name);
-  if (*string != '\0') free(string);
-  if (*minmax != '\0') free(minmax);
-
-  return s;
-}
-
-//
-// the parse methods
-
-// TODO: make the parse methods static
-
-typedef fabr_tree *fabr_p_func(
-  const char *, size_t, size_t, fabr_parser *, int flags);
-//
-static fabr_tree *fabr_do_parse(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags);
-
-fabr_tree *fabr_p_string(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  if (p->min == -1) p->min = strlen(p->string);
-
-  int su = 1;
-  size_t le = p->min;
-
-  if (strncmp(input + offset, p->string, le) != 0) { su = 0; le = 0; }
-
-  return fabr_tree_malloc(su, offset, le, NULL, p, NULL);
-}
-
-fabr_tree *fabr_p_rep(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  short result = 1;
-  size_t off = offset;
-  size_t length = 0;
-
-  fabr_tree *first = NULL;
-  fabr_tree *prev = NULL;
-
-  size_t count = 0;
-  //
-  for (; ; count++)
-  {
-    if (p->max > 0 && count >= p->max) break;
-    fabr_tree *t = fabr_do_parse(input, off, depth + 1, p->children[0], flags);
-
-    if (first == NULL) first = t;
-    if (prev != NULL) prev->sibling = t;
-    prev = t;
-
-    if (t->result < 0) result = -1;
-    if (t->result != 1) break;
-    if (t->length < 1) break;
-    off += t->length;
-    length += t->length;
-  }
-
-  if (result == 1 && count < p->min) result = 0;
-  if (result < 0) length = 0;
-
-  return fabr_tree_malloc(result, offset, length, NULL, p, first);
-}
-
-fabr_tree *fabr_p_alt(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  short result = 0;
-
-  fabr_tree *first = NULL;
-  fabr_tree *prev = NULL;
-  fabr_tree *winner = NULL;
-
-  for (size_t i = 0; p->children[i] != NULL; i++)
-  {
-    fabr_parser *pc = p->children[i];
-
-    fabr_tree *t = fabr_do_parse(input, offset, depth + 1, pc, flags);
-
-    if (first == NULL) first = t;
-    if (prev != NULL) prev->sibling = t;
-    prev = t;
-
-    if (t->result == 1) result = 1;
-    if (t->result < 0) result = t->result;
-
-    if (result < 0) break;
-    if (t->result != 1) continue;
-
-    if (p->type == fabr_pt_alt)
-    {
-      winner = t; break;
-    }
-    if (winner != NULL && t->length <= winner->length)
-    {
-      t->result = 0; continue;
-    }
-    if (winner) winner->result = 0;
-    winner = t;
-  }
-
-  return fabr_tree_malloc(
-    result, offset, winner ? winner->length : 0, NULL, p, first);
-}
-
-fabr_tree *fabr_p_seq(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  short result = 1;
-  size_t length = 0;
-  size_t off = offset;
-
-  fabr_tree *first = NULL;
-  fabr_tree *prev = NULL;
-
-  for (size_t i = 0; p->children[i] != NULL; i++)
-  {
-    fabr_parser *pc = p->children[i];
-
-    fabr_tree *t = fabr_do_parse(input, off, depth + 1, pc, flags);
-
-    if (first == NULL) first = t;
-    if (prev != NULL) prev->sibling = t;
-    prev = t;
-
-    if (t->result != 1) { result = t->result; length = 0; break; }
-    off += t->length;
-    length += t->length;
-  }
-
-  return fabr_tree_malloc(result, offset, length, NULL, p, first);
-}
-
-fabr_tree *fabr_p_name(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  fabr_tree *t = fabr_do_parse(input, offset, depth + 1, p->children[0], flags);
-
-  return fabr_tree_malloc(t->result, t->offset, t->length, NULL, p, t);
-}
-
-fabr_tree *fabr_p_n(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  if (p->children == NULL)
-  {
-    char *note = flu_sprintf("unlinked fabr_n(\"%s\")", p->name);
-    fabr_tree *t = fabr_tree_malloc(-1, offset, 0, note, p, NULL);
-    free(note);
-    return t;
-  }
-  return fabr_do_parse(input, offset, depth, p->children[0], flags);
-}
-
-void fabr_range_next(char *range, char *next)
-{
-  size_t b_index = 1;
-  char a = range[0];
-  if (a == '\\') { a = range[1]; b_index = 2; }
-  if (a == '\0') { next[0] = 0; next[1] = 0; next[2] = 0; return; }
-
-  char b = range[b_index];
-  char c = (b != '\0') ? range[b_index + 1] : 'X'; // don't read too far
-  if (b != '-' || c == '\0') { next[0] = 1; next[1] = a; next[2] = a; return; }
-  b = range[++b_index];
-  if (b == '\\') b = range[++b_index];
-
-  next[0] = 2; next[1] = a; next[2] = b;
-}
-
-fabr_tree *fabr_p_range(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  char *range = p->string;
-  char c = (input + offset)[0];
-
-  if (strcmp(range, "$") == 0)
-  {
-    return fabr_tree_malloc(c == '\0', offset, 0, NULL, p, NULL);
-  }
-
-  if (c == '\0') return fabr_tree_malloc(0, offset, 0, NULL, p, NULL);
-
-  short success = 0;
-
-  if (strcmp(range, ".") == 0)
-  {
-    success = (c != '\n');
-    return fabr_tree_malloc(success, offset, success ? 1 : 0, NULL, p, NULL);
-  }
-
-  short not = (range[0] == '^'); if (not) ++range;
-
-  char *next = calloc(3, sizeof(char));
-  while (1)
-  {
-    fabr_range_next(range, next);
-    if (next[0] == 0) break;
-    if (c >= next[1] && c <= next[2]) { success = 1; break; }
-    range = range + next[0];
-  }
-  free(next);
-
-  if (not) success = ( ! success);
-  return fabr_tree_malloc(success, offset, success ? 1 : 0, NULL, p, NULL);
-}
-
-fabr_tree *fabr_p_rex(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  fabr_tree *t = fabr_do_parse(input, offset, depth + 1, p->children[0], flags);
-
-  fabr_tree *r = fabr_tree_malloc(t->result, offset, t->length, NULL, p, NULL);
-
-  if ((flags & FABR_F_PRUNE) && t->result == 1)
-    fabr_tree_free(t);
-  else
-    r->child = t;
-
-  return r;
-}
-
-fabr_tree *fabr_p_error(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  return fabr_tree_malloc(-1, offset, 0, strdup(p->string), p, NULL);
-}
-
-fabr_tree *fabr_p_not_implemented(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  char *s0 = fabr_parser_to_string(p);
-  char *s1 = flu_sprintf("not implemented %s", s0);
-  fabr_tree *t = fabr_tree_malloc(-1, offset, 0, s1, p, NULL);
-  free(s0);
-  free(s1);
-  return t;
-}
-
-fabr_p_func *fabr_p_funcs[] = { // const ?
-  fabr_p_string,
-  fabr_p_rep,
-  fabr_p_alt,
-  fabr_p_alt, //altg
-  fabr_p_seq,
-  fabr_p_not_implemented, //fabr_p_not,
-  fabr_p_name,
-  fabr_p_not_implemented, //fabr_p_presence,
-  fabr_p_not_implemented, //fabr_p_absence,
-  fabr_p_n,
-  fabr_p_not_implemented, //fabr_p_r
-  fabr_p_not_implemented, //fabr_p_q
-  fabr_p_range,
-  fabr_p_rex,
-  fabr_p_error
-};
-
-static fabr_tree *fabr_do_parse(
-  const char *input,
-  size_t offset, size_t depth,
-  fabr_parser *p,
-  int flags)
-{
-  //printf("input >%s<\n", input + offset);
-
-  if (depth > MAX_DEPTH)
-  {
-    return fabr_tree_malloc(
-      -1, offset, 0, "too much recursion, parser loop?", p, NULL);
-  }
-
-  fabr_tree *t = fabr_p_funcs[p->type](input, offset, depth, p, flags);
-
-  int match = flags & FABR_F_MATCH;
-
-  if (
-    match == 0 && ((flags & FABR_F_PRUNE) == 0 || t->child == NULL)
-  ) return t;
-
-  fabr_tree *first = t->child;
-  t->child = NULL;
-  fabr_tree **sibling = &t->child;
-  fabr_tree *next = NULL;
-  for (fabr_tree *c = first; c != NULL; c = next)
-  {
-    next = c->sibling; c->sibling = NULL;
-
-    if (match || t->result == 0 || c->result == 0)
-    {
-      fabr_tree_free(c);
-    }
-    else
-    {
-      *sibling = c; sibling = &c->sibling;
-    }
-  }
-
-  return t;
-}
-
-
-//
-// entry point
-
-fabr_tree *fabr_parse(const char *input, size_t offset, fabr_parser *p)
-{
-  return fabr_parse_f(input, offset, p, FABR_F_PRUNE);
-}
-
-fabr_tree *fabr_parse_all(const char *input, size_t offset, fabr_parser *p)
-{
-  return fabr_parse_f(input, offset, p, FABR_F_PRUNE | FABR_F_ALL);
-}
-
-fabr_tree *fabr_parse_f(
-  const char *input, size_t offset, fabr_parser *p, int flags)
-{
-  if (p->id == NULL) fabr_set_ids(p);
-
-  fabr_tree *t = fabr_do_parse(input, offset, 0, p, flags);
-
-  if ((flags & FABR_F_ALL) == 0) return t;
-
-  // check if all the input got parsed
-
-  if (t->result == 1 && t->length < strlen(input))
-  {
-    t->result = 0;
-    t->note = strdup(""
-      "not all the input could be parsed");
-  }
-  else if (t->result == 1 && t->length > strlen(input))
-  {
-    t->result = -1;
-    t->note = strdup(""
-      "something wrong happened, something longer than the input got parsed");
-  }
-
-  return t;
-}
-
-int fabr_match(const char *input, fabr_parser *p)
-{
-  fabr_tree *t = fabr_parse_f(
-    input, 0, p, FABR_F_ALL | FABR_F_PRUNE | FABR_F_MATCH);
-  //fabr_tree *t = fabr_parse_f(
-  //  input, 0, p, FABR_F_ALL | FABR_F_PRUNE);
-  //puts(fabr_tree_to_string(t, input));
-
-  int r = t->result;
-
-  fabr_tree_free(t);
-
-  return r;
+  free(s);
 }
 
 
@@ -1161,44 +245,75 @@ char *fabr_lookup_string(const char *input, fabr_tree *t, const char *name)
   return tt ? fabr_tree_string(input, tt) : NULL;
 }
 
-static void fabr_t_list(flu_list *l, fabr_tree *t, fabr_tree_func *f)
+static void fabr_t_list(
+  flu_list *l, fabr_tree *t, fabr_tree_func *f, int skip)
 {
-  short r = f(t);
+  if ( ! skip)
+  {
+    short r = f(t);
 
-  if (r < 0) { return; }
-  if (r > 0) { flu_list_add(l, t); return; }
+    if (r < 0) { return; }
+    if (r > 0) { flu_list_add(l, t); return; }
+  }
 
   for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
   {
-    fabr_t_list(l, c, f);
+    fabr_t_list(l, c, f, 0);
   }
 }
 
 flu_list *fabr_tree_list(fabr_tree *t, fabr_tree_func *f)
 {
-  flu_list *l = flu_list_malloc();
+  if (t == NULL) return NULL;
 
-  fabr_t_list(l, t, f);
+  flu_list *l = flu_list_malloc();
+  fabr_t_list(l, t, f, 0);
 
   return l;
 }
 
-static void fabr_t_list_named(flu_list *l, fabr_tree *t, const char *name)
+flu_list *fabr_tree_list_cn(fabr_tree *t, fabr_tree_func *f)
 {
-  if (t->result != 1) { return; }
-  if (t->name && strcmp(t->name, name) == 0) { flu_list_add(l, t); return; }
+  if (t == NULL) return NULL;
+
+  flu_list *l = flu_list_malloc();
+  fabr_t_list(l, t, f, 1);
+
+  return l;
+}
+
+static void fabr_t_list_named(
+  flu_list *l, fabr_tree *t, const char *name, int skip)
+{
+  if ( ! skip)
+  {
+    if (t->result != 1) { return; }
+    if (t->name && name == NULL) { flu_list_add(l, t); return; }
+    if (t->name && strcmp(t->name, name) == 0) { flu_list_add(l, t); return; }
+  }
 
   for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
   {
-    fabr_t_list_named(l, c, name);
+    fabr_t_list_named(l, c, name, 0);
   }
 }
 
 flu_list *fabr_tree_list_named(fabr_tree *t, const char *name)
 {
-  flu_list *l = flu_list_malloc();
+  if (t == NULL) return NULL;
 
-  fabr_t_list_named(l, t, name);
+  flu_list *l = flu_list_malloc();
+  fabr_t_list_named(l, t, name, 0);
+
+  return l;
+}
+
+flu_list *fabr_tree_list_named_cn(fabr_tree *t, const char *name)
+{
+  if (t == NULL) return NULL;
+
+  flu_list *l = flu_list_malloc();
+  fabr_t_list_named(l, t, name, 1);
 
   return l;
 }
@@ -1213,20 +328,6 @@ fabr_tree **fabr_tree_collect(fabr_tree *t, fabr_tree_func *f)
   return ts;
 }
 
-fabr_parser *fabr_p_child(fabr_parser *p, size_t index)
-{
-  // expensive, but safer...
-  // but well, what's the point the fabr_parser struct is public...
-
-  if (p->children) for (size_t i = 0; p->children[i] != NULL; i++)
-  {
-    if (index == 0) return p->children[i];
-    --index;
-  }
-
-  return NULL;
-}
-
 fabr_tree *fabr_t_child(fabr_tree *t, size_t index)
 {
   for (fabr_tree *c = t->child; c != NULL; c = c->sibling)
@@ -1238,292 +339,899 @@ fabr_tree *fabr_t_child(fabr_tree *t, size_t index)
   return NULL;
 }
 
-//
-// fabr_rex
-
-static ssize_t fabr_find_range_end(const char *s)
+fabr_tree *fabr_t_path(fabr_tree *t, size_t index, ...)
 {
-  for (size_t i = 0; ; ++i)
+  t = fabr_t_child(t, index);
+
+  if (t == NULL) return NULL;
+
+  va_list ap; va_start(ap, index);
+  while (t)
   {
-    char c = s[i];
-
-    if (c == '\0') break;
-    if (c == '\\') { ++i; continue; }
-    if (c == ']') return i;
+    int i = va_arg(ap, int);
+    if (i < 0) break;
+    t = fabr_t_child(t, i);
   }
-
-  return -1;
-}
-
-static ssize_t fabr_find_group_end(const char *s)
-{
-  //printf("afge s >%s<\n", s);
-
-  for (size_t i = 0, stack = 0, range = 0; ; ++i)
-  {
-    char c = s[i];
-
-    //printf("afge 0 c:%zu '%c'\n", i, c);
-
-    if (c == '\0') break;
-    if (c == '\\') { ++i; continue; }
-
-    //printf("afge 1 c:%zu '%c'\n", i, c);
-
-    if (c == '[') { range = 1; continue; };
-    if (c == ']') { range = 0; continue; };
-    if (range) continue;
-
-    if (stack == 0 && c == ')') return i;
-    if (c == ')') --stack;
-    if (c == '(') ++stack;
-  }
-
-  return -1;
-}
-
-static size_t fabr_parse_rex_quant(const char *s, fabr_parser *p)
-{
-  char c = s[0];
-
-  if (c == '?') { p->min = 0; p->max = 1; return 1; }
-  if (c == '*') { p->min = 0; p->max = -1; return 1; }
-  if (c == '+') { p->min = 1; p->max = -1; return 1; }
-
-  if (c != '{') { p->min = -1; p->max = -1; return 0; }
-
-  char *s0 = strdup(s + 1);
-  char *s1 = NULL;
-
-  ssize_t j = flu_index(s0, 0, '}');
-  s0[j] = '\0';
-  char *comma = strchr(s0, ',');
-
-  if (comma != NULL) {
-    s1 = strdup(comma + 1);
-    s0[comma - s0] = '\0';
-  }
-  p->min = atoi(s0);
-  p->max = s1 ? atoi(s1) : p->min;
-
-  if (s1) free(s1);
-  free(s0);
-
-  return j + 2;
-}
-
-static fabr_parser *fabr_error(const char *format, ...)
-{
-  va_list ap;
-  va_start(ap, format);
-  flu_sbuffer *b = flu_sbuffer_malloc();
-  flu_sbvprintf(b, format, ap);
   va_end(ap);
 
-  fabr_parser *p = fabr_parser_malloc(fabr_pt_error, NULL);
-  p->string = flu_sbuffer_to_string(b);
-
-  return p;
+  return t;
 }
 
-static fabr_parser *fabr_regroup_rex(fabr_p_type t, flu_list *children)
+
+//
+// parters (partial parsers)
+
+static fabr_tree *str(fabr_input *i, char *rx, size_t rxn)
 {
-  fabr_parser *p = fabr_parser_malloc(t, NULL);
+  //printf("str() i+o>%s< vs >%.*s<\n", i->string + i->offset, (int)rxn, rx);
 
-  flu_list *l = flu_list_malloc();
+  fabr_tree *r = fabr_tree_malloc(NULL, "str", i, rxn);
 
-  for (flu_node *n = children->first; n != NULL; n = n->next)
+  if (strncmp(i->string + i->offset, rx, rxn) != 0)
   {
-    fabr_parser *pp = (fabr_parser *)n->item;
-
-    if (pp->type != t) { flu_list_unshift(l, pp); continue; }
-
-    size_t s = 0; while (pp->children[s] != NULL) ++s;
-    for (size_t i = s; i > 0; --i) flu_list_unshift(l, pp->children[i - 1]);
-    free(pp->children);
-    pp->children = NULL;
-    fabr_parser_free(pp);
+    r->result = 0;
+  }
+  else
+  {
+    i->offset += rxn;
+    r->length = rxn;
   }
 
-  p->children = (fabr_parser **)flu_list_to_array(l, FLU_F_EXTRA_NULL);
-
-  flu_list_free(l);
-
-  return p;
+  return r;
 }
 
-static fabr_parser *fabr_decompose_rex_sequence(const char *s, ssize_t n)
+fabr_tree *fabr_str(
+  char *name, fabr_input *i, char *s)
 {
-  //printf("adrs(\"%s\", %li) \"%s\"\n", s, n, strndup(s, n));
+  //printf("str()  >[0;34m%s[0;0m<\n", s);
+  //printf("i+o    >[1;33m%s[0;0m<\n", i->string + i->offset);
 
-  size_t sl = strlen(s);
+  fabr_tree *r = str(i, s, strlen(s));
 
-  flu_list *children = flu_list_malloc();
+  r->name = name ? strdup(name) : NULL;
 
-  fabr_parser *p = NULL;
-  char *ss = NULL;
-  size_t ssi = 0;
+  //printf("str()  result %d %zu\n", r->result, r->length);
 
-  for (size_t si = 0; ; ++si)
+  return r;
+}
+
+//static size_t mm = 0;
+
+fabr_tree *fabr_qmark(fabr_input *i) { return NULL; }
+fabr_tree *fabr_star(fabr_input *i) { return NULL; }
+fabr_tree *fabr_plus(fabr_input *i) { return NULL; }
+
+fabr_tree *fabr_seq(
+  char *name, fabr_input *i, fabr_parser *p, ...)
+{
+  //size_t m = mm++; printf("S %zu fabr_seq() \"%s\"\n", m, name);
+
+  size_t off = i->offset;
+
+  fabr_tree *r = fabr_tree_malloc(name, "seq", i, 0);
+
+  fabr_tree **next = &r->child;
+
+  va_list ap; va_start(ap, p);
+  while (1)
   {
-    char c = (si == n) ? '\0' : s[si];
+    if (r->result != 1) break;
+
+    if (p == NULL) break;
+
+    if (p == fabr_qmark || p == fabr_star || p == fabr_plus)
+    {
+      r->result = -1;
+      r->note = strdup("bad position for fabr_qmark, _star or _plus");
+      break;
+    }
+
+    fabr_parser *np = va_arg(ap, fabr_parser *);
+
+    for (size_t count = 0; ; count++)
+    {
+      size_t ffo = i->offset;
+
+      fabr_tree *t = p(i);
+
+      if (t->result == -1) { r->result = -1; break; }
+
+      if (t->result == 0 && i->flags & FABR_F_PRUNE)
+      {
+        fabr_tree_free(t);
+        t = NULL;
+      }
+      else
+      {
+        *next = t;
+        next = &t->sibling;
+        r->length += t->length;
+      }
+
+      if (np == fabr_qmark) // ?
+      {
+        break;
+      }
+      /* else */ if (np == fabr_star) // *
+      {
+        if (t == NULL || t->result == 0) break;
+        if (i->offset == ffo) break; // no progress
+      }
+      else if (np == fabr_plus) // +
+      {
+        if (t == NULL || t->result == 0)
+        {
+          if (count == 0) r->result = 0;
+          break;
+        }
+        if (i->offset == ffo) break; // no progress
+      }
+      else
+      {
+        if (t == NULL || t->result == 0) r->result = 0;
+        break;
+      }
+    }
+
+    p = np; // well...
+
+    if (p == fabr_qmark || p == fabr_star || p == fabr_plus)
+    {
+      p = va_arg(ap, fabr_parser *);
+    }
+  }
+  va_end(ap);
+
+  if (r->result != 1) { r->length = 0; i->offset = off; }
+
+  //printf(
+  //  "  %zu fabr_seq() \"%s\" res %d len %zu\n", m, name, r->result, r->length);
+
+  return r;
+}
+
+fabr_tree *fabr_altgr(
+  char *name, fabr_input *i, short greedy, fabr_parser *p, ...)
+{
+  //size_t m = mm++; printf("A %zu fabr_altg() %d \"%s\"\n", m, greedy, name);
+
+  size_t off = i->offset;
+
+  fabr_tree *r = fabr_tree_malloc(name, greedy ? "altg" : "alt", i, 0);
+  r->result = 0;
+
+  fabr_tree **next = &r->child;
+
+  fabr_tree *winner = NULL;
+
+  va_list ap; va_start(ap, p);
+  while (1)
+  {
+    fabr_tree *t = p(i);
+    *next = t;
+
+    if (t->result == -1) { winner = t; break; }
+
+    if (t->result == 1)
+    {
+      if ( ! greedy) { winner = t; break; }
+      if (winner == NULL || t->length >= winner->length)
+      {
+        if (winner) { winner->result = 0; winner->length = 0; }
+        winner = t;
+      }
+      else
+      {
+        t->result = 0;
+      }
+    }
+
+    p = va_arg(ap, fabr_parser *); if (p == NULL) break;
+
+    i->offset = off;
+    next = &(t->sibling);
+  }
+  va_end(ap);
+
+  if (winner)
+  {
+    r->result = winner->result;
+    r->length = winner->length;
+    i->offset = off + winner->length;
+  }
+
+  //fabr_puts(r, i->string, 3);
+
+  if (r->result == 1 && (i->flags & FABR_F_PRUNE)) fabr_prune(r);
+
+  //printf(
+  //  "  %zu fabr_alt() %d \"%s\" res %d len %zu\n",
+  //  m, greedy, name, r->result, r->length);
+
+  return r;
+}
+
+fabr_tree *fabr_rep(
+  char *name, fabr_input *i, fabr_parser *p, size_t min, size_t max)
+{
+  size_t off = i->offset;
+
+  fabr_tree *r = fabr_tree_malloc(name, "rep", i, 0);
+
+  fabr_tree **next = &r->child;
+  size_t count = 0;
+
+  while (1)
+  {
+    size_t ffo = i->offset;
+
+    fabr_tree *t = p(i);
+
+    if (t->result == 0)
+    {
+      if (i->flags & FABR_F_PRUNE) fabr_tree_free(t); else *next = t;
+      break;
+    }
+
+    *next = t;
+
+    if (t->result == -1) { r->result = -1; break; }
+
+    r->length += t->length;
+
+    if (++count == max) break;
+
+    if (ffo == i->offset) break; // no progress
+
+    next = &(t->sibling);
+  }
+
+  if (r->result == 1 && count < min) r->result = 0;
+  if (r->result != 1) { r->length = 0; i->offset = off; }
+
+  return r;
+}
+
+static char rx_at(char *rx, size_t rxn, size_t index)
+{
+  return rxn > index ? rx[index] : 0;
+}
+
+static char *rx_chr(char *rx, size_t rxn, int c)
+{
+  char *r = strchr(rx, c);
+
+  return r - rx >= rxn ? NULL : r;
+}
+
+typedef fabr_tree *fabr_rex_parser(fabr_input *i, char *rx, size_t rxn);
+
+static void rng_next(char *rx, size_t rxn, char *next)
+{
+  size_t b_index = 1;
+
+  char a = rx_at(rx, rxn, 0);
+  if (a == '\\') { a = rx_at(rx, rxn, 1); b_index = 2; }
+  if (a == '\0') { next[0] = 0; next[1] = 0; next[2] = 0; return; }
+
+  char b = rx_at(rx, rxn, b_index);
+  char c = (b != '\0') ? rx_at(rx, rxn, b_index + 1) : 'X'; // don't go over
+  if (b != '-' || c == '\0') { next[0] = 1; next[1] = a; next[2] = a; return; }
+
+  b = rx_at(rx, rxn, ++b_index);
+  if (b == '\\') b = rx_at(rx, rxn, ++b_index);
+  next[0] = 2; next[1] = a; next[2] = b;
+}
+
+static fabr_tree *rng(fabr_input *i, char *rx, size_t rxn)
+{
+  //printf("        rng() >[0;34m%.*s[0;0m<\n", (int)rxn, rx);
+  //printf("        i+o   >[1;33m%s[0;0m<\n", i->string + i->offset);
+
+  fabr_tree *r = fabr_tree_malloc(NULL, "rng", i, rxn);
+
+  char c = (i->string + i->offset)[0];
+  char irc = rx_at(rx, rxn, 0);
+
+  if (irc == '$') { r->result = (c == '\0'); return r; }
+  if (c == '\0') { r->result = 0; return r; }
+
+  if (irc == '.')
+  {
+    if (c == '\n') r->result = 0; else r->length = 1;
+    return r;
+  }
+
+  r->result = 0;
+
+  short not = (irc == '^'); if (not) { rx++; rxn--; }
+
+  char next[] = { 0, 0, 0 };
+  while (1)
+  {
+    rng_next(rx, rxn, next);
+    if (next[0] == 0) break;
+    if (c >= next[1] && c <= next[2]) { r->result = 1; break; }
+    rx += next[0]; rxn -= next[0];
+  }
+
+  if (not) r->result = ( ! r->result);
+
+  if (r->result == 1)
+  {
+    r->length = 1;
+    i->offset += 1;
+  }
+
+  //printf("        rng result: %d %zu\n", r->result, r->length);
+
+  return r;
+}
+
+fabr_tree *fabr_rng(
+  char *name, fabr_input *i, char *range)
+{
+  fabr_tree *r = rng(i, range, strlen(range));
+
+  r->name = name ? strdup(name) : NULL;
+
+  return r;
+}
+
+static fabr_tree *ferr(fabr_input *i, char *parter, char *format, ...)
+{
+  fabr_tree *r = fabr_tree_malloc(NULL, parter, i, 0);
+  r->result = -1;
+
+  va_list ap; va_start(ap, format);
+  r->note = flu_svprintf(format, ap);
+  va_end(ap);
+
+  return r;
+}
+
+static ssize_t quantify(char *rx, size_t rxn, size_t *reps)
+{
+  char c = rx_at(rx, rxn, 0);
+
+  if (c == '?') { reps[0] = 0; reps[1] = 1; return 1; }
+  if (c == '*') { reps[0] = 0; reps[1] = 0; return 1; }
+  if (c == '+') { reps[0] = 1; reps[1] = 0; return 1; }
+  if (c != '{') return 0;
+
+  // find the }
+
+  size_t z = 0;
+
+  for (size_t i = 1, comma = 0; ; i++) {
+
+    char cc = rx_at(rx, rxn, i);
+
+    if (cc == '\0') { break; }
+    if (cc == ',') { comma++; if (comma > 1) break; /*else*/ continue; }
+    if (cc == '}') { z = i; break; }
+    if (cc < '0' || cc > '9') { break; }
+  }
+
+  if (z == 0) return -1; // error
+
+  // } found
+
+  reps[0] = strtol(rx + 1, NULL, 10);
+
+  char *comma = rx_chr(rx, rxn, ',');
+
+  reps[1] = comma == NULL ? reps[0] : strtol(comma + 1, NULL, 10);
+  return z + 1;
+}
+
+static size_t find_range_end(char *rx, size_t rxn)
+{
+  for (size_t i = 1; ; i++)
+  {
+    char c = rx_at(rx, rxn, i);
+
+    if (c == '\0') return 0;
+    if (c == '\\') { i++; continue; }
+    if (c != ']') continue;
+    return i;
+  }
+
+  return 0;
+}
+
+static size_t find_group_end(char *rx, size_t rxn)
+{
+  for (size_t i = 1, range = 0, groups = 0; ; i++)
+  {
+    char c = rx_at(rx, rxn, i);
 
     if (c == '\0') break;
-    //if (c == '\\') { continue; }
+    if (c == '\\') { i++; continue; }
 
-    if (c == '?' || c == '*' || c == '+' || c == '{')
-    {
-      if (p == NULL && children->size < 1)
-      {
-        p = fabr_error("orphan quantifier >%s<", s + si);
-        flu_list_unshift(children, p);
-        break;
-      }
+    if (range == 0 && c == '[') { range = 1; continue; }
+    if (range == 1 && c == ']') { range = 0; continue; }
+    if (range == 1) continue;
 
-      fabr_parser *r = fabr_parser_malloc(fabr_pt_rep, NULL);
-      si = si - 1 + fabr_parse_rex_quant(s + si, r);
-
-      if (p == NULL || p->type != fabr_pt_string || strlen(p->string) == 1)
-      {
-        r->children = fabr_single_child((fabr_parser *)children->first->item);
-        flu_list_shift(children);
-      }
-      else // have to grab the last char in the current string...
-      {
-        size_t ci = strlen(p->string) - 1;
-        fabr_parser *p0 = fabr_parser_malloc(fabr_pt_string, NULL);
-        p0->string = calloc(2, sizeof(char));
-        p0->string[0] = p->string[ci];
-        p->string[ci] = '\0';
-        r->children = fabr_single_child(p0);
-      }
-      flu_list_unshift(children, r);
-      p = NULL;
-      continue;
-    }
-
-    if (c == '[')
-    {
-      ssize_t ei = fabr_find_range_end(s + si + 1);
-      if (ei == -1)
-      {
-        p = fabr_error("range not closed >%s<", s + si);
-        flu_list_unshift(children, p);
-        break;
-      }
-      fabr_parser *r = fabr_parser_malloc(fabr_pt_range, NULL);
-      r->string = strndup(s + si + 1, ei);
-      flu_list_unshift(children, r);
-      p = NULL;
-      si = si + ei + 1;
-      //printf("post range >%s<\n", s + si + 1);
-      continue;
-    }
-
-    if (c == '(')
-    {
-      ssize_t ei = fabr_find_group_end(s + si + 1);
-      //printf("group end for >%s< is at %i\n", s + si + 1, ei);
-      if (ei == -1)
-      {
-        p = fabr_error("group not closed >%s<", s + si);
-        flu_list_unshift(children, p);
-        break;
-      }
-      fabr_parser *g = fabr_decompose_rex_group(s + si + 1, ei);
-      flu_list_unshift(children, g);
-      p = NULL;
-      si = si + ei + 1;
-      //printf("post group >%s<\n", s + si + 1);
-      continue;
-    }
-
-    if (c == '.' || c == '$')
-    {
-      fabr_parser *r = fabr_parser_malloc(fabr_pt_range, NULL);
-      r->string = calloc(2, sizeof(char));
-      r->string[0] = c;
-      flu_list_unshift(children, r);
-      p = NULL;
-      continue;
-    }
-
-    if (p == NULL || p->type != fabr_pt_string) {
-      p = fabr_parser_malloc(fabr_pt_string, NULL);
-      p->string = calloc(sl - si + 1, sizeof(char));
-      flu_list_unshift(children, p);
-      ss = p->string;
-      ssi = 0;
-    }
-
-    if (c == '\\') { ss[ssi++] = s[++si]; continue; }
-
-    ss[ssi++] = c;
+    if (c == '(') { groups++; continue; }
+    if (c != ')') continue;
+    if (groups == 0) return i;
+    groups--;
   }
 
-  if (children->size > 1)
-    p = fabr_regroup_rex(fabr_pt_seq, children);
-  else /*if (children->size == 1)*/
-    p = (fabr_parser *)children->first->item;
-  //else
-    //p = NULL;
-
-  flu_list_free(children);
-
-  return p;
+  return 0;
 }
 
-static fabr_parser *fabr_decompose_rex_group(const char *s, ssize_t n)
+static ssize_t find_str_end(char *rx, size_t rxn)
 {
-  //printf("adrG(\"%s\", %li) \"%s\"\n", s, n, strndup(s, n));
+  //printf("fse >%s<%zu\n", rx, rxn);
+  //printf("fse >%.*s<%zu\n", (int)rxn, rx, rxn);
 
-  flu_list *children = flu_list_malloc();
-
-  for (size_t i = 0, j = 0, stack = 0, range = 0; ; j++)
+  for (size_t i = 0; ; i++)
   {
-    char c = (j >= n) ? '\0' : s[j];
-    //char c1 = (c == '\0') ? '\0' : s[j + 1];
-    //printf("i: %zu, j: %zu c+1: >%c%c<\n", i, j, c, c1);
+    char c = rx_at(rx, rxn, i);
 
-    //if (c == '\\') printf(" \\ + %c\n", s[j + 1]);
-    //if (c == '\\' && (c1 == '(' || c1 == ')')) { j++; continue; }
-    if (c == '\\') { j++; continue; }
+    //printf("fse c'%c'\n", c);
 
-    if (range && c != ']' && c != '\0') continue;
-    if (range && c == ']') { range = 0; continue; }
-    //
-    if (c == '[') { range = 1; continue; }
+    if (c == '\0') return i;
+    if (c == '[' || c == '(') return i;
+    if (c == '\\') { i++; continue; }
 
-    if (c == '(') { ++stack; continue; }
-    if (c == ')') { --stack; continue; }
+    if (c != '?' && c != '*' && c != '+' && c != '{') continue;
 
-    if (c == '|' && stack > 0) continue;
+    if (i == 0) break;
 
-    if (c == '\0' || c == '|')
-    {
-      fabr_parser *p = fabr_decompose_rex_sequence(s + i, j - i);
-      flu_list_unshift(children, p);
-      i = j + 1;
-      if (c == '\0') break;
-    }
+    if (i == 1) return i; // a*
+    //if (i == 2 && rx_at(rx, rxn, 0) == '\\') return 0; // \a*
+
+    //if (rx_at(rx, rxn, i - 2) == '\\') return i - 2;
+    if (rx_at(rx, rxn, i - 2) == '\\') return i - 1;
+    return i - 1; // \a\a*
   }
 
-  fabr_parser *p = NULL;
-
-  if (children->size > 1)
-    p = fabr_regroup_rex(fabr_pt_alt, children);
-  else /*if (children->size == 1)*/
-    p = (fabr_parser *)children->first->item;
-  //else
-    //p = NULL;
-
-  flu_list_free(children);
-
-  return p;
+  return -1; // error
 }
 
-//commit 2e6b6c066af4c429f9cada525b26dfc93b3e98ae
-//Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Mon Jan 5 06:38:33 2015 +0900
+static fabr_tree *rex_str(fabr_input *i, char *rx, size_t rxn)
+{
+  //printf(
+  //  "      * rex_str() >[0;34m%.*s[0;0m<\n", (int)rxn, rx);
+  //printf(
+  //  "        i+o       >[1;33m%s[0;0m<\n", i->string + i->offset);
+
+  fabr_tree *r = fabr_tree_malloc(NULL, "rex_str", i, rxn);
+
+  size_t ii = 0;
+  size_t ri = 0;
+
+  while (1)
+  {
+    char rc = rx_at(rx, rxn, ri++);
+    char prc = rc;
+
+    if (rc == '\\') rc = rx_at(rx, rxn, ri++);
+    //printf(". rc >%c<\n", rc);
+    if (rc == '\0') break;
+
+    char ic = *(i->string + i->offset + ii++);
+    //printf("  ic >%c<\n", ic);
+
+    if (rc == 'Z' && prc == '\\') // EOS
+    {
+      if (ic != '\0') r->result = 0;
+      ii--; break;
+    }
+    if (rc == '$' && prc == rc) // unescaped dollar
+    {
+      if (ic != '\n' && ic != '\r' && ic != '\0') r->result = 0;
+      ii--; break;
+    }
+
+    if (ic == '\0') { r->result = 0; break; }
+
+    if (rc == '.' && prc == rc && ic != '\n' && ic != '\r') continue;
+
+    if (ic != rc) { r->result = 0; break; }
+  }
+
+  if (r->result == 1) {
+    i->offset += ii;
+    r->length = ii;
+  }
+  if (r->length == 0) r->result = 0; // ...
+
+  //printf(
+  //  "        rex_str() result: %d %zu\n", r->result, r->length);
+
+  return r;
+}
+
+static fabr_tree *rex_alt(fabr_input *i, char *rx, size_t rxn);
+  // forward declaration
+
+static fabr_tree *rex_rep(fabr_input *i, char *rx, size_t rxn)
+{
+  //size_t m = mm++;
+  //printf(
+  //  "    * %zu rex_rep() >[0;34m%.*s[0;0m<\n", m, (int)rxn, rx);
+  //printf(
+  //  "    * %zu i+o       >[1;33m%s[0;0m<\n", m, i->string + i->offset);
+
+  char rc = rx_at(rx, rxn, 0);
+
+  fabr_rex_parser *p = NULL;
+  ssize_t z = 0;
+  size_t off = 0;
+
+  if (rc == '[')
+  {
+    p = rng;
+    z = find_range_end(rx, rxn);
+    //printf("      %zu fre >[0;34m%s[0;0m< --> %zu\n", m, (int)rxn, rx, z);
+    if (z == 0) return ferr(i, "rex_rep", "range not closed >%s<%zu", rx, rxn);
+    off = 1;
+  }
+  else if (rc == '(')
+  {
+    p = rex_alt;
+    z = find_group_end(rx, rxn);
+    //printf("      %zu fge >[0;34m%s[0;0m< --> %zu\n", m, (int)rxn, rx, z);
+    if (z == 0) return ferr(i, "rex_rep", "group not closed >%s<%zu", rx, rxn);
+    off = 1;
+  }
+  else
+  {
+    p = rex_str;
+    z = find_str_end(rx, rxn);
+    //printf("      %zu fse >[0;34m%.*s[0;0m< --> %zd\n", m, (int)rxn, rx, z);
+    if (z == -1) return ferr(i, "rex_rep", "lone quantifier >%s<%zu", rx, rxn);
+  }
+
+  size_t mm[] = { 0, 0 };
+  ssize_t mml = quantify(rx + z + off, rxn - z - off, mm);
+
+  //printf(
+  //  "      %zu qtf >%s<%zu mml %zd mm[%zu, %zu]\n",
+  //  //m, rx + z + off, rxn - z - off, mml, mm[0], mm[1]);
+  //  0, rx + z + off, rxn - z - off, mml, mm[0], mm[1]);
+
+  if (mml == -1)
+  {
+    return ferr(i, "rex_rep", "invalid {min[,max]} >%s<%zu", rx, rxn);
+  }
+  if (mml == 0)
+  {
+    fabr_tree *r = p(i, rx + off, z - off);
+    r->rexlen = z + off + mml;
+    return r;
+  }
+
+  // yes, the following code is a repetition of what comes in fabr_rep()
+
+  fabr_tree *r = fabr_tree_malloc(NULL, "rex_rep", i, z + off + mml);
+
+  fabr_tree **next = &r->child;
+  size_t count = 0;
+
+  while (1)
+  {
+    size_t ffo = i->offset;
+
+    fabr_tree *t = p(i, rx + off, z - off);
+    *next = t;
+
+    if (t->result == -1) { r->result = -1; break; }
+    if (t->result == 0) break;
+
+    r->length += t->length;
+
+    if (++count == mm[1]) break;
+
+    if (ffo == i->offset) break; // no progress
+
+    next = &(t->sibling);
+  }
+
+  if (r->result == 1 && count < mm[0]) r->result = 0;
+  if (r->result != 1) r->length = 0;
+
+  return r;
+}
+
+static fabr_tree *rex_seq(fabr_input *i, char *rx, size_t rxn)
+{
+  //size_t m = mm++;
+  //printf("  * %zu rex_seq() >[0;34m%.*s[0;0m<\n", m, (int)rxn, rx);
+  //printf("  * %zu i+o       >[1;33m%s[0;0m<\n", m, i->string + i->offset);
+
+  size_t off = i->offset;
+
+  fabr_tree *r = fabr_tree_malloc(NULL, "rex_seq", i, rxn);
+
+  fabr_tree *prev = NULL;
+  fabr_tree **next = &r->child;
+
+  char *crx = rx;
+  size_t crxn = rxn;
+
+  while (1)
+  {
+    if (rx_at(crx, crxn, 0) == '\0') break;
+
+    *next = rex_rep(i, crx, crxn);
+    prev = *next;
+    next = &(prev->sibling);
+
+    //printf(
+    //  "    %zu prev %s r%d l%zu rl%zu\n",
+    //  m, prev->parter, prev->result, prev->length, prev->rexlen);
+
+    if (prev->result != 1) break;
+
+    r->length += prev->length;
+
+    crx += prev->rexlen; crxn -= prev->rexlen;
+
+    //printf(
+    //  "    %zu post i+o>%s< crx>%s<%zu\n",
+    //  m, i->string + i->offset, crx, crxn);
+  }
+
+  r->result = prev ? prev->result : 0;
+
+  if (r->result != 1) { r->length = 0; i->offset = off; }
+
+  //printf("    %zu rex_seq() result: %d %zu\n", m, r->result, r->length);
+
+  return r;
+}
+
+static fabr_tree *rex_alt(fabr_input *i, char *rx, size_t rxn)
+{
+  fabr_tree *r = fabr_tree_malloc(NULL, "rex_alt", i, rxn);
+
+  // TODO/WARNING: greedy, the wants to have the longest match...
+
+  fabr_tree *prev = NULL;
+  fabr_tree **next = &r->child;
+
+  char c = 'a';
+  char *crx = rx;
+  size_t crxn = rxn;
+
+  //size_t m = mm++; size_t n = 0;
+
+  do
+  {
+    //printf(
+    //  "* %zu.%zu rex_alt() >[0;34m%.*s[0;0m< c%i\n",
+    //  m, n, (int)crxn, crx, c);
+    //printf(
+    //  "  %zu.%zu i+o       >[1;33m%s[0;0m<\n",
+    //  m, n, i->string + i->offset);
+
+    for (size_t j = 0, range = 0, groups = 0; ; j++)
+    {
+      c = j >= crxn ? 0 : crx[j];
+
+      if (c == '\0')
+      {
+        *next = rex_seq(i, crx, j);
+        prev = *next;
+        break;
+      }
+
+      if (c == '\\') { j++; continue; }
+
+      if (range == 0 && c == '[') { range = 1; continue; }
+      if (range == 1 && c == ']') { range = 0; continue; }
+      if (range == 1) continue;
+
+      if (c == '(') { groups++; continue; }
+      if (groups > 0) { if (c == ')') groups--; continue; }
+
+      if (c == '|')
+      {
+        *next = rex_seq(i, crx, j);
+        prev = *next; next = &prev->sibling;
+        crx = crx + j + 1; crxn = crxn - j - 1;
+        break;
+      }
+
+      // else continue
+    }
+
+    //printf(
+    //  "  %zu.%zu rex_alt() result: %d %zu\n",
+    //  m, n, prev->result, prev->length);
+    //n++;
+
+    if (prev->result != 0) break;
+
+  } while (c != 0);
+
+  if (prev->result != 1)
+    r->result = prev->result;
+  else
+    r->length = prev->length;
+
+  return r;
+}
+
+fabr_tree *fabr_rex(
+  char *name, fabr_input *i, char *regex)
+{
+  fabr_tree *r = rex_alt(i, regex, strlen(regex));
+
+  r->parter = "rex";
+  r->name = name ? strdup(name) : NULL;
+
+  if ((i->flags & FABR_F_PRUNE) && r->result == 1) fabr_tree_free_children(r);
+
+  return r;
+}
+
+fabr_tree *fabr_eseq(
+  char *name, fabr_input *i,
+  fabr_parser *startp, fabr_parser *eltp, fabr_parser *sepp, fabr_parser *endp)
+{
+  size_t off = i->offset;
+
+  short prune = i->flags & FABR_F_PRUNE;
+  short jseq = (startp == NULL && endp == NULL);
+
+  fabr_tree *r = fabr_tree_malloc(name, "eseq", i, 0);
+  fabr_tree **next = &r->child;
+
+  if (startp)
+  {
+    fabr_tree *t = startp(i);
+    *next = t;
+
+    if (t->result != 1) { r->result = t->result; return r; }
+
+    r->length += t->length;
+    next = &t->sibling;
+  }
+
+  for (size_t j = 0; ; j++)
+  {
+    short over = 0;
+    fabr_tree *st = NULL;
+    fabr_tree *et = NULL;
+
+    if (j > 0) st = sepp(i);
+    if (st == NULL || st->result == 1) et = eltp(i);
+
+    // determine r->result
+
+    if (st && st->result == 0)
+      over = 1;
+    else if (st && st->result == -1)
+      r->result = -1;
+    else if (st && st->result == 1 && st->length == 0 && et->result == 0)
+      over = 2;
+    else if (st && st->result == 1 && st->length == 0 && et->result == 1 && et->length == 0)
+      over = 2;
+    else if (j == 0 && et && et->result == 0 && jseq == 0)
+      over = 1;
+    else if (et && et->result != 1)
+      r->result = et->result;
+
+    // add or free
+
+    if (over != 2 && st && (st->result != 0 || prune == 0))
+    {
+      *next = st; next = &st->sibling; r->length += st->length;
+      st = NULL;
+    }
+
+    if (over != 2 && et && (et->result != 0 || prune == 0))
+    {
+      *next = et; next = &et->sibling; r->length += et->length;
+      et = NULL;
+    }
+
+    fabr_tree_free(st);
+    fabr_tree_free(et);
+
+    // break or continue
+
+    if (over || r->result != 1) break;
+  }
+
+  if (r->result == 1 && endp)
+  {
+    fabr_tree *t = endp(i);
+    *next = t;
+
+    r->result = t->result;
+    r->length += t->length;
+  }
+
+  if (r->result != 1) { r->length = 0; i->offset = off; }
+
+  return r;
+}
+
+fabr_tree *fabr_rename(char *name, fabr_input *i, fabr_parser *p)
+{
+  fabr_tree *r = p(i);
+
+  if (r->name) { free(r->name); r->name = NULL; }
+  if (name) r->name = strdup(name);
+
+  return r;
+}
+
+fabr_tree *fabr_eos(char *name, fabr_input *i)
+{
+  fabr_tree *r = fabr_tree_malloc(name, "eos", i, 0);
+  r->result = *(i->string + i->offset) == '\0';
+
+  return r;
+}
+
+fabr_tree *fabr_all(
+  char *name, fabr_input *i, fabr_parser *p)
+{
+  fabr_tree *r = fabr_tree_malloc(name, "all", i, 0);
+
+  char *start = i->string + i->offset;
+
+  r->child = p(i);
+
+  if (r->child->result == 1)
+  {
+    r->result = r->child->length == strlen(start);
+    r->length = r->result == 1 ? r->child->length : 0;
+  }
+  else
+  {
+    r->result = r->child->result;
+  }
+
+  return r;
+}
+
+
 //
-//    2015
+// helpers
+
+fabr_tree *fabr_parse(const char *input, fabr_parser *p)
+{
+  return fabr_parse_f(input, p, FABR_F_PRUNE);
+}
+
+fabr_tree *fabr_parse_all(const char *input, fabr_parser *p)
+{
+  return fabr_parse_f(input, p, FABR_F_PRUNE | FABR_F_ALL);
+}
+
+fabr_tree *fabr_parse_f(const char *input, fabr_parser *p, int flags)
+{
+  fabr_input i = { (char *)input, 0, flags };
+
+  if (flags & FABR_F_ALL) return fabr_all(NULL, &i, p);
+  return p(&i);
+}
+
+int fabr_match(const char *input, fabr_parser *p)
+{
+  fabr_tree *t =
+    fabr_parse_f(input, p, FABR_F_ALL | FABR_F_PRUNE | FABR_F_MATCH);
+
+  int r = t->result;
+
+  fabr_tree_free(t);
+
+  return r;
+}
+
+//commit 932612069f2614e398a6038eab7ce33919a3f263
+//Author: John Mettraux <jmettraux@gmail.com>
+//Date:   Wed Jul 15 06:55:37 2015 +0900
+//
+//    don't let eseq silence errors in its start parser
+//    
+//    closes gh-14

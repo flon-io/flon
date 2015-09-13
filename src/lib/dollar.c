@@ -37,50 +37,63 @@
 #include "dollar.h"
 
 
-static fabr_parser *fdol_parser = NULL;
-static fabr_parser *fdol_pipe_parser = NULL;
+// dollar parser
 
-static void fdol_parser_init()
+static fabr_tree *_str(fabr_input *i)
 {
-  // parser
+  return fabr_rex("s", i,
+    "("
+      "\\\\\\)" "|"
+      "[^\\$\\)]" "|"
+      "\\$[^\\(]"
+    ")+");
+}
+static fabr_tree *_outerstr(fabr_input *i)
+{
+  return fabr_rex("s", i,
+    "("
+      "[^\\$]" "|" // doesn't mind ")"
+      "\\$[^\\(]"
+    ")+");
+}
+static fabr_tree *_dps(fabr_input *i) { return fabr_str(NULL, i, "$("); }
+static fabr_tree *_pe(fabr_input *i) { return fabr_str(NULL, i, ")"); }
 
-  fabr_parser *dol =
-    fabr_n_seq(
-      "d", fabr_string("$("), fabr_n("p"), fabr_string(")"), NULL);
-  fabr_parser *str =
-    fabr_n_rex(
-      "s",
-      "("
-        "\\\\\\)" "|"
-        "[^\\$\\)]" "|"
-        "\\$[^\\(]"
-      ")+");
+static fabr_tree *_span(fabr_input *i); // forward
 
-  //fabr_parser *span =
-    fabr_n_rep(
-      "p", fabr_alt(dol, str, NULL), 0, -1);
+static fabr_tree *_dollar(fabr_input *i)
+{
+  return fabr_seq("d", i, _dps, _span, _pe, NULL);
+}
+static fabr_tree *_dos(fabr_input *i)
+{
+  return fabr_alt(NULL, i, _dollar, _str, NULL);
+}
+static fabr_tree *_doo(fabr_input *i)
+{
+  return fabr_alt(NULL, i, _dollar, _outerstr, NULL);
+}
+static fabr_tree *_span(fabr_input *i)
+{
+  return fabr_rep("p", i, _dos, 0, 0); // 0 or more, *
+}
 
-  fabr_parser *outerstr =
-    fabr_n_rex(
-      "s",
-      "("
-        "[^\\$]" "|" // doesn't mind ")"
-        "\\$[^\\(]"
-      ")+");
-
-  fdol_parser =
-    fabr_n_rep(
-      "r", fabr_alt(dol, outerstr, NULL), 0, -1);
+static fabr_tree *_parser(fabr_input *i)
+{
+  return fabr_rep("r", i, _doo, 0, 0); // 0 or more, *
+}
 
   // TODO: give possibility to escape )
 
-  // pipe parser
 
-  fabr_parser *not_pipe = fabr_n_rex("s", "[^|]+");
-  fabr_parser *pipe = fabr_n_rex("p", "\\|\\|?");
+// pipe parser
 
-  fdol_pipe_parser =
-    fabr_seq(not_pipe, fabr_seq(pipe, not_pipe, fabr_r("*")), NULL);
+static fabr_tree *_nopi(fabr_input *i) { return fabr_rex("s", i, "[^|]+"); }
+static fabr_tree *_pi(fabr_input *i) { return fabr_rex("p", i, "\\|\\|?"); }
+
+static fabr_tree *_pipe_parser(fabr_input *i)
+{
+  return fabr_jseq(NULL, i, _nopi, _pi);
 }
 
 
@@ -210,44 +223,51 @@ static char *call(char *s, char *f)
 
 static char *eval(const char *s, void *data, fdol_lookup *func)
 {
-  fabr_tree *t = fabr_parse_all(s, 0, fdol_pipe_parser);
+  fabr_tree *t = fabr_parse_all(s, _pipe_parser);
+  //fabr_tree *t = fabr_parse_f(s, _pipe_parser, 0);
 
-  if (t == NULL) return strdup(s);
+  //printf("eval >%s<\n", s);
+  //fabr_puts_tree(t, s, 1);
 
-  //puts(fabr_tree_to_string(t, s, 1));
+  char *r = NULL;
 
-  char *ss = fabr_tree_string(s, t->child);
-  char *r = func(data, ss);
-  free(ss);
+  if (t == NULL || t->result != 1) { r = strdup(s); goto _over; }
 
-  if (t->child->sibling->child)
+  char mode = 'l'; // 'l'ookup vs 'c'all
+
+  for (fabr_tree *c = t->child->child; c; c = c->sibling)
   {
-    char mode = 'l'; // 'l'ookup vs 'c'all
+    //printf("--- m'%c' r >%s<\n", mode, r);
+    //fabr_puts_tree(c, s, 1);
 
-    for (fabr_tree *c = t->child->sibling->child; c; c = c->sibling)
+    if (*c->name == 'p')
     {
-      mode = (c->child->length) == 1 ? 'c' : 'l';
-      ss = fabr_tree_string(s, c->child->sibling);
-      //printf("mode '%c' ss >%s<\n", mode, ss);
+      mode = c->length == 1 ? 'c' : 'l';
 
-      if (mode == 'l')
-      {
-        if (r == NULL)
-        {
-          if (*ss == '\'') r = strdup(ss + 1);
-          else r = func(data, ss);
-        }
-      }
-      else // (mode == 'c')
-      {
-        char *or = r;
-        r = call(r, ss);
-        if (or != r) free(or);
-      }
+      if (c->length > 1 && r) goto _over;
 
-      free(ss);
+      continue;
     }
+
+    // else (*c->name == 's')
+
+    char *ss = fabr_tree_string(s, c);
+
+    if (mode == 'l')
+    {
+      r = (*ss == '\'') ? strdup(ss + 1) : func(data, ss);
+    }
+    else // 'c'
+    {
+      char *or = r;
+      r = call(r, ss);
+      if (or != r) free(or);
+    }
+
+    free(ss);
   }
+
+_over:
 
   fabr_tree_free(t);
 
@@ -269,7 +289,7 @@ static char *unescape(char *s)
 static char *expand(
   const char *s, fabr_tree *t, int quote, void *data, fdol_lookup *func)
 {
-  //puts(fabr_tree_to_string(t, s, 1));
+  //fabr_puts_tree(t, s, 1);
 
   if (*t->name == 's')
   {
@@ -304,11 +324,9 @@ static char *do_expand(const char *s, int quote, void *data, fdol_lookup *func)
 {
   if (strchr(s, '$') == NULL) return strdup(s);
 
-  if (fdol_parser == NULL) fdol_parser_init();
-
-  fabr_tree *t = fabr_parse_all(s, 0, fdol_parser);
-  //puts(fabr_tree_to_string(t, s, 1));
-  char *r = expand(s, t, quote, data, func);
+  fabr_tree *t = fabr_parse_all(s, _parser);
+  //fabr_puts_tree(t, s, 1);
+  char *r = expand(s, t->child, quote, data, func);
   fabr_tree_free(t);
 
   return r;
@@ -331,8 +349,8 @@ char *fdol_dlup(void *data, const char *path)
   return r ? strdup(r) : NULL;
 }
 
-//commit 647ebfb04cb9f4a4ebfe2073ec7c6bb6a7228b3c
+//commit 5e968793eb0622b3dc996261e1358eb23f3f2487
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Jan 9 14:37:59 2015 +0900
+//Date:   Thu Jul 16 06:19:17 2015 +0900
 //
-//    upgrade dependencies
+//    upgrade aabro (various -1 fixes)

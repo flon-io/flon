@@ -299,8 +299,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 2c6b431d255a659f2f02be6cd0ea67e437b3a06e
+//commit 08a6159f2ebe5828f0e5ab357fbc45187de46085
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Mar 3 16:42:03 2015 +0900
+//Date:   Thu Jul 16 06:38:24 2015 +0900
 //
-//    fix leak in fdja_psetv() (when v parsing fails)
+//    enable comments within rad_p groups (radial ()s)

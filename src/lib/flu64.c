@@ -88,7 +88,7 @@ void flu64_do_decode(char *in, size_t l, char *out)
 
 char *flu64_encode(char *in, ssize_t l)
 {
-  if (l < 0) l = strlen(in);
+  if ((int)l == -1) l = strlen(in);
   char *out = calloc(l * 2, sizeof(char));
 
   flu64_do_encode(in, l, out);
@@ -98,7 +98,7 @@ char *flu64_encode(char *in, ssize_t l)
 
 char *flu64_decode(char *in, ssize_t l)
 {
-  if (l < 0) l = strlen(in);
+  if ((int)l == -1) l = strlen(in);
   char *out = calloc(l, sizeof(char));
 
   flu64_do_decode(in, l, out);
@@ -127,7 +127,7 @@ char *flu64_decode_from_url(char *in, ssize_t l)
   char *r = NULL;
 
   char *s = strdup(in);
-  if (l < 0) l = strlen(in);
+  if ((int)l == -1) l = strlen(in);
 
   for (size_t i = 0; i < l; ++i)
   {
@@ -143,8 +143,10 @@ char *flu64_decode_from_url(char *in, ssize_t l)
   return r;
 }
 
-//commit 86f3f65cab0fc210be3e60d08fb42c7de9ca9afc
+//commit 02c7844e77f6c0f7da9f782a9f230efec5b05a32
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Fri Feb 27 09:40:05 2015 +0900
+//Date:   Sun Aug 23 06:34:12 2015 +0900
 //
-//    add flu_sv() as shortcut for flu_svprintf()
+//    compare ssize_t with -1
+//    
+//    and not < 0, which happens also when l > INT_MAX...

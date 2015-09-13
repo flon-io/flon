@@ -32,17 +32,38 @@
 #include "shv_protected.h"
 
 
+/* : pushing with all the parameters set and expiry time:
+ *   start or refreshes a session
+ *   returns the new session in case of success, NULL else
+ * : pushing with only the sid set and now:
+ *   queries and expires,
+ *   returns a session in case of success, NULL else
+ * : pushing with only the sid set and -1:
+ *   stops the session and returns NULL
+ * : pushing with all NULL and -1:
+ *   resets the store and returns NULL
+ */
 fshv_session *fshv_session_memstore_push(
-  const char *sid, const char *user, const char *id, long long tus);
+  fshv_env *e, // can't remember why...
+  const char *sid,
+  const char *user,
+  const char *id,
+  long long tus);
 
 /* For specs only.
  */
 flu_list *fshv_session_memstore();
 
+/* For specs only.
+ */
+size_t fshv_session_memstore_clear();
+
 #endif //FLON_SHV_AUTH_SESSION_MEMSTORE_H
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

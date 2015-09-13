@@ -40,17 +40,17 @@
 #include "flutil.h"
 #include "flutim.h"
 #include "gajeta.h"
-#include "shervin.h"
+//#include "shervin.h"
 #include "shv_protected.h"
 
 
 //
 // fshv_response
 
-fshv_response *fshv_response_malloc(short status_code)
+fshv_response *fshv_response_malloc()
 {
   fshv_response *r = calloc(1, sizeof(fshv_response));
-  r->status_code = status_code;
+  r->status_code = -1;
   r->headers = flu_list_malloc();
   r->body = flu_list_malloc();
 
@@ -65,6 +65,15 @@ void fshv_response_free(fshv_response *r)
   flu_list_free_all(r->body);
   free(r);
 }
+
+char *fshv_response_body_to_s(fshv_response *res)
+{
+  flu_sbuffer *b = flu_sbuffer_malloc();
+  for (flu_node *n = res->body->first; n; n = n->next) flu_sbputs(b, n->item);
+
+  return flu_sbuffer_to_string(b);
+}
+
 
 //
 // fshv_respond
@@ -136,18 +145,18 @@ static void fshv_lower_keys(flu_dict *d)
 
 static void fshv_set_content_length(fshv_con *con)
 {
-  char *s = flu_list_get(con->res->headers, "fshv_content_length");
+  char *s = flu_list_get(con->env->res->headers, "fshv_content_length");
 
   if (s)
   {
-    if (flu_list_get(con->req->headers, "x-real-ip")) s = strdup("");
+    if (flu_list_get(con->env->req->headers, "x-real-ip")) s = strdup("");
     else s = strdup(s);
   }
   else
   {
     size_t r = 0;
 
-    for (flu_node *n = con->res->body->first; n; n = n->next)
+    for (flu_node *n = con->env->res->body->first; n; n = n->next)
     {
       r += strlen((char *)n->item);
     }
@@ -155,7 +164,7 @@ static void fshv_set_content_length(fshv_con *con)
     s = flu_sprintf("%zu", r);
   }
 
-  flu_list_set(con->res->headers, "content-length", s);
+  flu_list_set(con->env->res->headers, "content-length", s);
 }
 
 static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
@@ -164,6 +173,8 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   if ( ! (revents & EV_WRITE)) { fgaj_r("not a read"); ev_io_stop(l, eio); return; }
 
   fshv_con *con = (fshv_con *)eio->data;
+  fshv_request *req = con->env->req;
+  fshv_response *res = con->env->res;
 
   fgaj_sd(
     eio,
@@ -227,10 +238,10 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // done
 
-  char asrc = 'i'; char *addr = flu_list_get(con->req->headers, "x-real-ip");
+  char asrc = 'i'; char *addr = flu_list_get(req->headers, "x-real-ip");
   if (addr == NULL)
   {
-    asrc = 'f'; addr = flu_list_get(con->req->headers, "x-forwarded-for");
+    asrc = 'f'; addr = flu_list_get(req->headers, "x-forwarded-for");
   }
   if (addr == NULL)
   {
@@ -243,10 +254,10 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     eio,
     "%c%s %i l%s c%.3fms r%.3fms done.",
     asrc, addr,
-    con->res->status_code,
-    flu_list_get(con->res->headers, "content-length"),
+    res->status_code,
+    flu_list_get(res->headers, "content-length"),
     (nowus - con->startus) / 1000.0,
-    (nowus - con->req->startus) / 1000.0);
+    (nowus - req->startus) / 1000.0);
 
   ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)"); free(eio);
   fshv_con_reset(con);
@@ -254,6 +265,8 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
 static int prepare_response(fshv_con *con)
 {
+  fshv_response *res = con->env->res;
+
   con->hout = NULL;
   con->houtlen = 0;
   con->houtoff = 0;
@@ -270,14 +283,14 @@ static int prepare_response(fshv_con *con)
   r = fprintf(
     fout,
     "HTTP/1.1 %i %s\r\n",
-    con->res->status_code,
-    fshv_reason(con->res->status_code));
+    res->status_code,
+    fshv_reason(res->status_code));
   if (r < 0) goto _over;
 
   char *xsf = NULL;
 
-  fshv_lower_keys(con->res->headers);
-  ths = flu_list_dtrim(con->res->headers);
+  fshv_lower_keys(res->headers);
+  ths = flu_list_dtrim(res->headers);
   //
   for (flu_node *n = ths->first; n != NULL; n = n->next)
   {
@@ -296,7 +309,7 @@ static int prepare_response(fshv_con *con)
 
   if ( ! xsf)
   {
-    for (flu_node *n = con->res->body->first; n; n = n->next)
+    for (flu_node *n = res->body->first; n; n = n->next)
     {
       r = fputs((char *)n->item, fout);
       if (r < 0) goto _over;
@@ -306,7 +319,7 @@ static int prepare_response(fshv_con *con)
   r = fclose(fout);
   if (r != 0) { r = -1; goto _over; }
 
-  if (xsf && ! flu_list_get(con->req->headers, "x-real-ip"))
+  if (xsf && ! flu_list_get(con->env->req->headers, "x-real-ip"))
   {
     con->bout = fopen(xsf, "r");
     //if (con->bout == NULL) { r = -1; goto _over; }
@@ -325,43 +338,44 @@ _over:
 void fshv_respond(struct ev_loop *l, struct ev_io *eio)
 {
   fshv_con *con = (fshv_con *)eio->data;
+  fshv_response *res = con->env->res;
 
   // prepare headers
 
   flu_list_set(
-    con->res->headers, "date", flu_sstamp(l ? ev_now(l) : 0, 1, 'r'));
+    res->headers, "date", flu_sstamp(l ? ev_now(l) : 0, 1, 'r'));
 
   flu_list_set_last(
-    con->res->headers, "server", flu_sprintf("shervin %s", FSHV_VERSION));
+    res->headers, "server", flu_sprintf("shervin %s", FSHV_VERSION));
   flu_list_set_last(
-    con->res->headers, "content-type", strdup("text/plain; charset=utf-8"));
+    res->headers, "content-type", strdup("text/plain; charset=utf-8"));
 
-  if (flu_list_get(con->res->headers, "location") == NULL)
+  if (flu_list_get(res->headers, "location") == NULL)
   {
     flu_list_set(
-      con->res->headers, "location", strdup("northpole")); // FIXME
+      res->headers, "location", strdup("northpole")); // FIXME
   }
 
   //long long nowus = l ? ev_now(l) * 1000000 : flu_gets('u');
   long long nowus = flu_gets('u');
   //
   flu_list_set(
-    con->res->headers,
+    res->headers,
     "x-flon-shervin",
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
       (nowus - con->startus) / 1000.0,
-      (nowus - con->req->startus) / 1000.0,
-      con->rqount));
+      (nowus - con->env->req->startus) / 1000.0,
+      con->req_count));
 
   if (
-    con->res->body->size == 0 &&
-    con->res->status_code >= 400 &&
-    con->res->status_code < 600 &&
-    flu_list_get(con->res->headers, "fshv_content_length") == NULL)
+    res->body->size == 0 &&
+    res->status_code >= 400 &&
+    res->status_code < 600 &&
+    flu_list_get(res->headers, "fshv_content_length") == NULL)
   {
     // set 4xx or 5xx reason as body
-    flu_list_add(con->res->body, fshv_low_reason(con->res->status_code));
+    flu_list_add(res->body, fshv_low_reason(res->status_code));
   }
 
   fshv_set_content_length(con);
@@ -386,8 +400,10 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   ev_io_start(l, weio);
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)

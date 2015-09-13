@@ -30,12 +30,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
+//#include <sys/types.h>
 
 #include "flutil.h"
 #include "flutim.h"
 #include "flu64.h"
-#include "shervin.h"
+//#include "shervin.h"
 #include "shv_protected.h"
 #include "shv_auth_session_memstore.h"
 
@@ -71,7 +71,7 @@ void fshv_session_free(fshv_session *s)
   free(s);
 }
 
-static char *generate_sid(fshv_request *req, flu_dict *params)
+static char *generate_sid(fshv_env *env)
 {
   // bringing the params in,
   // eventually grab a pointer to another generate sid method
@@ -88,85 +88,66 @@ static char *generate_sid(fshv_request *req, flu_dict *params)
 
   return flu64_encode_for_url(
     rand,
-    SHV_SA_RANDSIZE - (req->startus / 1000000) % 10);
-}
-
-static char *get_cookie_name(flu_dict *params)
-{
-  char *r = flu_list_get(params, "name");
-  if (r == NULL) r = flu_list_get(params, "n");
-  if (r == NULL) r = "flon.io.shervin";
-
-  return r;
+    SHV_SA_RANDSIZE - (env->req->startus / 1000000) % 10);
 }
 
 static void set_session_cookie(
-  fshv_request *req, fshv_response *res, flu_dict *params, fshv_session *ses)
+  fshv_env *env, const char *cookie_name, fshv_session *ses)
 {
-  char *cn = get_cookie_name(params);
   char *ts = flu_sstamp((ses->expus) / 1000000 , 1, 'g');
 
   flu_sbuffer *b = flu_sbuffer_malloc();
 
-  flu_sbputs(b, cn); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
+  flu_sbputs(b, cookie_name); flu_sbputc(b, '='); flu_sbputs(b, ses->sid);
   flu_sbputs(b, ";Expires="); flu_sbputs(b, ts);
   flu_sbputs(b, ";HttpOnly");
-  if (fshv_request_is_https(req)) flu_sbputs(b, ";Secure");
+  if (fshv_request_is_https(env->req)) flu_sbputs(b, ";Secure");
 
-  flu_list_set(res->headers, "set-cookie", flu_sbuffer_to_string(b));
+  flu_list_set(env->res->headers, "set-cookie", flu_sbuffer_to_string(b));
 
   free(ts);
 }
 
-static fshv_session_push *push_func(flu_dict *params)
-{
-  if (params == NULL) return fshv_session_memstore_push;
-
-  fshv_session_push *r = NULL;
-
-  r = flu_list_get(params, "store"); if (r) return r;
-  r = flu_list_get(params, "s"); if (r) return r;
-
-  return fshv_session_memstore_push;
-}
-
 void fshv_start_session(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *user)
+  fshv_env *env,
+  fshv_session_push *push_func,
+  const char *cookie_name,
+  const char *user)
 {
   if (spid == NULL) spid = flu_sprintf("%lli_%lli", getppid(), getpid());
 
   flu_sbuffer *b = flu_sbuffer_malloc();
   flu_sbputs(b, user); flu_sbputc(b, ':');
   flu_sbputs(b, spid); flu_sbputc(b, ':');
-  flu_sbputs(b, flu_list_getd(req->uri_d, "_port", "80"));
+  flu_sbprintf(b, "%d", env->req->uri->port);
   char *id = flu_sbuffer_to_string(b);
 
-  char *sid = generate_sid(req, params);
-  long long expus = (req ? req->startus : flu_gets('u')) + SHV_SA_EXPIRY;
+  char *sid = generate_sid(env);
 
-  fshv_session *ses = push_func(params)(sid, user, id, expus);
+  long long expus =
+    (env->req ? env->req->startus : flu_gets('u')) + SHV_SA_EXPIRY;
 
-  set_session_cookie(req, res, params, ses);
+  fshv_session *ses = push_func(env, sid, user, id, expus);
+
+  set_session_cookie(env, cookie_name, ses);
 
   free(id);
   free(sid);
 }
 
 void fshv_stop_session(
-  fshv_request *req, fshv_response *res, flu_dict *params, const char *sid)
+  fshv_env *env, fshv_session_push *push_func, const char *sid)
 {
-  push_func(params)(sid, NULL, NULL, -1);
+  push_func(env, sid, NULL, NULL, -1);
 }
 
-int fshv_session_auth_filter(
-  fshv_request *req, fshv_response *res, int mode, flu_dict *params)
+int fshv_session_auth(
+  fshv_env *env, fshv_session_push *push_func, const char *cookie_name)
 {
   fshv_session *s = NULL;
 
-  char *cookies = flu_list_get(req->headers, "cookie");
+  char *cookies = flu_list_get(env->req->headers, "cookie");
   if (cookies == NULL) goto _over;
-
-  char *cname = get_cookie_name(params);
 
   char *sid = NULL;
   for (char *cs = cookies; cs; cs = strchr(cs, ';'))
@@ -176,44 +157,46 @@ int fshv_session_auth_filter(
     char *eq = strchr(cs, '=');
     if (eq == NULL) break;
 
-    if (strncmp(cs, cname, eq - cs) != 0) continue;
+    if (strncmp(cs, cookie_name, eq - cs) != 0) continue;
 
     char *eoc = strchr(eq + 1, ';');
     sid = eoc ? strndup(eq + 1, eoc - eq - 1) : strdup(eq + 1);
     break;
   }
+  if (sid == NULL) goto _over;
 
-  fshv_session_push *push = push_func(params);
-
-  s = push(sid, NULL, NULL, req->startus);
+  s = push_func(env, sid, NULL, NULL, env->req->startus);
     // query
 
   free(sid);
 
   if (s == NULL) goto _over;
 
-  sid = generate_sid(req, params);
+  sid = generate_sid(env);
 
-  fshv_session *s1 = push(sid, s->user, s->id, req->startus + SHV_SA_EXPIRY);
-    // refresh
+  fshv_session *s1 =
+    push_func(env, sid, s->user, s->id, env->req->startus + SHV_SA_EXPIRY);
+      // refresh
 
   free(sid);
 
   if (s1 == NULL) goto _over;
 
-  fshv_set_user(req, "session", s1->user);
+  fshv_set_user(env, cookie_name, s1->user);
 
-  set_session_cookie(req, res, params, s1);
+  set_session_cookie(env, cookie_name, s1);
 
 _over:
 
-  if (s == NULL) res->status_code = 401;
+  if (s == NULL) { env->res->status_code = 401; return 0; }
 
-  return 0;
+  return 1;
 }
 
-//commit c80c5037e9f15d0e454d23cfd595b8bcc72d87a7
+//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Jan 27 14:27:01 2015 +0900
+//Date:   Sun Sep 13 06:32:55 2015 +0900
 //
-//    add support for "application/pdf"
+//    bring back all specs to green
+//    
+//    (one yellow remaining though)
