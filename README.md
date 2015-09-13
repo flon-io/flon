@@ -5,6 +5,20 @@
 
 The processes that make up a flon execution point.
 
+
+## Components
+
+* flon-executor
+* flon-tasker
+* flon-dispatcher
+* flon-listener
+* flon
+
+## Testing
+
+* `make clean sc` to compile and test the code common to all Flon components
+
+
 ## License
 
 MIT (see [LICENSE.txt](LICENSE.txt))
