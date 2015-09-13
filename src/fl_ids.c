@@ -69,11 +69,9 @@ char *flon_generate_exid(const char *domain)
 }
 
 
-static fabr_parser *flon_nid_parser = NULL;
-static fabr_parser *flon_domain_parser = NULL;
-
 // at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json
 
+/*
 static void flon_nid_parser_init()
 {
   fabr_parser *hex = fabr_rex("(0|[1-9a-f][0-9a-f]*)");
@@ -121,21 +119,29 @@ static void flon_nid_parser_init()
 
   flon_domain_parser = domain;
 }
+*/
+
+static fabr_tree *_domain(fabr_input *i)
+{
+  return NULL;
+}
+static fabr_tree *_nid(fabr_input *i)
+{
+  return NULL;
+}
 
 fdja_value *flon_parse_nid(const char *s)
 {
-  if (flon_nid_parser == NULL) flon_nid_parser_init();
-
-  //fabr_tree *dt = fabr_parse_f(s, 0, flon_nid_parser, 0);
-  ////fabr_tree *dt = fabr_parse_all(s, 0, flon_nid_parser);
-  //printf("s >%s<\n", s);
-  //puts(fabr_tree_to_string(dt, s, 1));
-
   char *ss = (char *)s;
   char *slash = strrchr(ss, '/');
   if (slash) ss = slash + 1;
 
-  fabr_tree *t = fabr_parse_all(ss, 0, flon_nid_parser);
+  //fabr_tree *tt = fabr_parse_f(ss, _nid, FABR_F_ALL);
+  //printf("flon_parse_nid():\n"); fabr_puts_tree(tt, ss, 1);
+  //fabr_tree_free(tt);
+
+  fabr_tree *t = fabr_parse_all(ss, _nid);
+  //printf("flon_parse_nid() (pruned):\n"); fabr_puts(t, ss, 3);
   if (t->result != 1) { fabr_tree_free(t); return NULL; }
 
   fdja_value *r = fdja_object_malloc();
@@ -187,9 +193,13 @@ char *flon_get_nid(const char *s)
 
 int flon_is_domain(const char *s)
 {
-  if (flon_nid_parser == NULL) flon_nid_parser_init();
+  //fabr_tree *tt = fabr_parse_f(s, _domain, FABR_F_ALL);
+  //printf("flon_is_domain():\n"); fabr_puts_tree(tt, s, 1);
+  //fabr_tree_free(tt);
 
-  fabr_tree *t = fabr_parse_all(s, 0, flon_domain_parser);
+  fabr_tree *t = fabr_parse_all(s, _domain);
+  //printf("flon_is_domain() (pruned):\n"); fabr_puts(t, s, 3);
+
   int r = t->result == 1;
 
   fabr_tree_free(t);
