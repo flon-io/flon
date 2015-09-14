@@ -7,6 +7,7 @@ LDLIBS=
 CC=gcc
 
 VAL=valgrind --leak-check=full -v
+#VAL=valgrind --leak-check=full -v --show-leak-kinds=all
 #VAL=valgrind --leak-check=full -v --num-callers=50
 #VAL=valgrind --read-var-info=yes --track-origins=yes --leak-check=full -v
 #VAL=valgrind --vgdb-error=0 --leak-check=full -v

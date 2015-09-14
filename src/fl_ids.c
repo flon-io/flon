@@ -71,32 +71,6 @@ char *flon_generate_exid(const char *domain)
 
 // at-20141130.105800-dtest.trig-u0-20141207.0156.kagemusha-0_0.json
 
-/*
-static void flon_nid_parser_init()
-{
-  fabr_parser *domain =
-    fabr_n_seq("domain", symb, fabr_seq(dot, symb, fabr_r("*")), NULL);
-
-  fabr_parser *feu =
-    fabr_n_seq(
-      "feu",
-      fabr_n_seq("group", symb, dot, fabr_r("?")),
-      fabr_name("unit", symb), NULL);
-
-  fabr_parser *tid =
-    fabr_n_seq(
-      "tid",
-      fabr_n_rex("date", "[0-9]{8,9}"), dot,
-      fabr_n_rex("hour", "[0-9]{4}"), dot,
-      fabr_n_rex("sec", "[a-z]+"),
-      NULL);
-
-  fabr_parser *exid =
-    fabr_n_seq("exid", domain, dash, feu, dash, tid, NULL);
-  fabr_parser *nid =
-    fabr_n_seq("nid", node, fabr_seq(dash, counter, fabr_r("?")), NULL);
-}
-*/
 static fabr_tree *_dash(fabr_input *i) { return fabr_str(NULL, i, "-"); }
 static fabr_tree *_dot(fabr_input *i) { return fabr_str(NULL, i, "."); }
 static fabr_tree *_us(fabr_input *i) { return fabr_str(NULL, i, "_"); }
@@ -107,8 +81,33 @@ static fabr_tree *_hex(fabr_input *i)
 static fabr_tree *_symb(fabr_input *i)
 { return fabr_rex(NULL, i, "[a-z0-9_]+"); }
 
+static fabr_tree *_group(fabr_input *i)
+{ return fabr_seq("group", i, _symb, _dot, NULL); }
+static fabr_tree *_unit(fabr_input *i)
+{ return fabr_rename("unit", i, _symb); }
+static fabr_tree *_feu(fabr_input *i)
+{ return fabr_seq("feu", i, _group, fabr_qmark, _unit, NULL); }
+
+static fabr_tree *_date(fabr_input *i)
+{ return fabr_rex("date", i, "[0-9]{8,9}"); }
+static fabr_tree *_hour(fabr_input *i)
+{ return fabr_rex("hour", i, "[0-9]{4}"); }
+static fabr_tree *_sec(fabr_input *i)
+{ return fabr_rex("sec", i, "[a-z]+"); }
+static fabr_tree *_tid(fabr_input *i)
+{ return fabr_seq("tid", i, _date, _dot, _hour, _dot, _sec, NULL); }
+
+static fabr_tree *_domain(fabr_input *i)
+{ return fabr_jseq("domain", i, _symb, _dot); }
+
+static fabr_tree *_exid(fabr_input *i)
+{ return fabr_seq("exid", i, _domain, _dash, _feu, _dash, _tid, NULL); }
+
 static fabr_tree *_counter(fabr_input *i)
 { return fabr_rename("counter", i, _hex); }
+
+static fabr_tree *_dash_counter(fabr_input *i)
+{ return fabr_seq(NULL, i, _dash, _counter, NULL); }
 
 static fabr_tree *_node(fabr_input *i)
 { return fabr_jseq("node", i, _hex, _us); }
@@ -119,17 +118,17 @@ static fabr_tree *_msg(fabr_input *i)
 static fabr_tree *_ftype(fabr_input *i)
 { return fabr_rex("ftype", i, "\\.[^\\.]+"); }
 
-static fabr_tree *_domain(fabr_input *i)
-{ return NULL; }
+static fabr_tree *_nid(fabr_input *i)
+{ return fabr_seq("nid", i, _node, _dash_counter, fabr_qmark, NULL); }
 
-static fabr_tree *_fname(fabr_input *i)
-{ return NULL; }
+static fabr_tree *_dash_nid(fabr_input *i)
+{ return fabr_seq(NULL, i, _dash, _nid, NULL); }
 
 static fabr_tree *_exid_nid(fabr_input *i)
-{ return NULL; }
+{ return fabr_seq(NULL, i, _exid, _dash_nid, fabr_qmark, NULL); }
 
-static fabr_tree *_nodcou(fabr_input *i) // node and counter?
-{ return NULL; }
+static fabr_tree *_fname(fabr_input *i)
+{ return fabr_seq("FNAME", i, _msg, _exid_nid, _ftype, NULL); }
 
 //  flon_nid_parser =
 //    fabr_alt(
@@ -138,9 +137,8 @@ static fabr_tree *_nodcou(fabr_input *i) // node and counter?
 //      exid,
 //      nid,
 //      NULL);
-
-static fabr_tree *_nid(fabr_input *i)
-{ return fabr_alt(NULL, i, _fname, _exid_nid, _nodcou, NULL); }
+static fabr_tree *_root(fabr_input *i)
+{ return fabr_alt(NULL, i, _fname, _exid_nid, _nid, NULL); }
 
 fdja_value *flon_parse_nid(const char *s)
 {
@@ -152,11 +150,11 @@ fdja_value *flon_parse_nid(const char *s)
 
   //printf("flon_parse_nid() ss  >[1;33m%s[0;0m<\n", ss);
 
-  //fabr_tree *tt = fabr_parse_f(ss, _nid, FABR_F_ALL);
+  //fabr_tree *tt = fabr_parse_f(ss, _root, FABR_F_ALL);
   //printf("flon_parse_nid():\n"); fabr_puts_tree(tt, ss, 1);
   //fabr_tree_free(tt);
 
-  fabr_tree *t = fabr_parse_all(ss, _nid);
+  fabr_tree *t = fabr_parse_all(ss, _root);
   //printf("flon_parse_nid() (pruned):\n"); fabr_puts(t, ss, 3);
   if (t->result != 1) { fabr_tree_free(t); return NULL; }
 
@@ -181,6 +179,8 @@ fdja_value *flon_parse_nid(const char *s)
   if (slash) fdja_set(r, "uri", fdja_s(s));
 
   fabr_tree_free(t);
+
+  //flu_putf(fdja_value_to_s(r));
 
   return r;
 }
