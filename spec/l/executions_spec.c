@@ -39,9 +39,10 @@ context "flon-listener (vs executions)"
   before each
   {
     char *exid = NULL;
-    fshv_request *req = NULL;
-    flu_dict *params = NULL;
-    fshv_response *res = fshv_response_malloc(404);
+    //fshv_request *req = NULL;
+    //flu_dict *params = NULL;
+    //fshv_response *res = fshv_response_malloc(404);
+    fshv_env *env = NULL;
     fdja_value *v = NULL;
     //fdja_value *v1 = NULL;
   }
@@ -49,30 +50,32 @@ context "flon-listener (vs executions)"
   after each
   {
     free(exid);
-    fshv_request_free(req);
-    flu_list_free(params);
+    //fshv_request_free(req);
+    //flu_list_free(params);
+    //fshv_response_free(res);
     fdja_free(v);
     //fdja_free(v1);
-    fshv_response_free(res);
+    fshv_env_free(env);
   }
 
   describe "flon_exes_handler() /executions"
   {
     it "lists executions (in readable domains)"
     {
-      req = fshv_parse_request_head(
+      env = fshv_env_malloc(
         "GET /i/executions HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n");
-      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+        "\r\n",
+        NULL);
+      flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-      int r = flon_exes_handler(req, res, 0, NULL);
+      int r = flon_exes_handler(env);
 
       expect(r i== 1);
 
       //puts((char *)res->body->first->item);
 
-      v = fdja_parse((char *)res->body->first->item);
+      v = fdja_parse((char *)env->res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
@@ -107,18 +110,19 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example.a", 0);
       //printf("exid: %s\n", exid);
 
-      req = fshv_parse_request_head_f(
+      env = fshv_env_malloc(
         "GET /i/executions/org.example.a HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n");
-      fshv_do_route("GET /i/executions/:id", req);
-      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+        "\r\n",
+        NULL);
+      flu_list_set(env->bag, "id", rdz_strdup("org.example.a"));
+      flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, 0, NULL);
+      int r = flon_exe_handler(env);
 
       expect(r i== 1);
 
-      v = fdja_parse((char *)res->body->first->item);
+      v = fdja_parse((char *)env->res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
@@ -130,18 +134,18 @@ context "flon-listener (vs executions)"
 
     it "doesn't list executions in an off-limits domain"
     {
-      req = fshv_parse_request_head_f(
+      env = fshv_env_malloc(
         "GET /i/executions/org.sample HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n");
-      fshv_do_route("GET /i/executions/:id", req);
-      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+      flu_list_set(env->bag, "id", rdz_strdup("org.sample"));
+      flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, 0, NULL);
+      int r = flon_exe_handler(env);
 
       expect(r i== 1);
 
-      v = fdja_parse((char *)res->body->first->item);
+      v = fdja_parse((char *)env->res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
@@ -156,21 +160,21 @@ context "flon-listener (vs executions)"
     it "details an execution"
     {
       exid = hlp_lookup_exid("john", "org.example", 0);
-      //printf("exid: %s\n", exid);
+      printf("exid: %s\n", exid);
 
-      req = fshv_parse_request_head_f(
+      env = fshv_env_malloc_x(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n",
-        exid);
-      fshv_do_route("GET /i/executions/:id", req);
-      flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+        "\r\n", exid,
+        NULL);
+      flu_list_set(env->bag, "id", rdz_strdup(exid));
+      flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-      int r = flon_exe_handler(req, res, 0, NULL);
+      int r = flon_exe_handler(env);
 
       expect(r i== 1);
 
-      v = fdja_parse((char *)res->body->first->item);
+      v = fdja_parse((char *)env->res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
