@@ -16,7 +16,15 @@ The processes that make up a flon execution point.
 
 ## Testing
 
-* `make clean sc` to compile and test the code common to all Flon components
+* `make clean sc` to test the code common to all Flon components
+* `make clean sd` to test the dispatcher
+* `make clean sx` to test the executor
+* `make clean sl` to test the listener
+* `make clean st` to test the tasker
+* `make clean sn` to test individual radial instructions
+* `make clean sz` to run a-to-z tests
+
+* `make spec` to run all the spec in one go
 
 
 ## License
