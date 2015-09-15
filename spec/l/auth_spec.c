@@ -20,105 +20,99 @@ context "flon-listener auth"
     flon_configure(".");
   }
 
-  describe "fshv_auth_filter() (was flon_auth_filter())"
+  describe "fshv_basic_auth()"
   {
     before each
     {
-      fshv_request *req = NULL;
-      fshv_response *res = fshv_response_malloc(200);
-      fdja_value *v = NULL;
-      fdja_value *v1 = NULL;
-
-      flu_dict *params =
-        flu_d("func", flon_auth_enticate, "realm", "flon", NULL);
+      fshv_env *env = NULL;
     }
     after each
     {
-      fshv_request_free(req);
-      fdja_free(v);
-      fdja_free(v1);
-      fshv_response_free(res);
-      flu_list_free(params);
+      fshv_env_free(env);
     }
 
     it "says 401 if auth fails (no authorization header)"
     {
-      req = fshv_parse_request_head(""
+      env = fshv_env_malloc(
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
-      int r = fshv_basic_auth_filter(req, res, 0, params);
+      int r = fshv_basic_auth(env, "flon", flon_auth_enticate);
 
       expect(r i== 0);
 
-      expect(res->status_code i== 401);
+      expect(env->res->status_code i== 401);
 
-      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+      expect(flu_list_get(env->res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"flon\"");
     }
 
     it "says 401 if auth fails (wrong credentials)"
     {
-      req = fshv_parse_request_head(""
+      env = fshv_env_malloc(
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic nada\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
-      int r = fshv_basic_auth_filter(req, res, 0, params);
+      int r = fshv_basic_auth(env, "flon", flon_auth_enticate);
 
       expect(r i== 0);
 
-      expect(res->status_code i== 401);
+      expect(env->res->status_code i== 401);
 
-      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+      expect(flu_list_get(env->res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"flon\"");
     }
 
     it "says 401 if ?logout"
     {
-      req = fshv_parse_request_head(""
+      env = fshv_env_malloc(
         "GET /i?logout=1 HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
-      int r = fshv_basic_auth_filter(req, res, 0, params);
+      int r = fshv_basic_auth(env, "flon", flon_auth_enticate);
 
       expect(r i== 0);
 
-      expect(res->status_code i== 401);
+      expect(env->res->status_code i== 401);
 
-      expect(flu_list_get(res->headers, "WWW-Authenticate") === ""
+      expect(flu_list_get(env->res->headers, "WWW-Authenticate") === ""
         "Basic realm=\"flon\"");
     }
 
     it "sets _basic_user if auth succeeds"
     {
-      req = fshv_parse_request_head(""
+      env = fshv_env_malloc(
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "Authorization: Basic am9objp3eXZlcm4=\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
-      int r = fshv_basic_auth_filter(req, res, 0, params);
+      int r = fshv_basic_auth(env, "flon", flon_auth_enticate);
 
       expect(r i== 0);
-      expect(flu_list_get(req->routing_d, "_basic_user") === "john");
+      expect(flu_list_get(env->bag, "_flon_user") === "john");
     }
   }
 
   describe "flon_auth_enticate()"
   {
-    it "returns 1 if the user and pass do match"
+    it "returns a copy of the username if the user and pass do match"
     {
-      expect(flon_auth_enticate("john", "wyvern", NULL) i== 1);
+      expect(flon_auth_enticate(NULL, "flon", "john", "wyvern") ===f "john");
     }
 
-    it "returns 0 else"
+    it "returns NULL else"
     {
-      expect(flon_auth_enticate("john", "wivern", NULL) i== 0);
+      expect(flon_auth_enticate(NULL, "flon", "john", "wivern") == NULL);
     }
 
     it "verifies 'wyvern'"

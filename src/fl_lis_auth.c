@@ -69,7 +69,8 @@ static int load_domain()
   return 0;
 }
 
-int flon_auth_enticate(char *user, char *pass, flu_dict *params)
+char *flon_auth_enticate(
+  fshv_env *e, const char *realm, const char *user, const char *pass)
 {
   if ( ! load_passwd()) return 0;
 
@@ -84,7 +85,7 @@ int flon_auth_enticate(char *user, char *pass, flu_dict *params)
 
   if (hash != dummy_hash) free(hash);
 
-  return u ? r : 0;
+  return (u && r) ? strdup(user) : NULL;
 }
 
 int flon_dom_matches(const char *dom, const char *pat)

@@ -31,7 +31,8 @@
 #include "shervin.h"
 
 
-int flon_auth_enticate(char *user, char *pass, flu_dict *params);
+char *flon_auth_enticate(
+  fshv_env *e, const char *realm, const char *user, const char *pass);
 
 int flon_dom_matches(const char *dom, const char *pat);
 int flon_is_subdomain(const char *root, const char *dom);
