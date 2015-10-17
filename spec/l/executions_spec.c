@@ -137,7 +137,8 @@ context "flon-listener (vs executions)"
       env = fshv_env_malloc(
         "GET /i/executions/org.sample HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
       flu_list_set(env->bag, "id", rdz_strdup("org.sample"));
       flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
@@ -162,11 +163,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       printf("exid: %s\n", exid);
 
-      env = fshv_env_malloc_x(
+      env = fshv_env_malloc_f(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n", exid,
-        NULL);
+        "\r\n",
+        NULL,
+        exid);
       flu_list_set(env->bag, "id", rdz_strdup(exid));
       flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
