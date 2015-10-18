@@ -238,8 +238,11 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
 
   // done
 
-  char asrc = 'i'; char *addr = flu_list_get(req->headers, "x-real-ip");
-  if (addr == NULL)
+  char asrc = 'i';
+  char *addr = NULL;
+
+  if (req != NULL) addr = flu_list_get(req->headers, "x-real-ip");
+  if (addr == NULL && req != NULL)
   {
     asrc = 'f'; addr = flu_list_get(req->headers, "x-forwarded-for");
   }
@@ -249,6 +252,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
   }
 
   long long nowus = flu_gets('u');
+  long long reqsus = req ? req->startus : nowus;
 
   fgaj_si(
     eio,
@@ -257,7 +261,7 @@ static void fshv_respond_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     res->status_code,
     flu_list_get(res->headers, "content-length"),
     (nowus - con->startus) / 1000.0,
-    (nowus - req->startus) / 1000.0);
+    (nowus - reqsus) / 1000.0);
 
   ev_io_stop(l, eio); fgaj_sd(eio, "ev_io_stop() (w)"); free(eio);
   fshv_con_reset(con);
@@ -365,7 +369,7 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
     flu_sprintf(
       "c%.3fms;r%.3fms;rq%i",
       (nowus - con->startus) / 1000.0,
-      (nowus - con->env->req->startus) / 1000.0,
+      con->env->req ? (nowus - con->env->req->startus) / 1000.0 : 0.0,
       con->req_count));
 
   if (
@@ -400,10 +404,8 @@ void fshv_respond(struct ev_loop *l, struct ev_io *eio)
   ev_io_start(l, weio);
 }
 
-//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
+//commit 4f600185cfdd86e14d35ea326de3121ffa4ea561
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Sep 13 06:32:55 2015 +0900
+//Date:   Sun Oct 18 15:19:12 2015 +0900
 //
-//    bring back all specs to green
-//    
-//    (one yellow remaining though)
+//    implement fshv_malloc_x()

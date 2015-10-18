@@ -217,10 +217,8 @@ fshv_request *fshv_parse_request_head_f(const char *s, ...)
   return r;
 }
 
-//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
+//commit 4f600185cfdd86e14d35ea326de3121ffa4ea561
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Sep 13 06:32:55 2015 +0900
+//Date:   Sun Oct 18 15:19:12 2015 +0900
 //
-//    bring back all specs to green
-//    
-//    (one yellow remaining though)
+//    implement fshv_malloc_x()

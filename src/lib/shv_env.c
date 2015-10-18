@@ -36,11 +36,37 @@
 fshv_env *fshv_env_malloc(char *req_head, flu_dict *conf)
 {
   fshv_env *r = calloc(1, sizeof(fshv_env));
-
   r->bag = flu_list_malloc();
   r->req = fshv_parse_request_head(req_head);
   r->res = fshv_response_malloc();
   r->conf = conf;
+
+  return r;
+}
+
+fshv_env *fshv_env_malloc_f(char *req_head, flu_dict *conf, ...)
+{
+  va_list ap; va_start(ap, conf);
+  char *s = flu_svprintf(req_head, ap);
+  va_end(ap);
+
+  fshv_env *r = fshv_env_malloc(s, conf);
+
+  free(s);
+
+  return r;
+}
+
+fshv_env *fshv_env_malloc_x(char *req_head, ...)
+{
+  va_list ap; va_start(ap, req_head);
+  char *s = flu_svprintf(req_head, ap);
+  flu_dict *conf = va_arg(ap, flu_dict *);
+  va_end(ap);
+
+  fshv_env *r = fshv_env_malloc(s, conf);
+
+  free(s);
 
   return r;
 }
@@ -56,10 +82,8 @@ void fshv_env_free(fshv_env *e)
   free(e);
 }
 
-//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
+//commit 4f600185cfdd86e14d35ea326de3121ffa4ea561
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Sep 13 06:32:55 2015 +0900
+//Date:   Sun Oct 18 15:19:12 2015 +0900
 //
-//    bring back all specs to green
-//    
-//    (one yellow remaining though)
+//    implement fshv_malloc_x()

@@ -142,27 +142,29 @@ static void fshv_handle_cb(struct ev_loop *l, struct ev_io *eio, int revents)
     if (con->hend < 4) return;
       // end of head not yet found
 
+    con->req_count++; // count even invalid requests
+
+    fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
+
     char *head = flu_sbuffer_to_string(con->head);
     con->head = NULL;
 
     con->env = fshv_env_malloc(head, con->conf);
-    con->env->req->startus = ev_now(l) * 1000000;
-    con->req_count++;
-
     free(head);
-
-    fgaj_si(eio, "%s", inet_ntoa(con->client->sin_addr));
 
     if (con->env->req == NULL)
     {
       fgaj_sd(eio, "couldn't parse request head");
 
-      fshv_response_free(con->env->res);
-      con->env->res = fshv_response_malloc(400);
+      //fshv_response_free(con->env->res);
+      //con->env->res = fshv_response_malloc(400);
+      con->env->res->status_code = 400;
 
       fshv_respond(l, eio);
       return;
     }
+
+    con->env->req->startus = ev_now(l) * 1000000;
   }
 
   //fgaj_sd(
@@ -300,10 +302,8 @@ void fshv_serve(int port, fshv_handler *root_handler, flu_dict *conf)
   //if (r != 0) { fgaj_r("close error"); /*exit(4);*/ }
 }
 
-//commit 2e039a2191f1ff3db36d3297a775c3a1f58841e0
+//commit 4f600185cfdd86e14d35ea326de3121ffa4ea561
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Sun Sep 13 06:32:55 2015 +0900
+//Date:   Sun Oct 18 15:19:12 2015 +0900
 //
-//    bring back all specs to green
-//    
-//    (one yellow remaining though)
+//    implement fshv_malloc_x()

@@ -163,12 +163,12 @@ context "flon-listener (vs executions)"
       exid = hlp_lookup_exid("john", "org.example", 0);
       printf("exid: %s\n", exid);
 
-      env = fshv_env_malloc_f(
+      env = fshv_env_malloc_x(
         "GET /i/executions/%s HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
         "\r\n",
-        NULL,
-        exid);
+        exid,
+        NULL);
       flu_list_set(env->bag, "id", rdz_strdup(exid));
       flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
