@@ -543,7 +543,7 @@ context "instruction:"
           exid,
           "=~\n"
           "  poto\n"
-          "  xxx(yyy\n"
+          "  'xxx(yyy'\n"
           "",
           "{}");
 
