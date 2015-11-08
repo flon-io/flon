@@ -74,6 +74,11 @@ context "flon-dispatcher"
 
       flu_msleep(210); // give it time to write the file
 
+      char rf = flu_fstat("var/spool/rejected/rcv_dtest.tsk_%s-0_2.json", exid);
+      expect(rf c== 0);
+        // if not, check that there isn't a straggling dispatcher still
+        // executing
+
       fdja_value *v = fdja_parse_f("var/spool/dis/tsk_%s-0_2.json", exid);
       expect(v != NULL);
       //flu_putf(fdja_todc(v));
