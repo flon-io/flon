@@ -119,7 +119,7 @@ context "instruction:"
         "unlesse\n"
         "  4 > 3\n"
         "  'then'\n"
-        "  'else'\n"
+        "  'elze'\n"
         "",
         "{}");
 
@@ -129,7 +129,7 @@ context "instruction:"
       //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: else }");
+        "{ ret: elze }");
     }
   }
 }
