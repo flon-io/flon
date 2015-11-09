@@ -61,7 +61,7 @@ context "flon-dispatcher"
 
       s = flu_readall("var/spool/rejected/tsk_%s.json", exid);
       expect(s >== "NADA");
-      expect(s >== "# reason:");
+      expect(s >== "# reason: couldn't parse json (2");
 
       flu_unlink("var/spool/rejected/tsk_%s.json", exid);
     }
