@@ -91,6 +91,10 @@ char *fabr_tree_string(const char *input, fabr_tree *t);
  */
 char *fabr_tree_str(const char *input, fabr_tree *t);
 
+/* Attempts to extract a long long from the pointed at string.
+ */
+long long fabr_tree_llong(const char *input, fabr_tree *t, int base);
+
 /* Given a fabr_tree resulting from a parse run, returns the error message
  * or NULL if none.
  */
@@ -236,10 +240,8 @@ int fabr_match(const char *input, fabr_parser *p);
 
 #endif // FLON_AABRO_H
 
-//commit 932612069f2614e398a6038eab7ce33919a3f263
+//commit 7198da86d267f621942f9bbcbcc3bbc24df1497b
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Jul 15 06:55:37 2015 +0900
+//Date:   Wed Aug 26 06:38:57 2015 +0900
 //
-//    don't let eseq silence errors in its start parser
-//    
-//    closes gh-14
+//    implement fabr_tree_llong()

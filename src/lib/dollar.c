@@ -349,8 +349,8 @@ char *fdol_dlup(void *data, const char *path)
   return r ? strdup(r) : NULL;
 }
 
-//commit 5e968793eb0622b3dc996261e1358eb23f3f2487
+//commit 47801160da00ff3657f1d8640800ae18073d4f29
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jul 16 06:19:17 2015 +0900
+//Date:   Tue Nov 10 06:44:09 2015 +0900
 //
-//    upgrade aabro (various -1 fixes)
+//    upgrade aabro (fabr_tree_llong)

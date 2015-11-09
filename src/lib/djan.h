@@ -299,8 +299,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit 08a6159f2ebe5828f0e5ab357fbc45187de46085
+//commit b6d83902a8fa913db91291deec4208f8d9b22d8c
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Thu Jul 16 06:38:24 2015 +0900
+//Date:   Tue Nov 10 06:45:03 2015 +0900
 //
-//    enable comments within rad_p groups (radial ()s)
+//    upgrade aabro (fabr_tree_llong)

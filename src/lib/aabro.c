@@ -107,6 +107,15 @@ char *fabr_tree_str(const char *input, fabr_tree *t)
   return (char *)input + t->offset;
 }
 
+long long fabr_tree_llong(const char *input, fabr_tree *t, int base)
+{
+  char *s = fabr_tree_string(input, t);
+  long long r = strtoll(s, NULL, base);
+  free(s);
+
+  return r;
+}
+
 static void fabr_t_to_s(
   fabr_tree *t, const char *input,
   flu_sbuffer *b, size_t indent, short children, short color)
@@ -1228,10 +1237,8 @@ int fabr_match(const char *input, fabr_parser *p)
   return r;
 }
 
-//commit 932612069f2614e398a6038eab7ce33919a3f263
+//commit 7198da86d267f621942f9bbcbcc3bbc24df1497b
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Wed Jul 15 06:55:37 2015 +0900
+//Date:   Wed Aug 26 06:38:57 2015 +0900
 //
-//    don't let eseq silence errors in its start parser
-//    
-//    closes gh-14
+//    implement fabr_tree_llong()
