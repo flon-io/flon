@@ -94,7 +94,7 @@ context "instruction:"
         "ife\n"
         "  5 > 4\n"
         "  'then'\n"
-        "  'else'\n"
+        "  val 'else'\n"
         "",
         "{}");
 
@@ -117,7 +117,7 @@ context "instruction:"
         "  3 > 4\n"
         "  'then'\n"
         "  #'else'\n" // no worky since 'else' is an instruction
-        "  'elze'\n"
+        "  val 'else'\n"
         "",
         "{}");
 
@@ -127,7 +127,7 @@ context "instruction:"
       //fdja_putdc(result);
 
       expect(fdja_ld(result, "payload") ===f ""
-        "{ ret: elze }");
+        "{ ret: else }");
     }
   }
 }
