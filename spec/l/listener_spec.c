@@ -24,36 +24,33 @@ context "flon-listener"
 
   before each
   {
-    fshv_request *req = NULL;
-    flu_dict *params = NULL;
-    fshv_response *res = fshv_response_malloc(404);
+    fshv_env *env = NULL;
     fdja_value *v = NULL;
     fdja_value *v1 = NULL;
   }
   after each
   {
-    fshv_request_free(req);
-    flu_list_free(params);
     fdja_free(v);
     fdja_free(v1);
-    fshv_response_free(res);
+    fshv_env_free(env);
   }
 
   describe "flon_i_handler() /i"
   {
     it "lists the resources available"
     {
-      req = fshv_parse_request_head(""
+      env = fshv_env_malloc_x(
         "GET /i HTTP/1.1\r\n"
         "Host: x.flon.io\r\n"
-        "\r\n");
+        "\r\n",
+        NULL);
 
-      int r = flon_i_handler(req, res, 0, NULL);
+      int r = flon_i_handler(env);
 
       expect(r i== 1);
-      expect(res->status_code i== 200);
+      expect(env->res->status_code i== 200);
 
-      v = fdja_parse((char *)res->body->first->item);
+      v = fdja_parse((char *)env->res->body->first->item);
       if (v) v->sowner = 0; // the string is owned by the response
 
       expect(v != NULL);
@@ -85,26 +82,26 @@ context "flon-listener"
     {
       it "accepts launch requests"
       {
-        req = fshv_parse_request_head(
+        env = fshv_env_malloc_x(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
-          "\r\n");
-        req->body = rdz_strdup(
-          "{\n"
-            "domain: org.example\n"
-            "execute: [ invoke, { _0: stamp }, [] ]\n"
-            "payload: {}\n"
-          "}\n");
-        flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+          "\r\n",
+          rdz_strdup(
+            "{\n"
+              "domain: org.example\n"
+              "execute: [ invoke, { _0: stamp }, [] ]\n"
+              "payload: {}\n"
+            "}\n"));
+        flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-        int r = flon_in_handler(req, res, 0, NULL);
+        int r = flon_in_handler(env);
 
         //puts((char *)res->body->first->item);
 
         expect(r i== 1);
-        expect(res->status_code i== 200);
+        expect(env->res->status_code i== 200);
 
-        v = fdja_parse((char *)res->body->first->item);
+        v = fdja_parse((char *)env->res->body->first->item);
         if (v) v->sowner = 0; // the string is owned by the response
 
         expect(v != NULL);
@@ -135,17 +132,17 @@ context "flon-listener"
 
       it "links to self and home"
       {
-        req = fshv_parse_request_head(""
+        env = fshv_env_malloc_x(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
-          "\r\n");
-        req->body = rdz_strdup("NADA\n");
+          "\r\n",
+          rdz_strdup("NADA\n"));
 
-        int r = flon_in_handler(req, res, 0, NULL);
+        int r = flon_in_handler(env);
 
         expect(r i== 1);
 
-        v = fdja_parse((char *)res->body->first->item);
+        v = fdja_parse((char *)env->res->body->first->item);
         if (v) v->sowner = 0; // the string is owned by the response
 
         expect(v != NULL);
@@ -159,36 +156,36 @@ context "flon-listener"
 
       it "rejects invalid launch requests"
       {
-        req = fshv_parse_request_head(""
+        env = fshv_env_malloc_x(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
-          "\r\n");
-        req->body = rdz_strdup("NADA\n");
+          "\r\n",
+          rdz_strdup("NADA\n"));
 
-        int r = flon_in_handler(req, res, 0, NULL);
+        int r = flon_in_handler(env);
 
         expect(r i== 1);
-        expect(res->status_code i== 400);
+        expect(env->res->status_code i== 400);
       }
 
       it "rejects launch requests for unauthorized domains"
       {
-        req = fshv_parse_request_head(""
+        env = fshv_env_malloc_x(
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
-          "\r\n");
-        req->body = rdz_strdup(
-          "{\n"
-            "domain: org.sample\n"
-            "execute: [ invoke, { _0: stamp }, [] ]\n"
-            "payload: {}\n"
-          "}\n");
-        flu_list_set(req->routing_d, "_user", rdz_strdup("john"));
+          "\r\n",
+          rdz_strdup(
+            "{\n"
+              "domain: org.sample\n"
+              "execute: [ invoke, { _0: stamp }, [] ]\n"
+              "payload: {}\n"
+            "}\n"));
+        flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
-        int r = flon_in_handler(req, res, 0, NULL);
+        int r = flon_in_handler(env);
 
         expect(r i== 1);
-        expect(res->status_code i== 403);
+        expect(env->res->status_code i== 403);
       }
     }
 
