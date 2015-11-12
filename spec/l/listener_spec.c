@@ -86,18 +86,19 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n",
+          NULL);
+        env->req->body =
           rdz_strdup(
             "{\n"
               "domain: org.example\n"
               "execute: [ invoke, { _0: stamp }, [] ]\n"
               "payload: {}\n"
-            "}\n"));
+            "}\n");
         flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
         int r = flon_in_handler(env);
 
-        //puts((char *)res->body->first->item);
-
+        //puts((char *)env->res->body->first->item);
         expect(r i== 1);
         expect(env->res->status_code i== 200);
 
@@ -136,7 +137,9 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n",
-          rdz_strdup("NADA\n"));
+          NULL);
+        env->req->body =
+          rdz_strdup("NADA\n");
 
         int r = flon_in_handler(env);
 
@@ -174,12 +177,14 @@ context "flon-listener"
           "POST /i/in HTTP/1.1\r\n"
           "Host: x.flon.io\r\n"
           "\r\n",
+          NULL);
+        env->req->body =
           rdz_strdup(
             "{\n"
               "domain: org.sample\n"
               "execute: [ invoke, { _0: stamp }, [] ]\n"
               "payload: {}\n"
-            "}\n"));
+            "}\n");
         flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
 
         int r = flon_in_handler(env);

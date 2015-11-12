@@ -161,7 +161,7 @@ context "flon-listener (vs executions)"
     it "details an execution"
     {
       exid = hlp_lookup_exid("john", "org.example", 0);
-      printf("exid: %s\n", exid);
+      //printf("exid: %s\n", exid);
 
       env = fshv_env_malloc_x(
         "GET /i/executions/%s HTTP/1.1\r\n"
