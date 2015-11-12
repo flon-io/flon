@@ -98,7 +98,7 @@ context "flon-listener auth"
 
       int r = fshv_basic_auth(env, "flon", flon_auth_enticate);
 
-      expect(r i== 0);
+      expect(r i== 1);
       expect(flu_list_get(env->bag, "_flon_user") === "john");
     }
   }
