@@ -279,7 +279,7 @@ static int run_cmd(tasking_data *td)
     }
     else if (strcmp(td->out, "stderr") == 0)
     {
-      if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0)
+      if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
       {
         failf(td, 1, "failed to redirect child stdout to stderr");
         return 127;
