@@ -90,6 +90,7 @@ typedef struct {
   char *taskee;
   char *tasker_path;
   char *cmd;
+  int outparam;
   char *out;
   int offerer;
 } tasking_data;
@@ -270,24 +271,14 @@ static int run_cmd(tasking_data *td)
       return 127;
     }
 
-    fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
+    fgaj_d("td->out >%s<  td->outparam: %i", td->out, td->outparam);
 
-    if (
-      out &&
-      (
-        fdja_strcmp(out, "param") == 0 ||
-        fdja_strcmp(out, "tasker_out") == 0
-      )
-    ) {
+    if (td->outparam)
+    {
       // ok, no stdout tweaking
     }
-    else if (
-      out &&
-      (
-        fdja_strcmp(out, "err") == 0 ||
-        fdja_strcmp(out, "stderr") == 0
-      )
-    ) {
+    else if (strcmp(td->out, "stderr") == 0)
+    {
       if (dup2(STDOUT_FILENO, STDERR_FILENO) < 0)
       {
         failf(td, 1, "failed to redirect child stdout to stderr");
@@ -364,17 +355,30 @@ static void prepare_tasker_output(tasking_data *td)
 {
   fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
 
-  if (
-    td->offerer == 0 &&
-    (
+  if (td->offerer == 0)
+  {
+    if (
       fdja_strcmp(out, "null") == 0 ||
       fdja_strcmp(out, "/dev/null") == 0 ||
       fdja_strcmp(out, "discard") == 0
     )
-  )
-    td->out = strdup("/dev/null");
-  else
+    { td->out = strdup("/dev/null"); }
+    else if (
+      fdja_strcmp(out, "param") == 0 ||
+      fdja_strcmp(out, "tasker_out") == 0
+    )
+    { td->outparam = 1; }
+    else if (
+      fdja_strcmp(out, "err") == 0 ||
+      fdja_strcmp(out, "stderr") == 0
+    )
+    { td->out = strdup("stderr"); }
+  }
+
+  if (td->out == NULL)
+  {
     td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
+  }
 }
 
 static void prepare_tasker_input(tasking_data *td)
