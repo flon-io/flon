@@ -91,7 +91,8 @@ context "flon-listener"
           rdz_strdup(
             "{\n"
               "domain: org.example\n"
-              "execute: [ invoke, { _0: stamp }, [] ]\n"
+              "point: execute\n"
+              "tree: [ invoke, { _0: stamp }, [] ]\n"
               "payload: {}\n"
             "}\n");
         flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));
@@ -182,7 +183,8 @@ context "flon-listener"
           rdz_strdup(
             "{\n"
               "domain: org.sample\n"
-              "execute: [ invoke, { _0: stamp }, [] ]\n"
+              "point: execute\n"
+              "tree: [ invoke, { _0: stamp }, [] ]\n"
               "payload: {}\n"
             "}\n");
         flu_list_set(env->bag, "_flon_user", rdz_strdup("john"));

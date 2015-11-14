@@ -165,11 +165,8 @@ int flon_in_handler(fshv_env *env)
   //flu_putf(fdja_todc(v));
 
   dom = fdja_ls(v, "domain", NULL);
-  //
-  fdja_value *exe = fdja_l(v, "execute");
-  //fdja_value *inv = fdja_l(v, "invoke");
-  //fdja_value *rec = fdja_l(v, "receive");
-  //
+  fdja_value *pt = fdja_l(v, "point");
+  fdja_value *tr = fdja_l(v, "tree");
   fdja_value *pl = fdja_l(v, "payload");
   //
   fdja_value *exid = fdja_l(v, "exid");
@@ -182,7 +179,13 @@ int flon_in_handler(fshv_env *env)
     goto _respond;
   }
 
-  if (dom && exe && exe->type == 'a' && pl && exid == NULL && nid == NULL)
+  if (
+    dom &&
+    fdja_strcmp(pt, "execute") == 0 &&
+    tr && tr->type == 'a' &&
+    pl &&
+    exid == NULL && nid == NULL
+  )
   {
     in_handle_launch(env, v, dom, r); goto _respond;
   }
