@@ -92,6 +92,7 @@ typedef struct {
   char *cmd;
   int outparam;
   char *out;
+  char *err;
   int offerer;
 } tasking_data;
 
@@ -108,6 +109,7 @@ static void tasking_data_free(tasking_data *td)
   free(td->taskee);
   free(td->tasker_path);
   free(td->cmd);
+  free(td->err);
   free(td->out);
 }
 
@@ -238,6 +240,9 @@ static int run_cmd_child(tasking_data *td, int* pds)
 {
   fgaj_i("child, pid %i", getpid());
 
+  //
+  // set pipe from parent as stdin
+
   close(pds[1]);
   dup2(pds[0], STDIN_FILENO);
   close(pds[0]);
@@ -249,6 +254,10 @@ static int run_cmd_child(tasking_data *td, int* pds)
   }
 
   fgaj_d("td->out >%s<  td->outparam: %i", td->out, td->outparam);
+  fgaj_d("td->err >%s<", td->err);
+
+  //
+  // prepare stdout
 
   if (td->outparam)
   {
@@ -256,7 +265,8 @@ static int run_cmd_child(tasking_data *td, int* pds)
   }
   else if (strcmp(td->out, "stderr") == 0)
   {
-    if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
+    //if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
+    if (dup2(STDERR_FILENO, STDOUT_FILENO) != STDOUT_FILENO)
     {
       failf(td, 1, "failed to redirect child stdout to stderr");
       return 127;
@@ -282,7 +292,34 @@ static int run_cmd_child(tasking_data *td, int* pds)
     return 127;
   }
 
+  //
+  // prepare stderr
+
   fflush(stderr);
+
+  if (td->err == NULL)
+  {
+    // leave it as is
+  }
+  else if (strcmp(td->err, "stdout") == 0)
+  {
+    if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
+    {
+      failf(td, 1, "failed to redirect child stderr to stdout");
+      return 127;
+    }
+  }
+  else
+  {
+    if (freopen(td->err, "w", stderr) == NULL)
+    {
+      failf(td, 1, "failed to reopen child stderr to %s", td->err);
+      return 127;
+    }
+  }
+
+  //
+  // exec
 
   int er = execl("/bin/sh", "", "-c", td->cmd, NULL);
 
@@ -356,32 +393,62 @@ static void prepare_tasker_cmd(tasking_data *td)
 
 static void prepare_tasker_output(tasking_data *td)
 {
-  fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
-
-  if (td->offerer == 0)
+  if (td->offerer)
   {
-    if (
-      fdja_strcmp(out, "null") == 0 ||
-      fdja_strcmp(out, "/dev/null") == 0 ||
-      fdja_strcmp(out, "discard") == 0
-    )
-    { td->out = strdup("/dev/null"); }
-    else if (
-      fdja_strcmp(out, "param") == 0 ||
-      fdja_strcmp(out, "tasker_out") == 0
-    )
-    { td->outparam = 1; }
-    else if (
-      fdja_strcmp(out, "err") == 0 ||
-      fdja_strcmp(out, "stderr") == 0
-    )
-    { td->out = strdup("stderr"); }
+    td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
+    td->err = NULL;
+    return;
   }
+
+  fdja_value *out = fdja_l(td->tasker_conf, "ontask.out");
+  fdja_value *err = fdja_l(td->tasker_conf, "ontask.err");
+
+  // ontask: {
+  //
+  //   out: "null" / "/dev/null" / discard
+  //   out: param / tasker_out
+  //   out: err / stderr
+  //
+  //   err: out / "/dev/null"
+  // }
+
+  // out
+
+  if (
+    fdja_strcmp(out, "null") == 0 ||
+    fdja_strcmp(out, "discard") == 0 ||
+    fdja_strcmp(out, "/dev/null") == 0
+  )
+  { td->out = strdup("/dev/null"); }
+  else if (
+    fdja_strcmp(out, "param") == 0 ||
+    fdja_strcmp(out, "tasker_out") == 0
+  )
+  { td->outparam = 1; }
+  else if (
+    fdja_strcmp(out, "err") == 0 ||
+    fdja_strcmp(out, "stderr") == 0
+  )
+  { td->out = strdup("stderr"); }
 
   if (td->out == NULL)
   {
     td->out = flu_sprintf("var/spool/dis/tsk_%s-%s.json", td->exid, td->nid);
   }
+
+  // err
+
+  if (
+    fdja_strcmp(err, "null") == 0 ||
+    fdja_strcmp(err, "discard") == 0 ||
+    fdja_strcmp(err, "/dev/null") == 0
+  )
+  { td->err = strdup("/dev/null"); }
+  else if (
+    fdja_strcmp(err, "out") == 0 ||
+    fdja_strcmp(err, "stdout") == 0
+  )
+  { td->err = strdup("stdout"); }
 }
 
 static void prepare_tasker_input(tasking_data *td)

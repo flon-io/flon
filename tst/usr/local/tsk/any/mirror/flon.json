@@ -2,6 +2,7 @@
 # mirror
 
 ontask: {
+  err: stdout
   cmd: "bin/mirror -e $(exid) -n $(nid) -x $(pl.danger0) -y $(pl.danger1)"
 }
 

@@ -80,6 +80,14 @@ describe "tasker:"
       expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 'f');
 
       v = fdja_parse_f("var/spool/dis/tsk_%s-%s.json", exid, nid);
+      //
+      if (v == NULL)
+      {
+        char *s = flu_readall("var/spool/dis/tsk_%s-%s.json", exid, nid);
+        printf("var/spool/dis/tsk_%s-%s.json:\n", exid, nid);
+        printf(">>\n%s\n<<\n", s);
+      }
+      //
       expect(v != NULL);
 
       //fdja_putdc(v);
