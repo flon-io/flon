@@ -46,6 +46,24 @@ static void print_usage()
   fprintf(stderr, "" "\n");
 }
 
+static int serve(fshv_env *env)
+{
+  if ( ! fshv_basic_auth(env, "flon", flon_auth_enticate)) return 1;
+
+  if (fshv_m(env, "GET /i")) return flon_i_handler(env);
+  if (fshv_m(env, "POST /i/in")) return flon_in_handler(env);
+  if (fshv_m(env, "GET /i/executions")) return flon_exes_handler(env);
+  if (fshv_m(env, "GET /i/executions/:id")) return flon_exe_handler(env);
+  if (fshv_m(env, "GET /i/executions/:id/:sub")) return flon_exe_sub_handler(env);
+  if (fshv_m(env, "GET /i/msgs/:id")) return flon_msg_handler(env);
+  if (fshv_m(env, "GET /i/metrics")) return flon_msg_handler(env);
+  if (fshv_m(env, "GET /**")) return fshv_serve_files(env, "var/www");
+
+  return 0;
+    // which will
+  //return fshv_status(env, 404);
+}
+
 int main(int argc, char *argv[])
 {
   // read options
@@ -87,29 +105,10 @@ int main(int argc, char *argv[])
 
   free(dir);
 
-  fshv_route *routes[] =
-  {
-    fshv_r(
-      NULL,
-      fshv_basic_auth_filter,
-      "func", flon_auth_enticate, "realm", "flon", NULL),
-
-    fshv_rp("GET /i", flon_i_handler, NULL),
-    fshv_rp("POST /i/in", flon_in_handler, NULL),
-    fshv_rp("GET /i/executions", flon_exes_handler, NULL),
-    fshv_rp("GET /i/executions/:id", flon_exe_handler, NULL),
-    fshv_rp("GET /i/executions/:id/:sub", flon_exe_sub_handler, NULL),
-    fshv_rp("GET /i/msgs/:id", flon_msg_handler, NULL),
-    fshv_rp("GET /i/metrics", flon_metrics_handler, NULL),
-    fshv_rp("GET /**", fshv_dir_handler, "r", "var/www", NULL),
-
-    NULL
-  };
-
   // serve
 
   if (port < 0) port = 1980;
 
-  fshv_serve(port, routes);
+  fshv_serve(port, serve, NULL);
 }
 
