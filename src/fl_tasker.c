@@ -234,6 +234,65 @@ static int run_rad(tasking_data *td)
   return 0;
 }
 
+static int run_cmd_child(tasking_data *td, int* pds)
+{
+  fgaj_i("child, pid %i", getpid());
+
+  close(pds[1]);
+  dup2(pds[0], STDIN_FILENO);
+  close(pds[0]);
+
+  if (setsid() == -1)
+  {
+    failf(td, 1, "setsid() failed");
+    return 127;
+  }
+
+  fgaj_d("td->out >%s<  td->outparam: %i", td->out, td->outparam);
+
+  if (td->outparam)
+  {
+    // ok, no stdout tweaking
+  }
+  else if (strcmp(td->out, "stderr") == 0)
+  {
+    if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
+    {
+      failf(td, 1, "failed to redirect child stdout to stderr");
+      return 127;
+    }
+  }
+  else
+  {
+    if (freopen(td->out, "w", stdout) == NULL)
+    {
+      failf(td, 1, "failed to reopen child stdout to %s", td->out);
+      return 127;
+    }
+    if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
+    {
+      failf(td, 1, "couldn't lock %s", td->out);
+      return 127;
+    }
+  }
+
+  if (chdir(td->tasker_path) != 0)
+  {
+    failo(td, 1, "failed to chdir to %s", td->tasker_path);
+    return 127;
+  }
+
+  fflush(stderr);
+
+  int er = execl("/bin/sh", "", "-c", td->cmd, NULL);
+
+  // excl has returned... fail zone...
+
+  fgaj_r("execl failed (%i)", er);
+
+  return 127;
+}
+
 static int run_cmd(tasking_data *td)
 {
   fgaj_i(">%s< for taskee '%s'", td->cmd, td->taskee);
@@ -257,66 +316,10 @@ static int run_cmd(tasking_data *td)
     return 1;
   }
 
-  if (pid == 0) // child
-  {
-    fgaj_i("child, pid %i", getpid());
+  if (pid == 0) run_cmd_child(td, pds);
+    // we're in the child
 
-    close(pds[1]);
-    dup2(pds[0], STDIN_FILENO);
-    close(pds[0]);
-
-    if (setsid() == -1)
-    {
-      failf(td, 1, "setsid() failed");
-      return 127;
-    }
-
-    fgaj_d("td->out >%s<  td->outparam: %i", td->out, td->outparam);
-
-    if (td->outparam)
-    {
-      // ok, no stdout tweaking
-    }
-    else if (strcmp(td->out, "stderr") == 0)
-    {
-      if (dup2(STDOUT_FILENO, STDERR_FILENO) != STDERR_FILENO)
-      {
-        failf(td, 1, "failed to redirect child stdout to stderr");
-        return 127;
-      }
-    }
-    else
-    {
-      if (freopen(td->out, "w", stdout) == NULL)
-      {
-        failf(td, 1, "failed to reopen child stdout to %s", td->out);
-        return 127;
-      }
-      if (flock(STDOUT_FILENO, LOCK_NB | LOCK_EX) != 0)
-      {
-        failf(td, 1, "couldn't lock %s", td->out);
-        return 127;
-      }
-    }
-
-    if (chdir(td->tasker_path) != 0)
-    {
-      failo(td, 1, "failed to chdir to %s", td->tasker_path);
-      return 127;
-    }
-
-    fflush(stderr);
-
-    int er = execl("/bin/sh", "", "-c", td->cmd, NULL);
-
-    // excl has returned... fail zone...
-
-    fgaj_r("execl failed (%i)", er);
-
-    return 127;
-  }
-
-  // else we're in the parent
+  // else we're [still] in the parent
 
   close(pds[0]);
 

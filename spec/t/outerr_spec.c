@@ -64,6 +64,7 @@ context "tasker:"
 
       expect(flu_fstat("var/spool/dis/tsk_%s-%s.json", exid, nid) c== 0);
 
+      expect(0 !== 1);
       //r = hlp_wait_for_file('f', "var/spool/dis/tsk_%s-%s.json", exid, nid, 4);
       //expect(r i== 1);
 
