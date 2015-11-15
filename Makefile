@@ -46,16 +46,14 @@ clean-tst-basic:
 	echo "" > tst/var/log/tsk.log
 ctst: clean-tst-basic clean-tst-time
 
-dis:
-	make clean dispatcher && ./tst/bin/flon-dispatcher
-vdis:
-	make clean dispatcher && \
-    valgrind --leak-check=full -v ./tst/bin/flon-dispatcher
-lis:
-	make clean listener && ./tst/bin/flon-listener
-vlis:
-	make clean listener && \
-    valgrind --leak-check=full -v ./tst/bin/flon-listener
+dis: clean tasker executor dispatcher
+	./tst/bin/flon-dispatcher
+vdis: clean tasker executor dispatcher
+	valgrind --leak-check=full -v ./tst/bin/flon-dispatcher
+lis: clean listener
+	./tst/bin/flon-listener
+vlis: clean listener
+	valgrind --leak-check=full -v ./tst/bin/flon-listener
 
 ps:
 	ps aux | grep flon
