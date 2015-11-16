@@ -1822,17 +1822,20 @@ _over:
   return r;
 }
 
-fdja_value *fdja_psetv(fdja_value *start, const char *path, ...)
+static fdja_value *fdja_psetx(
+  char mode, fdja_value *start, const char *path, va_list ap)
 {
-  va_list ap; va_start(ap, path);
   char *p = flu_svprintf(path, ap);
   char *f = va_arg(ap, char *);
   char *s = flu_svprintf(f, ap);
-  va_end(ap);
 
   fdja_value *r = NULL;
 
-  fdja_value *v = fdja_parse(s);
+  fdja_value *v = NULL;
+  //
+  if (mode == 'v') { v = fdja_parse(s); }
+  else { v = fdja_s(s); free(s); }
+  //
   if (v == NULL) { free(s); goto _over; }
 
   r = fdja_pset(start, p, v);
@@ -1841,6 +1844,24 @@ fdja_value *fdja_psetv(fdja_value *start, const char *path, ...)
 _over:
 
   free(p);
+
+  return r;
+}
+
+fdja_value *fdja_psetv(fdja_value *start, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_psetx('v', start, path, ap);
+  va_end(ap);
+
+  return r;
+}
+
+fdja_value *fdja_psets(fdja_value *start, const char *path, ...)
+{
+  va_list ap; va_start(ap, path);
+  fdja_value *r = fdja_psetx('s', start, path, ap);
+  va_end(ap);
 
   return r;
 }
@@ -1864,8 +1885,8 @@ void fdja_replace(fdja_value *old, fdja_value *new)
   fdja_free(new);
 }
 
-//commit b6d83902a8fa913db91291deec4208f8d9b22d8c
+//commit 8726c175c661d13ec2bbde78bfa0ed43b053569f
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Nov 10 06:45:03 2015 +0900
+//Date:   Tue Nov 17 06:50:35 2015 +0900
 //
-//    upgrade aabro (fabr_tree_llong)
+//    implement fdja_psets()

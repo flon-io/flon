@@ -290,6 +290,10 @@ fdja_value *fdja_pset(fdja_value *start, const char *path, ...);
  */
 fdja_value *fdja_psetv(fdja_value *start, const char *path, ...);
 
+/* Like fdja_psetv() but the last arguments are passed to fdja_s() instead.
+ */
+fdja_value *fdja_psets(fdja_value *start, const char *path, ...);
+
 /* Empties old and replaces its content with the content of new.
  * The key and the child/sibling links of old are preserved.
  *
@@ -299,8 +303,8 @@ void fdja_replace(fdja_value *old, fdja_value *new);
 
 #endif // FLON_DJAN_H
 
-//commit b6d83902a8fa913db91291deec4208f8d9b22d8c
+//commit 8726c175c661d13ec2bbde78bfa0ed43b053569f
 //Author: John Mettraux <jmettraux@gmail.com>
-//Date:   Tue Nov 10 06:45:03 2015 +0900
+//Date:   Tue Nov 17 06:50:35 2015 +0900
 //
-//    upgrade aabro (fabr_tree_llong)
+//    implement fdja_psets()
