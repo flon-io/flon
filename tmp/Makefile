@@ -33,7 +33,7 @@ clean:
 DEPS= \
   flutil.o flutim.o \
   gajeta.o aabro.o djan.o mnemo.o \
-  fl_common.o fl_paths.o fl_ids.o fl_scope.o
+  fl_common.o fl_paths.o fl_ids.o fl_tree.o fl_scope.o
 DDEPS= \
   $(DEPS) \
   flu64.o fl_dispatcher.o
