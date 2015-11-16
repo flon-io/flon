@@ -158,7 +158,7 @@ int flon_in_handler(fshv_env *env)
   if (v == NULL || v->type != 'o')
   {
     env->res->status_code = 400; // bad request
-    fdja_set(r, "message", fdja_s("not json"));
+    fdja_psets(r, "message", "not json");
     goto _respond;
   }
 
@@ -175,13 +175,19 @@ int flon_in_handler(fshv_env *env)
   if (pl && pl->type != 'o')
   {
     env->res->status_code = 400; // bad request
-    fdja_psetv(r, "message", "payload must be a json object");
+    fdja_psets(r, "message", "payload must be a json object");
+    goto _respond;
+  }
+  if (tr && ! flon_is_tree(tr))
+  {
+    env->res->status_code = 400; // bad request
+    fdja_psets(r, "message", "tree is not a valid flon tree");
     goto _respond;
   }
 
   if (
     dom &&
-    fdja_strcmp(pt, "execute") == 0 &&
+    (pt == NULL || fdja_strcmp(pt, "execute") == 0) &&
     tr && tr->type == 'a' &&
     pl &&
     exid == NULL && nid == NULL
@@ -193,7 +199,7 @@ int flon_in_handler(fshv_env *env)
   // no fit, reject...
 
   env->res->status_code = 400; // bad request
-  fdja_psetv(r, "message", "rejected");
+  fdja_psets(r, "message", "rejected");
   goto _respond;
 
 _respond:

@@ -211,10 +211,10 @@
   domain: org.example
   point: execute
   tree:
-    [ sequence, {}, [
-      [ task, { _0: stamp, color: red }, [] ]
-      [ task, { _0: stamp, color: green }, [] ]
-      [ task, { _0: stamp, color: blue }, [] ]
+    [ sequence, {}, 1, [
+      [ task, { _0: stamp, color: red }, 2, [] ]
+      [ task, { _0: stamp, color: green }, 3, [] ]
+      [ task, { _0: stamp, color: blue }, 4, [] ]
     ] ]
   payload: {
     hello: world
