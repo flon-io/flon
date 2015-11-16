@@ -63,10 +63,7 @@ static fdja_value *node_tree(const char *nid)
 
   size_t index = flon_nid_index(nid);
 
-  if (t0) t0 = fdja_at(fdja_at(t0, fdja_size(t0) - 1), index);
-    // accomodates vanilla trees [ name, { atts }, [ children ] ]
-    // and rewritten trees [ name, { atts }, line, [ children ] ]
-
+  if (t0) t0 = fdja_at(fdja_at(t0, 3), index);
   if (t0) return t0;
 
   fdja_value *t1 = NULL;
