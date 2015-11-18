@@ -1,0 +1,44 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>flon</title>
+    <link href="sheets/flon2.css" rel="stylesheet" />
+  </head>
+
+  <body>
+    <div id="console">
+      <div id="input">
+        <span>flon&gt;</span><input type="text" name="input" />
+      </div>
+    </div>
+
+    <script src="scripts/h.js"></script>
+    <script>
+
+      var P = (function() {
+
+        //var self = this;
+
+        this.evalInput = function(ev) {
+
+          if (ev.keyCode !== 13) return;
+          if (ev.shiftKey) {
+          }
+          else {
+          }
+          console.log(ev.target.value);
+        };
+
+        return this;
+
+      }).apply({});
+
+      H.onDocumentReady(function() {
+        var input = H.elt('#input input[name="input"]');
+        input.focus();
+        H.on(input, 'keyup', P.evalInput);
+      });
+    </script>
+  </body>
+</html>
+
