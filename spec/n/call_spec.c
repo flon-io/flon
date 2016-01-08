@@ -30,7 +30,7 @@ context "instruction:"
 
   describe "call"
   {
-    it "calls
+    it "calls"
     {
       exid = flon_generate_exid("n.call.vanilla");
 
