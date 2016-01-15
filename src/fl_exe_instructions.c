@@ -337,6 +337,7 @@ static ssize_t child_count(fdja_value *node, fdja_value *msg)
 static char extract_prefix(const char *path)
 {
   int off = (*path == 'l' || *path == 'g' || *path == 'd') ? 1 : 0;
+    // FIXME this lets "lfld", "gf" and co in...
 
   if (strncmp(path + off, "f.", 2) == 0) return 'f';
   if (strncmp(path + off, "v.", 2) == 0) return 'v';
