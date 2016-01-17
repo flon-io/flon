@@ -483,7 +483,7 @@ context "flon-executor"
         expect(fdja_ld(node, "tree", NULL) ===F fdja_ld(msg, "tree"));
       }
 
-      it "rewrites  sequence if a > b \\ c \\ d"
+      it "rewrites  c if a > b \\ e f \\ g h"
       {
         msg = mrad(
           "c if a > b\n"
