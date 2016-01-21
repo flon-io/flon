@@ -36,6 +36,10 @@ int flon_is_tree(fdja_value *v)
   if (v->child == NULL) return 0; // head
   //if (strchr("sqya", v->child->type) == NULL) return 0;
   if (v->child->type == 'a' && ! flon_is_tree(v->child)) return 0;
+    //
+    // the head can be anything, but if it's an array, it has to be a tree
+    //
+    // TODO think and [maybe] fix in flar first then adapt flon here
 
   if (v->child->sibling == NULL) return 0; // attributes
   if (v->child->sibling->type != 'o') return 0;
