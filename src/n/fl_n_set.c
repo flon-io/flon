@@ -26,10 +26,13 @@
 
 static char rcv_set(fdja_value *node, fdja_value *rcv)
 {
+  char *satt = NULL;
+
   fdja_value *att = fdja_at(fdja_at(tree(node, rcv), 1), 0);
+  if (att == NULL) goto _over;
   expand(att, node, rcv);
 
-  char *satt = fdja_to_string(att);
+  satt = fdja_to_string(att);
   char *key = satt;
 
   if (*satt == 'd') goto _over;

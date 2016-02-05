@@ -44,6 +44,12 @@ context "instruction:"
 
       result = hlp_wait(exid, "terminated", NULL, 3);
 
+      //char *fep = flon_exid_path(exid);
+      //flu_system("cat var/run/%s/exe.log", fep);
+      //flu_system("wc -l var/run/%s/exe.log", fep);
+      //flu_system("cat var/run/%s/msg.log", fep);
+      //flu_system("wc -l var/run/%s/msg.log", fep);
+
       expect(result != NULL);
       //flu_putf(fdja_todc(result));
 
