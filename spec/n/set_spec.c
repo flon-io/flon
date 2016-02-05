@@ -30,6 +30,27 @@ context "instruction:"
 
   describe "set"
   {
+    it "has no effect on its own"
+    {
+      exid = flon_generate_exid("n.set.fld");
+
+      hlp_launch(
+        exid,
+        "sequence\n"
+        "  val 1\n"
+        "  set\n"
+        "",
+        "{}");
+
+      result = hlp_wait(exid, "terminated", NULL, 3);
+
+      expect(result != NULL);
+      //flu_putf(fdja_todc(result));
+
+      expect(fdja_lj(result, "payload") ===F fdja_vj(""
+        "{ ret: 1 }"));
+    }
+
     it "sets a field"
     {
       exid = flon_generate_exid("n.set.fld");
