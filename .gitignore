@@ -1,4 +1,7 @@
 
+.vimrc
+.viminfo
+
 #bin/*
 tmp/*.h
 tmp/*.c
